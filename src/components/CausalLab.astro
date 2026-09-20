@@ -19,13 +19,13 @@ const initial = createCausalEngine(scenarioById(scenario)).history()[0];
         <h3>Replica {replica.id}</h3>
         <dl>
           <dt>Visible value</dt>
-          <dd>{replica.value.join(", ") || "Empty set"}</dd>
+          <dd class="observation-data">{replica.value.join(", ") || "Empty set"}</dd>
           <dt>Live dots</dt>
-          <dd>{replica.dots.map((dot) => `${dot.replica}:${dot.counter}`).join(", ") || "No live dots"}</dd>
+          <dd class="observation-data">{replica.dots.map((dot) => `${dot.replica}:${dot.counter}`).join(", ") || "No live dots"}</dd>
           <dt>Clock</dt>
-          <dd>{Object.entries(replica.clock).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
+          <dd class="observation-data">{Object.entries(replica.clock).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
           <dt>Causal context</dt>
-          <dd>{Object.entries(replica.context).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
+          <dd class="observation-data">{Object.entries(replica.context).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
         </dl>
         {Object.values(replica.context).every((count) => count === 0) && <p>No events observed</p>}
       </section>

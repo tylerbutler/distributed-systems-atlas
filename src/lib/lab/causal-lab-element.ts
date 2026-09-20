@@ -23,9 +23,13 @@ function vectorText(vector: VersionVector): string {
   return Object.entries(vector).map(([id, count]) => `${id}:${count}`).join(", ");
 }
 
-function details(entries: [string, string][]): HTMLDListElement {
+function details(entries: [string, string, "data" | "prose"][]): HTMLDListElement {
   const list = node("dl");
-  for (const [term, value] of entries) list.append(node("dt", term), node("dd", value));
+  for (const [term, value, role] of entries) {
+    const description = node("dd", value);
+    if (role === "data") description.className = "observation-data";
+    list.append(node("dt", term), description);
+  }
   return list;
 }
 
@@ -125,9 +129,9 @@ class CausalLabElement extends HTMLElement {
     this.alert.replaceChildren(
       node("p", "The action was not completed."),
       details([
-        ["Attempted action", JSON.stringify(error.action)],
-        ["Engine", error.engine],
-        ["Error", error.message],
+        ["Attempted action", JSON.stringify(error.action), "data"],
+        ["Engine", error.engine, "data"],
+        ["Error", error.message, "prose"],
       ]),
       node("p", `Last valid frame: ${error.lastFrame.index}`),
       node("p", "The last valid state is retained in the trace. Check the connection and try again, or reset the lab."),
@@ -225,10 +229,10 @@ class CausalLabElement extends HTMLElement {
       const view = section(`Replica ${replica.id}`);
       view.className = "lab-replica";
       view.append(details([
-        ["Visible value", replica.value.join(", ") || "Empty set"],
-        ["Live dots", dotsText(replica.dots)],
-        ["Clock", vectorText(replica.clock)],
-        ["Causal context", vectorText(replica.context)],
+        ["Visible value", replica.value.join(", ") || "Empty set", "data"],
+        ["Live dots", dotsText(replica.dots), "data"],
+        ["Clock", vectorText(replica.clock), "data"],
+        ["Causal context", vectorText(replica.context), "data"],
       ]));
       if (Object.values(replica.context).every((count) => count === 0)) {
         view.append(node("p", "No events observed"));
@@ -259,10 +263,10 @@ class CausalLabElement extends HTMLElement {
         : partitioned ? "Blocked by active partition" : "Ready for delivery");
       reason.id = `${this.idPrefix}-${message.id}-delivery`;
       item.append(node("h4", label), reason, details([
-        ["Message ID", message.id],
-        ["Kind", message.kind],
-        ["Live dots", dotsText(message.dots)],
-        ["Causal context", vectorText(message.context)],
+        ["Message ID", message.id, "data"],
+        ["Kind", message.kind, "data"],
+        ["Live dots", dotsText(message.dots), "data"],
+        ["Causal context", vectorText(message.context), "data"],
       ]));
       const deliver = this.actionButton(`Deliver ${label}`, { type: "deliver", message: message.id },
         partitioned ? "Message crosses an active partition." : "");
@@ -282,9 +286,11 @@ class CausalLabElement extends HTMLElement {
       this.render();
       this.status.textContent = `Viewing frame ${index}: ${history[index].explanation}`;
     };
+    const traceIndex = node("p", `Frame ${frame.index} of ${history.length - 1}`);
+    traceIndex.className = "observation-data";
     this.trace.replaceChildren(
       node("h3", "Trace navigation"),
-      node("p", `Frame ${frame.index} of ${history.length - 1}`),
+      traceIndex,
       this.button("Previous frame", "previous", () => navigate(this.traceIndex - 1),
         this.traceIndex === 0 ? "This is the first frame." : ""),
       this.button("Next frame", "next", () => navigate(this.traceIndex + 1),

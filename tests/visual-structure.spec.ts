@@ -75,3 +75,26 @@ test("observatory foundation primitives provide field-aware focus and type roles
   await expect(page.locator("code")).toHaveCSS("font-family", /Azeret Mono Variable/);
   await expect(page.locator(".signal-rule")).toHaveCSS("height", "2px");
 });
+
+test("causal lab assigns data and prose their computed font roles", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+
+  await expect(lab.getByText("Frame 0 of 0", { exact: true }))
+    .toHaveCSS("font-family", /Azeret Mono Variable/);
+
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  const messageId = lab.getByText("Message ID", { exact: true })
+    .locator("xpath=following-sibling::dd[1]");
+  await expect(messageId).toHaveCSS("font-family", /Azeret Mono Variable/);
+
+  await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
+  const deliver = lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true });
+  await deliver.evaluate((button: HTMLButtonElement) => {
+    button.disabled = false;
+    button.click();
+  });
+  const error = lab.getByText("Error", { exact: true })
+    .locator("xpath=following-sibling::dd[1]");
+  await expect(error).toHaveCSS("font-family", /Roboto Serif Variable/);
+});
