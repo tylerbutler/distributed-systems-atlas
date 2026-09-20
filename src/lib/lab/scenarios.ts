@@ -266,16 +266,31 @@ const orderingScenarios: LabScenario[] = orderingFixtures.map((fixture, index) =
   };
 });
 
-const scenarios: Readonly<Record<string, LabScenario>> = immutable({
-  ...Object.fromEntries(orderingScenarios.map((scenario) => [scenario.id, scenario])),
-  "dots-concurrent-add-remove": {
+const scenarioDefinitions: readonly LabScenario[] = [
+  ...orderingScenarios,
+  {
     id: "dots-concurrent-add-remove",
     kind: "dots",
     replicas: ["A", "B"],
     initialValues: [],
     presentation: dotsPresentation,
   },
-});
+];
+
+export function buildScenarioRegistry(
+  definitions: readonly LabScenario[],
+): Readonly<Record<string, LabScenario>> {
+  const registry: Record<string, LabScenario> = {};
+  for (const scenario of definitions) {
+    if (Object.hasOwn(registry, scenario.id)) {
+      throw new Error(`Duplicate scenario ID: ${scenario.id}`);
+    }
+    registry[scenario.id] = scenario;
+  }
+  return immutable(registry);
+}
+
+const scenarios = buildScenarioRegistry(scenarioDefinitions);
 
 export function scenarioIds(): string[] {
   return Object.keys(scenarios).sort();

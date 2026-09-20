@@ -585,4 +585,34 @@ scenarios: [missing-scenario]
     expect(result.output).toContain("broken.related: missing sheet missing-related");
     expect(result.output).toContain("broken.scenarios: missing scenario missing-scenario");
   });
+
+  test("content loading rejects files with colliding generated sheet IDs", async () => {
+    test.setTimeout(90_000);
+    const upper = path.join(root, "src/content/sheets/Collision.md");
+    const lower = path.join(root, "src/content/sheets/collision.md");
+    const content = `---
+slug: collision
+title: Collision
+summary: A generated ID collision fixture.
+territory: mechanisms
+status: planned
+---
+`;
+    try {
+      await Promise.all([
+        writeFile(upper, content),
+        writeFile(lower, content),
+      ]);
+      const result = await buildFixture(root);
+      expect(result.code).not.toBe(0);
+      expect(result.output).toContain('Duplicate sheet ID "collision"');
+      expect(result.output).toContain("Collision.md");
+      expect(result.output).toContain("collision.md");
+    } finally {
+      await Promise.all([
+        rm(upper, { force: true }),
+        rm(lower, { force: true }),
+      ]);
+    }
+  });
 });

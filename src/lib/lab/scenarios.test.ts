@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { dotsPresentation, scenarioById, scenarioIds } from "./scenarios";
+import {
+  buildScenarioRegistry,
+  dotsPresentation,
+  scenarioById,
+  scenarioIds,
+} from "./scenarios";
 
 test("publishes the Dots proof scenario", () => {
   expect(scenarioIds()).toEqual([
@@ -18,5 +23,12 @@ test("publishes the Dots proof scenario", () => {
 test.each(["missing", "toString", "__proto__"])("rejects unknown scenario %s", (id) => {
   expect(() => scenarioById(id)).toThrow(
     `Unknown lab scenario: ${id}`,
+  );
+});
+
+test("rejects duplicate IDs before constructing the scenario registry", () => {
+  const scenario = scenarioById("dots-concurrent-add-remove");
+  expect(() => buildScenarioRegistry([scenario, { ...scenario }])).toThrow(
+    "Duplicate scenario ID: dots-concurrent-add-remove",
   );
 });

@@ -43,6 +43,8 @@ export interface GraphIssue {
     | "unmarked planned sheet"
     | "conflicting glossary term"
     | "conflicting bibliography entry"
+    | "duplicate glossary anchor"
+    | "duplicate bibliography anchor"
     | "missing scenario";
 }
 
@@ -66,6 +68,8 @@ export function validateSheetGraph(entries: SheetMeta[], scenarioIds: readonly s
   const seenScenarios = new Set<string>();
   const glossary = new Map<string, GlossaryTerm>();
   const bibliography = new Map<string, BibliographyEntry>();
+  const glossaryAnchors = new Map<string, string>();
+  const bibliographyAnchors = new Map<string, string>();
 
   for (const entry of entries) {
     if (byId.has(entry.id)) {
@@ -130,6 +134,7 @@ export function validateSheetGraph(entries: SheetMeta[], scenarioIds: readonly s
     }
     for (const term of entry.terms) {
       const key = term.term.trim().toLocaleLowerCase();
+      const anchor = entryAnchor(term.term);
       const existing = glossary.get(key);
       if (existing && existing.definition !== term.definition) {
         issues.push({
@@ -141,8 +146,20 @@ export function validateSheetGraph(entries: SheetMeta[], scenarioIds: readonly s
       } else {
         glossary.set(key, term);
       }
+      const anchorOwner = glossaryAnchors.get(anchor);
+      if (anchorOwner && anchorOwner !== key) {
+        issues.push({
+          sheet: entry.id,
+          field: "terms",
+          target: term.term,
+          problem: "duplicate glossary anchor",
+        });
+      } else {
+        glossaryAnchors.set(anchor, key);
+      }
     }
     for (const reference of entry.references) {
+      const anchor = entryAnchor(reference.key);
       const existing = bibliography.get(reference.key);
       if (
         existing
@@ -156,6 +173,17 @@ export function validateSheetGraph(entries: SheetMeta[], scenarioIds: readonly s
         });
       } else {
         bibliography.set(reference.key, reference);
+      }
+      const anchorOwner = bibliographyAnchors.get(anchor);
+      if (anchorOwner && anchorOwner !== reference.key) {
+        issues.push({
+          sheet: entry.id,
+          field: "references",
+          target: reference.key,
+          problem: "duplicate bibliography anchor",
+        });
+      } else {
+        bibliographyAnchors.set(anchor, reference.key);
       }
     }
   }

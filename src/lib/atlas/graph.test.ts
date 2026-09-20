@@ -129,6 +129,25 @@ describe("validateSheetGraph", () => {
       { sheet: "second", field: "references", target: "paper", problem: "conflicting bibliography entry" },
     ]);
   });
+
+  test("rejects distinct entries that produce the same HTML anchor", () => {
+    expect(validateSheetGraph([
+      sheet({
+        id: "first",
+        terms: [{ term: "a b", definition: "First spelling." }],
+        references: [{ key: "Paper", title: "First paper", url: "https://example.com/first" }],
+      }),
+      sheet({
+        id: "second",
+        scenarios: [],
+        terms: [{ term: "a-b", definition: "Second spelling." }],
+        references: [{ key: "paper", title: "Second paper", url: "https://example.com/second" }],
+      }),
+    ], scenarioIds())).toEqual([
+      { sheet: "second", field: "terms", target: "a-b", problem: "duplicate glossary anchor" },
+      { sheet: "second", field: "references", target: "paper", problem: "duplicate bibliography anchor" },
+    ]);
+  });
 });
 
 describe("generated references", () => {
