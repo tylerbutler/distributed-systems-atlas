@@ -1,0 +1,146 @@
+causal-lab {
+  display: block;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  color: var(--night, #111827);
+  background: var(--paper, #f4f0e6);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+  accent-color: var(--signal-cool, #176b87);
+  scrollbar-color: var(--signal-cool, #176b87) var(--paper, #f4f0e6);
+}
+
+causal-lab *,
+causal-lab *::before,
+causal-lab *::after {
+  box-sizing: border-box;
+}
+
+causal-lab [hidden] {
+  display: none;
+}
+
+causal-lab ::selection {
+  color: var(--paper, #f4f0e6);
+  background: var(--night, #111827);
+}
+
+causal-lab :is(h2, h3, h4) {
+  margin-block: 1.5rem 0.5rem;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+causal-lab h2 {
+  font-size: 2rem;
+}
+
+causal-lab h3 {
+  font-size: 1.35rem;
+}
+
+causal-lab h4 {
+  font-size: 1.1rem;
+}
+
+causal-lab p {
+  max-width: 70ch;
+  margin-block: 0.5rem 1rem;
+}
+
+.lab-replicas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-block: 2rem;
+}
+
+.lab-replica {
+  min-width: 0;
+  padding-block: 1rem;
+  border-block: 1px solid var(--line, #b8b2a5);
+}
+
+causal-lab dl {
+  margin-block: 1rem;
+}
+
+causal-lab dt {
+  font-weight: 700;
+  margin-block-start: 0.75rem;
+}
+
+causal-lab dd {
+  margin: 0;
+}
+
+.lab-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+causal-lab button {
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 0.2rem;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+causal-lab button:hover:not(:disabled) {
+  color: var(--paper, #f4f0e6);
+  background: var(--night, #111827);
+}
+
+causal-lab button:disabled {
+  border-style: dashed;
+  cursor: not-allowed;
+}
+
+causal-lab :focus-visible {
+  outline: 3px solid var(--signal-cool, #176b87);
+  outline-offset: 3px;
+}
+
+.lab-message {
+  padding-block: 1rem;
+  border-top: 2px solid currentColor;
+}
+
+.lab-message[data-blocked="true"] {
+  border-top-style: dashed;
+}
+
+causal-lab [role="alert"] {
+  padding: 1rem;
+  border: 2px solid currentColor;
+}
+
+causal-lab [aria-current="step"] {
+  font-weight: 700;
+}
+
+@media (min-width: 48rem) {
+  .lab-replicas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  causal-lab,
+  causal-lab *,
+  causal-lab *::before,
+  causal-lab *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

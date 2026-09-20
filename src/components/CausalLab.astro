@@ -1,0 +1,42 @@
+---
+import { createCausalEngine } from "../lib/lab/causal-engine";
+import { scenarioById } from "../lib/lab/scenarios";
+import "../styles/lab.css";
+
+interface Props {
+  scenario: string;
+}
+
+const { scenario } = Astro.props;
+const initial = createCausalEngine(scenarioById(scenario)).history()[0];
+---
+
+<causal-lab scenario={scenario} data-testid="causal-lab">
+  <h2>Initial replica state</h2>
+  <div class="lab-replicas">
+    {initial.replicas.map((replica) => (
+      <section class="lab-replica" aria-label={`Replica ${replica.id}`}>
+        <h3>Replica {replica.id}</h3>
+        <dl>
+          <dt>Visible value</dt>
+          <dd>{replica.value.join(", ") || "Empty set"}</dd>
+          <dt>Live dots</dt>
+          <dd>{replica.dots.map((dot) => `${dot.replica}:${dot.counter}`).join(", ") || "No live dots"}</dd>
+          <dt>Clock</dt>
+          <dd>{Object.entries(replica.clock).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
+          <dt>Causal context</dt>
+          <dd>{Object.entries(replica.context).map(([id, count]) => `${id}:${count}`).join(", ")}</dd>
+        </dl>
+        {Object.values(replica.context).every((count) => count === 0) && <p>No events observed</p>}
+      </section>
+    ))}
+  </div>
+  <p>No queued messages</p>
+  <noscript>
+    <p>The article remains readable without JavaScript. The lab controls need JavaScript.</p>
+  </noscript>
+</causal-lab>
+
+<script>
+  import "../lib/lab/causal-lab-element";
+</script>
