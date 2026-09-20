@@ -4,35 +4,35 @@ export type CausalRelation = "before" | "after" | "equal" | "concurrent";
 export type VersionVector = Readonly<Record<ReplicaId, number>>;
 
 export interface Dot {
-  replica: ReplicaId;
-  counter: number;
+  readonly replica: ReplicaId;
+  readonly counter: number;
 }
 
 export interface ReplicaView {
-  id: ReplicaId;
-  value: readonly string[];
-  clock: VersionVector;
-  dots: readonly Dot[];
-  context: VersionVector;
+  readonly id: ReplicaId;
+  readonly value: readonly string[];
+  readonly clock: VersionVector;
+  readonly dots: readonly Dot[];
+  readonly context: VersionVector;
 }
 
 export interface MessageView {
-  id: MessageId;
-  from: ReplicaId;
-  to: ReplicaId;
-  kind: "delta";
-  dots: readonly Dot[];
-  context: VersionVector;
+  readonly id: MessageId;
+  readonly from: ReplicaId;
+  readonly to: ReplicaId;
+  readonly kind: "delta";
+  readonly dots: readonly Dot[];
+  readonly context: VersionVector;
 }
 
 export interface TraceFrame {
-  index: number;
-  actionLabel: string;
-  explanation: string;
-  replicas: readonly ReplicaView[];
-  messages: readonly MessageView[];
-  partitions: readonly string[];
-  invariants: Readonly<Record<string, boolean>>;
+  readonly index: number;
+  readonly actionLabel: string;
+  readonly explanation: string;
+  readonly replicas: readonly ReplicaView[];
+  readonly messages: readonly MessageView[];
+  readonly partitions: readonly string[];
+  readonly invariants: Readonly<Record<string, boolean>>;
 }
 
 export type LabAction =
