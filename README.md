@@ -57,7 +57,7 @@ and navigation remain available. Lab controls require JavaScript.
 | --- | --- |
 | Content | `src/content/sheets/` contains MDX articles and metadata. `src/content.config.ts` defines the schema; `src/lib/atlas/graph.ts` validates sheet and scenario references. Pages and layouts build the publication and link published sheets. |
 | Scenario | `src/lib/lab/scenarios.ts` names the available lessons and returns cloned engine configurations with shared immutable presentation rules. Those rules own lesson controls, labels, comparisons, announcements, and completion criteria. Unknown scenario IDs are errors. A scenario does not maintain a second simulation state. |
-| Engine | `src/lib/lab/engine-registry.ts` selects an implementation from the scenario's `kind`. Only `dots` is registered, using `causal-engine.ts`. Unavailable kinds fail explicitly. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Engines own state, messages, partitions, and trace history. |
+| Engine | `src/lib/lab/engine-registry.ts` selects `dots`, `ordering`, `mv-register`, or `or-set` from the scenario's `kind`. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Atlas owns scheduling, messages, partitions, and trace history. The reference engines own their algorithm state; the register and OR-set adapters use Watershed for state and merges. Unknown kinds fail explicitly. |
 | Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
 
@@ -97,11 +97,10 @@ announcement or successful invariant checks. Blocked delivery controls stay
 disabled; the browser tests also exercise a stale action against the real
 engine to verify its rejection.
 
-This repository uses a TypeScript reference model and has no Watershed
-dependency. Do not import Watershed private build paths or generated
-implementation files. A future integration must use a supported public
-package API behind the simulation contract. The atlas is a separate
-publication, not Watershed product documentation.
+The Dots TypeScript model remains a pedagogical reference. The MV-register
+and OR-set adapters import the public `@tylerbutler/watershed-atlas` package.
+Do not import Watershed private build paths or generated implementation
+files. The atlas is a separate publication, not Watershed product documentation.
 
 ## Approved design and plans
 
@@ -125,7 +124,58 @@ meet the design gate. Canonical acceptance data in
 `src/lib/lab/fixtures.ts` records the required ordering, clock, Dots,
 multi-value register, and observed-remove set results without depending on an
 engine or renderer. The shared contract and renderer support those observation
-shapes. Watershed adapters remain separate work.
+shapes. The Watershed adapters replay the register and OR-set fixtures through
+the public package API.
+
+### Watershed adapters
+
+Atlas vendors the reviewed `@tylerbutler/watershed-atlas` 0.1.0 artifact from
+Watershed commit `b1ae781` at
+`vendor/tylerbutler-watershed-atlas-0.1.0.tgz`. The dependency uses the relative
+path `file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz`; no registry release or
+Watershed checkout is required. Its SHA-256 is
+`7a32902d196bb0811cb71cd6c49f5f09676659788c017c0eab26a4adc47fefed`.
+The tarball includes the package's license and third-party notices.
+
+Use `createEngine({ id, kind, replicas, initialValues })` with `kind` set to
+`"mv-register"` or `"or-set"`. Register actions use `write`; set actions use `add` and
+`remove`. Both support delivery, duplication, partition/heal, and reset.
+The shared initial state uses package operations at the first sorted replica
+and package merges into its peers. A register accepts at most one distinct
+initial value; use concurrent writes to create siblings.
+
+Atlas queues the exact operation returned by the package for each peer.
+Delivery calls `merge` with that operation, including for stale or duplicate
+messages. Healing only opens a link. Package errors become `LabError` records
+with the error tag and diagnostic message; rejected actions retain the last
+frame, queue, and history.
+
+The adapters derive visible values and live tags from package state.
+For register siblings, Atlas records each authored delta's clock as its birth
+version. A merged clock cannot supply that version. For OR-set tombstones,
+Atlas retains the authored tag-to-value labels so it can name removed members.
+These records support presentation only; the package decides which versions
+or additions survive. Reset clears the authored records and rebuilds the seed.
+The adapters freeze cloned trace data without freezing caller actions.
+
+OR-set `context` contains per-writer maxima over the live and removed tags in
+the displayed state or delta. It is not a vector clock or proof that an entire
+prefix has arrived. Watershed emits sparse OR-set deltas; Dots sends its full
+observed state. Agreement tests compare their overlapping scenario rather
+than asserting identical behavior under other delivery schedules.
+
+Watershed uses a set-wide allocation counter. In the canonical add/remove
+fixture, B observes `A:1` and then allocates `B:2`; Dots and the fixture call
+B's first addition `B:1`. Traces preserve the package's `B:2`. Agreement tests
+check the raw package tags and use an explicit `B:2` to `B:1` correspondence
+only when comparing fixture identities. Both retain the concurrent B addition
+and reject stale `A:1` replay. Register fixture values compare without display
+ordering, while sibling versions and causal context match exactly, including
+the intermediate two-sibling checkpoint.
+
+```sh
+pnpm test src/lib/lab/adapters src/lib/lab/generalized-contract.test.ts
+```
 
 ### History, ordering, and clock reference engines
 

@@ -128,9 +128,9 @@ describe("engine registry", () => {
     expect(engine.current().action).toEqual({ type: "add", replica: "A", value: "beacon" });
   });
 
-  test.each(["mv-register", "or-set"] as const)("does not substitute Dots for unavailable %s engines", (kind) => {
-    expect(() => createEngine({ ...scenarioById("dots-concurrent-add-remove"), kind }))
-      .toThrow(`No engine registered for kind: ${kind}`);
+  test.each(["mv-register", "or-set"] as const)("creates a distinct %s engine", (kind) => {
+    const engine = createEngine({ ...scenarioById("dots-concurrent-add-remove"), kind });
+    expect(engine.current().replicas.every((replica) => replica.observation === kind)).toBe(true);
   });
 
   test.each(["toString", "__proto__", "missing"])("rejects invalid runtime engine kind %s", (kind) => {

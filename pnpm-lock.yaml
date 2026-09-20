@@ -20,6 +20,9 @@ importers:
       '@fontsource-variable/roboto-serif':
         specifier: ^5.3.0
         version: 5.3.0
+      '@tylerbutler/watershed-atlas':
+        specifier: file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz
+        version: file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz
       astro:
         specifier: ^7.3.3
         version: 7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)
@@ -767,6 +770,10 @@ packages:
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
+
+  '@tylerbutler/watershed-atlas@file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz':
+    resolution: {integrity: sha512-6vChsnoRXXZugp5hCr+yq9Ly8o/k+yaFpxyoo008cr4aTr1hieS1V7v95CzZLIifeDnO4qFS5G0odZClZ+I1yQ==, tarball: file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz}
+    version: 0.1.0
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
@@ -2444,6 +2451,8 @@ snapshots:
   '@tybys/wasm-util@0.10.4':
     dependencies:
       tslib: 2.8.1
+
+  '@tylerbutler/watershed-atlas@file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz': {}
 
   '@types/chai@5.2.3':
     dependencies:

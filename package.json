@@ -16,6 +16,7 @@
     "@fontsource-variable/azeret-mono": "^5.3.0",
     "@fontsource-variable/encode-sans": "^5.3.0",
     "@fontsource-variable/roboto-serif": "^5.3.0",
+    "@tylerbutler/watershed-atlas": "file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz",
     "astro": "^7.3.3"
   },
   "devDependencies": {
