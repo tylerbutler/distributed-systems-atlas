@@ -1,14 +1,151 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import LandingSignal from "../components/LandingSignal.astro";
 ---
 
-<BaseLayout description="Study replicas, messages, clocks, and causal history through illustrated essays and deterministic browser labs.">
-  <div class="page-intro">
-    <h1>Distributed systems, one signal at a time.</h1>
-    <p>
-      Study replicas, messages, clocks, and causal history through illustrated
-      essays and deterministic browser labs.
+<BaseLayout description="Two stations can be correct and still disagree. Follow their events through illustrated essays and deterministic labs on concurrency and causal history.">
+  <LandingSignal />
+
+  <div class="landing-reading">
+    <section aria-labelledby="inspect-title">
+      <h2 id="inspect-title">What the atlas lets you inspect</h2>
+      <p>
+        A message hasn't arrived. Is the other station behind, or did it make
+        a change you haven't seen? Follow the evidence each replica has, and
+        see where its view ends.
+      </p>
+      <dl>
+        <div>
+          <dt>Replicas</dt>
+          <dd>Compare what each station holds without pretending that either can see the whole system.</dd>
+        </div>
+        <div>
+          <dt>Messages</dt>
+          <dd>Deliver, delay, or duplicate an update. Watch which observations reach the other station.</dd>
+        </div>
+        <div>
+          <dt>Clocks</dt>
+          <dd>Separate an event's counter from the causal order you can prove.</dd>
+        </div>
+        <div>
+          <dt>Context</dt>
+          <dd>Read the record of events a replica has observed, including the ones it has removed.</dd>
+        </div>
+        <div>
+          <dt>Merge results</dt>
+          <dd>Find out which concurrent changes survive when the stations exchange what they know.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="trail-title">
+      <h2 id="trail-title">One trail, seven connected ideas</h2>
+      <p>
+        Start with a local event and work toward structures that preserve
+        concurrent changes. Dots and causal context is the first published
+        sheet; the rest of this trail is planned.
+      </p>
+      <ol class="learning-trail" aria-label="First-release learning sequence">
+        <li><span>Local history</span> <span class="status">Planned</span></li>
+        <li><span>Partial order</span> <span class="status">Planned</span></li>
+        <li><span>Lamport clocks</span> <span class="status">Planned</span></li>
+        <li><span>Vector clocks</span> <span class="status">Planned</span></li>
+        <li><a href="/atlas/dots-and-causal-context/">Dots and causal context</a> <span class="status">Read now</span></li>
+        <li><span>Multi-value registers</span> <span class="status">Planned</span></li>
+        <li><span>Observed-remove sets</span> <span class="status">Planned</span></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="read-title">
+      <h2 id="read-title">Read it or run it</h2>
+      <p>
+        Read the explanation, diagrams, and field notes without JavaScript.
+        Each sheet gives you the argument and the references, whether you
+        touch a control or not.
+      </p>
+      <p>
+        When you want to test your understanding, run the browser lab. Create
+        an event, hold back a message, then inspect the result. The same
+        sequence of actions produces the same trace, so you can return to
+        the exact step where your prediction went wrong.
+      </p>
+    </section>
+
+    <p class="final-entry">
+      <a class="atlas-entry" href="/atlas/dots-and-causal-context/">Read dots and causal context</a>
     </p>
-    <a class="atlas-entry" href="/atlas/">Open the atlas</a>
   </div>
 </BaseLayout>
+
+<style>
+  .landing-reading {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  section {
+    margin-top: var(--space-8);
+  }
+
+  h2 {
+    max-width: 24ch;
+    margin-top: 0;
+  }
+
+  dl {
+    margin-block: var(--space-6) 0;
+  }
+
+  dl > div {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+    border-top: var(--rule-width) solid var(--line);
+  }
+
+  dt {
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  dd {
+    margin: 0;
+  }
+
+  .learning-trail {
+    padding-inline-start: 1.5rem;
+    margin-block: var(--space-6) 0;
+    font-family: var(--font-ui);
+  }
+
+  .learning-trail li {
+    padding: var(--space-3) 0 var(--space-3) var(--space-3);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  .learning-trail li::marker {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .learning-trail .status {
+    display: inline-block;
+    margin-left: var(--space-4);
+  }
+
+  .final-entry {
+    margin-block: var(--space-6) 0;
+  }
+
+  @media (width < 48rem) {
+    :global(.site-main:has(> .landing-signal)) {
+      padding-block-start: var(--space-4);
+    }
+
+    dl > div {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+</style>

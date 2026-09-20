@@ -1,0 +1,249 @@
+---
+import StationMark from "./StationMark.astro";
+---
+
+<figure class="landing-signal instrument-panel" aria-labelledby="landing-relation">
+  <div class="station station-a">
+    <StationMark station="A" />
+    <p class="observation-slip">Station A records <code>A:1</code></p>
+  </div>
+
+  <div class="landing-premise">
+    <h1>Two stations can be correct and still disagree</h1>
+    <p>
+      Each station records an event before hearing from the other.
+    </p>
+  </div>
+
+  <svg class="signal-path" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="2">
+      <path class="wide-path signal-trace" d="M24 0V650H330 M976 1000V650H670" pathLength="1" vector-effect="non-scaling-stroke" />
+      <path class="wide-path" d="M338 620l-16 60m30-60-16 60 M678 620l-16 60m30-60-16 60" vector-effect="non-scaling-stroke" />
+      <path class="narrow-path signal-trace" d="M500 0V350 M500 1000V650" pathLength="1" vector-effect="non-scaling-stroke" />
+      <path class="narrow-path" d="M460 410l80-60m-80 300 80-60" vector-effect="non-scaling-stroke" />
+    </g>
+  </svg>
+
+  <div class="station station-b">
+    <StationMark station="B" />
+    <p class="observation-slip">Station B records <code>B:1</code></p>
+  </div>
+
+  <div class="landing-actions">
+    <a class="trail-entry" href="/atlas/dots-and-causal-context/">Begin with dots and causal context</a>
+    <a class="atlas-entry" href="/atlas/">Open the atlas</a>
+  </div>
+
+  <figcaption id="landing-relation">
+    <strong>Concurrent</strong> — neither station has observed the other event
+  </figcaption>
+</figure>
+
+<style>
+  .landing-signal {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+    margin: 0;
+    padding: var(--space-6);
+    border: 0;
+  }
+
+  .station {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    z-index: 1;
+  }
+
+  .station-a {
+    grid-area: 1 / 1 / 2 / 3;
+    justify-self: start;
+  }
+
+  .station-b {
+    grid-area: 4 / 2 / 5 / 4;
+    flex-direction: row-reverse;
+    justify-self: end;
+  }
+
+  .observation-slip {
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    color: var(--graphite);
+    background: var(--sky-sheet);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    animation: slip-arrives var(--duration-state) var(--ease-out) both;
+  }
+
+  .station-a .observation-slip {
+    animation-delay: 100ms;
+  }
+
+  .station-b .observation-slip {
+    animation-delay: 280ms;
+  }
+
+  .observation-slip code {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .landing-premise {
+    grid-area: 2 / 1 / 3 / 4;
+    z-index: 1;
+    max-width: 44rem;
+    justify-self: center;
+    padding-block: var(--space-4);
+    text-align: center;
+  }
+
+  h1 {
+    max-width: 20ch;
+    margin-inline: auto;
+    font-size: clamp(2.25rem, 4.6vw, 4rem);
+  }
+
+  .landing-premise p {
+    max-width: 53ch;
+    margin: 0 auto;
+    color: var(--muted);
+  }
+
+  .signal-path {
+    grid-area: 2 / 1 / 5 / 4;
+    contain: size;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    color: var(--signal);
+    pointer-events: none;
+  }
+
+  .narrow-path {
+    display: none;
+  }
+
+  .signal-trace {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    animation: signal-draw var(--duration-trace) var(--ease-out) both;
+  }
+
+  figcaption {
+    grid-area: 3 / 1 / 4 / 4;
+    z-index: 1;
+    justify-self: center;
+    max-width: 34ch;
+    padding: var(--space-3);
+    background: var(--instrument);
+    text-align: center;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    line-height: 1.5;
+    animation: relation-arrives var(--duration-state) var(--ease-out) 500ms both;
+  }
+
+  figcaption strong {
+    color: var(--signal);
+  }
+
+  .landing-actions {
+    grid-area: 5 / 1 / 6 / 4;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-3) var(--space-6);
+  }
+
+  .trail-entry {
+    padding: 0.75rem 1rem;
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-ui);
+    font-weight: 650;
+    text-align: center;
+    text-decoration-thickness: 1px;
+  }
+
+  .trail-entry:hover {
+    background: var(--clear);
+    text-decoration-thickness: 2px;
+  }
+
+  @keyframes signal-draw {
+    from { stroke-dashoffset: 1; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  @keyframes slip-arrives {
+    from { opacity: 0.6; transform: translateY(0.4rem); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes relation-arrives {
+    from { opacity: 0.6; }
+    to { opacity: 1; }
+  }
+
+  @media (width < 48rem) {
+    .landing-signal {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+      padding: var(--space-5);
+    }
+
+    .landing-premise {
+      grid-area: 1 / 1;
+      padding: 0 0 var(--space-3);
+      text-align: start;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 7.5vw, 3rem);
+      margin-bottom: var(--space-4);
+    }
+
+    .landing-premise p {
+      font-size: 1rem;
+    }
+
+    .station-a {
+      grid-area: 2 / 1;
+    }
+
+    .signal-path {
+      grid-area: 3 / 1;
+      height: 2rem;
+    }
+
+    .wide-path {
+      display: none;
+    }
+
+    .narrow-path {
+      display: initial;
+    }
+
+    figcaption {
+      grid-area: 4 / 1;
+      padding: 0;
+    }
+
+    .station-b {
+      grid-area: 5 / 1;
+      flex-direction: row;
+      justify-self: start;
+    }
+
+    .landing-actions {
+      grid-area: 6 / 1;
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-1);
+      text-align: center;
+    }
+  }
+</style>

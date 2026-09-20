@@ -1,5 +1,57 @@
 import { expect, test } from "@playwright/test";
 
+for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+  test(`landing page works as a station field at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await page.evaluate(() => document.fonts.ready);
+
+    const figure = page.getByRole("figure");
+    const headline = page.getByRole("heading", { level: 1 });
+    const stationA = figure.getByText("Station A records A:1", { exact: true });
+    const stationB = figure.getByText("Station B records B:1", { exact: true });
+    const relation = figure.locator("figcaption");
+    const primary = page.getByRole("link", { name: "Begin with dots and causal context", exact: true });
+    const secondary = page.getByRole("link", { name: "Open the atlas", exact: true });
+    const sectionTwo = page.getByRole("region", { name: "What the atlas lets you inspect", exact: true });
+    await expect(figure).toBeVisible();
+    await expect(relation).toHaveText("Concurrent — neither station has observed the other event");
+
+    const sectionBox = await sectionTwo.boundingBox();
+    expect(sectionBox).not.toBeNull();
+    for (const element of [headline, stationA, stationB, relation, primary, secondary]) {
+      await expect(element).toBeVisible();
+      const box = await element.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+      expect(box!.y + box!.height).toBeLessThanOrEqual(sectionBox!.y);
+      await expect(element).toBeInViewport({ ratio: 1 });
+    }
+    const a = await stationA.boundingBox();
+    const b = await stationB.boundingBox();
+    expect(b!.y).toBeGreaterThan(a!.y + a!.height);
+    if (viewport.width === 390) {
+      expect(b!.x).toBe(a!.x);
+      const path = await figure.locator(".signal-path").boundingBox();
+      expect(path!.y).toBeGreaterThanOrEqual(a!.y + a!.height);
+      expect(path!.y + path!.height).toBeLessThanOrEqual(b!.y);
+    } else {
+      expect(b!.x).toBeGreaterThan(a!.x + a!.width);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
+    expect(await figure.evaluate((element) => element.getAnimations({ subtree: true }).length)).toBe(0);
+    for (const element of [stationA, stationB, relation]) {
+      await expect(element).toHaveCSS("opacity", "1");
+    }
+    for (const link of [primary, secondary]) {
+      const box = await link.boundingBox();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+  });
+}
+
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   for (const width of [320, 390, 767, 768, 1024, 1440]) {

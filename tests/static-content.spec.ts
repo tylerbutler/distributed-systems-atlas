@@ -125,14 +125,60 @@ async function buildFixture(root: string) {
   }
 }
 
+test("the landing page demonstrates the premise before explaining it", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Two stations can be correct and still disagree",
+  );
+  await expect(
+    page.getByRole("link", { name: "Begin with dots and causal context", exact: true }),
+  ).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
+  await expect(page.getByRole("link", { name: "Open the atlas", exact: true }))
+    .toHaveAttribute("href", "/atlas/");
+  const figure = page.getByRole("figure");
+  await expect(figure.getByText("Station A records A:1", { exact: true })).toBeVisible();
+  await expect(figure.getByText("Station B records B:1", { exact: true })).toBeVisible();
+  await expect(figure).toContainText(
+    "Concurrent — neither station has observed the other event",
+  );
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+    "What the atlas lets you inspect",
+    "One trail, seven connected ideas",
+    "Read it or run it",
+  ]);
+  const trail = page.getByRole("list", { name: "First-release learning sequence" });
+  await expect(trail.getByRole("listitem")).toHaveText([
+    "Local history Planned",
+    "Partial order Planned",
+    "Lamport clocks Planned",
+    "Vector clocks Planned",
+    "Dots and causal context Read now",
+    "Multi-value registers Planned",
+    "Observed-remove sets Planned",
+  ]);
+  await expect(trail.getByRole("link")).toHaveCount(1);
+  const finalEntry = page.getByRole("link", { name: "Read dots and causal context", exact: true });
+  await finalEntry.click();
+  await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+});
+
 test("landing page works without client JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Distributed systems",
+    "Two stations can be correct and still disagree",
   );
+  const figure = page.getByRole("figure");
+  await expect(figure.getByText("Station A records A:1", { exact: true })).toBeVisible();
+  await expect(figure.getByText("Station B records B:1", { exact: true })).toBeVisible();
+  await expect(figure).toContainText(
+    "Concurrent — neither station has observed the other event",
+  );
+  await expect(page.getByRole("link", { name: "Begin with dots and causal context", exact: true }))
+    .toBeVisible();
   await expect(page.getByRole("link", { name: "Open the atlas" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
   await expect(page.getByRole("contentinfo")).toBeVisible();
@@ -140,6 +186,13 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
+  await page.keyboard.press("Tab");
+  const primary = page.getByRole("link", { name: "Begin with dots and causal context", exact: true });
+  await expect(primary).toBeFocused();
+  await expect(primary).toHaveCSS("outline-style", "solid");
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+  await page.goto("/");
   await page.getByRole("link", { name: "Open the atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();
   await context.close();
