@@ -28,16 +28,27 @@ export interface SheetMeta {
 
 export interface GraphIssue {
   sheet: string;
-  field: "requires" | "related";
+  field: "requires" | "related" | "scenarios";
   target: string;
-  problem: "missing sheet" | "requirement cycle";
+  problem: "missing sheet" | "requirement cycle" | "missing scenario";
 }
 
-export function validateSheetGraph(entries: SheetMeta[]): GraphIssue[] {
+export function validateSheetGraph(entries: SheetMeta[], scenarioIds: readonly string[]): GraphIssue[] {
   const byId = new Map(entries.map((entry) => [entry.id, entry]));
+  const knownScenarios = new Set(scenarioIds);
   const issues: GraphIssue[] = [];
 
   for (const entry of entries) {
+    for (const target of entry.scenarios) {
+      if (!knownScenarios.has(target)) {
+        issues.push({
+          sheet: entry.id,
+          field: "scenarios",
+          target,
+          problem: "missing scenario",
+        });
+      }
+    }
     for (const field of ["requires", "related"] as const) {
       for (const target of entry[field]) {
         if (!byId.has(target)) {

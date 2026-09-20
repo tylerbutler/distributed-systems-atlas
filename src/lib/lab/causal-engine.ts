@@ -23,9 +23,11 @@ interface QueuedMessage {
   id: string;
   from: string;
   to: string;
-  value: string;
-  adds: readonly Dot[];
-  removed: readonly string[];
+  elements: readonly {
+    value: string;
+    adds: readonly Dot[];
+    removed: readonly string[];
+  }[];
   context: VersionVector;
 }
 
@@ -128,7 +130,9 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         from: message.from,
         to: message.to,
         kind: "delta" as const,
-        dots: sortDots(message.adds.filter((dot) => !message.removed.includes(dotKey(dot)))),
+        dots: sortDots(message.elements.flatMap((element) =>
+          element.adds.filter((dot) => !element.removed.includes(dotKey(dot))),
+        )),
         context: { ...message.context },
       })),
       partitions: [...partitions].sort(lexical),
@@ -179,19 +183,19 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         if (!replica) return error(action, `unknown replica: ${action.replica}`);
         const element = replica.elements.get(action.value)
           ?? { adds: new Map<string, Dot>(), removed: new Set<string>() };
-        let adds: Dot[];
-        let removed: string[];
         if (action.type === "add") {
           const dot = { replica: replica.id, counter: ++replica.clock[replica.id] };
           element.adds.set(dotKey(dot), dot);
-          adds = [dot];
-          removed = [];
         } else {
           for (const key of element.adds.keys()) element.removed.add(key);
-          adds = [...element.adds.values()];
-          removed = [...element.removed];
         }
         replica.elements.set(action.value, element);
+        // Include causal predecessors across all values, even when their own messages arrive later.
+        const elements = [...replica.elements].map(([value, state]) => ({
+          value,
+          adds: [...state.adds.values()],
+          removed: [...state.removed],
+        }));
         operationNumber++;
         for (const target of replicaIds) {
           if (target === replica.id) continue;
@@ -199,17 +203,15 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
             id: `m${operationNumber}:${replica.id}:${target}`,
             from: replica.id,
             to: target,
-            value: action.value,
-            adds,
-            removed,
+            elements,
             context: { ...replica.clock },
           });
         }
         return append(
           `${action.type} ${action.value} at ${replica.id}`,
           action.type === "add"
-            ? `Added ${action.value} with dot ${dotKey(adds[0])}; queued a delta for each peer.`
-            : `Removed ${removed.length} observed dots for ${action.value}; concurrent adds remain valid.`,
+            ? `Added ${action.value} with dot ${replica.id}:${replica.clock[replica.id]}; queued a delta with causal state for each peer.`
+            : `Removed ${element.removed.size} observed dots for ${action.value}; concurrent adds remain valid.`,
         );
       }
       case "deliver":
@@ -226,11 +228,13 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
           return error(action, "message crosses an active partition");
         }
         const replica = replicas.get(message.to)!;
-        const element = replica.elements.get(message.value)
-          ?? { adds: new Map<string, Dot>(), removed: new Set<string>() };
-        for (const dot of message.adds) element.adds.set(dotKey(dot), dot);
-        for (const key of message.removed) element.removed.add(key);
-        replica.elements.set(message.value, element);
+        for (const incoming of message.elements) {
+          const element = replica.elements.get(incoming.value)
+            ?? { adds: new Map<string, Dot>(), removed: new Set<string>() };
+          for (const dot of incoming.adds) element.adds.set(dotKey(dot), dot);
+          for (const key of incoming.removed) element.removed.add(key);
+          replica.elements.set(incoming.value, element);
+        }
         for (const actor of replicaIds) {
           replica.clock[actor] = Math.max(replica.clock[actor], message.context[actor]);
         }

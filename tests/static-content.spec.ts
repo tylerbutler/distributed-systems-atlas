@@ -494,6 +494,31 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("navigation", { name: "Next trail step" })).toHaveCount(0);
   });
 
+  test("atlas rejects a nonexistent declared scenario without rendering a lab", async () => {
+    test.setTimeout(90_000);
+    const fixture = path.join(root, "src/content/sheets/scenario-reference.md");
+    const content = `---
+title: Scenario reference
+summary: A scenario reference without a rendered lab.
+territory: mechanisms
+status: published
+scenarios: [dots-concurrent-add-remove, missing-final-review-scenario]
+---
+`;
+    try {
+      await writeFile(fixture, content);
+      const invalid = await buildFixture(root);
+      expect(invalid.code, invalid.output).not.toBe(0);
+      expect(invalid.output).toContain("Invalid atlas content graph:");
+      expect(invalid.output).toContain("scenario-reference.scenarios: missing scenario missing-final-review-scenario");
+      await writeFile(fixture, content.replace(", missing-final-review-scenario", ""));
+      const valid = await buildFixture(root);
+      expect(valid.code, valid.output).toBe(0);
+    } finally {
+      await rm(fixture, { force: true });
+    }
+  });
+
   test("atlas rejects every missing graph reference in one build error", async () => {
     test.setTimeout(90_000);
     await writeFile(path.join(root, "src/content/sheets/broken.md"), `---
@@ -503,6 +528,7 @@ territory: mechanisms
 status: planned
 requires: [missing-prerequisite]
 related: [missing-related]
+scenarios: [missing-scenario]
 ---
 `);
     const result = await buildFixture(root);
@@ -510,5 +536,6 @@ related: [missing-related]
     expect(result.output).toContain("Invalid atlas content graph:");
     expect(result.output).toContain("broken.requires: missing sheet missing-prerequisite");
     expect(result.output).toContain("broken.related: missing sheet missing-related");
+    expect(result.output).toContain("broken.scenarios: missing scenario missing-scenario");
   });
 });

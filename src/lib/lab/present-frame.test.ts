@@ -143,7 +143,7 @@ describe("presentFrame", () => {
     engine.dispatch({ type: "add", replica: "B", value: "beacon" });
     const added = presentFrame(engine.current());
     expect(added.announcement).toContain("B created dot B:1");
-    expect(added.messages[0]).toMatchObject({ blocked: false, dotLabels: ["B:1"] });
+    expect(added.messages[0]).toMatchObject({ blocked: false, dotLabels: ["A:1", "B:1"] });
     engine.dispatch({ type: "remove", replica: "A", value: "beacon" });
     expect(presentFrame(engine.current()).messages[1]).toMatchObject({
       dotLabels: [], payloadLabel: "delta; live dots: No live dots; causal context: A:1, B:0",

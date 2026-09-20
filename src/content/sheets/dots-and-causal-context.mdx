@@ -104,28 +104,33 @@ A version vector has one such component for each tracked replica.
 
 To merge two vector summaries, take the maximum for each replica. Neither peer
 forgets knowledge that the other has acquired. But a summary is not a bag of
-value payloads. This lab sends per-operation deltas; an out-of-order delta can
-report a higher counter before a lower-numbered addition's payload arrives.
-The receiver must still accept the delayed payload unless it has removal
-knowledge for that particular dot.
+value payloads. This lab includes the sender's accumulated addition and
+removed-dot records for every value with each update. The queue labels these
+messages **delta**, but they include a full causal-state snapshot, not just
+the latest operation. Delivery merges those records along with the vector.
 
-The lab therefore retains explicit addition dots and explicit removed-dot
-records alongside its vector. Its **Clock** and **Causal context** fields show
-the same vector summary. They aren't two independent clocks, and the vector
-alone is not an exact inventory of received value payloads.
+That accompanying state matters when messages arrive out of order. Add twice
+at A, then deliver only the second message to B: B learns both `A:1` and `A:2`.
+A removal at B can now remove both additions. Delivering the first message
+later cannot restore either dot. The same rule applies when an update concerns
+a different value or passes through another replica.
 
-An exact context for a set of received dots with gaps needs more information
-than a single maximum per replica: for example, a contiguous prefix plus
-separate dots beyond it. Don't infer receipt of every earlier payload from a
-high counter. In the guided run below, delivery of the first addition precedes
-the partition, so both stations have that addition before they diverge.
+The lab's **Clock** and **Causal context** fields show the same vector summary.
+They aren't two independent clocks. The explicit records tell you which
+additions contribute to membership and which have been removed.
+
+A protocol that sends smaller deltas needs another way to preserve causal
+dependencies, such as buffering updates until their predecessors arrive.
+An exact context for received dots with gaps can use a contiguous prefix plus
+separate dots beyond it. Taking vector maxima alone would let a replica claim
+knowledge of an earlier addition without enough information to remove it.
 
 <figure>
   <dl class="sheet-data">
     <dt>Live dot <code>A:4</code></dt>
     <dd>One addition: A's fourth allocation.</dd>
     <dt>Vector entry <code>A:4</code></dt>
-    <dd>A summary through A's fourth allocation, not an inventory of payloads.</dd>
+    <dd>A summary through A's fourth allocation, including additions since removed.</dd>
   </dl>
   <figcaption>The same notation answers two different questions. Read the field label.</figcaption>
 </figure>
@@ -291,6 +296,11 @@ depends on the number of replicas; its event records can grow with the number
 of additions. Repeated changes to one visible string can therefore consume
 more metadata than the visible set suggests.
 
+Each queued update also copies the sender's accumulated records for all
+values. That keeps reordered delivery correct without buffering, but message
+size grows with retained history. This teaching model does not optimize
+delta bandwidth.
+
 Removal knowledge costs storage because messages can arrive late. This model
 keeps that knowledge indefinitely. It doesn't implement garbage collection or
 replica retirement. You cannot free a removed-dot record just because the
@@ -338,24 +348,24 @@ The following pseudocode uses the reference model's explicit tombstones.
 `adds[value]` and `removed[value]` are sets of dots; missing sets start empty.
 `context` maps replica IDs to counter maxima, initially zero. `self` is the
 local replica ID. `send` queues the payload for each peer; only delivery runs
-`merge`. Each payload takes a copy of the context at send time.
+`merge`. Each payload copies all addition and removal records, along with
+the context, at send time.
 
 ```text
 add(value):
   context[self] = context[self] + 1
   dot = (self, context[self])
   adds[value] = adds[value] union {dot}
-  send(value, {dot}, {}, copy(context))
+  send(copy(adds), copy(removed), copy(context))
 
 remove(value):
   removed[value] = removed[value] union adds[value]
-  send(value, copy(adds[value]),
-       copy(removed[value]), copy(context))
+  send(copy(adds), copy(removed), copy(context))
 
 merge(message):
-  value = message.value
-  adds[value] = adds[value] union message.adds
-  removed[value] = removed[value] union message.removed
+  for each value in message.adds or message.removed:
+    adds[value] = adds[value] union message.adds[value]
+    removed[value] = removed[value] union message.removed[value]
   for each replica:
     context[replica] =
       max(context[replica], message.context[replica])

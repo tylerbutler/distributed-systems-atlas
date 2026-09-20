@@ -239,6 +239,33 @@ test("steps through concurrent add and remove", async ({ page }) => {
   await expect(lab.getByRole("navigation", { name: "Trace history" }).getByRole("listitem")).toHaveCount(9);
 });
 
+test("reordered additions cannot survive a causally later observed removal", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+  for (const name of [
+    "Add beacon at A", "Add beacon at A", "Deliver m2 from A to B",
+    "Remove beacon at B", "Deliver m3 from B to A", "Deliver m1 from A to B",
+  ]) {
+    await lab.getByRole("button", { name, exact: true }).click();
+  }
+  for (const id of ["A", "B"]) {
+    const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
+    await expect(replica.locator("dd")).toHaveText([
+      "Empty set", "No live dots", "A:2, B:0", "A:2, B:0",
+    ]);
+  }
+  await expect(lab.getByRole("region", { name: "Queued messages" })).toContainText("No queued messages");
+  await expect(lab.getByRole("region", { name: "Invariant checks" })).toContainText("Converged: yes");
+  await lab.getByRole("button", { name: "Frame 2: add beacon at A", exact: true }).click();
+  await expect(lab.getByRole("region", { name: "Replica A", exact: true }).locator("dd")).toHaveText([
+    "beacon", "A:1, A:2", "A:2, B:0", "A:2, B:0",
+  ]);
+  await expect(lab.getByRole("region", { name: "Replica B", exact: true }).locator("dd")).toHaveText([
+    "Empty set", "No live dots", "A:0, B:0", "A:0, B:0",
+  ]);
+});
+
 test("does not describe a sequential re-add as concurrent", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");

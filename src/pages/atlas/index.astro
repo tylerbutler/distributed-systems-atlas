@@ -3,10 +3,11 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AtlasTerritory from "../../components/AtlasTerritory.astro";
 import { validateSheetGraph, type SheetMeta, type Territory } from "../../lib/atlas/graph";
+import { scenarioIds } from "../../lib/lab/scenarios";
 
 const sheets = await getCollection("sheet");
 const metadata: SheetMeta[] = sheets.map((entry) => ({ id: entry.id, ...entry.data }));
-const issues = validateSheetGraph(metadata);
+const issues = validateSheetGraph(metadata, scenarioIds());
 if (issues.length > 0) {
   throw new Error(
     `Invalid atlas content graph:\n${issues

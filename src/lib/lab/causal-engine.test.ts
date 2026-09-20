@@ -106,7 +106,7 @@ describe("causal engine", () => {
     expect(removed.invariants.converged).toBe(false);
   });
 
-  test("merges each vector component by maximum without losing delayed dots", () => {
+  test("delivers transitive causal payloads before exposing their vector maxima", () => {
     const engine = createEngine(["A", "B", "C"]);
     dispatch(engine, { type: "add", replica: "A", value: "first" });
     dispatch(engine, { type: "add", replica: "A", value: "second" });
@@ -114,10 +114,10 @@ describe("causal engine", () => {
     dispatch(engine, { type: "add", replica: "B", value: "third" });
     let frame = dispatch(engine, { type: "deliver", message: "m3:B:C" });
     expect(frame.replicas[2].clock).toEqual({ A: 2, B: 1, C: 0 });
-    expect(frame.replicas[2].value).toEqual(["third"]);
+    expect(frame.replicas[2].value).toEqual(["first", "second", "third"]);
     frame = dispatch(engine, { type: "deliver", message: "m1:A:C" });
     expect(frame.replicas[2].clock).toEqual({ A: 2, B: 1, C: 0 });
-    expect(frame.replicas[2].value).toEqual(["first", "third"]);
+    expect(frame.replicas[2].value).toEqual(["first", "second", "third"]);
     for (const message of frame.messages) {
       dispatch(engine, { type: "deliver", message: message.id });
     }
@@ -126,6 +126,55 @@ describe("causal engine", () => {
       expect(replica.value).toEqual(["first", "second", "third"]);
       expect(replica.clock).toEqual({ A: 2, B: 1, C: 0 });
     }
+  });
+
+  test("an observed remove covers earlier additions even when their messages arrive last", () => {
+    const engine = createEngine();
+    dispatch(engine, { type: "add", replica: "A", value: "beacon" });
+    dispatch(engine, { type: "add", replica: "A", value: "beacon" });
+    dispatch(engine, { type: "deliver", message: "m2:A:B" });
+    dispatch(engine, { type: "remove", replica: "B", value: "beacon" });
+    dispatch(engine, { type: "deliver", message: "m3:B:A" });
+    const frame = dispatch(engine, { type: "deliver", message: "m1:A:B" });
+    for (const replica of frame.replicas) {
+      expect(replica.value).toEqual([]);
+      expect(replica.dots).toEqual([]);
+      expect(replica.context).toEqual({ A: 2, B: 0 });
+    }
+    expect(frame.invariants.converged).toBe(true);
+  });
+
+  test("carries causal dependencies across values and peers without removing a concurrent B addition", () => {
+    const engine = createEngine(["A", "B", "C"]);
+    dispatch(engine, { type: "add", replica: "A", value: "beacon" });
+    dispatch(engine, { type: "add", replica: "A", value: "other" });
+    dispatch(engine, { type: "deliver", message: "m2:A:C" });
+    dispatch(engine, { type: "remove", replica: "C", value: "beacon" });
+    dispatch(engine, { type: "add", replica: "B", value: "beacon" });
+    dispatch(engine, { type: "deliver", message: "m3:C:B" });
+    dispatch(engine, { type: "deliver", message: "m3:C:A" });
+    for (const message of engine.current().messages) {
+      dispatch(engine, { type: "deliver", message: message.id });
+    }
+    for (const replica of engine.current().replicas) {
+      expect(replica.value).toEqual(["beacon", "other"]);
+      expect(replica.dots).toEqual([
+        { replica: "A", counter: 2 }, { replica: "B", counter: 1 },
+      ]);
+    }
+    expect(engine.current().invariants.converged).toBe(true);
+  });
+
+  test("an unrelated later addition carries observed removal knowledge to a third peer", () => {
+    const engine = createEngine(["A", "B", "C"]);
+    dispatch(engine, { type: "add", replica: "A", value: "beacon" });
+    dispatch(engine, { type: "remove", replica: "A", value: "beacon" });
+    dispatch(engine, { type: "deliver", message: "m2:A:B" });
+    dispatch(engine, { type: "add", replica: "B", value: "other" });
+    dispatch(engine, { type: "deliver", message: "m3:B:C" });
+    const frame = dispatch(engine, { type: "deliver", message: "m1:A:C" });
+    expect(frame.replicas[2].value).toEqual(["other"]);
+    expect(frame.replicas[2].dots).toEqual([{ replica: "B", counter: 1 }]);
   });
 
   test("never resurrects a removed dot when removal arrives before the add", () => {
