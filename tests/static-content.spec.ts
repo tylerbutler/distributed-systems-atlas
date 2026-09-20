@@ -103,7 +103,7 @@ test("atlas exposes four territories and planned sheets without dead links", asy
     await expect(page.getByRole("heading", { name: title, exact: true }).locator("..")).toContainText("Planned");
     await expect(page.getByRole("link", { name: title, exact: true })).toHaveCount(0);
   }
-  const nav = page.getByRole("navigation", { name: "Main" });
+  const nav = page.getByRole("navigation", { name: "Primary" });
   await expect(nav.getByRole("link")).toHaveCount(1);
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute("aria-current", "page");
   for (const title of ["Trails", "Glossary", "References"]) {

@@ -1,21 +1,50 @@
+@import "@fontsource-variable/encode-sans/standard.css";
+@import "@fontsource-variable/roboto-serif";
+@import "@fontsource-variable/azeret-mono";
+@import "./sheet.css";
+
 :root {
-  /* Provisional shell tokens; the companion visual plan owns the final system. */
-  --night: #111827;
-  --paper: #f4f0e6;
-  --signal: #a83b2c;
-  --signal-cool: #176b87;
-  --muted: #4e5869;
-  --line: #b8b2a5;
+  --sky-sheet: oklch(96% 0.025 225);
+  --instrument: oklch(29% 0.075 238);
+  --instrument-deep: oklch(20% 0.055 238);
+  --signal: oklch(84% 0.18 100);
+  --interference: oklch(62% 0.20 28);
+  --graphite: oklch(25% 0.018 250);
+  --muted: oklch(48% 0.025 240);
+  --line: oklch(55% 0.045 230 / 0.34);
+  --line-faint: oklch(55% 0.045 230 / 0.16);
+  --clear: oklch(99% 0.006 220);
+
+  --font-ui: "Encode Sans Variable", sans-serif;
+  --font-reading: "Roboto Serif Variable", serif;
+  --font-data: "Azeret Mono Variable", monospace;
+  --space-1: 0.25rem;
+  --space-2: clamp(0.375rem, 0.3rem + 0.25vw, 0.5rem);
+  --space-3: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --space-4: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);
+  --space-5: clamp(1rem, 0.75rem + 1.25vw, 1.5rem);
+  --space-6: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  --space-7: clamp(2rem, 1rem + 4vw, 4rem);
+  --space-8: clamp(3rem, 1rem + 8vw, 8rem);
+  --measure-reading: 68ch;
+  --measure-caption: 46ch;
+  --duration-feedback: 120ms;
+  --duration-state: 220ms;
+  --duration-trace: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --rule-width: 1px;
+  --rule-signal: 2px;
+  --focus-color: var(--instrument);
+  --link-color: var(--instrument);
   --content: 72rem;
-  --display: "Iowan Old Style", "Palatino Linotype", serif;
-  color: var(--night);
-  background: var(--paper);
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  font-variant-numeric: tabular-nums;
-  accent-color: var(--signal-cool);
-  caret-color: var(--signal);
-  scrollbar-color: var(--signal-cool) var(--paper);
+  color: var(--graphite);
+  background: var(--sky-sheet);
+  font-family: var(--font-reading);
+  line-height: 1.68;
+  color-scheme: light;
+  accent-color: var(--instrument);
+  caret-color: currentColor;
+  scrollbar-color: var(--instrument) var(--sky-sheet);
 }
 
 *,
@@ -26,25 +55,26 @@
 
 body {
   margin: 0;
+  font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem);
   overflow-wrap: anywhere;
 }
 
 ::selection {
-  color: var(--paper);
-  background: var(--night);
+  color: var(--instrument-deep);
+  background: var(--signal);
 }
 
 a {
-  color: var(--signal-cool);
+  color: var(--link-color);
   text-underline-offset: 0.2em;
 }
 
 a:hover {
-  color: var(--signal);
+  text-decoration-thickness: 2px;
 }
 
 :focus-visible {
-  outline: 3px solid var(--signal-cool);
+  outline: 3px solid var(--focus-color);
   outline-offset: 4px;
 }
 
@@ -53,36 +83,68 @@ input,
 select,
 textarea {
   font: inherit;
+  font-family: var(--font-ui);
+}
+
+nav,
+.site-name,
+.status,
+.atlas-entry,
+.territory-label,
+.site-footer,
+.skip-link {
+  font-family: var(--font-ui);
+}
+
+code,
+pre,
+samp,
+kbd,
+.observation-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+figcaption {
+  max-width: var(--measure-caption);
 }
 
 h1,
 h2,
-h3 {
-  font-family: var(--display);
+h3,
+h4 {
+  font-family: var(--font-ui);
+  font-weight: 650;
+  font-variation-settings: "wdth" 82;
   line-height: 1.15;
   text-wrap: balance;
 }
 
 h1 {
   max-width: 20ch;
-  margin-block: 0 1.5rem;
+  margin-block: 0 var(--space-5);
   font-size: clamp(2.5rem, 6vw, 4.5rem);
   letter-spacing: -0.025em;
 }
 
 h2 {
-  margin-block: 2.5rem 1rem;
+  margin-block: var(--space-6) var(--space-4);
   font-size: clamp(1.8rem, 3vw, 2.5rem);
 }
 
 h3 {
-  margin-block: 1.5rem 0.75rem;
+  margin-block: var(--space-5) var(--space-3);
   font-size: 1.4rem;
 }
 
 p {
-  max-width: 68ch;
-  margin-block: 0 1rem;
+  max-width: var(--measure-reading);
+  margin-block: 0 var(--space-4);
 }
 
 .site-header,
@@ -90,7 +152,7 @@ p {
 .site-footer {
   max-width: var(--content);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 4vw, 3rem);
+  padding-inline: var(--space-6);
 }
 
 .site-header {
@@ -99,15 +161,14 @@ p {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1.5rem 2rem;
-  padding-block: 1.5rem;
-  border-bottom: 1px solid var(--line);
+  padding-block: var(--space-5);
 }
 
 .site-name {
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: var(--night);
+  color: inherit;
   font-weight: 700;
   text-decoration: none;
 }
@@ -116,25 +177,6 @@ p {
   display: flex;
   flex-shrink: 0;
   gap: 0.35rem;
-}
-
-.station {
-  display: grid;
-  place-items: center;
-  width: 1.8rem;
-  height: 1.8rem;
-  font-size: 0.875rem;
-  line-height: 1;
-  border: 2px solid currentColor;
-}
-
-.station-a {
-  color: var(--signal);
-  border-radius: 50%;
-}
-
-.station-b {
-  color: var(--signal-cool);
 }
 
 .site-nav {
@@ -154,7 +196,7 @@ p {
 }
 
 .site-nav a[aria-current="page"] {
-  color: var(--night);
+  color: inherit;
   font-weight: 700;
   text-decoration-thickness: 2px;
 }
@@ -170,11 +212,7 @@ p {
 }
 
 .page-intro {
-  padding-block: clamp(1rem, 3vw, 2rem);
-  background-image:
-    linear-gradient(to right, rgb(17 24 39 / 6%) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(17 24 39 / 6%) 1px, transparent 1px);
-  background-size: 2rem 2rem;
+  padding-block: var(--space-6);
 }
 
 .page-intro p,
@@ -204,7 +242,7 @@ p {
 
 .atlas-card {
   padding: 1.25rem;
-  border: 1px solid var(--line);
+  border: var(--rule-width) solid var(--line);
 }
 
 .atlas-card h3 {
@@ -216,7 +254,7 @@ p {
 }
 
 .sheet {
-  max-width: 68ch;
+  max-width: var(--measure-reading);
   margin-inline: auto;
 }
 
@@ -238,8 +276,8 @@ p {
 }
 
 .site-footer {
-  border-top: 1px solid var(--line);
-  padding-block: 1.5rem;
+  border-top: var(--rule-width) solid var(--line);
+  padding-block: var(--space-5);
   color: var(--muted);
   font-size: 0.875rem;
 }
@@ -250,7 +288,7 @@ p {
   left: 1rem;
   z-index: 1;
   padding: 0.75rem 1rem;
-  background: var(--paper);
+  background: var(--sky-sheet);
   transform: translateY(-200%);
 }
 

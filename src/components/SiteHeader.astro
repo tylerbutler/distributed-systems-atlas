@@ -1,16 +1,18 @@
 ---
+import StationMark from "./StationMark.astro";
+
 const path = Astro.url.pathname.replace(/\/$/, "");
 ---
 
-<header class="site-header">
+<header class="site-header instrument-panel">
   <a class="site-name" href="/">
     <span class="station-pair" aria-hidden="true">
-      <span class="station station-a">A</span>
-      <span class="station station-b">B</span>
+      <StationMark station="A" size="sm" />
+      <StationMark station="B" size="sm" />
     </span>
     <span>Distributed Systems Atlas</span>
   </a>
-  <nav aria-label="Main">
+  <nav aria-label="Primary">
     <ul class="site-nav">
       <li>
         <a href="/atlas/" aria-current={path === "/atlas" ? "page" : undefined}>Atlas</a>

@@ -1,0 +1,65 @@
+---
+interface Props {
+  station: string;
+  size?: "sm" | "md" | "lg";
+}
+
+const { station, size = "md" } = Astro.props;
+---
+
+<svg
+  class:list={["station-mark", `station-mark--${size}`]}
+  data-testid={station === "A" || station === "B" ? `station-mark-${station.toLowerCase()}` : undefined}
+  viewBox="0 0 48 50"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g fill="none" stroke="currentColor" stroke-width="2">
+    {station === "A" ? (
+      <>
+        <circle cx="24" cy="22" r="16" />
+        <path d="M24 38v10" />
+      </>
+    ) : station === "B" ? (
+      <>
+        <polygon points="24,4 42,22 24,40 6,22" />
+        <path d="M24 40v3m0 3v3" />
+      </>
+    ) : (
+      <>
+        <polygon points="14,6 34,6 44,22 34,38 14,38 4,22" />
+        <path d="M1 17h5M1 27h5m36-10h5m-5 10h5" />
+      </>
+    )}
+  </g>
+  <text
+    x="24"
+    y="23"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="currentColor"
+    textLength={station.length > 2 ? 26 : undefined}
+    lengthAdjust="spacingAndGlyphs"
+  >{station}</text>
+</svg>
+
+<style>
+  .station-mark {
+    display: block;
+    flex: none;
+    width: 3rem;
+    height: auto;
+    overflow: visible;
+    font-family: var(--font-ui);
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  .station-mark--sm {
+    width: 2rem;
+  }
+
+  .station-mark--lg {
+    width: 4.5rem;
+  }
+</style>

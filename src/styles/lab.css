@@ -3,13 +3,13 @@ causal-lab {
   max-width: 72rem;
   margin-inline: auto;
   padding: clamp(1rem, 3vw, 2rem);
-  color: var(--night, #111827);
-  background: var(--paper, #f4f0e6);
+  color: var(--graphite);
+  background: var(--sky-sheet);
   line-height: 1.5;
   overflow-wrap: anywhere;
   font-variant-numeric: tabular-nums;
-  accent-color: var(--signal-cool, #176b87);
-  scrollbar-color: var(--signal-cool, #176b87) var(--paper, #f4f0e6);
+  accent-color: var(--instrument);
+  scrollbar-color: var(--instrument) var(--sky-sheet);
 }
 
 causal-lab *,
@@ -20,11 +20,6 @@ causal-lab *::after {
 
 causal-lab [hidden] {
   display: none;
-}
-
-causal-lab ::selection {
-  color: var(--paper, #f4f0e6);
-  background: var(--night, #111827);
 }
 
 causal-lab :is(h2, h3, h4) {
@@ -46,7 +41,7 @@ causal-lab h4 {
 }
 
 causal-lab p {
-  max-width: 70ch;
+  max-width: var(--measure-reading);
   margin-block: 0.5rem 1rem;
 }
 
@@ -60,7 +55,7 @@ causal-lab p {
 .lab-replica {
   min-width: 0;
   padding-block: 1rem;
-  border-block: 1px solid var(--line, #b8b2a5);
+  border-block: var(--rule-width) solid var(--line);
 }
 
 causal-lab dl {
@@ -68,12 +63,14 @@ causal-lab dl {
 }
 
 causal-lab dt {
+  font-family: var(--font-ui);
   font-weight: 700;
   margin-block-start: 0.75rem;
 }
 
 causal-lab dd {
   margin: 0;
+  font-family: var(--font-data);
 }
 
 .lab-buttons {
@@ -87,27 +84,23 @@ causal-lab button {
   min-height: 2.75rem;
   padding: 0.5rem 0.75rem;
   border: 1px solid currentColor;
-  border-radius: 0.2rem;
+  border-radius: 0;
   color: inherit;
   background: transparent;
   font: inherit;
+  font-family: var(--font-ui);
   line-height: 1.4;
   cursor: pointer;
 }
 
 causal-lab button:hover:not(:disabled) {
-  color: var(--paper, #f4f0e6);
-  background: var(--night, #111827);
+  color: var(--clear);
+  background: var(--instrument);
 }
 
 causal-lab button:disabled {
   border-style: dashed;
   cursor: not-allowed;
-}
-
-causal-lab :focus-visible {
-  outline: 3px solid var(--signal-cool, #176b87);
-  outline-offset: 3px;
 }
 
 .lab-message {
