@@ -72,6 +72,7 @@ describe("presentFrame", () => {
       clockLabel: "Empty vector", dotLabels: [], contextLabel: "Empty vector",
     });
     expect(presented.messages[0]).toMatchObject({
+      from: "B", to: "A",
       id: "m1:B:A:copy2", routeLabel: "m1 copy2 from B to A", blocked: true,
       payloadLabel: "delta; live dots: A:2, A:10, B:1; causal context: A:10, B:1",
       dotLabels: ["A:2", "A:10", "B:1"], contextLabel: "A:10, B:1",

@@ -14,6 +14,8 @@ export interface PresentedReplica {
 
 export interface PresentedMessage {
   id: string;
+  from: string;
+  to: string;
   routeLabel: string;
   payloadLabel: string;
   kindLabel: string;
@@ -110,6 +112,8 @@ export function presentFrame(frame: TraceFrame): PresentedFrame {
       const [number, , , ...copies] = message.id.split(":");
       return {
         id: message.id,
+        from: message.from,
+        to: message.to,
         routeLabel: `${[number, ...copies].join(" ")} from ${message.from} to ${message.to}`,
         payloadLabel: `${message.kind}; live dots: ${dotsLabel}; causal context: ${contextLabel}`,
         kindLabel: message.kind,

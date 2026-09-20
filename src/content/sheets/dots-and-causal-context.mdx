@@ -148,10 +148,12 @@ Use this order to reproduce the concurrent add/remove case:
 
 <div class="sheet-continuation">
 
-The state panels and ledger above come from the engine's trace. **Previous
-frame** and **Next frame** let you inspect recorded states; return to the latest
-frame before issuing another operation. No background timer advances delivery.
-You decide when a message arrives.
+The state panels and history above come from the engine's trace. **Back** and
+**Forward** let you inspect recorded states; return to the latest frame before
+issuing another operation. **Play** visits existing frames every 900 ms without
+creating actions or delivering messages. **Pause** or any manual control stops
+playback. With reduced motion, **Next recorded frame** advances once per press.
+You still decide when a message arrives.
 
 For a second run, reset and follow the same actions but reverse the last two
 deliveries. You can also duplicate a queued message before delivering it.

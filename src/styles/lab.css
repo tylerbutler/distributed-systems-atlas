@@ -1,4 +1,5 @@
 causal-lab {
+  position: relative;
   display: block;
   max-width: 72rem;
   margin-inline: auto;
@@ -10,6 +11,16 @@ causal-lab {
   font-variant-numeric: tabular-nums;
   accent-color: var(--instrument);
   scrollbar-color: var(--instrument) var(--sky-sheet);
+}
+
+causal-lab[data-motion] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+causal-lab > * {
+  min-width: 0;
 }
 
 causal-lab *,
@@ -49,13 +60,39 @@ causal-lab p {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 1.5rem;
-  margin-block: 2rem;
+  margin: 0;
 }
 
 .lab-replica {
   min-width: 0;
   padding-block: 1rem;
   border-block: var(--rule-width) solid var(--line);
+}
+
+.lab-replica h3::before {
+  content: "";
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-inline-end: 0.75rem;
+  border: 2px solid var(--instrument);
+  background: var(--signal);
+}
+
+.lab-replica[data-station-shape="circle"] h3::before {
+  border-radius: 50%;
+}
+
+.lab-replica[data-station-shape="diamond"] h3::before {
+  transform: rotate(45deg);
+}
+
+causal-lab .lab-replica h3 {
+  margin-top: 0;
+}
+
+.lab-replica dd {
+  font-size: 0.875rem;
 }
 
 causal-lab dl {
@@ -76,6 +113,21 @@ causal-lab dd {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+.lab-control {
+  flex: 1 1 9rem;
+  min-width: 0;
+}
+
+causal-lab .lab-control p {
+  margin-block: 0.4rem 0;
+  font-family: var(--font-ui);
+  font-size: 0.875rem;
+}
+
+.lab-control button {
+  width: 100%;
 }
 
 causal-lab button {
@@ -102,6 +154,60 @@ causal-lab button:disabled {
   cursor: not-allowed;
 }
 
+causal-lab button:active:not(:disabled) {
+  color: var(--instrument-deep);
+  background: var(--signal);
+}
+
+.lab-messages > ul,
+.lab-trace ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lab-connection {
+  padding-block: 0.5rem;
+  border-block: 1px solid var(--line);
+}
+
+.lab-route {
+  display: block;
+  width: 100%;
+  height: 1.5rem;
+  color: var(--instrument);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.lab-route[data-blocked="true"] {
+  color: var(--interference);
+  stroke-dasharray: 6 4;
+}
+
+.lab-route-break {
+  stroke-dasharray: none;
+}
+
+.lab-message-route {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-data);
+  font-size: 0.875rem;
+}
+
+.lab-message dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.lab-message dt {
+  margin: 0;
+}
+
 .lab-message {
   padding-block: 1rem;
   border-top: 2px solid currentColor;
@@ -109,6 +215,91 @@ causal-lab button:disabled {
 
 .lab-message[data-blocked="true"] {
   border-top-style: dashed;
+  border-top-color: var(--interference);
+}
+
+.lab-comparison {
+  padding: 1rem;
+  background: var(--instrument);
+  color: var(--clear);
+}
+
+causal-lab .lab-comparison h3 {
+  margin-top: 0;
+}
+
+.lab-comparison .observation-data {
+  font-size: 0.875rem;
+}
+
+.lab-explanation {
+  font-size: 0.95rem;
+}
+
+.lab-trace li {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.lab-trace li p {
+  margin-block: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.lab-inspector,
+.lab-invariants {
+  border-top: 1px solid var(--instrument);
+  font-size: 0.95rem;
+}
+
+.lab-inspector details {
+  border-bottom: 1px solid var(--line);
+}
+
+.lab-inspector summary {
+  display: list-item;
+  min-height: 44px;
+  padding-block: 0.75rem;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.lab-inspector summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.lab-inspector pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+  overflow: visible;
+}
+
+.lab-invariants ul {
+  padding-inline-start: 1.2rem;
+}
+
+.lab-invariants li {
+  margin-block: 0.5rem;
+}
+
+causal-lab [role="status"]:not(:empty) {
+  margin: 0;
+  padding-block: 1rem;
+  border-top: 2px solid var(--instrument);
+  font-family: var(--font-ui);
+}
+
+.lab-signal {
+  position: absolute;
+  inset: 0 auto auto 0;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--instrument);
+  background: var(--signal);
+  pointer-events: none;
 }
 
 causal-lab [role="alert"] {
@@ -118,11 +309,68 @@ causal-lab [role="alert"] {
 
 causal-lab [aria-current="step"] {
   font-weight: 700;
+  background: var(--signal);
+  color: var(--instrument-deep);
 }
 
-@media (min-width: 48rem) {
+causal-lab [aria-pressed="true"] {
+  background: var(--instrument);
+  color: var(--clear);
+}
+
+@media (max-width: 41.999rem) {
+  .lab-message .lab-route {
+    display: none;
+  }
+
+  .lab-message-route {
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 12ch;
+    padding-block: 0.5rem;
+    border-block: 1px solid var(--instrument);
+  }
+}
+
+@media (min-width: 42rem) {
   .lab-replicas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64.001rem) {
+  causal-lab[data-motion] {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: 2rem;
+    align-items: start;
+  }
+
+  causal-lab[data-motion] > :is(h2, .lab-controls, [role="status"], [role="alert"]) {
+    grid-column: 1 / -1;
+  }
+
+  causal-lab[data-motion] .lab-replicas {
+    grid-area: 3 / 1;
+  }
+
+  causal-lab[data-motion] .lab-messages {
+    grid-area: 4 / 1;
+  }
+
+  causal-lab[data-motion] .lab-comparison {
+    grid-area: 5 / 1;
+  }
+
+  causal-lab[data-motion] .lab-trace {
+    grid-area: 6 / 1;
+  }
+
+  causal-lab[data-motion] .lab-inspector {
+    grid-area: 3 / 2 / 5 / 3;
+  }
+
+  causal-lab[data-motion] .lab-invariants {
+    grid-area: 5 / 2 / 7 / 3;
   }
 }
 

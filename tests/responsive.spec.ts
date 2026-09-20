@@ -1,5 +1,40 @@
 import { expect, test } from "@playwright/test";
 
+test("observation console uses its desktop, tablet, and mobile layouts", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  for (const width of [320, 390, 671, 672, 768, 1024, 1025, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const stations = (await lab.locator(".lab-replicas").boundingBox())!;
+    const a = (await lab.getByRole("region", { name: "Replica A", exact: true }).boundingBox())!;
+    const b = (await lab.getByRole("region", { name: "Replica B", exact: true }).boundingBox())!;
+    const inspector = (await lab.getByRole("region", { name: "State inspector" }).boundingBox())!;
+    const comparison = (await lab.locator(".lab-comparison").boundingBox())!;
+    const trace = (await lab.getByRole("region", { name: "Trace navigation" }).boundingBox())!;
+    if (width > 1024) {
+      expect(inspector.x).toBeGreaterThanOrEqual(stations.x + stations.width);
+      expect(stations.width / inspector.width).toBeCloseTo(2, 1);
+    } else {
+      expect(inspector.y).toBeGreaterThanOrEqual(trace.y + trace.height);
+    }
+    if (width < 672) {
+      expect(b.y).toBeGreaterThanOrEqual(a.y + a.height);
+      await expect(lab.locator(".lab-message .lab-route")).toBeHidden();
+      await expect(lab.locator(".lab-message-route")).toBeVisible();
+      const source = (await lab.locator(".lab-message-route span").first().boundingBox())!;
+      const target = (await lab.locator(".lab-message-route span").last().boundingBox())!;
+      expect(target.y).toBeGreaterThanOrEqual(source.y + source.height);
+    } else expect(b.y).toBe(a.y);
+    expect(comparison.y).toBeGreaterThanOrEqual(stations.y + stations.height);
+    expect(trace.y).toBeGreaterThanOrEqual(comparison.y + comparison.height);
+    for (const control of await lab.locator("button, summary").all()) {
+      expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
+
 test("sheet reading context changes topology and the lab returns to measure", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   for (const width of [320, 390, 768, 1152, 1153, 1440]) {
