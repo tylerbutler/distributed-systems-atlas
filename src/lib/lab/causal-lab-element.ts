@@ -263,7 +263,7 @@ class CausalLabElement extends HTMLElement {
     this.status.textContent = "";
   }
 
-  private render(focused: Element | null = document.activeElement): void {
+  private render(focused: Element | null = document.activeElement, openMessage = false): void {
     const history = this.engine.history();
     const frame = history[this.traceIndex];
     const presented = presentFrame(frame);
@@ -272,6 +272,7 @@ class CausalLabElement extends HTMLElement {
     const focusSection = focused instanceof HTMLElement ? focused.closest("section") : null;
     const openInspectors = new Set([...this.inspector.querySelectorAll("details[open]")]
       .map((element) => element.getAttribute("data-inspector")));
+    if (openMessage) openInspectors.add("message");
     if (!presented.messages.some((message) => message.id === this.selectedMessage)) this.selectedMessage = undefined;
     this.renderControls(presented);
     this.renderReplicas(presented);
@@ -405,13 +406,15 @@ class CausalLabElement extends HTMLElement {
       reason.id = `${this.idPrefix}-${message.id}-delivery`;
       const route = node("p");
       route.className = "lab-message-route";
+      const forward = message.from === frame.replicas[0]?.id;
+      route.dataset.direction = forward ? "forward" : "reverse";
       route.append(node("span", `From ${message.from}`), node("span", `To ${message.to}`));
       const select = this.button(`Inspect ${message.id}`, `inspect-${message.id}`, () => {
         this.selectedMessage = message.id;
-        this.render();
+        this.render(document.activeElement, true);
       });
       select.setAttribute("aria-pressed", String(this.selectedMessage === message.id));
-      item.append(route, this.route(message.blocked, message.from === frame.replicas[0]?.id), reason, details([
+      item.append(route, this.route(message.blocked, forward), reason, details([
         ["Message ID", message.id, "data"],
         ["Kind", message.kindLabel, "data"],
         ["Live dots", message.dotsLabel, "data"],
@@ -464,7 +467,7 @@ class CausalLabElement extends HTMLElement {
     for (const [id, label, record] of records) {
       const disclosure = node("details");
       disclosure.dataset.inspector = id;
-      disclosure.open = id === "message" || open.has(id);
+      disclosure.open = open.has(id);
       const summary = node("summary", label);
       summary.dataset.control = `summary-${id}`;
       summary.addEventListener("click", () => {

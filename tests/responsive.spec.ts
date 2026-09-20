@@ -1,5 +1,52 @@
 import { expect, test } from "@playwright/test";
 
+for (const [from, to] of [["A", "B"], ["B", "A"]]) {
+  test(`message route ${from}-to-${to} aligns endpoints and keeps mobile source first`, async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+    await page.goto("/atlas/dots-and-causal-context/");
+    const lab = page.getByTestId("causal-lab");
+    await lab.getByRole("button", { name: `Add beacon at ${from}`, exact: true }).click();
+    const message = lab.locator(".lab-message");
+    await expect(message).toBeVisible();
+    await expect(message.locator(".lab-message-route span")).toHaveText([`From ${from}`, `To ${to}`]);
+    for (const width of [390, 671, 672, 768, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const source = (await message.getByText(`From ${from}`, { exact: true }).boundingBox())!;
+      const target = (await message.getByText(`To ${to}`, { exact: true }).boundingBox())!;
+      const route = message.locator(".lab-route");
+      if (width < 672) {
+        await expect(route).toBeHidden();
+        expect(target.y).toBeGreaterThanOrEqual(source.y + source.height);
+        expect(target.x).toBe(source.x);
+      } else {
+        await expect(route).toBeVisible();
+        expect(target.y).toBe(source.y);
+        const arrow = await route.locator("path").nth(1).evaluate((path: SVGPathElement) => {
+          const matrix = path.getScreenCTM()!;
+          const shoulder = path.getPointAtLength(0).matrixTransform(matrix);
+          const tip = path.getPointAtLength(path.getTotalLength() / 2).matrixTransform(matrix);
+          return { shoulder: shoulder.x, tip: tip.x };
+        });
+        if (from === "A") {
+          expect(target.x).toBeGreaterThanOrEqual(source.x + source.width);
+          expect(arrow.tip).toBeGreaterThan(arrow.shoulder);
+        } else {
+          expect(source.x).toBeGreaterThanOrEqual(target.x + target.width);
+          expect(arrow.tip).toBeLessThan(arrow.shoulder);
+        }
+        expect(Math.abs(arrow.tip - (target.x + target.width / 2)))
+          .toBeLessThan(Math.abs(arrow.tip - (source.x + source.width / 2)));
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    }
+    expect(errors).toEqual([]);
+  });
+}
+
 test("observation console uses its desktop, tablet, and mobile layouts", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");

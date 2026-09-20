@@ -30,6 +30,30 @@ test("one frame updates every observation view", async ({ page }) => {
   ]);
 });
 
+test("selected message inspector preserves disclosure state after duplication", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  const select = lab.getByRole("button", { name: "Inspect m1:A:B", exact: true });
+  const disclosure = lab.locator('details[data-inspector="message"]');
+  const duplicate = lab.getByRole("button", { name: "Duplicate m1 from A to B", exact: true });
+  await select.click();
+  await expect(disclosure).toHaveJSProperty("open", true);
+  await disclosure.locator("summary").click();
+  await expect(disclosure).toHaveJSProperty("open", false);
+  await duplicate.click();
+  await expect(lab.getByRole("button", { name: "Inspect m1:A:B:copy1", exact: true })).toBeVisible();
+  await expect(disclosure).toHaveJSProperty("open", false);
+  await select.click();
+  await expect(disclosure).toHaveJSProperty("open", true);
+  await duplicate.click();
+  await expect(disclosure).toHaveJSProperty("open", true);
+  await disclosure.locator("summary").click();
+  await lab.getByRole("button", { name: "Inspect m1:A:B:copy1", exact: true }).click();
+  await expect(disclosure).toHaveJSProperty("open", true);
+  await expect(disclosure.locator("summary")).toHaveText("Selected message m1:A:B:copy1");
+});
+
 test("playback visits recorded frames only, pauses on manual actions, and resets", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/atlas/dots-and-causal-context/");
