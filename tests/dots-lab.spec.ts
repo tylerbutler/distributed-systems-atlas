@@ -61,11 +61,58 @@ test("shows the static initial state without JavaScript", async ({ browser }) =>
   try {
     const page = await context.newPage();
     await page.goto("/atlas/dots-and-causal-context/");
-    await expect(page.getByText("Initial replica state", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Causal lab", exact: true })).toBeVisible();
     await expect(page.getByText("No events observed", { exact: true })).toHaveCount(2);
     await expect(page.getByRole("region", { name: /^Replica / })).toHaveCount(2);
     await expect(page.getByText(/article remains readable/)).toBeVisible();
     await expect(page.getByRole("button")).toHaveCount(0);
+  } finally {
+    await context.close();
+  }
+});
+
+test("static initial state agrees with the live initial presentation", async ({ browser, page }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const staticPage = await context.newPage();
+    await staticPage.goto("/atlas/dots-and-causal-context/");
+    await page.goto("/atlas/dots-and-causal-context/");
+    const fallback = staticPage.getByTestId("causal-lab");
+    const live = page.getByTestId("causal-lab");
+    await expect(live.getByRole("button", { name: "Reset lab" })).toBeVisible();
+    for (const lab of [fallback, live]) {
+      await expect(lab.getByRole("region", { name: "Vector comparison" })).toContainText("A and B are equal");
+      await expect(lab.getByRole("region", { name: "Invariant checks" }).getByRole("listitem"))
+        .toHaveText(["Unique dots: yes", "Removed dots stay removed: yes", "Converged: yes"]);
+      await expect(lab.getByRole("region", { name: "Queued messages" })).toContainText("No queued messages");
+      for (const id of ["A", "B"]) {
+        const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
+        await expect(replica.locator("dd")).toHaveText(["Empty set", "No live dots", "A:0, B:0", "A:0, B:0"]);
+        await expect(replica.locator("dd").first()).toHaveCSS("font-family", /Azeret Mono Variable/);
+        await expect(replica).toHaveAttribute("data-station-shape", id === "A" ? "circle" : "diamond");
+      }
+    }
+    for (const selector of ["h2", ".lab-replicas", ".lab-comparison", ".lab-messages", ".lab-invariants", ".lab-explanation"]) {
+      const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+      expect(normalize(await fallback.locator(selector).innerText()))
+        .toBe(normalize(await live.locator(selector).innerText()));
+    }
+    await expect(fallback.getByRole("button")).toHaveCount(0);
+    await expect(fallback.getByText(/controls need JavaScript/)).toBeVisible();
+    await expect(live.getByText(/controls need JavaScript/)).toHaveCount(0);
+    const add = live.getByRole("button", { name: "Add beacon at A", exact: true });
+    await add.focus();
+    await page.keyboard.press("Enter");
+    await expect(add).toBeFocused();
+    await expect(live.getByRole("status")).toContainText("A created dot A:1");
+    await expect(live.getByRole("region", { name: "Vector comparison" })).toContainText("A is after B");
+    await expect(live.getByRole("status")).toContainText("A is after B");
+    await live.getByRole("button", { name: "Add beacon at B", exact: true }).click();
+    await expect(live.getByRole("region", { name: "Vector comparison" })).toContainText("A and B are concurrent");
+    await live.getByRole("button", { name: "Previous frame", exact: true }).click();
+    await expect(live.getByRole("status")).toContainText("A is after B");
+    await live.getByRole("button", { name: "Reset lab", exact: true }).click();
+    await expect(live.getByRole("region", { name: "Vector comparison" })).toContainText("A and B are equal");
   } finally {
     await context.close();
   }
@@ -127,6 +174,7 @@ test("disables blocked delivery and preserves the last valid views on LabError",
   await lab.getByRole("button", { name: "Previous frame", exact: true }).click();
   await expect(alert).toBeVisible();
   await expect(lab.getByRole("region", { name: "Invariant checks" })).toBeHidden();
+  await expect(lab.getByRole("status")).toBeEmpty();
   await lab.getByRole("button", { name: "Next frame", exact: true }).click();
   await lab.getByRole("button", { name: "Heal A and B", exact: true }).click();
   await expect(alert).toBeHidden();

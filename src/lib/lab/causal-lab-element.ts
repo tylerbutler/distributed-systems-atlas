@@ -1,5 +1,6 @@
 import { createCausalEngine } from "./causal-engine";
-import type { Dot, LabAction, LabError, SimulationEngine, TraceFrame, VersionVector } from "./contract";
+import type { LabAction, LabError, SimulationEngine, TraceFrame } from "./contract";
+import { presentFrame, type PresentedFrame } from "./present-frame";
 import { scenarioById } from "./scenarios";
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] {
@@ -13,14 +14,6 @@ function section(label: string): HTMLElement {
   element.setAttribute("aria-label", label);
   element.append(node("h3", label));
   return element;
-}
-
-function dotsText(dots: readonly Dot[]): string {
-  return dots.map((dot) => `${dot.replica}:${dot.counter}`).join(", ") || "No live dots";
-}
-
-function vectorText(vector: VersionVector): string {
-  return Object.entries(vector).map(([id, count]) => `${id}:${count}`).join(", ");
 }
 
 function details(entries: [string, string, "data" | "prose"][]): HTMLDListElement {
@@ -42,6 +35,7 @@ class CausalLabElement extends HTMLElement {
   private readonly idPrefix = `causal-lab-${++instanceNumber}`;
   private readonly controls = section("Lab controls");
   private readonly replicas = node("div");
+  private readonly comparison = section("Vector comparison");
   private readonly messages = section("Queued messages");
   private readonly trace = section("Trace navigation");
   private readonly ledger = section("Event ledger");
@@ -66,6 +60,10 @@ class CausalLabElement extends HTMLElement {
         return;
       }
       this.replicas.className = "lab-replicas";
+      this.comparison.className = "lab-comparison";
+      this.messages.className = "lab-messages";
+      this.invariants.className = "lab-invariants";
+      this.explanation.className = "lab-explanation";
       this.status.setAttribute("role", "status");
       this.status.setAttribute("aria-live", "polite");
       this.status.setAttribute("aria-atomic", "true");
@@ -73,7 +71,7 @@ class CausalLabElement extends HTMLElement {
       this.alert.hidden = true;
       this.replaceChildren(
         node("h2", "Causal lab"), this.controls, this.status, this.alert, this.trace,
-        this.replicas, this.messages, this.explanation, this.invariants, this.ledger,
+        this.replicas, this.comparison, this.messages, this.explanation, this.invariants, this.ledger,
       );
       this.render();
     }
@@ -117,12 +115,9 @@ class CausalLabElement extends HTMLElement {
     this.lastError = undefined;
     this.traceIndex = result.index;
     this.render();
-    const replica = action.type === "add"
-      ? result.replicas.find((replica) => replica.id === action.replica)
-      : undefined;
-    this.status.textContent = replica
-      ? `${replica.id} created dot ${replica.id}:${replica.clock[replica.id]}. ${result.explanation}`
-      : action.type === "reset" ? "Lab reset. Initial replica state restored." : result.explanation;
+    if (action.type === "reset") {
+      this.status.textContent = `Lab reset. Initial replica state restored. ${presentFrame(result).announcement}`;
+    }
   }
 
   private showError(error: LabError): void {
@@ -143,28 +138,34 @@ class CausalLabElement extends HTMLElement {
   private render(): void {
     const history = this.engine.history();
     const frame = history[this.traceIndex];
+    const presented = presentFrame(frame);
     const focused = document.activeElement;
     const focusKey = focused instanceof HTMLButtonElement && this.contains(focused)
       ? focused.dataset.control : undefined;
-    this.renderControls(frame);
-    this.renderReplicas(frame);
-    this.renderMessages(frame);
-    this.renderTrace(frame, history);
+    this.renderControls(presented);
+    this.renderReplicas(presented);
+    this.renderMessages(presented);
+    this.renderTrace(presented, history);
+    this.comparison.hidden = presented.comparison === null;
+    this.comparison.replaceChildren(node("h3", "Vector comparison"));
+    if (presented.comparison) {
+      const evidence = node("p", presented.comparison.evidence);
+      evidence.className = "observation-data";
+      this.comparison.append(node("p", presented.comparison.label), evidence);
+    }
     this.invariants.hidden = this.lastError !== undefined;
     if (this.lastError) this.showError(this.lastError);
-    else this.alert.hidden = true;
+    else {
+      this.alert.hidden = true;
+      this.status.textContent = presented.announcement;
+    }
     this.invariants.replaceChildren(node("h3", "Invariant checks"));
     const checks = node("ul");
-    const labels: Record<string, string> = {
-      uniqueDots: "Unique dots",
-      removedDotsStayRemoved: "Removed dots stay removed",
-      converged: "Converged",
-    };
-    for (const [name, valid] of Object.entries(frame.invariants)) {
-      checks.append(node("li", `${labels[name] ?? name}: ${valid ? "yes" : "no"}`));
+    for (const check of presented.invariants) {
+      checks.append(node("li", `${check.label}: ${check.passed ? "yes" : "no"}`));
     }
     this.invariants.append(checks);
-    this.explanation.replaceChildren(node("p", frame.explanation));
+    this.explanation.replaceChildren(node("p", presented.explanation));
     // This lesson is earned by a completed merge, not merely by healing a link.
     const observedRemove = history.slice(1, this.traceIndex + 1).some((entry, index) =>
       entry.actionLabel === "remove beacon at A"
@@ -194,7 +195,7 @@ class CausalLabElement extends HTMLElement {
     }
   }
 
-  private renderControls(frame: TraceFrame): void {
+  private renderControls(frame: PresentedFrame): void {
     this.controls.replaceChildren(node("h3", "Lab controls"));
     const operations = node("div");
     operations.className = "lab-buttons";
@@ -203,45 +204,41 @@ class CausalLabElement extends HTMLElement {
         operations.append(this.actionButton(
           `${type === "add" ? "Add" : "Remove"} beacon at ${replica.id}`,
           { type, replica: replica.id, value: "beacon" },
-          type === "remove" && !replica.value.includes("beacon") ? "No beacon is visible at this replica." : "",
+          type === "remove" && !replica.canRemoveBeacon ? "No beacon is visible at this replica." : "",
         ));
       }
     }
-    for (let left = 0; left < frame.replicas.length; left++) {
-      for (let right = left + 1; right < frame.replicas.length; right++) {
-        const a = frame.replicas[left].id;
-        const b = frame.replicas[right].id;
-        const partitioned = frame.partitions.includes([a, b].sort().join(":"));
-        operations.append(
-          this.actionButton(`Partition ${a} and ${b}`, { type: "partition", left: a, right: b },
-            partitioned ? "This connection is already partitioned." : ""),
-          this.actionButton(`Heal ${a} and ${b}`, { type: "heal", left: a, right: b },
-            partitioned ? "" : "This connection is already open."),
-        );
-      }
+    for (const { left, right, partitioned } of frame.links) {
+      operations.append(
+        this.actionButton(`Partition ${left} and ${right}`, { type: "partition", left, right },
+          partitioned ? "This connection is already partitioned." : ""),
+        this.actionButton(`Heal ${left} and ${right}`, { type: "heal", left, right },
+          partitioned ? "" : "This connection is already open."),
+      );
     }
     operations.append(this.actionButton("Reset lab", { type: "reset" }));
     this.controls.append(operations);
   }
 
-  private renderReplicas(frame: TraceFrame): void {
+  private renderReplicas(frame: PresentedFrame): void {
     this.replicas.replaceChildren(...frame.replicas.map((replica) => {
       const view = section(`Replica ${replica.id}`);
       view.className = "lab-replica";
+      view.dataset.stationShape = replica.stationShape;
       view.append(details([
-        ["Visible value", replica.value.join(", ") || "Empty set", "data"],
-        ["Live dots", dotsText(replica.dots), "data"],
-        ["Clock", vectorText(replica.clock), "data"],
-        ["Causal context", vectorText(replica.context), "data"],
+        ["Visible value", replica.valueLabel, "data"],
+        ["Live dots", replica.dotsLabel, "data"],
+        ["Clock", replica.clockLabel, "data"],
+        ["Causal context", replica.contextLabel, "data"],
       ]));
-      if (Object.values(replica.context).every((count) => count === 0)) {
+      if (!replica.hasObservedEvents) {
         view.append(node("p", "No events observed"));
       }
       return view;
     }));
   }
 
-  private renderMessages(frame: TraceFrame): void {
+  private renderMessages(frame: PresentedFrame): void {
     const viewingHistory = this.traceIndex < this.engine.history().length - 1;
     const heading = node("h3", "Queued messages");
     heading.tabIndex = -1;
@@ -253,23 +250,21 @@ class CausalLabElement extends HTMLElement {
     const list = node("ul");
     for (const message of frame.messages) {
       const item = node("li");
-      const partitioned = frame.partitions.includes([message.from, message.to].sort().join(":"));
       item.className = "lab-message";
-      item.dataset.blocked = String(partitioned);
-      const [number, , , ...copies] = message.id.split(":");
-      const label = `${[number, ...copies].join(" ")} from ${message.from} to ${message.to}`;
+      item.dataset.blocked = String(message.blocked);
+      const label = message.routeLabel;
       const reason = node("p", viewingHistory
         ? "Return to the latest frame to change state."
-        : partitioned ? "Blocked by active partition" : "Ready for delivery");
+        : message.blocked ? "Blocked by active partition" : "Ready for delivery");
       reason.id = `${this.idPrefix}-${message.id}-delivery`;
       item.append(node("h4", label), reason, details([
         ["Message ID", message.id, "data"],
-        ["Kind", message.kind, "data"],
-        ["Live dots", dotsText(message.dots), "data"],
-        ["Causal context", vectorText(message.context), "data"],
+        ["Kind", message.kindLabel, "data"],
+        ["Live dots", message.dotsLabel, "data"],
+        ["Causal context", message.contextLabel, "data"],
       ]));
       const deliver = this.actionButton(`Deliver ${label}`, { type: "deliver", message: message.id },
-        partitioned ? "Message crosses an active partition." : "");
+        message.blocked ? "Message crosses an active partition." : "");
       deliver.setAttribute("aria-describedby", reason.id);
       const buttons = node("div");
       buttons.className = "lab-buttons";
@@ -280,11 +275,13 @@ class CausalLabElement extends HTMLElement {
     this.messages.append(list);
   }
 
-  private renderTrace(frame: TraceFrame, history: readonly TraceFrame[]): void {
+  private renderTrace(frame: PresentedFrame, history: readonly TraceFrame[]): void {
     const navigate = (index: number): void => {
       this.traceIndex = index;
       this.render();
-      this.status.textContent = `Viewing frame ${index}: ${history[index].explanation}`;
+      if (!this.lastError) {
+        this.status.textContent = `Viewing frame ${index}: ${presentFrame(history[index]).announcement}`;
+      }
     };
     const traceIndex = node("p", `Frame ${frame.index} of ${history.length - 1}`);
     traceIndex.className = "observation-data";
@@ -302,7 +299,7 @@ class CausalLabElement extends HTMLElement {
     this.ledger.replaceChildren(node("h3", "Event ledger"));
     const list = node("ol");
     list.start = 0;
-    for (const entry of history) {
+    for (const entry of history.map(presentFrame)) {
       const item = node("li", `${entry.actionLabel}: ${entry.explanation}`);
       if (entry.index === this.traceIndex) item.setAttribute("aria-current", "step");
       list.append(item);

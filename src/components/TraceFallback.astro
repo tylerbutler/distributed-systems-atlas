@@ -1,0 +1,72 @@
+---
+import { createCausalEngine } from "../lib/lab/causal-engine";
+import { presentFrame } from "../lib/lab/present-frame";
+import { scenarioById } from "../lib/lab/scenarios";
+
+interface Props {
+  scenario: string;
+}
+
+const { scenario } = Astro.props;
+const frame = presentFrame(createCausalEngine(scenarioById(scenario)).current());
+---
+
+<h2>Causal lab</h2>
+<div class="lab-replicas">
+  {frame.replicas.map((replica) => (
+    <section class="lab-replica" aria-label={`Replica ${replica.id}`} data-station-shape={replica.stationShape}>
+      <h3>Replica {replica.id}</h3>
+      <dl>
+        <dt>Visible value</dt>
+        <dd class="observation-data">{replica.valueLabel}</dd>
+        <dt>Live dots</dt>
+        <dd class="observation-data">{replica.dotsLabel}</dd>
+        <dt>Clock</dt>
+        <dd class="observation-data">{replica.clockLabel}</dd>
+        <dt>Causal context</dt>
+        <dd class="observation-data">{replica.contextLabel}</dd>
+      </dl>
+      {!replica.hasObservedEvents && <p>No events observed</p>}
+    </section>
+  ))}
+</div>
+{frame.comparison && (
+  <section class="lab-comparison" aria-label="Vector comparison">
+    <h3>Vector comparison</h3>
+    <p>{frame.comparison.label}</p>
+    <p class="observation-data">{frame.comparison.evidence}</p>
+  </section>
+)}
+<section class="lab-messages" aria-label="Queued messages">
+  <h3>Queued messages</h3>
+  {frame.messages.length ? (
+    <ul>
+      {frame.messages.map((message) => (
+        <li class="lab-message" data-blocked={String(message.blocked)}>
+          <h4>{message.routeLabel}</h4>
+          <p>{message.blocked ? "Blocked by active partition" : "Ready for delivery"}</p>
+          <dl>
+            <dt>Message ID</dt>
+            <dd class="observation-data">{message.id}</dd>
+            <dt>Kind</dt>
+            <dd class="observation-data">{message.kindLabel}</dd>
+            <dt>Live dots</dt>
+            <dd class="observation-data">{message.dotsLabel}</dd>
+            <dt>Causal context</dt>
+            <dd class="observation-data">{message.contextLabel}</dd>
+          </dl>
+        </li>
+      ))}
+    </ul>
+  ) : <p>No queued messages</p>}
+</section>
+<div class="lab-explanation"><p>{frame.explanation}</p></div>
+<section class="lab-invariants" aria-label="Invariant checks">
+  <h3>Invariant checks</h3>
+  <ul>
+    {frame.invariants.map((check) => <li>{check.label}: {check.passed ? "yes" : "no"}</li>)}
+  </ul>
+</section>
+<noscript>
+  <p>The article remains readable without JavaScript. The lab controls need JavaScript.</p>
+</noscript>
