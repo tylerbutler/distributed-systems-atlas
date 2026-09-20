@@ -17,7 +17,8 @@ const plannedTitles = [
 test("a sheet exposes its reading context and next step", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
 
-  const contents = page.getByRole("navigation", { name: "On this sheet", exact: true });
+  const contents = page.locator(".sheet-local").first()
+    .getByRole("navigation", { name: "On this sheet", exact: true });
   await expect(contents).toBeVisible();
   const headings = page.locator(".sheet-body h2");
   for (const heading of await headings.all()) {
@@ -34,7 +35,7 @@ test("a sheet exposes its reading context and next step", async ({ page }) => {
   await expect(page.locator(".sheet-header")).toContainText(/\d+ min read/);
   await expect(page.locator(".sheet-header")).toContainText("Lab available");
   await expect(page.locator(".sheet-header")).toContainText("No prerequisite sheet");
-  await expect(page.locator(".sheet-trail")).toContainText("5 of 7");
+  await expect(page.locator(".sheet-header")).toContainText("First trail · 5 of 7");
   await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeVisible();
   const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
   await expect(related).toContainText("No related sheets");
@@ -54,7 +55,7 @@ test("reading context disclosure and references work without JavaScript", async 
   try {
     const page = await context.newPage();
     await page.goto("/atlas/dots-and-causal-context/");
-    const disclosure = page.locator(".sheet-contents");
+    const disclosure = page.locator(".sheet-contents").first();
     const contents = page.getByRole("navigation", { name: "On this sheet", exact: true });
     await expect(contents).toBeHidden();
     await disclosure.locator("summary").focus();

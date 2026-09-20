@@ -27,26 +27,27 @@ test("sheet reading context changes topology and the lab returns to measure", as
       measure.remove();
       return element.getBoundingClientRect().width <= limit + 1;
     })).toBe(true);
-    const rail = page.locator(".sheet-local");
+    const rail = page.locator(".sheet-local").first();
     const terms = page.getByRole("complementary", { name: "Terms on this sheet" });
-    const contents = page.getByRole("navigation", { name: "On this sheet", exact: true });
+    const contents = rail.getByRole("navigation", { name: "On this sheet", exact: true });
     if (width > 1152) {
       await expect(contents).toBeVisible();
       await expect(terms).toBeVisible();
-      await expect(page.locator(".sheet-contents > summary")).toBeHidden();
+      await expect(rail.locator(".sheet-contents > summary")).toBeHidden();
       const left = await rail.boundingBox();
       const right = await terms.boundingBox();
       expect(left!.x + left!.width).toBeLessThanOrEqual(prose!.x);
       expect(right!.x).toBeGreaterThanOrEqual(prose!.x + prose!.width);
       expect(lab!.x).toBe(left!.x);
       expect(lab!.width).toBeGreaterThan(prose!.width);
-      await expect(page.locator(".sheet-local-inner")).toHaveCSS("position", "sticky");
+      await expect(rail.locator(".sheet-local-inner")).toHaveCSS("position", "sticky");
       for (const note of await page.locator(".sheet-term-note").all()) await expect(note).toBeHidden();
     } else {
       await expect(terms).toBeHidden();
       await expect(contents).toBeHidden();
-      await expect(page.locator(".sheet-local-inner")).toHaveCSS("position", "static");
-      const summary = page.locator(".sheet-contents > summary");
+      await expect(rail.locator(".sheet-local-inner")).toHaveCSS("position", "static");
+      await expect(page.getByRole("navigation", { name: "On this sheet", exact: true })).toHaveCount(0);
+      const summary = rail.locator(".sheet-contents > summary");
       await expect(summary).toBeVisible();
       expect((await summary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
       for (const note of await page.locator(".sheet-term-note").all()) {
@@ -55,6 +56,53 @@ test("sheet reading context changes topology and the lab returns to measure", as
       }
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
+
+test("sheet reading context resumes sticky contents after the unobstructed lab without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/dots-and-causal-context/");
+    for (const width of [1153, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.evaluate(() => document.fonts.ready);
+      for (const block of [".sheet-opening", ".sheet-continuation"]) {
+        const prose = page.locator(block);
+        for (const offset of [300, 600]) {
+          await prose.evaluate((element, offset) =>
+            window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + offset), offset);
+          const rails = page.locator(".sheet-local-inner");
+          const visible = await rails.evaluateAll((elements) => elements
+            .map((element) => element.getBoundingClientRect())
+            .filter((box) => box.width > 0 && box.top >= 0 && box.bottom <= window.innerHeight)
+            .map(({ x, y, width, height }) => ({ x, y, width, height })));
+          expect(visible, `${block} at ${width}px, scrolled ${offset}px`).toHaveLength(1);
+          expect(visible[0].y).toBe(24);
+          const proseBox = (await prose.boundingBox())!;
+          expect(visible[0].x + visible[0].width).toBeLessThanOrEqual(proseBox.x);
+        }
+      }
+      const lab = page.getByTestId("causal-lab");
+      for (const offset of [-250, 0, 300]) {
+        await lab.evaluate((element, offset) =>
+          window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + offset), offset);
+        const labBox = (await lab.boundingBox())!;
+        for (const rail of await page.locator(".sheet-local-inner").all()) {
+          const box = (await rail.boundingBox())!;
+          expect(box.y + box.height <= labBox.y || box.y >= labBox.y + labBox.height).toBe(true);
+        }
+      }
+      await page.locator(".sheet-continuation").evaluate((element) =>
+        window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + 300));
+      const resumed = page.locator(".sheet-local").last();
+      await expect(resumed.getByText("First trail · 5 of 7", { exact: true })).toBeInViewport();
+      await resumed.getByRole("link", { name: "Field notes", exact: true }).click();
+      await expect(page).toHaveURL(/#field-notes$/);
+      await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
+    }
+  } finally {
+    await context.close();
   }
 });
 

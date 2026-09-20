@@ -67,25 +67,28 @@ const next = nextStep
       <p class="sheet-reading-meta">
         <span>{readingMinutes} min read</span>
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
+        {position >= 0 && <span>First trail · {position + 1} of {trail.length}</span>}
       </p>
       {entry.data.requires.length > 0
         ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
         : <p class="sheet-prerequisites">No prerequisite sheet</p>}
     </header>
-    <div class="sheet-local">
-      <div class="sheet-local-inner">
-        <details class="sheet-contents">
-          <summary>On this sheet</summary>
-          <nav aria-label="On this sheet">
-            <h2>On this sheet</h2>
-            <ul>
-              {contents.map(({ slug, text }) => <li><a href={`#${slug}`}>{text}</a></li>)}
-            </ul>
-          </nav>
-        </details>
-        {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {trail.length}</p>}
+    {["opening", "continuation"].map((section) => (
+      <div class={`sheet-local sheet-local-${section}`}>
+        <div class="sheet-local-inner">
+          <details class="sheet-contents">
+            <summary>On this sheet</summary>
+            <nav aria-label="On this sheet">
+              <h2>On this sheet</h2>
+              <ul>
+                {contents.map(({ slug, text }) => <li><a href={`#${slug}`}>{text}</a></li>)}
+              </ul>
+            </nav>
+          </details>
+          {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {trail.length}</p>}
+        </div>
       </div>
-    </div>
+    ))}
     {entry.data.terms.length > 0 && (
       <aside class="sheet-terms" aria-label="Terms on this sheet">
         <h2>Terms on this sheet</h2>

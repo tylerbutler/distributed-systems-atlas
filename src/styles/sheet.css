@@ -96,6 +96,10 @@
   font-size: 0.9375rem;
 }
 
+.sheet-local-continuation {
+  display: none;
+}
+
 .sheet-contents {
   border-block: var(--rule-width) solid var(--line);
 }
@@ -392,6 +396,15 @@
 
   .sheet-opening {
     grid-row: 2;
+  }
+
+  .sheet:has(.sheet-continuation) > .sheet-local-continuation {
+    display: block;
+    grid-row: 4;
+  }
+
+  .sheet-continuation {
+    grid-row: 4;
   }
 
   .sheet-term-note {
