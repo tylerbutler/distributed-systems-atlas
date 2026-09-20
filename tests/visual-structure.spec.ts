@@ -1,4 +1,49 @@
 import { expect, test } from "@playwright/test";
+import { existsSync, readFileSync } from "node:fs";
+
+test("the standalone publication has its own Impeccable product record", () => {
+  const productPath = new URL("../PRODUCT.md", import.meta.url);
+  expect(existsSync(productPath), "PRODUCT.md must belong to this publication").toBe(true);
+  const product = readFileSync(productPath, "utf8");
+  expect(product).toContain("<!-- impeccable:product-schema 1 -->");
+  expect(product).toMatch(/^## Platform\s+web\s*$/m);
+  for (const heading of ["Users", "Product Purpose", "Capabilities and Constraints", "Accessibility & Inclusion"]) {
+    expect(product).toContain(`## ${heading}\n`);
+  }
+  expect(product).toContain("Distributed Systems Atlas");
+});
+
+for (const route of ["/", "/atlas/", "/atlas/dots-and-causal-context/"]) {
+  test(`the emitted direction contract leads the body on ${route}`, async ({ page }) => {
+    const response = await page.goto(route);
+    const html = await response!.text();
+    const contract = html.match(/<body\b[^>]*>\s*<!--([\s\S]*?)-->/)?.[1]?.trim();
+    expect(contract, "the root layout must emit its opening direction comment").toBeTruthy();
+    expect(contract).toMatch(
+      /^THESIS:[\s\S]+OWN-WORLD:[\s\S]+STORY:[\s\S]+FIRST VIEWPORT:[\s\S]+FORM:[\s\S]+FINISH:/,
+    );
+    expect(contract!.split(/\s+/).length).toBeLessThanOrEqual(150);
+    expect(contract).toMatch(/FORM:[^\n]*brief-pinned[^\n]*seed key [a-f0-9]{8}\b/);
+    expect(contract).toContain(
+      "FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance",
+    );
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+  });
+}
+
+for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 1000 }]) {
+  test(`break-it interference uses a one-pixel rule at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto("/atlas/dots-and-causal-context/");
+    const warning = page.getByRole("region", { name: "Break it: discard the context" });
+    await expect(warning).toBeVisible();
+    await expect(warning).toHaveCSS("border-left-width", "1px");
+    await expect(warning).toHaveCSS("border-left-style", "solid");
+    await expect(warning).toHaveCSS("border-left-color", "oklch(0.62 0.2 28)");
+    await expect(warning).toContainText("Warning: Discarding event identity changes what a remove can mean.");
+  });
+}
 
 test("concurrent add and remove have identical observation outcomes with reduced motion", async ({ page }) => {
   const outcomes: string[][] = [];

@@ -236,7 +236,7 @@
 .sheet-break {
   margin-block: var(--space-7);
   padding-inline-start: var(--space-5);
-  border-left: var(--rule-signal) solid var(--interference);
+  border-left: var(--rule-width) solid var(--interference);
 }
 
 .sheet .sheet-break > h2 {
