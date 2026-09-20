@@ -52,6 +52,25 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
   });
 }
 
+test("the landing relation appears after both observations in normal motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+
+  const relation = page.getByRole("figure").locator("figcaption");
+  const opacityAt = (time: number) => relation.evaluate((element, currentTime) => {
+    const animation = element.getAnimations().find(
+      (candidate) => (candidate as CSSAnimation).animationName === "relation-arrives",
+    );
+    if (!animation) throw new Error("Relation animation not found");
+    animation.pause();
+    animation.currentTime = currentTime;
+    return getComputedStyle(element).opacity;
+  }, time);
+
+  expect(await opacityAt(499)).toBe("0");
+  expect(await opacityAt(720)).toBe("1");
+});
+
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   for (const width of [320, 390, 767, 768, 1024, 1440]) {
