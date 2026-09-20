@@ -1,0 +1,57 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AtlasCard from "../../components/AtlasCard.astro";
+import { validateSheetGraph, type SheetMeta, type Territory } from "../../lib/atlas/graph";
+
+const sheets = await getCollection("sheet");
+const metadata: SheetMeta[] = sheets.map((entry) => ({ id: entry.id, ...entry.data }));
+const issues = validateSheetGraph(metadata);
+if (issues.length > 0) {
+  throw new Error(
+    `Invalid atlas content graph:\n${issues
+      .map((issue) => `${issue.sheet}.${issue.field}: ${issue.problem} ${issue.target}`)
+      .join("\n")}`,
+  );
+}
+
+const plannedTrail = [
+  ["local-history", "Local history", "mechanisms"],
+  ["partial-order", "Partial order", "mechanisms"],
+  ["lamport-clocks", "Lamport clocks", "mechanisms"],
+  ["vector-clocks", "Vector clocks", "mechanisms"],
+  ["multi-value-registers", "Multi-value registers", "structures"],
+  ["observed-remove-sets", "Observed-remove sets", "structures"],
+] as const;
+const entries = [
+  ...metadata,
+  ...plannedTrail
+    .filter(([id]) => !metadata.some((sheet) => sheet.id === id))
+    .map(([id, title, territory]) => ({ id, title, territory, status: "planned" as const, summary: "" })),
+];
+const territories = [
+  ["mechanisms", "Mechanisms"],
+  ["structures", "Structures"],
+  ["failures", "Failure modes"],
+  ["systems", "Systems"],
+] as const satisfies readonly (readonly [Territory, string])[];
+---
+
+<BaseLayout title="Atlas" description="Browse mechanisms, structures, failure modes, and systems. See which sheets you can read now and which are planned.">
+  <header class="page-intro">
+    <h1>Atlas</h1>
+    <p>Follow an event through the machinery, or start with the failure you want to understand.</p>
+    <p>Planned sheets show where we're heading. Published sheets open when you choose a title.</p>
+  </header>
+  {territories.map(([id, title]) => {
+    const territorySheets = entries.filter((entry) => entry.territory === id);
+    return (
+      <section class="atlas-territory" id={id} aria-labelledby={`${id}-title`}>
+        <h2 id={`${id}-title`}>{title}</h2>
+        {territorySheets.length > 0
+          ? <ul class="atlas-cards">{territorySheets.map((sheet) => <AtlasCard sheet={sheet} />)}</ul>
+          : <p>No sheets here yet.</p>}
+      </section>
+    );
+  })}
+</BaseLayout>

@@ -1,0 +1,25 @@
+---
+import type { SheetMeta } from "../lib/atlas/graph";
+
+interface Props {
+  heading: string;
+  sheets: Pick<SheetMeta, "id" | "title" | "status">[];
+}
+
+const { heading, sheets } = Astro.props;
+---
+
+{sheets.length > 0 && (
+  <nav class="sheet-links" aria-label={heading}>
+    <h2>{heading}</h2>
+    <ul>
+      {sheets.map((sheet) => (
+        <li>
+          {sheet.status === "published"
+            ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
+            : <><span>{sheet.title}</span> <span class="status">Planned</span></>}
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}

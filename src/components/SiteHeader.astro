@@ -1,0 +1,23 @@
+---
+const path = Astro.url.pathname.replace(/\/$/, "");
+---
+
+<header class="site-header">
+  <a class="site-name" href="/">
+    <span class="station-pair" aria-hidden="true">
+      <span class="station station-a">A</span>
+      <span class="station station-b">B</span>
+    </span>
+    <span>Distributed Systems Atlas</span>
+  </a>
+  <nav aria-label="Main">
+    <ul class="site-nav">
+      <li>
+        <a href="/atlas/" aria-current={path === "/atlas" ? "page" : undefined}>Atlas</a>
+      </li>
+      {["Trails", "Glossary", "References"].map((label) => (
+        <li><span>{label}</span> <span class="status">Planned</span></li>
+      ))}
+    </ul>
+  </nav>
+</header>

@@ -1,0 +1,59 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "./BaseLayout.astro";
+import SheetLinks from "../components/SheetLinks.astro";
+import type { SheetMeta } from "../lib/atlas/graph";
+
+interface Props {
+  entry: CollectionEntry<"sheet">;
+}
+
+const { entry } = Astro.props;
+const sheets: SheetMeta[] = (await getCollection("sheet")).map(
+  (sheet) => ({ id: sheet.id, ...sheet.data }),
+);
+const byId = new Map(sheets.map((sheet) => [sheet.id, sheet]));
+const resolve = (id: string): SheetMeta => {
+  const sheet = byId.get(id);
+  if (!sheet) throw new Error(`Sheet ${entry.id} references missing sheet ${id}`);
+  return sheet;
+};
+const territories = {
+  mechanisms: "Mechanisms",
+  structures: "Structures",
+  failures: "Failure modes",
+  systems: "Systems",
+};
+const trail = [
+  ["local-history", "Local history"],
+  ["partial-order", "Partial order"],
+  ["lamport-clocks", "Lamport clocks"],
+  ["vector-clocks", "Vector clocks"],
+  ["dots-and-causal-context", "Dots and causal context"],
+  ["multi-value-registers", "Multi-value registers"],
+  ["observed-remove-sets", "Observed-remove sets"],
+] as const;
+const position = trail.findIndex(([id]) => id === entry.id);
+const nextStep = position >= 0 ? trail[position + 1] : undefined;
+const next = nextStep
+  ? byId.get(nextStep[0]) ?? { id: nextStep[0], title: nextStep[1], status: "planned" as const }
+  : undefined;
+---
+
+<BaseLayout title={entry.data.title} description={entry.data.summary}>
+  <article class="sheet">
+    <header class="sheet-header">
+      <h1>{entry.data.title}</h1>
+      <p class="territory-label">
+        Territory: <a href={`/atlas/#${entry.data.territory}`}>{territories[entry.data.territory]}</a>
+      </p>
+      <p class="sheet-summary">{entry.data.summary}</p>
+    </header>
+    {entry.data.requires.length > 0
+      ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
+      : <p>No prerequisite sheet</p>}
+    <div class="sheet-body"><slot /></div>
+    <SheetLinks heading="Related sheets" sheets={entry.data.related.map(resolve)} />
+    {next && <SheetLinks heading="Next trail step" sheets={[next]} />}
+  </article>
+</BaseLayout>
