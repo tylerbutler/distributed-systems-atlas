@@ -23,6 +23,8 @@ references:
 
 import CausalLab from "../../components/CausalLab.astro";
 
+<div class="sheet-opening">
+
 ## One event needs one name
 
 Two stations keep a set of signals to watch. Station A adds `beacon`. Station B
@@ -53,6 +55,10 @@ Replica A allocates its next dot by incrementing its own counter. Replica B
 does the same with B's counter. The two stations can allocate `A:1` and `B:1`
 without talking to each other because their replica IDs differ.
 
+<aside class="sheet-term-note" aria-label="Term: dot">
+  <dl><dt>dot</dt><dd>A unique event identifier made from a replica ID and a local counter.</dd></dl>
+</aside>
+
 The uniqueness guarantee has conditions. Each replica ID must identify one
 allocator, and that allocator must not reuse a counter. Restarting A with its
 old ID and a counter reset to zero could assign `A:1` to a second addition.
@@ -82,6 +88,10 @@ events. After A creates its first addition, A knows about `A:1`. B learns about
 that addition when its message arrives. Removing it changes membership without
 making A forget that the addition happened.
 
+<aside class="sheet-term-note" aria-label="Term: causal context">
+  <dl><dt>causal context</dt><dd>A compact record of the dots a replica has observed.</dd></dl>
+</aside>
+
 For a gap-free history from one allocator, a counter can summarize many dots.
 An entry `A:4` in a version vector represents A's first four allocations, rather
 than just the fourth. This is why notation needs a label: `A:4` under **Live
@@ -106,10 +116,22 @@ separate dots beyond it. Don't infer receipt of every earlier payload from a
 high counter. In the guided run below, delivery of the first addition precedes
 the partition, so both stations have that addition before they diverge.
 
+<figure>
+  <dl class="sheet-data">
+    <dt>Live dot <code>A:4</code></dt>
+    <dd>One addition: A's fourth allocation.</dd>
+    <dt>Vector entry <code>A:4</code></dt>
+    <dd>A summary through A's fourth allocation, not an inventory of payloads.</dd>
+  </dl>
+  <figcaption>The same notation answers two different questions. Read the field label.</figcaption>
+</figure>
+
 ## Interactive lab
 
 Start from the initial frame, or choose **Reset lab** if you've experimented.
 Use this order to reproduce the concurrent add/remove case:
+
+### Reproduce the concurrent add and remove
 
 1. Choose **Add beacon at A**, then **Deliver m1 from A to B**. Let B observe
    A's addition before you interrupt communication.
@@ -120,7 +142,11 @@ Use this order to reproduce the concurrent add/remove case:
 4. Choose **Deliver m2 from A to B**, then **Deliver m3 from B to A**.
    Now compare the live dots, contexts, and invariant checks.
 
+</div>
+
 <CausalLab scenario="dots-concurrent-add-remove" />
+
+<div class="sheet-continuation">
 
 The state panels and ledger above come from the engine's trace. **Previous
 frame** and **Next frame** let you inspect recorded states; return to the latest
@@ -172,7 +198,11 @@ addition dots is not marked removed. Two replicas can display the same value
 while retaining different dots or removal records. The lab's convergence check
 also compares that metadata and requires an empty message queue.
 
+<section class="sheet-break" aria-labelledby="break-it-discard-the-context">
+
 ## Break it: discard the context
+
+**Warning:** Discarding event identity changes what a remove can mean.
 
 Imagine replacing each replica's state with a plain set of strings. Keep the
 same network schedule, but send commands such as `add beacon` and
@@ -205,7 +235,23 @@ That comparison misses the question an incoming message will pose: is this a
 new contribution or a replay of something we removed? Keeping only the visible
 value throws away the information needed to answer.
 
+</section>
+
+<section class="sheet-costs" aria-labelledby="what-causal-metadata-costs">
+
 ## What causal metadata costs
+
+<div class="sheet-table-scroll" role="region" aria-label="Causal metadata costs table" tabindex="0">
+  <table>
+    <caption>Causal metadata costs</caption>
+    <thead><tr><th scope="col">Record</th><th scope="col">Grows with</th><th scope="col">Retained here</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Vector</th><td>Tracked replicas</td><td>One counter per replica</td></tr>
+      <tr><th scope="row">Addition dots</th><td>Additions per value</td><td>Event identities</td></tr>
+      <tr><th scope="row">Removed dots</th><td>Observed removals</td><td>Indefinitely; no garbage collection</td></tr>
+    </tbody>
+  </table>
+</div>
 
 Each tracked replica needs a counter entry in the vector. The reference model
 also retains addition dots and removed-dot records per value. Its vector size
@@ -244,6 +290,10 @@ depends on delivering the queued information. No dot can force a broken
 connection to recover, and no convergence proof chooses the right conflict
 semantics for your application. Decide what an unseen concurrent addition
 should mean before choosing a set implementation.
+
+</section>
+
+<section class="sheet-field-notes" aria-labelledby="field-notes">
 
 ## Field notes
 
@@ -291,7 +341,7 @@ knowledge. A dotted version vector distinguishes an individual event from a
 summarized history; the terms are related, not interchangeable names for this
 entire set algorithm.
 
-Russell Brown's [Dotted Version Vectors](https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/)
+Russell Brown's <a href="#reference-riak-dotted-version-vectors" class="sheet-citation" aria-label="Reference: Dotted Version Vectors">Dotted Version Vectors</a>
 explains how Riak associates individual dots with sibling values so an update
 can supersede the versions its client observed without discarding concurrent
 siblings. That is the source for the event-versus-context distinction here,
@@ -302,3 +352,6 @@ observed-remove sets use it to define which additions a remove targets. Those
 neighboring sheets remain planned. For now, use the two replicas above to
 check a concrete prediction: name the dots a removal observed, then account
 for each message before deciding what remains visible.
+
+</section>
+</div>

@@ -4,15 +4,16 @@ import type { SheetMeta } from "../lib/atlas/graph";
 interface Props {
   heading: string;
   sheets: Pick<SheetMeta, "id" | "title" | "status">[];
+  emptyText?: string;
 }
 
-const { heading, sheets } = Astro.props;
+const { heading, sheets, emptyText } = Astro.props;
 ---
 
-{sheets.length > 0 && (
+{(sheets.length > 0 || emptyText) && (
   <nav class="sheet-links" aria-label={heading}>
     <h2>{heading}</h2>
-    <ul>
+    {sheets.length > 0 ? <ul>
       {sheets.map((sheet) => (
         <li>
           {sheet.status === "published"
@@ -20,6 +21,6 @@ const { heading, sheets } = Astro.props;
             : <><span>{sheet.title}</span> <span class="status">Planned</span></>}
         </li>
       ))}
-    </ul>
+    </ul> : <p class="sheet-empty">{emptyText}</p>}
   </nav>
 )}

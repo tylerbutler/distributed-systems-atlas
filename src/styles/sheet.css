@@ -32,3 +32,369 @@
   font-weight: 650;
   font-variation-settings: "wdth" 82;
 }
+
+.site-main:has(> .sheet) {
+  max-width: 96rem;
+}
+
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, var(--measure-reading)) minmax(0, 1fr);
+  column-gap: 0;
+}
+
+.sheet > *,
+.sheet-body > * {
+  min-width: 0;
+  grid-column: 2;
+}
+
+.sheet .sheet-header {
+  grid-row: 1;
+  padding-block-end: var(--space-6);
+  border-bottom: var(--rule-width) solid var(--line);
+}
+
+.sheet-header h1 {
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  text-align: start;
+}
+
+.sheet-reading-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.sheet-reading-meta,
+.sheet-prerequisites,
+.sheet-trail,
+.sheet-local,
+.sheet-terms,
+.sheet-term-note,
+.sheet-data,
+.sheet-table-scroll,
+.sheet-references {
+  font-family: var(--font-ui);
+}
+
+.sheet-reading-meta,
+.sheet-prerequisites {
+  font-size: 0.9375rem;
+}
+
+.sheet-prerequisites {
+  margin-bottom: 0;
+}
+
+.sheet .sheet-body {
+  display: contents;
+}
+
+.sheet-local {
+  margin-block: var(--space-5);
+  font-size: 0.9375rem;
+}
+
+.sheet-contents {
+  border-block: var(--rule-width) solid var(--line);
+}
+
+.sheet-contents > summary {
+  min-height: 44px;
+  padding-block: var(--space-3);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.sheet-contents > summary:hover {
+  color: var(--instrument);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.sheet-local h2,
+.sheet-terms h2,
+.sheet-links h2,
+.sheet-references h2 {
+  margin-block: 0 var(--space-3);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.sheet-local nav h2 {
+  display: none;
+}
+
+.sheet-local ul,
+.sheet-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sheet-local a,
+.sheet-links a {
+  display: inline-block;
+  padding-block: var(--space-2);
+}
+
+.sheet-local a {
+  min-height: 44px;
+}
+
+.sheet-local a:hover,
+.sheet-links a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.sheet-trail {
+  margin-block: var(--space-4) 0;
+  color: var(--muted);
+}
+
+.sheet-terms {
+  display: none;
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) > h2,
+.sheet :is(.sheet-break, .sheet-costs, .sheet-field-notes) > h2,
+.sheet-body > h2 {
+  margin-block: var(--space-7) var(--space-5);
+  font-size: clamp(1.8rem, 2.5vw, 2.25rem);
+  line-height: 1.2;
+  scroll-margin-top: var(--space-5);
+}
+
+.sheet .sheet-opening > h2:first-child {
+  margin-top: var(--space-6);
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) h3 {
+  margin-block: var(--space-6) var(--space-3);
+  font-size: 1.25rem;
+  line-height: 1.4;
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) p {
+  margin-bottom: var(--space-5);
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) li + li {
+  margin-top: var(--space-3);
+}
+
+.sheet-term-note {
+  margin-block: var(--space-3) var(--space-6);
+  padding-block: var(--space-3);
+  border-block: var(--rule-width) solid var(--line);
+  font-size: 0.9375rem;
+}
+
+.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dl,
+.sheet dl.sheet-data {
+  margin: 0;
+}
+
+.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dt {
+  font-weight: 650;
+}
+
+.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dd {
+  margin: var(--space-1) 0 var(--space-4);
+}
+
+.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dd:last-child {
+  margin-bottom: 0;
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) figure {
+  margin: var(--space-6) 0;
+  padding-block: var(--space-4);
+  border-block: var(--rule-width) solid var(--line);
+}
+
+.sheet figcaption {
+  margin-top: var(--space-4);
+  font-family: var(--font-reading);
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.sheet .sheet-body > causal-lab {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: none;
+  margin-block: var(--space-6);
+  border-block: var(--rule-width) solid var(--line);
+}
+
+.sheet-break {
+  margin-block: var(--space-7);
+  padding-inline-start: var(--space-5);
+  border-left: var(--rule-signal) solid var(--interference);
+}
+
+.sheet .sheet-break > h2 {
+  margin-top: 0;
+}
+
+.sheet-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block: var(--space-5);
+}
+
+.sheet table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet caption {
+  text-align: start;
+  font-weight: 650;
+  padding-bottom: var(--space-3);
+}
+
+.sheet :is(th, td) {
+  padding: var(--space-3);
+  text-align: start;
+  vertical-align: top;
+  border-bottom: var(--rule-width) solid var(--line);
+}
+
+.sheet thead th {
+  border-block: var(--rule-width) solid var(--graphite);
+}
+
+/* Opt in only when a comparison needs horizontal scrolling. */
+.sheet .sheet-comparison-wide th:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--sky-sheet);
+}
+
+.sheet :is(.sheet-opening, .sheet-continuation) pre {
+  --focus-color: var(--signal);
+  --muted: color-mix(in oklch, var(--clear) 75%, var(--instrument));
+  color-scheme: dark;
+  scrollbar-color: var(--signal) var(--instrument);
+  padding: var(--space-4);
+  border-block: var(--rule-width) solid var(--line);
+  font-size: 0.875rem;
+  line-height: 1.8;
+  counter-reset: code-line;
+}
+
+.sheet pre .line {
+  counter-increment: code-line;
+}
+
+.sheet pre .line::before {
+  content: counter(code-line) / "";
+  display: inline-block;
+  width: 3ch;
+  margin-inline-end: 2ch;
+  color: var(--muted);
+  text-align: end;
+  user-select: none;
+}
+
+.sheet-field-notes {
+  margin-top: var(--space-7);
+  border-top: var(--rule-width) solid var(--line);
+}
+
+.sheet .sheet-field-notes > h2 {
+  margin-top: var(--space-5);
+  font-size: 1.5rem;
+}
+
+.sheet .sheet-citation {
+  text-decoration-style: dotted;
+}
+
+.sheet-references li {
+  padding-block: var(--space-2);
+  scroll-margin-top: var(--space-5);
+}
+
+.sheet-end {
+  padding-top: var(--space-6);
+}
+
+.sheet-end > * {
+  margin-block: 0 var(--space-6);
+}
+
+.sheet-links,
+.sheet-empty {
+  font-size: 0.9375rem;
+}
+
+.sheet-links .status {
+  margin-inline-start: var(--space-2);
+}
+
+@media (width > 72rem) {
+  .sheet {
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, var(--measure-reading)) minmax(10rem, 1fr);
+    column-gap: var(--space-6);
+  }
+
+  .sheet-local {
+    grid-column: 1;
+    grid-row: 2;
+    margin-block: var(--space-6) 0;
+  }
+
+  .sheet-local-inner {
+    position: sticky;
+    top: var(--space-5);
+    max-height: calc(100dvh - 2 * var(--space-5));
+    overflow-y: auto;
+    padding: var(--space-2);
+    margin: calc(-1 * var(--space-2));
+  }
+
+  .sheet-contents {
+    border: 0;
+  }
+
+  .sheet-contents > summary {
+    display: none;
+  }
+
+  .sheet-contents::details-content {
+    display: block;
+    content-visibility: visible;
+  }
+
+  .sheet-local nav h2 {
+    display: block;
+  }
+
+  .sheet-terms {
+    display: block;
+    grid-column: 3;
+    grid-row: 2;
+    align-self: start;
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: var(--rule-width) solid var(--line);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .sheet-opening {
+    grid-row: 2;
+  }
+
+  .sheet-term-note {
+    display: none;
+  }
+}

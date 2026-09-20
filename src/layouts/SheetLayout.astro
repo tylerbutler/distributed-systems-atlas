@@ -3,12 +3,22 @@ import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import type { SheetMeta } from "../lib/atlas/graph";
+import type { MarkdownHeading } from "astro";
 
 interface Props {
   entry: CollectionEntry<"sheet">;
+  headings: MarkdownHeading[];
 }
 
-const { entry } = Astro.props;
+const { entry, headings } = Astro.props;
+const contents = headings.filter(({ depth }) => depth === 2);
+const prose = (entry.body ?? "")
+  .replace(/```[\s\S]*?```/g, "")
+  .replace(/^import .+$/gm, "")
+  .replace(/<[^>]+>/g, "")
+  .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+const wordCount = prose.match(/\b[\w]+(?:['’-][\w]+)*\b/g)?.length ?? 0;
+const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 const sheets: SheetMeta[] = (await getCollection("sheet")).map(
   (sheet) => ({ id: sheet.id, ...sheet.data }),
 );
@@ -54,12 +64,50 @@ const next = nextStep
         Territory: <a href={`/atlas/#${entry.data.territory}`}>{territories[entry.data.territory]}</a>
       </p>
       <p class="sheet-summary">{entry.data.summary}</p>
+      <p class="sheet-reading-meta">
+        <span>{readingMinutes} min read</span>
+        <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
+      </p>
+      {entry.data.requires.length > 0
+        ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
+        : <p class="sheet-prerequisites">No prerequisite sheet</p>}
     </header>
-    {entry.data.requires.length > 0
-      ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
-      : <p>No prerequisite sheet</p>}
+    <div class="sheet-local">
+      <div class="sheet-local-inner">
+        <details class="sheet-contents">
+          <summary>On this sheet</summary>
+          <nav aria-label="On this sheet">
+            <h2>On this sheet</h2>
+            <ul>
+              {contents.map(({ slug, text }) => <li><a href={`#${slug}`}>{text}</a></li>)}
+            </ul>
+          </nav>
+        </details>
+        {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {trail.length}</p>}
+      </div>
+    </div>
+    {entry.data.terms.length > 0 && (
+      <aside class="sheet-terms" aria-label="Terms on this sheet">
+        <h2>Terms on this sheet</h2>
+        <dl>
+          {entry.data.terms.map(({ term, definition }) => <><dt>{term}</dt><dd>{definition}</dd></>)}
+        </dl>
+      </aside>
+    )}
     <div class="sheet-body"><slot /></div>
-    <SheetLinks heading="Related sheets" sheets={entry.data.related.map(resolve)} />
-    {next && <SheetLinks heading="Next trail step" sheets={[next]} />}
+    <footer class="sheet-end">
+      {entry.data.references.length > 0 && (
+        <section class="sheet-references" aria-labelledby="sheet-references">
+          <h2 id="sheet-references">References</h2>
+          <ol>
+            {entry.data.references.map(({ key, title, url }) => (
+              <li id={`reference-${key}`}><a href={url}>{title}</a></li>
+            ))}
+          </ol>
+        </section>
+      )}
+      <SheetLinks heading="Related sheets" sheets={entry.data.related.map(resolve)} emptyText="No related sheets" />
+      {next && <SheetLinks heading="Next trail step" sheets={[next]} />}
+    </footer>
   </article>
 </BaseLayout>

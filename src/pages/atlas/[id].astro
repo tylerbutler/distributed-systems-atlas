@@ -12,7 +12,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 ---
 
-<SheetLayout entry={entry}><Content /></SheetLayout>
+<SheetLayout {entry} {headings}><Content /></SheetLayout>

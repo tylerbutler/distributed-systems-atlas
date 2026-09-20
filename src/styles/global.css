@@ -237,26 +237,9 @@ p {
   font-weight: 700;
 }
 
-.sheet {
-  max-width: var(--measure-reading);
-  margin-inline: auto;
-}
-
 .territory-label {
   color: var(--muted);
   font-size: 0.875rem;
-}
-
-.sheet-body {
-  margin-block: 3rem;
-}
-
-.sheet-links ul {
-  padding-inline-start: 1.25rem;
-}
-
-.sheet-links li + li {
-  margin-top: 0.5rem;
 }
 
 .site-footer {

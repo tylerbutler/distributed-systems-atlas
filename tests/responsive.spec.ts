@@ -1,5 +1,104 @@
 import { expect, test } from "@playwright/test";
 
+test("sheet reading context changes topology and the lab returns to measure", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  for (const width of [320, 390, 768, 1152, 1153, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(() => document.fonts.ready);
+    const title = await page.getByRole("heading", { level: 1 }).boundingBox();
+    const opening = page.locator(".sheet-opening");
+    const continuation = page.locator(".sheet-continuation");
+    const prose = await opening.boundingBox();
+    const after = await continuation.boundingBox();
+    const lab = await page.getByTestId("causal-lab").boundingBox();
+    expect(prose).not.toBeNull();
+    expect(after).not.toBeNull();
+    expect(lab).not.toBeNull();
+    expect(title!.x).toBe(prose!.x);
+    expect(after!.x).toBe(prose!.x);
+    expect(after!.width).toBe(prose!.width);
+    expect(lab!.y).toBeGreaterThanOrEqual(prose!.y + prose!.height);
+    expect(after!.y).toBeGreaterThanOrEqual(lab!.y + lab!.height);
+    expect(await opening.evaluate((element) => {
+      const measure = document.createElement("div");
+      measure.style.width = "68ch";
+      element.append(measure);
+      const limit = measure.getBoundingClientRect().width;
+      measure.remove();
+      return element.getBoundingClientRect().width <= limit + 1;
+    })).toBe(true);
+    const rail = page.locator(".sheet-local");
+    const terms = page.getByRole("complementary", { name: "Terms on this sheet" });
+    const contents = page.getByRole("navigation", { name: "On this sheet", exact: true });
+    if (width > 1152) {
+      await expect(contents).toBeVisible();
+      await expect(terms).toBeVisible();
+      await expect(page.locator(".sheet-contents > summary")).toBeHidden();
+      const left = await rail.boundingBox();
+      const right = await terms.boundingBox();
+      expect(left!.x + left!.width).toBeLessThanOrEqual(prose!.x);
+      expect(right!.x).toBeGreaterThanOrEqual(prose!.x + prose!.width);
+      expect(lab!.x).toBe(left!.x);
+      expect(lab!.width).toBeGreaterThan(prose!.width);
+      await expect(page.locator(".sheet-local-inner")).toHaveCSS("position", "sticky");
+      for (const note of await page.locator(".sheet-term-note").all()) await expect(note).toBeHidden();
+    } else {
+      await expect(terms).toBeHidden();
+      await expect(contents).toBeHidden();
+      await expect(page.locator(".sheet-local-inner")).toHaveCSS("position", "static");
+      const summary = page.locator(".sheet-contents > summary");
+      await expect(summary).toBeVisible();
+      expect((await summary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      for (const note of await page.locator(".sheet-term-note").all()) {
+        await expect(note).toBeVisible();
+        expect(await note.evaluate((element) => element.previousElementSibling?.tagName)).toBe("P");
+      }
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
+
+test("sheet reading context gives records distinct readable treatments", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  const warning = page.getByRole("region", { name: "Break it: discard the context", exact: true });
+  await expect(warning).toContainText("Warning:");
+  await expect(warning).toHaveCSS("border-left-color", "oklch(0.62 0.2 28)");
+  const ledger = page.getByRole("table", { name: "Causal metadata costs", exact: true });
+  await expect(ledger.getByRole("row")).toHaveCount(4);
+  const code = page.locator(".sheet-continuation pre");
+  await expect(code.locator(".line").first()).toHaveCSS("counter-increment", "code-line 1");
+  const numberContrast = await code.evaluate((element) => {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Cannot measure rendered code colors");
+    const luminance = (color: string) => {
+      context.fillStyle = color;
+      context.fillRect(0, 0, 1, 1);
+      const channels = Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3)
+        .map((channel) => channel / 255)
+        .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+      return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+    };
+    const line = element.querySelector(".line");
+    if (!line) throw new Error("Pseudocode lines are missing");
+    const foreground = luminance(getComputedStyle(line, "::before").color);
+    const background = luminance(getComputedStyle(element).backgroundColor);
+    return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  });
+  expect(numberContrast).toBeGreaterThanOrEqual(4.5);
+  const notes = page.getByRole("region", { name: "Field notes", exact: true });
+  await expect(notes).toHaveCSS("border-top-style", "solid");
+  for (const width of [390, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const figure = page.locator(".sheet-opening figure");
+    expect((await figure.boundingBox())!.width).toBe((await page.locator(".sheet-opening").boundingBox())!.width);
+    await expect(code).toHaveCSS("overflow-x", "auto");
+    await expect(ledger.locator("th").first()).toHaveCSS("position", "static");
+    await expect(ledger.locator("th").first()).toHaveCSS("text-align", "start");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
+
 test("the connected chart reflows to vertical stations below 40rem", async ({ page }) => {
   await page.goto("/atlas/");
   for (const width of [320, 390, 639, 640, 768, 1024, 1025, 1440]) {
