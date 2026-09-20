@@ -45,7 +45,7 @@ describe("generalized observation and presentation contract", () => {
     const input = frame(observation);
     const view = presentFrame(input, [input], presentation);
     expect(view.title).toBe("Observation lab");
-    expect(view.controls).toEqual(presentation.controls(input));
+    expect(view.controls).toEqual(presentation.controls(input, [input]));
     expect(view.replicas[0].details.length).toBeGreaterThan(0);
     expect(view.messages[0].details.length).toBeGreaterThan(2);
     expect(view.invariants[0].label).toBe("Valid observation");
@@ -105,6 +105,10 @@ describe("generalized observation and presentation contract", () => {
     const future = { ...initial, index: 1 };
     const view = presentFrame(initial, [initial, future], {
       ...presentation,
+      controls: (_frame, history) => {
+        expect(history).toEqual([initial]);
+        return presentation.controls(initial, history);
+      },
       complete: (_frame, history) => history.some((entry) => entry.index === 1)
         ? { heading: "Future", explanation: "Must not appear." } : null,
     });

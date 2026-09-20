@@ -1,4 +1,6 @@
 import { expect, test } from "vitest";
+import type { LabAction } from "./contract";
+import { createEngine } from "./engine-registry";
 import { presentFrame } from "./present-frame";
 import {
   buildScenarioRegistry,
@@ -32,7 +34,7 @@ test.each([
   expect(trace).toHaveLength(steps + 1);
   for (const frame of trace.slice(0, -1)) {
     expect(presentFrame(frame, trace, scenario.presentation).outcome).toBeNull();
-    expect(scenario.presentation.controls(frame).some((control) =>
+    expect(presentFrame(frame, trace, scenario.presentation).controls.some((control) =>
       control.kind === "action" && control.label.startsWith(`Reference step ${frame.index + 1}:`))).toBe(true);
   }
   const final = trace.at(-1)!;
@@ -40,6 +42,46 @@ test.each([
   expect(presentFrame(final, trace, scenario.presentation).outcome?.heading).toBe(heading);
   expect(presentFrame(final, [final], scenario.presentation).outcome).toBeNull();
 });
+
+test.each(scenarioIds().filter((id) => id !== "dots-concurrent-add-remove")
+  .flatMap((id) => [0, 1].map((deviationIndex) => ({ id, deviationIndex }))))(
+  "$id requires reset after deviation at index $deviationIndex even when the latest action matches",
+  ({ id, deviationIndex }) => {
+    const scenario = scenarioById(id);
+    const engine = createEngine(scenario);
+    const actions = scenario.actions!;
+    const dispatch = (action: LabAction) => {
+      const result = engine.dispatch(action);
+      if ("message" in result) throw new Error(result.message);
+      return result;
+    };
+    const referenceControls = (history = engine.history()) =>
+      presentFrame(engine.current(), history, scenario.presentation).controls.filter((control) =>
+        control.kind === "action" && control.label.startsWith("Reference step "));
+    expect(referenceControls()).toHaveLength(1);
+    for (const action of actions.slice(0, deviationIndex)) dispatch(action);
+    dispatch(scenario.kind === "mv-register"
+      ? { type: "write", replica: "B", value: "red" }
+      : scenario.kind === "or-set"
+        ? { type: "add", replica: "A", value: "other" }
+        : { type: "local-event", replica: "B" });
+    expect(referenceControls()).toEqual([]);
+    dispatch(actions[deviationIndex + 1]);
+    expect(engine.current().action).toEqual(actions[deviationIndex + 1]);
+    if (scenario.kind === "mv-register" && deviationIndex === 0) {
+      expect(engine.current().messages.some((message) => message.id === "m1:A:B")).toBe(false);
+    }
+    expect(referenceControls()).toEqual([]);
+    expect(referenceControls([engine.current()])).toEqual([]);
+    dispatch({ type: "reset" });
+    for (const action of actions) {
+      expect(referenceControls()).toEqual([expect.objectContaining({ action, reason: "" })]);
+      expect(referenceControls(engine.history().slice(0, -1))).toEqual([]);
+      dispatch(action);
+    }
+    expect(referenceControls()).toEqual([]);
+  },
+);
 
 test.each(["missing", "toString", "__proto__"])("rejects unknown scenario %s", (id) => {
   expect(() => scenarioById(id)).toThrow(

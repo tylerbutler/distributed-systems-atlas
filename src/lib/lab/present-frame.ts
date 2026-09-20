@@ -51,7 +51,7 @@ export interface LabPresentation {
   readonly inspectorNote: string;
   readonly invariantLabels: Readonly<Record<string, string>>;
   valueLabel(replica: ReplicaView): string;
-  controls(frame: TraceFrame): readonly PresentedControl[];
+  controls(frame: TraceFrame, history: readonly TraceFrame[]): readonly PresentedControl[];
   compare(frame: TraceFrame): PresentedFrame["comparison"];
   announce(frame: TraceFrame): string;
   complete(frame: TraceFrame, history: readonly TraceFrame[]): PresentedFrame["outcome"];
@@ -130,19 +130,20 @@ export function presentFrame(
   const blocked = (left: string, right: string): boolean =>
     frame.partitions.includes([left, right].sort(lexical).join(":"));
   const comparison = presentation.compare(frame);
+  const selectedHistory = history.filter((entry) => entry.index <= frame.index);
   return {
     index: frame.index,
     title: presentation.title,
     instructions: presentation.instructions,
     comparisonHeading: presentation.comparisonHeading,
     inspectorNote: presentation.inspectorNote,
-    controls: presentation.controls(frame),
+    controls: presentation.controls(frame, selectedHistory),
     actionLabel: frame.actionLabel,
     explanation: frame.explanation,
     announcement: [
       presentation.announce(frame), frame.explanation, comparison ? `${comparison.label}.` : "",
     ].filter(Boolean).join(" "),
-    outcome: presentation.complete(frame, history.filter((entry) => entry.index <= frame.index)),
+    outcome: presentation.complete(frame, selectedHistory),
     replicas: ordered.map((replica) => ({
       id: replica.id,
       stationShape: replica.id === "A" ? "circle" : replica.id === "B" ? "diamond" : "hexagon",

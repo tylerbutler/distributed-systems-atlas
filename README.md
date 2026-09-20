@@ -353,3 +353,8 @@ Free-form actions get deterministic generated IDs. Invalid actions return
 `LabError` without changing state or history. Reset clears events, messages,
 partitions, comparisons, and counters. Reference traces start with empty
 histories; nonempty `initialValues` are rejected.
+
+Reference-step controls require the complete recorded action prefix to match
+the reference trace. After a deviation, reset is required to resume the guided
+run; matching a later reference action does not restore it. Historical frames
+remain read-only.

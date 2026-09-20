@@ -119,7 +119,7 @@ describe("canonical ordering fixtures", () => {
     const engine = createEngine(scenario);
     expect(scenario.actions?.length).toBeGreaterThan(0);
     for (const action of scenario.actions ?? []) {
-      const controls = scenario.presentation.controls(engine.current());
+      const controls = scenario.presentation.controls(engine.current(), engine.history());
       if (action.type !== "deliver") {
         expect(controls).toContainEqual(expect.objectContaining({ kind: "action", action, reason: "" }));
       }

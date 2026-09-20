@@ -70,6 +70,48 @@ async function detail(replica: Locator, label: string, value: string) {
     .locator("+ dd")).toHaveText(value);
 }
 
+for (const lesson of [
+  {
+    route: "vector-clocks", scenario: "vector-clock-comparisons",
+    deviation: ["Local event at B", "Compare [A:1, B:1] with [A:1, B:0]"],
+  },
+  {
+    route: "multi-value-registers", scenario: "mv-register-concurrent-writes-observed-resolution",
+    deviation: ["Write red at B", "Write blue at B"],
+  },
+]) {
+  test(`${lesson.route}: a deviation requires reset before reference steps resume`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/atlas/${lesson.route}/`);
+    const lab = page.getByTestId("causal-lab");
+    const actions = scenarioById(lesson.scenario).actions!;
+    const reference = lab.getByRole("button", { name: /^Reference step / });
+    await expect(reference).toBeEnabled();
+    for (const name of lesson.deviation) {
+      await lab.getByRole("button", { name, exact: true }).click();
+      await expect(lab.getByRole("alert")).toBeHidden();
+      await expect(reference).toHaveCount(0);
+    }
+    if (lesson.route === "multi-value-registers") {
+      await expect(lab.getByRole("button", { name: /^Deliver / })).toHaveText([
+        "Deliver m1 from B to A", "Deliver m2 from B to A",
+      ]);
+    }
+    await lab.getByRole("button", { name: "Frame 0: initial", exact: true }).click();
+    await expect(reference).toBeDisabled();
+    await lab.getByRole("button", { name: /^Frame 2:/ }).click();
+    await expect(reference).toHaveCount(0);
+    await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
+    for (const [index, action] of actions.entries()) {
+      const next = lab.getByRole("button", { name: `Reference step ${index + 1}: ${action.type}`, exact: true });
+      await expect(next).toBeEnabled();
+      await next.click();
+      await expect(lab.getByRole("alert")).toBeHidden();
+    }
+    await expect(reference).toHaveCount(0);
+  });
+}
+
 test("a register write made before observing blue preserves that concurrent sibling", async ({ page }) => {
   await page.goto("/atlas/multi-value-registers/");
   const lab = page.getByTestId("causal-lab");
@@ -157,6 +199,7 @@ for (const lesson of lessons) {
       }
       for (const notice of scenarioById(lesson.scenario).presentation.controls(
         scenarioTrace(lesson.scenario)[0],
+        [scenarioTrace(lesson.scenario)[0]],
       ).filter((control) => control.kind === "notice")) {
         await expect(lab.locator(".lab-explanation")).toContainText(notice.text);
         await expect(live.getByRole("region", { name: "Lesson controls", exact: true })).toContainText(notice.text);

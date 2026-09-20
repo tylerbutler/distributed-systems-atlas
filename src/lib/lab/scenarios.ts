@@ -111,6 +111,11 @@ function fixtureActions(fixture: typeof orderingFixtures[number]): LabAction[] {
   });
 }
 
+function followsReference(frame: TraceFrame, history: readonly TraceFrame[], actions: readonly LabAction[]): boolean {
+  return history.length === frame.index + 1 && history[0]?.action === null
+    && history.slice(1).every((entry, index) => JSON.stringify(entry.action) === JSON.stringify(actions[index]));
+}
+
 function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[]): LabPresentation {
   const titles: Record<OrderingMode, string> = {
     history: "Local history lab", "partial-order": "Partial order lab",
@@ -133,10 +138,10 @@ function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[])
       oneComponentPerReplica: "One vector component per replica",
     },
     valueLabel: (replica) => replica.value.join(", ") || "No local values",
-    controls(frame) {
+    controls(frame, history) {
       const controls: PresentedControl[] = [];
       const next = actions[frame.index];
-      if (next && (frame.index === 0 || JSON.stringify(frame.action) === JSON.stringify(actions[frame.index - 1]))) {
+      if (next && followsReference(frame, history, actions)) {
         controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
       }
       for (const replica of frame.replicas) {
@@ -300,10 +305,10 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
         converged: "Converged",
       },
       valueLabel: (replica) => replica.value.join(", ") || (register ? "Empty register" : "Empty set"),
-      controls(frame) {
+      controls(frame, history) {
         const controls: PresentedControl[] = [];
         const next = actions[frame.index];
-        if (next && (frame.index === 0 || JSON.stringify(frame.action) === JSON.stringify(actions[frame.index - 1]))) {
+        if (next && followsReference(frame, history, actions)) {
           controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
         }
         for (const replica of frame.replicas) {
@@ -327,7 +332,7 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
       complete(frame, history) {
         // The conclusion describes the reference experiment, including its intermediate evidence.
         const referenceRun = history.length === actions.length + 1
-          && history.slice(1).every((entry, index) => JSON.stringify(entry.action) === JSON.stringify(actions[index]));
+          && followsReference(frame, history, actions);
         if (!referenceRun || !frame.invariants.converged) return null;
         if (register && frame.replicas.every((replica) =>
           replica.observation === "mv-register" && replica.siblings.length === 1
