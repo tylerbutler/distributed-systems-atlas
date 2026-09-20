@@ -54,6 +54,13 @@ For a narrower check, use `pnpm check`, `pnpm test`, or `pnpm test:browser`.
 tests. Playwright starts Astro dev on `127.0.0.1:4321` and can reuse a server
 there outside CI. Stop an unrelated server on that port before verification.
 
+## Netlify
+
+`pnpm build` compiles the Gleam toolkit, so Netlify must install Gleam before
+it runs the build. `netlify.toml` installs `mise`, installs the Gleam version
+from `mise.toml`, and runs the build through that tool environment. The publish
+directory is `dist`.
+
 ### Release checks
 
 Run the toolkit checks without Astro when changing its public boundary:

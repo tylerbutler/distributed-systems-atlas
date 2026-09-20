@@ -1,0 +1,6 @@
+[build]
+command = "curl -fsSL https://mise.run | sh && \"$HOME/.local/bin/mise\" install && \"$HOME/.local/bin/mise\" exec -- pnpm build"
+publish = "dist"
+
+[build.environment]
+MISE_YES = "1"
