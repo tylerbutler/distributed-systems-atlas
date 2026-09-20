@@ -1,0 +1,20 @@
+:root {
+  --night: #111827;
+  --paper: #f4f0e6;
+  --signal: #d84a3a;
+  --signal-cool: #176b87;
+  --muted: #667085;
+  --line: #b8b2a5;
+  --content: 72rem;
+  color: var(--night);
+  background: var(--paper);
+  font-family: "Iowan Old Style", "Palatino Linotype", serif;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--signal-cool);
+}
