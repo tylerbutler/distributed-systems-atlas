@@ -38,7 +38,39 @@ describe("acceptance fixtures", () => {
       expect(Array.isArray(fixture.expected.messages)).toBe(true);
       expect(Object.keys(fixture.expected.invariants).length).toBeGreaterThan(0);
       expect(Object.values(fixture.expected.invariants).every(Boolean)).toBe(true);
+      const checkpoints = "checkpoints" in fixture.expected ? fixture.expected.checkpoints : [];
+      for (const checkpoint of checkpoints) {
+        expect(fixture.actions.some((action) => action.id === checkpoint.afterAction)).toBe(true);
+        expect(Object.keys(checkpoint.visibleState).length).toBeGreaterThan(0);
+        expect(Object.keys(checkpoint.causalMetadata).length).toBeGreaterThan(0);
+      }
     }
+  });
+
+  test("retains concurrent MV-register siblings until an observed write resolves them", () => {
+    const fixture = acceptanceFixtures[5];
+    const checkpoint = fixture.expected.checkpoints[0];
+
+    expect(checkpoint.afterAction).toBe("deliver-blue");
+    expect(checkpoint.visibleState).toEqual({
+      A: { values: ["red", "blue"] },
+      B: { values: ["red", "blue"] },
+    });
+
+    for (const replica of ["A", "B"] as const) {
+      const metadata = checkpoint.causalMetadata[replica];
+      expect(metadata.context).toEqual({ A: 1, B: 1 });
+      expect(metadata.versions).toEqual({
+        red: { A: 1, B: 0 },
+        blue: { A: 0, B: 1 },
+      });
+      expect(compareVectors(metadata.versions.red, metadata.versions.blue)).toBe("concurrent");
+    }
+
+    expect(fixture.expected.visibleState).toEqual({
+      A: { values: ["green"] },
+      B: { values: ["green"] },
+    });
   });
 
   test("records all four vector relations with the shared comparison rule", () => {

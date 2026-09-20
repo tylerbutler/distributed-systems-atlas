@@ -20,11 +20,18 @@ export interface AcceptanceMessage {
   readonly payload: Readonly<Record<string, FixtureValue>>;
 }
 
+export interface AcceptanceCheckpoint {
+  readonly afterAction: string;
+  readonly visibleState: Readonly<Record<string, FixtureValue>>;
+  readonly causalMetadata: Readonly<Record<string, FixtureValue>>;
+}
+
 export interface AcceptanceFixture {
   readonly id: string;
   readonly topic: string;
   readonly actions: readonly AcceptanceAction[];
   readonly expected: {
+    readonly checkpoints?: readonly AcceptanceCheckpoint[];
     readonly visibleState: Readonly<Record<string, FixtureValue>>;
     readonly causalMetadata: Readonly<Record<string, FixtureValue>>;
     readonly messages: readonly AcceptanceMessage[];
@@ -197,6 +204,25 @@ export const acceptanceFixtures = [
       { id: "deliver-green", type: "deliver", input: { message: "m3:A:B" } },
     ],
     expected: {
+      checkpoints: [
+        {
+          afterAction: "deliver-blue",
+          visibleState: {
+            A: { values: ["red", "blue"] },
+            B: { values: ["red", "blue"] },
+          },
+          causalMetadata: {
+            A: {
+              context: { A: 1, B: 1 },
+              versions: { red: { A: 1, B: 0 }, blue: { A: 0, B: 1 } },
+            },
+            B: {
+              context: { A: 1, B: 1 },
+              versions: { red: { A: 1, B: 0 }, blue: { A: 0, B: 1 } },
+            },
+          },
+        },
+      ],
       visibleState: {
         A: { values: ["green"] },
         B: { values: ["green"] },
