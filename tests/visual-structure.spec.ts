@@ -3,21 +3,9 @@ import { expect, test } from "@playwright/test";
 test("the publication exposes its observatory foundation", async ({ page }) => {
   await page.goto("/");
 
-  const tokens = await page.evaluate(() => ({
-    sheet: getComputedStyle(document.documentElement)
-      .getPropertyValue("--sky-sheet")
-      .trim(),
-    instrument: getComputedStyle(document.documentElement)
-      .getPropertyValue("--instrument")
-      .trim(),
-  }));
-  expect(tokens).toEqual(
-    expect.objectContaining({
-      sheet: "oklch(96% 0.025 225)",
-      instrument: "oklch(29% 0.075 238)",
-    }),
-  );
+  await expect(page.locator("html")).toHaveCSS("background-color", "oklch(0.96 0.025 225)");
   const header = page.getByRole("banner");
+  await expect(header).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
   await expect(header.getByTestId("station-mark-a")).toBeVisible();
   await expect(header.getByTestId("station-mark-b")).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Primary" })).toBeVisible();

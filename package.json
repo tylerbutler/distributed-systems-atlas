@@ -8,6 +8,7 @@
     "check": "astro check && tsc --noEmit",
     "test": "vitest run",
     "test:browser": "playwright test",
+    "verify": "pnpm check && pnpm test && pnpm test:browser && astro build",
     "build": "pnpm check && pnpm test && astro build"
   },
   "dependencies": {

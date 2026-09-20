@@ -118,10 +118,11 @@ test("signal motion is bounded and delivery commits every view together", async 
       const animation = lab.getAnimations({ subtree: true })[0];
       if (!animation) return null;
       animation.pause();
-      return { duration: animation.effect!.getTiming().duration, bound: getComputedStyle(lab).getPropertyValue("--duration-trace") };
+      return animation.effect!.getTiming().duration;
     });
     expect(duration).not.toBeNull();
-    expect(duration!.duration).toBeLessThanOrEqual(parseFloat(duration!.bound));
+    expect(duration).toBeGreaterThan(0);
+    expect(duration).toBeLessThanOrEqual(420);
     await expect(lab.getByRole("region", { name: "Replica B", exact: true })).toContainText("Empty set");
     if (name.startsWith("Deliver")) {
       await expect(lab.getByRole("list", { name: "Messages in flight" })).toContainText("m1:A:B");

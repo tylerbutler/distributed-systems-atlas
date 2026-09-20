@@ -220,8 +220,12 @@ test("sheet reading context gives records distinct readable treatments", async (
   await expect(notes).toHaveCSS("border-top-style", "solid");
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
-    const figure = page.locator(".sheet-opening figure");
-    expect((await figure.boundingBox())!.width).toBe((await page.locator(".sheet-opening").boundingBox())!.width);
+    const figures = page.locator(".sheet-opening figure");
+    await expect(figures.first()).toBeVisible();
+    const openingWidth = (await page.locator(".sheet-opening").boundingBox())!.width;
+    for (const figure of await figures.all()) {
+      expect((await figure.boundingBox())!.width).toBe(openingWidth);
+    }
     await expect(code).toHaveCSS("overflow-x", "auto");
     await expect(ledger.locator("th").first()).toHaveCSS("position", "static");
     await expect(ledger.locator("th").first()).toHaveCSS("text-align", "start");
