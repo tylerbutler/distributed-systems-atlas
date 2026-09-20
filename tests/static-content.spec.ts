@@ -89,6 +89,15 @@ test.describe("collection build fixtures", () => {
     for (const file of ["astro.config.mjs", "tsconfig.json", "package.json"]) {
       await cp(file, path.join(root, file));
     }
+    const configPath = path.join(root, "astro.config.mjs");
+    const config = await readFile(configPath, "utf8");
+    await writeFile(
+      configPath,
+      config.replace(
+        "export default defineConfig({",
+        'export default defineConfig({\n  cacheDir: "./.astro",\n  vite: { cacheDir: "./.vite" },',
+      ),
+    );
     await symlink(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
     await mkdir(path.join(root, "src/content/sheets"), { recursive: true });
     const sheets = [
@@ -123,6 +132,9 @@ const { Content } = await render(entry);
     test.setTimeout(90_000);
     const result = await buildFixture(root);
     expect(result.code, result.output).toBe(0);
+    await expect(
+      readFile(path.resolve("node_modules/.astro/data-store.json"), "utf8"),
+    ).resolves.not.toContain("Fixture article");
     await page.setContent(await readFile(path.join(root, "dist/atlas/index.html"), "utf8"));
     await expect(page.getByRole("link", { name: "Dots and causal context", exact: true })).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
     await expect(page.getByText("Lamport clocks").locator("..")).toContainText("Planned");
