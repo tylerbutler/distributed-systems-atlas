@@ -1,0 +1,304 @@
+---
+title: Dots and causal context
+summary: Track one event and the exact history that has observed it.
+territory: mechanisms
+status: published
+requires: []
+introduces:
+  - dot
+  - causal context
+related: []
+scenarios:
+  - dots-concurrent-add-remove
+terms:
+  - term: dot
+    definition: A unique event identifier made from a replica ID and a local counter.
+  - term: causal context
+    definition: A compact record of the dots a replica has observed.
+references:
+  - key: riak-dotted-version-vectors
+    title: Dotted Version Vectors
+    url: https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/
+---
+
+import CausalLab from "../../components/CausalLab.astro";
+
+## One event needs one name
+
+Two stations keep a set of signals to watch. Station A adds `beacon`. Station B
+receives that update, so both stations list the same signal. Then the link
+breaks. A removes `beacon` while B adds it again, without hearing about A's
+removal. Once messages can pass between them, should the signal stay in the set?
+
+You can't answer from the word `beacon`. Both additions use it. Nor can you ask
+which station clicked last: the stations have no shared clock, and the network
+can delay either message. Even perfect wall-clock readings wouldn't tell you
+whether A had seen B's addition before removing the signal.
+
+An observed-remove set gives the question a precise meaning. A removal targets
+the additions that the removing replica has observed. B's unseen addition can
+remain. That choice is useful when independent additions deserve to survive,
+but it isn't a universal definition of delete. An access-control system, for
+example, might need different conflict semantics for revoking a permission.
+
+To implement this choice, we need to distinguish two additions of one value.
+Give each addition its own name, keep track of the names a replica has learned
+about, and retain enough removal knowledge to reject an old message. We'll
+follow those three pieces through the same two-station experiment.
+
+## A dot is identity, not a timestamp
+
+A **dot** is a pair: `(replica, counter)`. We'll write `(A, 1)` as `A:1`.
+Replica A allocates its next dot by incrementing its own counter. Replica B
+does the same with B's counter. The two stations can allocate `A:1` and `B:1`
+without talking to each other because their replica IDs differ.
+
+The uniqueness guarantee has conditions. Each replica ID must identify one
+allocator, and that allocator must not reuse a counter. Restarting A with its
+old ID and a counter reset to zero could assign `A:1` to a second addition.
+After that collision, a peer could mistake a new add for an old, removed one.
+Persistence or a fresh replica identity is part of making the name unique.
+
+Within one allocator, the counter records allocation order: A created `A:1`
+before `A:2`. Across allocators, comparing the numbers tells you no such thing.
+`B:1` might follow an observation of `A:50`, or B might have heard nothing from
+A. You need causal context to distinguish those histories.
+
+The counter also doesn't measure elapsed time. Waiting an hour creates no new
+dot. In this lab, adding a value creates one; removing a value does not. A
+remove records which existing addition dots it removes. The event ledger still
+records the remove as an action, so ledger positions and dot counters answer
+different questions.
+
+Attaching a name to each addition also makes retries manageable. Delivering the
+same addition twice means inserting the same dot twice into a set of dots.
+It doesn't create a second addition. A deliberate re-add uses a fresh dot,
+even when its visible string is identical.
+
+## Context records what a replica has observed
+
+One dot names one event. A **causal context** records accumulated knowledge of
+events. After A creates its first addition, A knows about `A:1`. B learns about
+that addition when its message arrives. Removing it changes membership without
+making A forget that the addition happened.
+
+For a gap-free history from one allocator, a counter can summarize many dots.
+An entry `A:4` in a version vector represents A's first four allocations, rather
+than just the fourth. This is why notation needs a label: `A:4` under **Live
+dots** identifies one addition; `A:4` under **Causal context** summarizes history.
+A version vector has one such component for each tracked replica.
+
+To merge two vector summaries, take the maximum for each replica. Neither peer
+forgets knowledge that the other has acquired. But a summary is not a bag of
+value payloads. This lab sends per-operation deltas; an out-of-order delta can
+report a higher counter before a lower-numbered addition's payload arrives.
+The receiver must still accept the delayed payload unless it has removal
+knowledge for that particular dot.
+
+The lab therefore retains explicit addition dots and explicit removed-dot
+records alongside its vector. Its **Clock** and **Causal context** fields show
+the same vector summary. They aren't two independent clocks, and the vector
+alone is not an exact inventory of received value payloads.
+
+An exact context for a set of received dots with gaps needs more information
+than a single maximum per replica: for example, a contiguous prefix plus
+separate dots beyond it. Don't infer receipt of every earlier payload from a
+high counter. In the guided run below, delivery of the first addition precedes
+the partition, so both stations have that addition before they diverge.
+
+## Interactive lab
+
+Start from the initial frame, or choose **Reset lab** if you've experimented.
+Use this order to reproduce the concurrent add/remove case:
+
+1. Choose **Add beacon at A**, then **Deliver m1 from A to B**. Let B observe
+   A's addition before you interrupt communication.
+2. Choose **Partition A and B**. Then choose **Remove beacon at A** and
+   **Add beacon at B**. Don't deliver either queued update.
+3. Choose **Heal A and B**. Inspect the replicas and the queued messages
+   before doing anything else. Healing permits delivery; it doesn't deliver.
+4. Choose **Deliver m2 from A to B**, then **Deliver m3 from B to A**.
+   Now compare the live dots, contexts, and invariant checks.
+
+<CausalLab scenario="dots-concurrent-add-remove" />
+
+The state panels and ledger above come from the engine's trace. **Previous
+frame** and **Next frame** let you inspect recorded states; return to the latest
+frame before issuing another operation. No background timer advances delivery.
+You decide when a message arrives.
+
+For a second run, reset and follow the same actions but reverse the last two
+deliveries. You can also duplicate a queued message before delivering it.
+Compare the final state rather than expecting identical intermediate views.
+The queue and ledger let you account for the extra delivery.
+
+This lab uses a TypeScript reference model with explicit removed-dot records.
+It is not a Watershed adapter or a production replication service. The
+pseudocode in [Field notes](#field-notes) describes this model's merge rules.
+Without JavaScript, you can read the article and inspect the static initial
+state; the controls require JavaScript.
+
+## Remove only what you saw
+
+After you complete both final deliveries in the guided run, each replica shows
+`beacon` with the live dot `B:1`. The removed addition is `A:1`. Both replicas
+retain knowledge of both additions, even though only one contributes to visible
+membership.
+
+B:1 was never observed by A's remove. At the point of removal, A could name
+`A:1`, but it had received no message about B's new addition. A's removal
+therefore names `A:1`, and merging that removal at B does not remove `B:1`.
+Delivering B's addition at A gives A the surviving dot too.
+
+That is the **add-wins** result for a concurrent add and remove. Here,
+concurrent means neither operation observed the other. The order you pressed
+their buttons in the browser does not establish communication between the
+replicas. The partition keeps those operations apart.
+
+The timing of the claim matters. Immediately after healing, A still has an
+empty visible set, while B still has both addition dots live. Neither pending
+message has arrived. After delivery of the removal to B, B retains only its
+new dot; after delivery of the addition to A, both replicas agree. Restoring a
+link isn't evidence of convergence.
+
+Change the observations and you change what removal can do. If A receives B's
+addition before removing `beacon`, A can remove both dots. If B receives A's
+removal and then adds the value, B's re-add is causally later, not concurrent.
+Its fresh dot survives that earlier removal, but calling the sequence
+concurrent would teach the wrong reason.
+
+The visible set is a projection: include a value if at least one of its
+addition dots is not marked removed. Two replicas can display the same value
+while retaining different dots or removal records. The lab's convergence check
+also compares that metadata and requires an empty message queue.
+
+## Break it: discard the context
+
+Imagine replacing each replica's state with a plain set of strings. Keep the
+same network schedule, but send commands such as `add beacon` and
+`delete beacon`, with no event identity or observed-dot information. Try to
+apply A's delayed delete at B after B's independent add.
+
+If delete means “erase the value wherever it appears,” B loses its own
+addition. The command cannot distinguish A's observed addition from B's
+unobserved one. Both had the same string. Making that rule deterministic could
+make replicas agree, but it would still violate observed-remove semantics.
+
+Try the opposite shortcut: merge replicas by taking the union of their visible
+strings. A deletes `beacon`, but B still has the earlier copy. Union restores
+the value at A. You have resurrected an addition that A removed, without
+anyone making a new addition.
+
+Retaining a permanent “beacon was deleted” flag avoids that resurrection at the
+cost of forbidding a legitimate re-add. Recording the removed dot instead lets
+you reject the old `A:1` and accept a fresh addition of `beacon`. The distinction
+is between events, even when the value text doesn't change.
+
+The lab doesn't offer a broken-algorithm switch. You can test the delayed-message
+case with the correct model: reset, add at A, duplicate the queued addition,
+and remove at A before delivering anything. Deliver the removal first, then
+the original addition and its duplicate. B keeps the observed addition removed
+because the removal record identifies its dot. The old message cannot undo it.
+
+Discarding causal metadata is tempting when the visible values already match.
+That comparison misses the question an incoming message will pose: is this a
+new contribution or a replay of something we removed? Keeping only the visible
+value throws away the information needed to answer.
+
+## What causal metadata costs
+
+Each tracked replica needs a counter entry in the vector. The reference model
+also retains addition dots and removed-dot records per value. Its vector size
+depends on the number of replicas; its event records can grow with the number
+of additions. Repeated changes to one visible string can therefore consume
+more metadata than the visible set suggests.
+
+Removal knowledge costs storage because messages can arrive late. This model
+keeps that knowledge indefinitely. It doesn't implement garbage collection or
+replica retirement. You cannot free a removed-dot record just because the
+current screen says the replicas have converged and expect the same safety in
+a system that might later replay an old snapshot.
+
+A production design needs a rule for when old state can no longer reintroduce
+an addition. Depending on the protocol, that can involve acknowledgments from
+the relevant replicas, a causal-stability condition, or rebuilding a returning
+replica from an accepted snapshot. Those mechanisms depend on membership and
+delivery guarantees; a local timeout alone doesn't prove that every old copy
+has disappeared.
+
+Retirement raises an identity question too. A disconnected replica might return
+with counters and state from before cleanup. The system must decide whether it
+may resume that identity, must resynchronize, or must join under a new one.
+Otherwise a decision to reclaim metadata can become a decision to accept stale
+history without intending to.
+
+Compaction can encode a contiguous run of observed events as a counter rather
+than storing every dot. Gaps require separate representation until the history
+allows them to close. Compact observed-remove designs can also encode removal
+knowledge through relationships between context and live dots. Their merge
+rules must preserve those relationships; simply deleting this model's explicit
+removal records is not such an optimization.
+
+Local adds and removes here don't wait for the other station. Agreement still
+depends on delivering the queued information. No dot can force a broken
+connection to recover, and no convergence proof chooses the right conflict
+semantics for your application. Decide what an unseen concurrent addition
+should mean before choosing a set implementation.
+
+## Field notes
+
+The following pseudocode uses the reference model's explicit tombstones.
+`adds[value]` and `removed[value]` are sets of dots; missing sets start empty.
+`context` maps replica IDs to counter maxima, initially zero. `self` is the
+local replica ID. `send` queues the payload for each peer; only delivery runs
+`merge`. Each payload takes a copy of the context at send time.
+
+```text
+add(value):
+  context[self] = context[self] + 1
+  dot = (self, context[self])
+  adds[value] = adds[value] union {dot}
+  send(value, {dot}, {}, copy(context))
+
+remove(value):
+  removed[value] = removed[value] union adds[value]
+  send(value, copy(adds[value]),
+       copy(removed[value]), copy(context))
+
+merge(message):
+  value = message.value
+  adds[value] = adds[value] union message.adds
+  removed[value] = removed[value] union message.removed
+  for each replica:
+    context[replica] =
+      max(context[replica], message.context[replica])
+
+visible(value):
+  return (adds[value] minus removed[value]) is not empty
+```
+
+Union and component-wise maximum are associative, commutative, and idempotent.
+Given the same generated updates, these merge operations tolerate reordered
+and duplicated delivery. That statement assumes unique dots and delivery of
+the relevant updates. It doesn't promise agreement while some updates remain
+undelivered, or permit a replica to forget its removal records.
+
+You'll encounter **actor** for replica identity, **tag** for an addition's dot,
+and **tombstone** for retained removal knowledge. **OR-Set** abbreviates
+observed-remove set; **add-wins set** names its treatment of concurrent adds
+and removes. A version vector is one compact representation of causal
+knowledge. A dotted version vector distinguishes an individual event from a
+summarized history; the terms are related, not interchangeable names for this
+entire set algorithm.
+
+Russell Brown's [Dotted Version Vectors](https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/)
+explains how Riak associates individual dots with sibling values so an update
+can supersede the versions its client observed without discarding concurrent
+siblings. That is the source for the event-versus-context distinction here,
+not a claim that Riak uses this lab's explicit-tombstone implementation.
+
+Multi-value registers use the same distinction to retain concurrent versions;
+observed-remove sets use it to define which additions a remove targets. Those
+neighboring sheets remain planned. For now, use the two replicas above to
+check a concrete prediction: name the dots a removal observed, then account
+for each message before deciding what remains visible.

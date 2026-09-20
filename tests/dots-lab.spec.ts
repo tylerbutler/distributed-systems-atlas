@@ -1,7 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+test("Dots sheet explains the final add-wins result", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  await expect(page.getByText(/B:1 was never observed by A['\u2019]s remove/)).toBeVisible();
+});
+
 test("steps through concurrent add and remove", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   const a = lab.getByRole("region", { name: "Replica A", exact: true });
   const b = lab.getByRole("region", { name: "Replica B", exact: true });
@@ -33,7 +38,7 @@ test("steps through concurrent add and remove", async ({ page }) => {
 });
 
 test("does not describe a sequential re-add as concurrent", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   await lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true }).click();
@@ -55,7 +60,7 @@ test("shows the static initial state without JavaScript", async ({ browser }) =>
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    await page.goto("/lab-test/");
+    await page.goto("/atlas/dots-and-causal-context/");
     await expect(page.getByText("Initial replica state", { exact: true })).toBeVisible();
     await expect(page.getByText("No events observed", { exact: true })).toHaveCount(2);
     await expect(page.getByRole("region", { name: /^Replica / })).toHaveCount(2);
@@ -67,7 +72,7 @@ test("shows the static initial state without JavaScript", async ({ browser }) =>
 });
 
 test("duplicates and reorders queued messages, browses history, and resets", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   await lab.getByRole("button", { name: "Duplicate m1 from A to B", exact: true }).click();
@@ -91,7 +96,7 @@ test("duplicates and reorders queued messages, browses history, and resets", asy
 });
 
 test("disables blocked delivery and preserves the last valid views on LabError", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
@@ -130,7 +135,7 @@ test("disables blocked delivery and preserves the last valid views on LabError",
 });
 
 test("reports invalid and missing scenarios without a success-shaped fallback", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   await expect(page.getByRole("button", { name: "Reset lab" })).toBeVisible();
   for (const scenario of ["not-a-scenario", null]) {
     await page.evaluate((value) => {
@@ -150,7 +155,7 @@ test("reports invalid and missing scenarios without a success-shaped fallback", 
 });
 
 test("reconnecting the element retains its trace without duplicate handlers", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   await lab.evaluate((element) => {

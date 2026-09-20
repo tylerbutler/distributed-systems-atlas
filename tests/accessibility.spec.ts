@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("history delivery descriptions explain the return-to-latest restriction", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
@@ -19,9 +19,15 @@ test("history delivery descriptions explain the return-to-latest restriction", a
 });
 
 test("lab controls work by keyboard and keep focus through updates", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const add = page.getByRole("button", { name: "Add beacon at A", exact: true });
   await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("main")).toBeFocused();
+  for (let step = 0; step < 12 && !(await add.evaluate((button) => button === document.activeElement)); step++) {
+    await page.keyboard.press("Tab");
+  }
   await expect(add).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("status")).toContainText("A created dot A:1");
@@ -42,7 +48,7 @@ test("lab controls work by keyboard and keep focus through updates", async ({ pa
 
 test("reduced motion disables transition animation and responds to preference changes", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await expect(lab).toHaveAttribute("data-motion", "reduced");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
@@ -58,7 +64,7 @@ test("reduced motion disables transition animation and responds to preference ch
 });
 
 test("replicas reflow without overflow and message paths do not depend on color", async ({ page }) => {
-  await page.goto("/lab-test/");
+  await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
   const path = lab.locator(".lab-message");

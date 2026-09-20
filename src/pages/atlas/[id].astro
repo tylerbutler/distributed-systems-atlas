@@ -1,0 +1,18 @@
+---
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import SheetLayout from "../../layouts/SheetLayout.astro";
+
+export async function getStaticPaths() {
+  const sheets = await getCollection("sheet", ({ data }) => data.status === "published");
+  return sheets.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: CollectionEntry<"sheet">;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<SheetLayout entry={entry}><Content /></SheetLayout>

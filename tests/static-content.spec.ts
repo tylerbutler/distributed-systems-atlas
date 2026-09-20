@@ -14,6 +14,52 @@ const plannedTitles = [
   "Observed-remove sets",
 ];
 
+test("Dots sheet contains the full teaching sequence", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+
+  for (const heading of [
+    "One event needs one name",
+    "A dot is identity, not a timestamp",
+    "Context records what a replica has observed",
+    "Interactive lab",
+    "Remove only what you saw",
+    "Break it: discard the context",
+    "What causal metadata costs",
+    "Field notes",
+  ]) {
+    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+  }
+});
+
+test("Dots sheet is a complete article without JavaScript", async ({ browser, request }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/");
+    await expect(page.getByRole("link", { name: "Dots and causal context", exact: true })).toBeVisible();
+    await page.getByRole("link", { name: "Dots and causal context", exact: true }).click();
+    await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+    await expect(page).toHaveTitle("Dots and causal context | Distributed Systems Atlas");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dots and causal context");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content", "Track one event and the exact history that has observed it.",
+    );
+    await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Dotted Version Vectors", exact: true }))
+      .toHaveAttribute("href", "https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/");
+    const wordCount = await page.locator(".sheet-body").evaluate((body) => {
+      const copy = body.cloneNode(true) as HTMLElement;
+      copy.querySelectorAll("causal-lab, pre").forEach((element) => element.remove());
+      return (copy.textContent ?? "").match(/\b[\w]+(?:['’-][\w]+)*\b/g)?.length ?? 0;
+    });
+    expect(wordCount).toBeGreaterThanOrEqual(1800);
+    expect(wordCount).toBeLessThanOrEqual(2800);
+    expect((await request.get("/lab-test/")).status()).toBe(404);
+  } finally {
+    await context.close();
+  }
+});
+
 async function buildFixture(root: string) {
   try {
     const result = await promisify(execFile)(
@@ -100,6 +146,7 @@ test.describe("collection build fixtures", () => {
     );
     await symlink(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
     await mkdir(path.join(root, "src/content/sheets"), { recursive: true });
+    await rm(path.join(root, "src/content/sheets/dots-and-causal-context.mdx"), { force: true });
     const sheets = [
       { id: "dots-and-causal-context", title: "Dots and causal context", territory: "mechanisms", status: "published", requires: ["local-history", "failure-detectors"], related: ["replicated-log", "failure-detectors"] },
       { id: "local-history", title: "Local history", territory: "mechanisms", status: "published" },
@@ -110,18 +157,6 @@ test.describe("collection build fixtures", () => {
       await writeFile(path.join(root, `src/content/sheets/${id}.md`),
         `---\n${JSON.stringify({ ...data, summary: `Explore ${data.title.toLowerCase()}.` })}\n---\n\n## Fixture article\n\nAn event belongs to one replica.\n`);
     }
-    await mkdir(path.join(root, "src/pages/atlas"), { recursive: true });
-    await writeFile(path.join(root, "src/pages/atlas/[id].astro"), `---
-import { getCollection, render } from "astro:content";
-import SheetLayout from "../../layouts/SheetLayout.astro";
-export async function getStaticPaths() {
-  return (await getCollection("sheet")).filter(entry => entry.data.status === "published").map(entry => ({ params: { id: entry.id }, props: { entry } }));
-}
-const { entry } = Astro.props;
-const { Content } = await render(entry);
----
-<SheetLayout entry={entry}><Content /></SheetLayout>
-`);
   });
 
   test.afterAll(async () => {
@@ -132,6 +167,8 @@ const { Content } = await render(entry);
     test.setTimeout(90_000);
     const result = await buildFixture(root);
     expect(result.code, result.output).toBe(0);
+    await expect(readFile(path.join(root, "dist/atlas/failure-detectors/index.html"), "utf8"))
+      .rejects.toMatchObject({ code: "ENOENT" });
     await expect(
       readFile(path.resolve("node_modules/.astro/data-store.json"), "utf8"),
     ).resolves.not.toContain("Fixture article");
