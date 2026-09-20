@@ -68,8 +68,10 @@ for (const [from, to] of [["A", "B"], ["B", "A"]]) {
 
 test("observation console uses its desktop, tablet, and mobile layouts", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
+  await page.evaluate(() => document.fonts.ready);
   const lab = page.getByTestId("causal-lab");
   await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  await expect(lab.getByText("Frame 1 of 1", { exact: true })).toBeVisible();
   for (const width of [320, 390, 671, 672, 768, 1024, 1025, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     const stations = (await lab.locator(".lab-replicas").boundingBox())!;

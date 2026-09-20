@@ -148,7 +148,7 @@ for (const lesson of labs) {
     await deliver.click();
     await expect(lab.getByText("Frame 4 of 4", { exact: true })).toBeVisible();
     await expect(deliver).toHaveCount(0);
-});
+  });
 }
 
 async function tabTo(page: Page, target: Locator): Promise<void> {
@@ -241,32 +241,32 @@ for (const lesson of labs) {
     await expect(lab.getByRole("button", { name: "Next recorded frame", exact: true })).toBeVisible();
     await page.clock.runFor(2700);
     await expect(lab.getByText("Frame 1 of 2", { exact: true })).toBeVisible();
-});
+  });
 
-test(`${lesson.route}: reduced motion disables transitions without changing recorded state`, async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto(`/atlas/${lesson.route}/`);
-  const lab = page.getByTestId("causal-lab");
-  await expect(lab).toHaveAttribute("data-motion", "reduced");
-  await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
-  const records = lab.locator(".lab-inspector pre");
-  const reduced = await records.allTextContents();
-  const announcement = await lab.getByRole("status").innerText();
-  await expect(lab.locator(".lab-signal")).toHaveCount(0);
-  expect(await lab.evaluate((element) => [element, ...element.querySelectorAll("*")].every((node) => {
-    const style = getComputedStyle(node);
-    return style.animationName === "none" && style.transitionDuration === "0s";
-  }))).toBe(true);
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await expect(lab).toHaveAttribute("data-motion", "full");
-  await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
-  await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
-  await expect(lab.getByText("Frame 1 of 1", { exact: true })).toBeVisible();
-  expect(await records.allTextContents()).toEqual(reduced);
-  await expect(lab.getByRole("status")).toHaveText(announcement);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(lab).toHaveAttribute("data-motion", "reduced");
-});
+  test(`${lesson.route}: reduced motion disables transitions without changing recorded state`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/atlas/${lesson.route}/`);
+    const lab = page.getByTestId("causal-lab");
+    await expect(lab).toHaveAttribute("data-motion", "reduced");
+    await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+    const records = lab.locator(".lab-inspector pre");
+    const reduced = await records.allTextContents();
+    const announcement = await lab.getByRole("status").innerText();
+    await expect(lab.locator(".lab-signal")).toHaveCount(0);
+    expect(await lab.evaluate((element) => [element, ...element.querySelectorAll("*")].every((node) => {
+      const style = getComputedStyle(node);
+      return style.animationName === "none" && style.transitionDuration === "0s";
+    }))).toBe(true);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await expect(lab).toHaveAttribute("data-motion", "full");
+    await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
+    await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+    await expect(lab.getByText("Frame 1 of 1", { exact: true })).toBeVisible();
+    expect(await records.allTextContents()).toEqual(reduced);
+    await expect(lab.getByRole("status")).toHaveText(announcement);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(lab).toHaveAttribute("data-motion", "reduced");
+  });
 }
 
 for (const lesson of labs.filter(({ route }) => route !== "dots-and-causal-context")) {
