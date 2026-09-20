@@ -48,6 +48,7 @@ const { frame } = Astro.props;
   ) : <p>No queued messages</p>}
 </section>
 <div class="lab-explanation">
+  {frame.controls.map((control) => control.kind === "notice" && <p>{control.text}</p>)}
   <p>{frame.explanation}</p>
   {frame.outcome && <><h3>{frame.outcome.heading}</h3><p>{frame.outcome.explanation}</p></>}
 </div>

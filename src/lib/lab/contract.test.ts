@@ -25,4 +25,10 @@ describe("compareVectors", () => {
     expect(compareVectors({ A: 2, B: 1 }, { A: 2, B: 1 })).toBe("equal");
     expect(compareVectors({ A: 2 }, { A: 1, B: 1 })).toBe("concurrent");
   });
+
+  test("treats absent components as zero even when replica names match prototype properties", () => {
+    expect(compareVectors({ constructor: 1 }, {})).toBe("after");
+    expect(compareVectors({}, { toString: 1 })).toBe("before");
+    expect(compareVectors(JSON.parse('{"__proto__":1}'), {})).toBe("after");
+  });
 });

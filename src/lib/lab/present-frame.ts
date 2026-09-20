@@ -83,7 +83,10 @@ function observationDetails(record: Observation, target: "replica" | "message"):
     case "scalar-clock":
       return [{ label: "Scalar clock", value: String(record.clock) }];
     case "vector-clock":
-      return [{ label: "Clock", value: vectorLabel(record.clock) }];
+      return [
+        { label: "Clock", value: vectorLabel(record.clock) },
+        { label: "Vector size", value: `${Object.keys(record.clock).length} components per clock` },
+      ];
     case "dots":
       return [
         { label: "Live dots", value: dotsLabel(record.dots) },
@@ -146,17 +149,28 @@ export function presentFrame(
       details: [
         { label: "Visible value", value: presentation.valueLabel(replica) },
         ...observationDetails(replica, "replica"),
+        ...(frame.ordering && (replica.observation === "scalar-clock" || replica.observation === "vector-clock") ? [{
+          label: "Local history",
+          value: frame.ordering.events.filter((event) => event.replica === replica.id).map((event) =>
+            `${event.id}@${event.lamport ?? `[${vectorLabel(event.vector ?? {})}]`}`).join(", ") || "No local events",
+        }, {
+          label: "Predecessors",
+          value: frame.ordering.events.filter((event) => event.replica === replica.id).map((event) =>
+            `${event.id}: ${event.predecessors.join(", ") || "none"}`).join("; ") || "No predecessors",
+        }] : []),
       ],
       emptyLabel: hasObservedEvents(replica) ? null : "No events observed",
     })),
     messages: frame.messages.map((message) => {
       const observations = observationDetails(message, "message");
-      const [number, , , ...copies] = message.id.split(":");
+      const parts = message.id.split(":");
+      const idParts = parts[1] === message.from && parts[2] === message.to
+        ? [parts[0], ...parts.slice(3)] : parts;
       return {
         id: message.id,
         from: message.from,
         to: message.to,
-        routeLabel: `${[number, ...copies].join(" ")} from ${message.from} to ${message.to}`,
+        routeLabel: `${idParts.join(" ")} from ${message.from} to ${message.to}`,
         payloadLabel: [message.kind, ...observations.map(({ label, value }) => `${label.toLowerCase()}: ${value}`)].join("; "),
         details: [
           { label: "Message ID", value: message.id },

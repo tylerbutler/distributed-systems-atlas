@@ -128,7 +128,7 @@ describe("engine registry", () => {
     expect(engine.current().action).toEqual({ type: "add", replica: "A", value: "beacon" });
   });
 
-  test.each(["ordering", "mv-register", "or-set"] as const)("does not substitute Dots for unavailable %s engines", (kind) => {
+  test.each(["mv-register", "or-set"] as const)("does not substitute Dots for unavailable %s engines", (kind) => {
     expect(() => createEngine({ ...scenarioById("dots-concurrent-add-remove"), kind }))
       .toThrow(`No engine registered for kind: ${kind}`);
   });
@@ -142,6 +142,8 @@ describe("engine registry", () => {
     { type: "local-event", replica: "A" },
     { type: "send", from: "A", to: "B" },
     { type: "write", replica: "A", value: "red" },
+    { type: "compare-events", pairs: [["a1", "b1"]] },
+    { type: "compare-vectors", left: { A: 1 }, right: { B: 1 } },
   ])("returns LabError for unsupported $type without changing history", (action) => {
     const engine = createEngine(scenarioById("dots-concurrent-add-remove"));
     const previous = engine.current();

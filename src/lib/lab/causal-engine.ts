@@ -267,6 +267,8 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine<Dot
       case "local-event":
       case "send":
       case "write":
+      case "compare-events":
+      case "compare-vectors":
         return error(action, `unsupported action for dots: ${action.type}`);
     }
   }

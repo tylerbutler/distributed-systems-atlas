@@ -9,8 +9,8 @@ interface Props {
 const { left, right } = Astro.props;
 const components = [...new Set([...Object.keys(left), ...Object.keys(right)])].sort();
 const rows = components.map((id) => {
-  const a = left[id] ?? 0;
-  const b = right[id] ?? 0;
+  const a = Object.hasOwn(left, id) ? left[id] : 0;
+  const b = Object.hasOwn(right, id) ? right[id] : 0;
   return {
     id, a, b,
     symbol: a < b ? "<" : a > b ? ">" : "=",

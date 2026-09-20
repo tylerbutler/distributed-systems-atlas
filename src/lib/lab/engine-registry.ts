@@ -1,8 +1,10 @@
 import { createCausalEngine } from "./causal-engine";
+import { createOrderingEngine } from "./ordering-engine";
 import type { EngineKind, EngineScenario, SimulationEngine } from "./contract";
 
 const engines: Partial<Record<EngineKind, (scenario: EngineScenario) => SimulationEngine>> = {
   dots: createCausalEngine,
+  ordering: createOrderingEngine,
 };
 
 export function createEngine(scenario: EngineScenario): SimulationEngine {

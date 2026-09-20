@@ -3,6 +3,7 @@ export type MessageId = string;
 export type CausalRelation = "before" | "after" | "equal" | "concurrent";
 export type VersionVector = Readonly<Record<ReplicaId, number>>;
 export type EngineKind = "ordering" | "dots" | "mv-register" | "or-set";
+export type OrderingMode = "history" | "partial-order" | "lamport" | "vector";
 
 export interface EngineScenario {
   readonly id: string;
@@ -10,6 +11,27 @@ export interface EngineScenario {
   /** Nonempty, unique IDs; ":" is reserved for message and partition keys. */
   readonly replicas: readonly ReplicaId[];
   readonly initialValues: readonly string[];
+  readonly orderingMode?: OrderingMode;
+}
+
+export interface OrderingEvent {
+  readonly id: string;
+  readonly replica: ReplicaId;
+  readonly kind: "local" | "send" | "receive";
+  readonly predecessors: readonly string[];
+  readonly value?: string;
+  readonly lamport?: number;
+  readonly vector?: VersionVector;
+}
+
+export interface OrderingTrace {
+  readonly events: readonly OrderingEvent[];
+  readonly comparisons: readonly { readonly left: string; readonly right: string; readonly relation: CausalRelation }[];
+  readonly vectorComparisons: readonly {
+    readonly left: VersionVector;
+    readonly right: VersionVector;
+    readonly relation: CausalRelation;
+  }[];
 }
 
 export interface Dot {
@@ -70,15 +92,18 @@ export interface TraceFrame<O extends Observation = Observation> {
   readonly messages: readonly MessageView<O>[];
   readonly partitions: readonly string[];
   readonly invariants: Readonly<Record<string, boolean>>;
+  readonly ordering?: OrderingTrace;
 }
 
 export type LabAction =
-  | { readonly type: "local-event"; readonly replica: ReplicaId; readonly value?: string }
-  | { readonly type: "send"; readonly from: ReplicaId; readonly to: ReplicaId }
+  | { readonly type: "local-event"; readonly replica: ReplicaId; readonly value?: string; readonly event?: string }
+  | { readonly type: "send"; readonly from: ReplicaId; readonly to: ReplicaId; readonly event?: string; readonly message?: MessageId }
+  | { readonly type: "compare-events"; readonly pairs: readonly (readonly [string, string])[] }
+  | { readonly type: "compare-vectors"; readonly left: VersionVector; readonly right: VersionVector }
   | { readonly type: "write"; readonly replica: ReplicaId; readonly value: string }
   | { readonly type: "add"; readonly replica: ReplicaId; readonly value: string }
   | { readonly type: "remove"; readonly replica: ReplicaId; readonly value: string }
-  | { readonly type: "deliver"; readonly message: MessageId }
+  | { readonly type: "deliver"; readonly message: MessageId; readonly event?: string }
   | { readonly type: "duplicate"; readonly message: MessageId }
   | { readonly type: "partition"; readonly left: ReplicaId; readonly right: ReplicaId }
   | { readonly type: "heal"; readonly left: ReplicaId; readonly right: ReplicaId }
@@ -114,8 +139,8 @@ export function compareVectors(
   let less = false;
   let greater = false;
   for (const id of ids) {
-    const a = left[id] ?? 0;
-    const b = right[id] ?? 0;
+    const a = Object.hasOwn(left, id) ? left[id] : 0;
+    const b = Object.hasOwn(right, id) ? right[id] : 0;
     less ||= a < b;
     greater ||= a > b;
   }

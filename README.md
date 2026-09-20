@@ -125,4 +125,42 @@ meet the design gate. Canonical acceptance data in
 `src/lib/lab/fixtures.ts` records the required ordering, clock, Dots,
 multi-value register, and observed-remove set results without depending on an
 engine or renderer. The shared contract and renderer support those observation
-shapes; ordering engines and Watershed adapters remain separate work.
+shapes. Watershed adapters remain separate work.
+
+### History, ordering, and clock reference engines
+
+`ordering-engine.ts` implements one deterministic engine family with four
+`orderingMode` values: `history`, `partial-order`, `lamport`, and `vector`.
+Use `createEngine(scenarioById(id))` for these canonical scenarios:
+
+- `local-history-message-observation`
+- `partial-order-comparison`
+- `lamport-ordering-concurrency-limit`
+- `vector-clock-comparisons`
+
+Each scenario derives its reference actions from `acceptanceFixtures`.
+`scenarioTrace(id)` returns the frozen initial frame and reference replay
+frames for diagrams and static fallbacks. Live labs use the same scenario
+actions and presentation through the existing engine registry. The sheet
+content remains a separate task.
+
+History and partial-order sends copy the sender's known events without
+creating another local event, as specified by the canonical fixtures. Clock
+lessons count sends as events. A receive records a new local event, even
+for a duplicate message. Messages retain their send-time payload when later
+events occur; partitions block delivery but retain queued messages. Healing
+does not deliver messages.
+
+`frame.ordering` records event predecessors and comparison results. Use
+`compareEvents` for graph-based causality and `lamportOrder` only for display
+sorting by timestamp and replica ID. Unequal scalar timestamps alone cannot
+distinguish happens-before from concurrency. Vector receives merge component maxima,
+then increment the receiver's component. The inspector shows one component
+per configured replica and explains the cost of adding another replica.
+
+Local, send, and delivery actions accept optional event IDs; send actions
+also accept an optional message ID. Canonical replays use fixture IDs.
+Free-form actions get deterministic generated IDs. Invalid actions return
+`LabError` without changing state or history. Reset clears events, messages,
+partitions, comparisons, and counters. Reference traces start with empty
+histories; nonempty `initialValues` are rejected.

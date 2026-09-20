@@ -1,8 +1,27 @@
-import { compareVectors, immutable, type EngineScenario, type TraceFrame } from "./contract";
+import { compareVectors, immutable, type EngineScenario, type LabAction, type OrderingMode, type TraceFrame } from "./contract";
+import { createEngine } from "./engine-registry";
+import { acceptanceFixtures } from "./fixtures";
+import { compareEvents, lamportOrder } from "./ordering-engine";
 import { vectorLabel, type LabPresentation, type PresentedControl } from "./present-frame";
 
 export interface LabScenario extends EngineScenario {
   readonly presentation: LabPresentation;
+  readonly actions?: readonly LabAction[];
+}
+
+function connectionControls(frame: TraceFrame): PresentedControl[] {
+  const ordered = [...frame.replicas].sort((left, right) => left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
+  return ordered.flatMap((replica, index) => ordered.slice(index + 1).flatMap((peer): PresentedControl[] => {
+    const left = replica.id;
+    const right = peer.id;
+    const partitioned = frame.partitions.includes(`${left}:${right}`);
+    return [
+      { kind: "action", label: `Partition ${left} and ${right}`, action: { type: "partition", left, right },
+        reason: partitioned ? "This connection is already partitioned." : "" },
+      { kind: "action", label: `Heal ${left} and ${right}`, action: { type: "heal", left, right },
+        reason: partitioned ? "" : "This connection is already open." },
+    ];
+  }));
 }
 
 export const dotsPresentation: LabPresentation = immutable({
@@ -25,19 +44,7 @@ export const dotsPresentation: LabPresentation = immutable({
         action: { type, replica: replica.id, value: "beacon" },
         reason: type === "remove" && !replica.value.includes("beacon") ? "No beacon is visible at this replica." : "",
       })));
-    for (const [index, replica] of ordered.entries()) {
-      for (const peer of ordered.slice(index + 1)) {
-        const left = replica.id;
-        const right = peer.id;
-        const partitioned = frame.partitions.includes(`${left}:${right}`);
-        controls.push(
-          { kind: "action", label: `Partition ${left} and ${right}`, action: { type: "partition", left, right },
-            reason: partitioned ? "This connection is already partitioned." : "" },
-          { kind: "action", label: `Heal ${left} and ${right}`, action: { type: "heal", left, right },
-            reason: partitioned ? "" : "This connection is already open." },
-        );
-      }
-    }
+    controls.push(...connectionControls(frame));
     return controls;
   },
   compare(frame) {
@@ -82,7 +89,185 @@ export const dotsPresentation: LabPresentation = immutable({
   },
 });
 
+const orderingFixtures = [acceptanceFixtures[0], acceptanceFixtures[1], acceptanceFixtures[2], acceptanceFixtures[3]] as const;
+
+function fixtureActions(fixture: typeof orderingFixtures[number]): LabAction[] {
+  return fixture.actions.map((action): LabAction => {
+    switch (action.type) {
+      case "local-event":
+        return {
+          type: "local-event", replica: action.input.replica, event: action.id,
+          ...("value" in action.input ? { value: action.input.value } : {}),
+        };
+      case "send":
+        return { type: "send", from: action.input.from, to: action.input.to, event: action.id, message: action.input.message };
+      case "deliver":
+        return { type: "deliver", message: action.input.message, event: action.id };
+      case "compare-events":
+        return { type: "compare-events", pairs: action.input.pairs.map(([left, right]) => [left, right]) };
+      case "compare-vectors":
+        return { type: "compare-vectors", left: { ...action.input.left }, right: { ...action.input.right } };
+    }
+  });
+}
+
+function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[]): LabPresentation {
+  const titles: Record<OrderingMode, string> = {
+    history: "Local history lab", "partial-order": "Partial order lab",
+    lamport: "Lamport clock lab", vector: "Vector clock lab",
+  };
+  return {
+    title: titles[mode],
+    instructions: "Follow the reference steps, or create local events and choose when messages arrive. Reset to restart the reference trace.",
+    comparisonHeading: mode === "vector" ? "Vector comparison" : "Event comparison",
+    inspectorNote: mode === "lamport"
+      ? "The event graph defines causality. Scalar timestamps and replica-ID tie breaking define a separate display order."
+      : mode === "vector" ? "Each clock carries one component per replica. Receive merges maxima, then increments the receiver."
+        : "Local history and delivered observations are separate. Sending copies known history without adding a local event in this lesson.",
+    invariantLabels: {
+      localHistoryIsOrdered: "Local history is ordered",
+      observationsHaveCausalPaths: "Observed events have causal paths",
+      localClockIncreases: "Local clock increases",
+      happensBeforeImpliesLowerTimestamp: "Causal predecessors have lower timestamps",
+      vectorMatchesGraph: "Vector relations match the event graph",
+      oneComponentPerReplica: "One vector component per replica",
+    },
+    valueLabel: (replica) => replica.value.join(", ") || "No local values",
+    controls(frame) {
+      const controls: PresentedControl[] = [];
+      const next = actions[frame.index];
+      if (next && (frame.index === 0 || JSON.stringify(frame.action) === JSON.stringify(actions[frame.index - 1]))) {
+        controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
+      }
+      for (const replica of frame.replicas) {
+        controls.push({
+          kind: "action", label: `Local event at ${replica.id}`,
+          action: { type: "local-event", replica: replica.id }, reason: "",
+        });
+        for (const peer of frame.replicas) {
+          if (peer.id !== replica.id) controls.push({
+            kind: "action", label: `Send from ${replica.id} to ${peer.id}`,
+            action: { type: "send", from: replica.id, to: peer.id }, reason: "",
+          });
+        }
+      }
+      controls.push(...connectionControls(frame));
+      const graph = frame.ordering?.events ?? [];
+      const [left, right] = graph.slice(-2);
+      if (left && right) controls.push({
+        kind: "action", label: `Compare ${left.id} and ${right.id}`,
+        action: { type: "compare-events", pairs: [[left.id, right.id], [right.id, left.id], [left.id, left.id]] }, reason: "",
+      });
+      for (const comparison of frame.ordering?.comparisons ?? []) {
+        controls.push({ kind: "notice", text: `${comparison.left} / ${comparison.right}: ${comparison.relation}` });
+      }
+      if (mode === "lamport") controls.push({
+        kind: "notice",
+        text: `Total display order (timestamp, replica ID): ${
+          lamportOrder(graph).map((event) => `${event.id}@${event.lamport}/${event.replica}`).join(", ") || "No events"
+        }. Tie breaking is not causality. A lower timestamp does not prove happens-before.`,
+      });
+      if (mode === "vector") {
+        controls.push({
+          kind: "notice",
+          text: `${frame.replicas.length} replicas need ${frame.replicas.length} components per clock. Adding one replica needs ${frame.replicas.length + 1} components per clock.`,
+        });
+        for (const action of actions) {
+          if (action.type === "compare-vectors") controls.push({
+            kind: "action", label: `Compare [${vectorLabel(action.left)}] with [${vectorLabel(action.right)}]`,
+            action, reason: "",
+          });
+        }
+        for (const comparison of frame.ordering?.vectorComparisons ?? []) controls.push({
+          kind: "notice", text: `[${vectorLabel(comparison.left)}] / [${vectorLabel(comparison.right)}]: ${comparison.relation}`,
+        });
+      }
+      return controls;
+    },
+    compare(frame) {
+      if (mode === "vector") {
+        const [left, right] = frame.replicas;
+        const latest = frame.action?.type === "compare-vectors" ? frame.ordering?.vectorComparisons.at(-1) : undefined;
+        if (latest) return {
+          relation: latest.relation, label: `Selected vectors are ${latest.relation}`,
+          evidence: `[${vectorLabel(latest.left)}]; [${vectorLabel(latest.right)}]`,
+        };
+        if (left?.observation !== "vector-clock" || right?.observation !== "vector-clock") return null;
+        const relation = compareVectors(left.clock, right.clock);
+        return {
+          relation, label: `${left.id} / ${right.id}: ${relation}`,
+          evidence: `${left.id} [${vectorLabel(left.clock)}]; ${right.id} [${vectorLabel(right.clock)}]`,
+        };
+      }
+      const graph = frame.ordering?.events ?? [];
+      const selected = frame.action?.type === "compare-events" ? frame.ordering?.comparisons.at(-1) : undefined;
+      const scalarPair = mode === "lamport" ? graph.flatMap((left) => graph
+        .filter((right) => left.lamport! < right.lamport! && compareEvents(graph, left.id, right.id) === "concurrent")
+        .map((right) => [left, right] as const))[0] : undefined;
+      const [left, right] = scalarPair ?? graph.slice(-2);
+      if (!selected && (!left || !right)) return null;
+      const a = selected?.left ?? left.id;
+      const b = selected?.right ?? right.id;
+      const relation = compareEvents(graph, a, b);
+      return {
+        relation, label: `${a} / ${b}: ${relation}`,
+        evidence: mode === "lamport"
+          ? "Graph paths determine this relation. Unequal scalar timestamps alone cannot distinguish happens-before from concurrency."
+          : "Follow local predecessor and delivered-message edges. No path in either direction means concurrent.",
+      };
+    },
+    announce: () => "",
+    complete(frame) {
+      const graph = frame.ordering?.events ?? [];
+      if (mode === "vector") {
+        return new Set(frame.ordering?.vectorComparisons.map((comparison) => comparison.relation)).size === 4
+          ? { heading: "Four vector relations", explanation: "Every component matters. Each added replica adds a component to each clock." } : null;
+      }
+      if (mode === "partial-order") {
+        const relations = new Set(frame.ordering?.comparisons.map((comparison) => comparison.relation));
+        return (["before", "equal", "concurrent"] as const).every((relation) => relations.has(relation))
+          ? { heading: "Paths define the partial order", explanation: "Some events have a causal path; others remain concurrent despite button order." } : null;
+      }
+      const concurrent = graph.flatMap((left) => graph
+        .filter((right) => compareEvents(graph, left.id, right.id) === "concurrent")
+        .map((right) => [left, right] as const));
+      if (mode === "lamport") {
+        return graph.some((event) => event.kind === "receive")
+          && concurrent.some(([left, right]) => left.lamport === right.lamport)
+          && concurrent.some(([left, right]) => left.lamport !== right.lamport)
+          ? {
+            heading: "Scalar order is not causality",
+            explanation: "Concurrent events can have equal or unequal timestamps. Replica-ID tie breaking orders the display, not the event graph.",
+          } : null;
+      }
+      return concurrent.some(([left, right]) => left.kind === "receive" && right.kind === "local"
+        && left.predecessors.some((id) => graph.some((source) => source.id === id
+          && source.replica === right.replica && compareEvents(graph, source.id, right.id) === "before")))
+        ? { heading: "Delivery is not global knowledge", explanation: "The receiver learns the sent history, not later source events." } : null;
+    },
+  };
+}
+
+const orderingModes: OrderingMode[] = ["history", "partial-order", "lamport", "vector"];
+const orderingScenarios: LabScenario[] = orderingFixtures.map((fixture, index) => {
+  const actions = fixtureActions(fixture);
+  const replicas = new Set<string>();
+  for (const action of actions) {
+    if (action.type === "local-event") replicas.add(action.replica);
+    if (action.type === "send") { replicas.add(action.from); replicas.add(action.to); }
+    if (action.type === "compare-vectors") {
+      [...Object.keys(action.left), ...Object.keys(action.right)].forEach((id) => replicas.add(id));
+    }
+  }
+  const orderingMode = orderingModes[index];
+  return {
+    id: fixture.id, kind: "ordering", orderingMode, replicas: [...replicas].sort(), initialValues: [],
+    actions, presentation: orderingPresentation(orderingMode, actions),
+  };
+});
+
 const scenarios: Readonly<Record<string, LabScenario>> = immutable({
+  ...Object.fromEntries(orderingScenarios.map((scenario) => [scenario.id, scenario])),
   "dots-concurrent-add-remove": {
     id: "dots-concurrent-add-remove",
     kind: "dots",
@@ -100,4 +285,15 @@ export function scenarioById(id: string): LabScenario {
   if (!Object.hasOwn(scenarios, id)) throw new Error(`Unknown lab scenario: ${id}`);
   const { presentation, ...config } = scenarios[id];
   return { ...structuredClone(config), presentation };
+}
+
+/** The same recorded frames can drive diagrams, static fallbacks, and live reference replays. */
+export function scenarioTrace(id: string): readonly TraceFrame[] {
+  const scenario = scenarioById(id);
+  const engine = createEngine(scenario);
+  for (const action of scenario.actions ?? []) {
+    const result = engine.dispatch(action);
+    if ("message" in result) throw new Error(`Cannot replay ${id}: ${result.message}`);
+  }
+  return engine.history();
 }

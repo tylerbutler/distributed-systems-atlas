@@ -393,7 +393,7 @@ class CausalLabElement extends HTMLElement {
       select.setAttribute("aria-pressed", String(this.selectedMessage === message.id));
       item.append(route, this.route(message.blocked, forward), reason,
         details(message.details.map(({ label, value }) => [label, value, "data"])));
-      const copies = message.id.split(":").slice(3);
+      const copies = message.id.match(/(?::copy\d+)+$/)?.[0].slice(1).split(":") ?? [];
       if (copies.length) item.append(node("p", `Copy · ${copies.join(" / ")}`));
       const deliver = this.actionButton(`Deliver ${label}`, { type: "deliver", message: message.id },
         message.blocked ? "Message crosses an active partition." : "");
