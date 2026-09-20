@@ -168,7 +168,13 @@ class CausalLabElement extends HTMLElement {
       && history[index].replicas.find((replica) => replica.id === "A")?.dots
         .some((dot) => dot.replica === "A" && dot.counter === 1),
     );
-    if (observedRemove && frame.invariants.converged && frame.replicas.every((replica) =>
+    // Retaining A:1 when B:1 was added proves B had not observed its removal.
+    const unobservedRemovalAtAdd = history.slice(1, this.traceIndex + 1).some((entry) =>
+      entry.actionLabel === "add beacon at B"
+      && entry.replicas.some((replica) => replica.id === "B" && replica.clock.B === 1
+        && replica.dots.some((dot) => dot.replica === "A" && dot.counter === 1)),
+    );
+    if (observedRemove && unobservedRemovalAtAdd && frame.invariants.converged && frame.replicas.every((replica) =>
       replica.value.includes("beacon") && replica.dots.length === 1
       && replica.dots[0].replica === "B" && replica.dots[0].counter === 1,
     )) {
@@ -232,6 +238,7 @@ class CausalLabElement extends HTMLElement {
   }
 
   private renderMessages(frame: TraceFrame): void {
+    const viewingHistory = this.traceIndex < this.engine.history().length - 1;
     const heading = node("h3", "Queued messages");
     heading.tabIndex = -1;
     this.messages.replaceChildren(heading);
@@ -247,7 +254,9 @@ class CausalLabElement extends HTMLElement {
       item.dataset.blocked = String(partitioned);
       const [number, , , ...copies] = message.id.split(":");
       const label = `${[number, ...copies].join(" ")} from ${message.from} to ${message.to}`;
-      const reason = node("p", partitioned ? "Blocked by active partition" : "Ready for delivery");
+      const reason = node("p", viewingHistory
+        ? "Return to the latest frame to change state."
+        : partitioned ? "Blocked by active partition" : "Ready for delivery");
       reason.id = `${this.idPrefix}-${message.id}-delivery`;
       item.append(node("h4", label), reason, details([
         ["Message ID", message.id],

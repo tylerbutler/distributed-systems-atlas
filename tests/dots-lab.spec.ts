@@ -32,6 +32,25 @@ test("steps through concurrent add and remove", async ({ page }) => {
   await expect(lab.getByRole("region", { name: "Event ledger" }).getByRole("listitem")).toHaveCount(9);
 });
 
+test("does not describe a sequential re-add as concurrent", async ({ page }) => {
+  await page.goto("/lab-test/");
+  const lab = page.getByTestId("causal-lab");
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  await lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true }).click();
+  await lab.getByRole("button", { name: "Remove beacon at A", exact: true }).click();
+  await lab.getByRole("button", { name: "Deliver m2 from A to B", exact: true }).click();
+  await lab.getByRole("button", { name: "Add beacon at B", exact: true }).click();
+  await lab.getByRole("button", { name: "Deliver m3 from B to A", exact: true }).click();
+
+  await expect(lab.getByText("Converged: yes", { exact: true })).toBeVisible();
+  for (const id of ["A", "B"]) {
+    const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
+    await expect(replica.getByText("B:1", { exact: true })).toBeVisible();
+  }
+  await expect(lab.getByText(/B's concurrent add/)).toHaveCount(0);
+  await expect(lab.getByText("The new B dot survives", { exact: true })).toHaveCount(0);
+});
+
 test("shows the static initial state without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
@@ -59,7 +78,8 @@ test("duplicates and reorders queued messages, browses history, and resets", asy
   await expect(lab.getByText("Frame 3 of 4", { exact: true })).toBeVisible();
   await expect(lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true })).toBeDisabled();
   await expect(lab.getByRole("button", { name: "Add beacon at A", exact: true })).toBeDisabled();
-  await expect(lab.getByText(/Return to the latest frame to change state/)).toBeVisible();
+  await expect(lab.getByRole("region", { name: "Trace navigation" })
+    .getByText(/Return to the latest frame to change state/)).toBeVisible();
   await lab.getByRole("button", { name: "Next frame", exact: true }).click();
   await expect(lab.getByText("No queued messages", { exact: true })).toBeVisible();
   await lab.getByRole("button", { name: "Reset lab", exact: true }).click();

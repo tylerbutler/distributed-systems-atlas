@@ -1,5 +1,23 @@
 import { expect, test } from "@playwright/test";
 
+test("history delivery descriptions explain the return-to-latest restriction", async ({ page }) => {
+  await page.goto("/lab-test/");
+  const lab = page.getByTestId("causal-lab");
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
+  await lab.getByRole("button", { name: "Heal A and B", exact: true }).click();
+  const deliver = lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true });
+  for (let step = 0; step < 2; step++) {
+    await lab.getByRole("button", { name: "Previous frame", exact: true }).click();
+    await expect(deliver).toBeDisabled();
+    await expect(deliver).toHaveAccessibleDescription(/Return to the latest frame to change state/);
+  }
+  await lab.getByRole("button", { name: "Next frame", exact: true }).click();
+  await lab.getByRole("button", { name: "Next frame", exact: true }).click();
+  await expect(deliver).toBeEnabled();
+  await expect(deliver).toHaveAccessibleDescription("Ready for delivery");
+});
+
 test("lab controls work by keyboard and keep focus through updates", async ({ page }) => {
   await page.goto("/lab-test/");
   const add = page.getByRole("button", { name: "Add beacon at A", exact: true });
