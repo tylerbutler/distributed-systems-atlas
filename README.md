@@ -58,7 +58,7 @@ and navigation remain available. Lab controls require JavaScript.
 | Content | `src/content/sheets/` contains MDX articles and metadata. `src/content.config.ts` defines the schema; `src/lib/atlas/graph.ts` validates sheet and scenario references. Pages and layouts build the publication and link published sheets. |
 | Scenario | `src/lib/lab/scenarios.ts` names the available lessons and returns cloned initial configurations. Unknown scenario IDs are errors. A scenario does not maintain a second simulation state. |
 | Engine | `src/lib/lab/causal-engine.ts` implements the deterministic TypeScript reference model. It owns replica state, queued deltas, partitions, and trace history. `contract.ts` defines actions, immutable trace views, and errors. |
-| Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` into labels, replica shapes, message routes, vector comparisons, and invariant results. It does not dispatch actions or change engine state. |
+| Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` into `PresentedFrame`: labels, replica shapes, message routes, vector comparisons, and invariant results. Recorded history up to the selected frame supplies earned lesson conclusions. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
 
 **Labs render from trace frames.** Replica values, clocks, dots, causal
@@ -67,6 +67,13 @@ come from the selected immutable `TraceFrame`. DOM content and animation
 progress are not simulation state. Playback visits recorded frames; it does
 not generate actions or deliver queued messages. Reduced motion preserves
 the same state and explanations.
+
+The static fallback and live rendering use the same scenario contract:
+`scenarioById` supplies the configuration, the reference engine supplies the
+trace, and `presentFrame` supplies the presentation. The renderer consumes
+`PresentedFrame`; it does not infer algorithm state or decide causal outcomes
+from DOM content. Inspectors display immutable trace records directly, without
+interpreting engine-private fields.
 
 Engine errors identify the attempted action, engine, and error, and retain
 the last valid frame. The renderer must not replace an error with a success

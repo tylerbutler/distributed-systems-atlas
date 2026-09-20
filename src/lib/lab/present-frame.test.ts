@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { createCausalEngine } from "./causal-engine";
-import type { TraceFrame, VersionVector } from "./contract";
+import type { LabAction, TraceFrame, VersionVector } from "./contract";
 import { presentFrame } from "./present-frame";
 
 function frame(left: VersionVector = { A: 2 }, right: VersionVector = { A: 1, B: 1 }): TraceFrame {
@@ -19,6 +19,45 @@ function frame(left: VersionVector = { A: 2 }, right: VersionVector = { A: 1, B:
 }
 
 describe("presentFrame", () => {
+  test("presents the earned add-wins conclusion only after both deltas arrive", () => {
+    const engine = createCausalEngine({ id: "lesson", replicas: ["A", "B"], initialValues: [] });
+    const actions: LabAction[] = [
+      { type: "add", replica: "A", value: "beacon" },
+      { type: "deliver", message: "m1:A:B" },
+      { type: "partition", left: "A", right: "B" },
+      { type: "remove", replica: "A", value: "beacon" },
+      { type: "add", replica: "B", value: "beacon" },
+      { type: "heal", left: "A", right: "B" },
+      { type: "deliver", message: "m2:A:B" },
+      { type: "deliver", message: "m3:B:A" },
+    ];
+    for (const action of actions) {
+      expect(presentFrame(engine.current(), engine.history()).outcome).toBeNull();
+      expect(engine.dispatch(action)).not.toHaveProperty("message");
+    }
+    expect(presentFrame(engine.current(), engine.history()).outcome).toEqual({
+      heading: "The new B dot survives",
+      explanation: "Both replicas retain B:1. A removed the dot it had observed, not B's concurrent add.",
+    });
+    // Full history cannot leak a future conclusion into a selected earlier frame.
+    expect(presentFrame(engine.history()[6], engine.history()).outcome).toBeNull();
+  });
+
+  test("a sequential re-add does not earn a concurrent-add conclusion", () => {
+    const engine = createCausalEngine({ id: "sequential", replicas: ["A", "B"], initialValues: [] });
+    const actions: LabAction[] = [
+      { type: "add", replica: "A", value: "beacon" },
+      { type: "deliver", message: "m1:A:B" },
+      { type: "remove", replica: "A", value: "beacon" },
+      { type: "deliver", message: "m2:A:B" },
+      { type: "add", replica: "B", value: "beacon" },
+      { type: "deliver", message: "m3:B:A" },
+    ];
+    for (const action of actions) expect(engine.dispatch(action)).not.toHaveProperty("message");
+    expect(engine.current().invariants.converged).toBe(true);
+    expect(presentFrame(engine.current(), engine.history()).outcome).toBeNull();
+  });
+
   test("derives vector relation and announcement from one trace frame", () => {
     const presented = presentFrame(frame());
     expect(presented.comparison?.relation).toBe("concurrent");

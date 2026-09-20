@@ -266,7 +266,7 @@ class CausalLabElement extends HTMLElement {
   private render(focused: Element | null = document.activeElement, openMessage = false): void {
     const history = this.engine.history();
     const frame = history[this.traceIndex];
-    const presented = presentFrame(frame);
+    const presented = presentFrame(frame, history);
     const focusKey = focused instanceof HTMLElement && this.contains(focused)
       ? focused.dataset.control : undefined;
     const focusSection = focused instanceof HTMLElement ? focused.closest("section") : null;
@@ -301,26 +301,10 @@ class CausalLabElement extends HTMLElement {
     }
     this.invariants.append(checks);
     this.explanation.replaceChildren(node("p", presented.explanation));
-    // This lesson is earned by a completed merge, not merely by healing a link.
-    const observedRemove = history.slice(1, this.traceIndex + 1).some((entry, index) =>
-      entry.actionLabel === "remove beacon at A"
-      && entry.replicas.find((replica) => replica.id === "A")?.context.B === 0
-      && history[index].replicas.find((replica) => replica.id === "A")?.dots
-        .some((dot) => dot.replica === "A" && dot.counter === 1),
-    );
-    // Retaining A:1 when B:1 was added proves B had not observed its removal.
-    const unobservedRemovalAtAdd = history.slice(1, this.traceIndex + 1).some((entry) =>
-      entry.actionLabel === "add beacon at B"
-      && entry.replicas.some((replica) => replica.id === "B" && replica.clock.B === 1
-        && replica.dots.some((dot) => dot.replica === "A" && dot.counter === 1)),
-    );
-    if (observedRemove && unobservedRemovalAtAdd && frame.invariants.converged && frame.replicas.every((replica) =>
-      replica.value.includes("beacon") && replica.dots.length === 1
-      && replica.dots[0].replica === "B" && replica.dots[0].counter === 1,
-    )) {
+    if (presented.outcome) {
       this.explanation.append(
-        node("h3", "The new B dot survives"),
-        node("p", "Both replicas retain B:1. A removed the dot it had observed, not B's concurrent add."),
+        node("h3", presented.outcome.heading),
+        node("p", presented.outcome.explanation),
       );
     }
     if (focusKey) {
@@ -441,6 +425,8 @@ class CausalLabElement extends HTMLElement {
     svg.setAttribute("aria-hidden", "true");
     svg.classList.add("lab-route");
     svg.dataset.blocked = String(blocked);
+    svg.dataset.routeState = blocked ? "partitioned" : "open";
+    svg.dataset.lineStyle = blocked ? "broken" : "solid";
     const path = document.createElementNS(svg.namespaceURI, "path");
     path.setAttribute("d", blocked ? "M8 12H132 M168 12H292" : "M8 12H292");
     svg.append(path);

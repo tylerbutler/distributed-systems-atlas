@@ -1,5 +1,36 @@
 import { expect, test } from "@playwright/test";
 
+test("concurrent add and remove have identical observation outcomes with reduced motion", async ({ page }) => {
+  const outcomes: string[][] = [];
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    await page.emulateMedia({ reducedMotion });
+    await page.goto("/atlas/dots-and-causal-context/");
+    const lab = page.getByTestId("causal-lab");
+    for (const name of [
+      "Add beacon at A", "Add beacon at B", "Partition A and B",
+      "Remove beacon at A", "Add beacon at B",
+    ]) {
+      await lab.getByRole("button", { name, exact: true }).click();
+      await expect(lab).not.toHaveAttribute("aria-busy", "true");
+    }
+    await expect(lab.getByRole("region", { name: "Replica A", exact: true })).toContainText("Empty set");
+    await expect(lab.getByRole("region", { name: "Replica B", exact: true })).toContainText("B:1, B:2");
+    await expect(lab.getByRole("region", { name: "Vector comparison" })).toContainText("A and B are concurrent");
+    await expect(lab.getByRole("list", { name: "Messages in flight" }).getByRole("listitem")).toHaveCount(4);
+    await expect(lab.getByRole("button", { name: /^Deliver / })).toHaveCount(4);
+    for (const deliver of await lab.getByRole("button", { name: /^Deliver / }).all()) {
+      await expect(deliver).toBeDisabled();
+    }
+    await expect(lab.getByRole("navigation", { name: "Trace history" }).locator('[aria-current="step"]'))
+      .toHaveText("Frame 5: add beacon at B");
+    await expect(lab.getByRole("region", { name: "Invariant checks" })).toContainText("Converged: no");
+    outcomes.push(await lab.locator(
+      ".lab-replicas, .lab-messages, .lab-comparison, .lab-trace nav, .lab-inspector, .lab-invariants, [role=status]",
+    ).allTextContents());
+  }
+  expect(outcomes[1]).toEqual(outcomes[0]);
+});
+
 test("the publication exposes its observatory foundation", async ({ page }) => {
   await page.goto("/");
 

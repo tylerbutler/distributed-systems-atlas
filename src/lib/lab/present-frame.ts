@@ -30,6 +30,7 @@ export interface PresentedFrame {
   actionLabel: string;
   explanation: string;
   announcement: string;
+  outcome: { heading: string; explanation: string } | null;
   replicas: PresentedReplica[];
   messages: PresentedMessage[];
   /** The first two replicas in ID order; a single replica has no comparison. */
@@ -56,7 +57,7 @@ function dotLabels(dots: readonly Dot[]): string[] {
     .map((dot) => `${dot.replica}:${dot.counter}`);
 }
 
-export function presentFrame(frame: TraceFrame): PresentedFrame {
+export function presentFrame(frame: TraceFrame, history: readonly TraceFrame[] = []): PresentedFrame {
   const ordered = [...frame.replicas].sort((left, right) => lexical(left.id, right.id));
   const blocked = (left: string, right: string): boolean =>
     frame.partitions.includes([left, right].sort(lexical).join(":"));
@@ -99,11 +100,33 @@ export function presentFrame(frame: TraceFrame): PresentedFrame {
     removedDotsStayRemoved: "Removed dots stay removed",
     converged: "Converged",
   };
+  const selectedHistory = history.filter((entry) => entry.index <= frame.index);
+  const observedRemove = selectedHistory.slice(1).some((entry, index) =>
+    entry.actionLabel === "remove beacon at A"
+    && entry.replicas.find((replica) => replica.id === "A")?.context.B === 0
+    && selectedHistory[index].replicas.find((replica) => replica.id === "A")?.dots
+      .some((dot) => dot.replica === "A" && dot.counter === 1),
+  );
+  const unobservedRemovalAtAdd = selectedHistory.some((entry) =>
+    entry.actionLabel === "add beacon at B"
+    && entry.replicas.some((replica) => replica.id === "B" && replica.clock.B === 1
+      && replica.dots.some((dot) => dot.replica === "A" && dot.counter === 1)),
+  );
+  // Healing alone does not earn the lesson; both recorded states must retain only B:1.
+  const outcome = observedRemove && unobservedRemovalAtAdd && frame.invariants.converged
+    && frame.replicas.every((replica) =>
+      replica.value.includes("beacon") && replica.dots.length === 1
+      && replica.dots[0].replica === "B" && replica.dots[0].counter === 1)
+    ? {
+      heading: "The new B dot survives",
+      explanation: "Both replicas retain B:1. A removed the dot it had observed, not B's concurrent add.",
+    } : null;
   return {
     index: frame.index,
     actionLabel: frame.actionLabel,
     explanation: frame.explanation,
     announcement,
+    outcome,
     replicas,
     messages: frame.messages.map((message) => {
       const dots = dotLabels(message.dots);

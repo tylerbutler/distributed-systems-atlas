@@ -1,5 +1,22 @@
 import { expect, test } from "@playwright/test";
 
+for (const viewport of [
+  { name: "mobile", width: 390, height: 844 },
+  { name: "tablet", width: 820, height: 1180 },
+  { name: "desktop", width: 1440, height: 1000 },
+]) {
+  test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    for (const path of ["/", "/atlas/", "/atlas/dots-and-causal-context/"]) {
+      await page.goto(path);
+      await page.evaluate(() => document.fonts.ready);
+      expect(await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      ), path).toBe(0);
+    }
+  });
+}
+
 for (const [from, to] of [["A", "B"], ["B", "A"]]) {
   test(`message route ${from}-to-${to} aligns endpoints and keeps mobile source first`, async ({ page }) => {
     const errors: string[] = [];

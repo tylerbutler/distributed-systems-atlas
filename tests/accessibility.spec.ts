@@ -1,5 +1,77 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+test("station identity and causal state do not rely on color", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+  for (const [id, shape] of [["A", "circle"], ["B", "diamond"]]) {
+    const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
+    await expect(replica).toContainText(id);
+    await expect(replica).toHaveAttribute("data-station-shape", shape);
+    const mark = await replica.locator("h3").evaluate((heading) => {
+      const style = getComputedStyle(heading, "::before");
+      return { radius: style.borderRadius, transform: style.transform, width: parseFloat(style.width) };
+    });
+    expect(mark.width).toBeGreaterThan(0);
+    if (id === "A") expect(mark.radius).toBe("50%");
+    else expect(mark.transform).not.toBe("none");
+  }
+  await expect(lab.getByText("circle station")).toHaveCount(0);
+  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+  await lab.getByRole("button", { name: "Add beacon at B", exact: true }).click();
+  await expect(lab.getByRole("region", { name: "Vector comparison" })).toContainText("A and B are concurrent");
+  await expect(lab.getByRole("region", { name: "Invariant checks" })).toContainText("Converged: no");
+  await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
+  await expect(lab.getByText("Partition active", { exact: true })).toBeVisible();
+  const route = lab.locator('.lab-connection [data-route-state="partitioned"]');
+  await expect(route).toHaveAttribute("data-line-style", "broken");
+  await expect(route).toHaveCSS("stroke-dasharray", "6px, 4px");
+  await expect(route.locator(".lab-route-break")).toBeVisible();
+  await lab.getByRole("button", { name: "Heal A and B", exact: true }).click();
+  await expect(lab.locator('.lab-connection [data-route-state="open"]'))
+    .toHaveAttribute("data-line-style", "solid");
+  await expect(lab.locator(".lab-route-break")).toHaveCount(0);
+});
+
+for (const width of [390, 1440]) {
+  test(`Tab traverses the lesson in document order at ${width}px without wrapping`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/atlas/dots-and-causal-context/");
+    const lab = page.getByTestId("causal-lab");
+    await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
+    await lab.getByRole("button", { name: "Add beacon at B", exact: true }).click();
+    const stops = lab.locator("button:enabled, summary");
+    const sections: string[] = [];
+    await stops.first().focus();
+    for (const stop of await stops.all()) {
+      await expect(stop).toBeFocused();
+      const section = await stop.evaluate((element) =>
+        element.closest("nav, section")?.getAttribute("aria-label"));
+      if (section && sections.at(-1) !== section) sections.push(section);
+      await page.keyboard.press("Tab");
+    }
+    expect(sections).toEqual([
+      "Lesson controls", "Queued messages", "Trace navigation", "Trace history", "State inspector",
+    ]);
+    const references = page.locator(".sheet-references");
+    const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
+    expect(await related.evaluate((element) => {
+      const inspector = document.querySelector(".lab-inspector")!;
+      return Boolean(inspector.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
+    })).toBe(true);
+    // The only proof sheet has no related destinations yet; do not create a dead Tab stop.
+    await expect(related).toContainText("No related sheets");
+    await expect(related.locator("a, button, [tabindex]")).toHaveCount(0);
+    const remaining = page.locator(".sheet-continuation :is(a[href], [tabindex='0']), .sheet-end a[href]");
+    for (const stop of await remaining.all()) {
+      await expect(stop).toBeFocused();
+      await page.keyboard.press("Tab");
+    }
+    await expect(references.getByRole("link").first()).toBeVisible();
+  });
+}
+
 test("replicas and messages do not rely on color alone", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
