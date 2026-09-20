@@ -103,9 +103,10 @@ The proof plan owns content and simulation behavior. The visual plan owns
 the final composition and interaction design, replacing the proof plan's
 provisional styling.
 
-Before starting a Watershed package plan, a reviewer must approve the proof
-page's teaching sequence, local-knowledge imagery, focused controls, agreement
-between prose and all lab views, and custom-element maintainability. The
-review must also establish that the trace contract can represent multi-value
-registers and observed-remove sets without engine-private fields in the
-renderer. Revise the proof contract first if that review finds a gap.
+The proof milestone is approved. Its teaching sequence, local-knowledge
+imagery, focused controls, trace-derived views, and custom-element boundary
+meet the design gate. Canonical acceptance data in
+`src/lib/lab/fixtures.ts` records the required ordering, clock, Dots,
+multi-value register, and observed-remove set results without depending on an
+engine or renderer. Generalize the trace contract against those fixtures
+before adding Watershed adapters.
