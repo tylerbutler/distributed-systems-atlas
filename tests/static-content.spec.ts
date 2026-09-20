@@ -52,18 +52,17 @@ test("the observation rail shows route context without JavaScript", async ({ bro
   }
 });
 
-test("the observation rail shell keeps a quiet footer with source notes", async ({ page }) => {
+test("the observation rail shell keeps a quiet footer with planned resources", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");
   await expect(footer).toContainText("A place to study what replicas know.");
-  await expect(footer.getByRole("link")).toHaveCount(1);
-  await expect(footer.getByRole("link", { name: "Source notes", exact: true }))
-    .toHaveAttribute("href", "/atlas/dots-and-causal-context/#field-notes");
-  await expect(footer.getByText("Bibliography", { exact: true }).locator(".."))
-    .toContainText("Planned");
+  await expect(footer.getByRole("link")).toHaveCount(0);
+  for (const label of ["Source", "Bibliography"]) {
+    const item = footer.getByText(label, { exact: true }).locator("..");
+    await expect(item).toContainText("Planned");
+    await expect(item.locator("a, button, [tabindex]")).toHaveCount(0);
+  }
   await expect(footer.getByRole("navigation")).toHaveCount(0);
-  await footer.getByRole("link", { name: "Source notes", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
 });
 
 test("Dots sheet contains the full teaching sequence", async ({ page }) => {
