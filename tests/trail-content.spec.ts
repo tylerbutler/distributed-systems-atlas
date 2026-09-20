@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { scenarioById } from "../src/lib/lab/scenarios";
+import { scenarioById, scenarioTrace } from "../src/lib/lab/scenarios";
 import { firstTrail } from "../src/lib/atlas/trail";
 
 const lessons = [
@@ -86,7 +86,7 @@ test("a register write made before observing blue preserves that concurrent sibl
 });
 
 for (const lesson of lessons) {
-  test(`${lesson.id}: content acceptance and useful initial state without JavaScript`, async ({ browser }) => {
+  test(`${lesson.id}: content acceptance and useful initial state without JavaScript`, async ({ browser, page: livePage }) => {
     const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
     try {
       const page = await context.newPage();
@@ -147,6 +147,20 @@ for (const lesson of lessons) {
       await expect(lab.getByText(/controls need JavaScript/)).toBeVisible();
       await expect(lab.getByRole("button")).toHaveCount(0);
       await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+      await livePage.goto(`/atlas/${lesson.id}/`);
+      const live = livePage.getByTestId("causal-lab");
+      await expect(live.getByRole("button", { name: "Reset lab", exact: true })).toBeVisible();
+      for (const selector of ["h2", ".lab-replicas", ".lab-invariants", ".lab-explanation > p:last-child"]) {
+        const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+        expect(normalize(await lab.locator(selector).innerText()))
+          .toBe(normalize(await live.locator(selector).innerText()));
+      }
+      for (const notice of scenarioById(lesson.scenario).presentation.controls(
+        scenarioTrace(lesson.scenario)[0],
+      ).filter((control) => control.kind === "notice")) {
+        await expect(lab.locator(".lab-explanation")).toContainText(notice.text);
+        await expect(live.getByRole("region", { name: "Lesson controls", exact: true })).toContainText(notice.text);
+      }
       const contents = page.locator(".sheet-contents").first();
       await contents.locator("summary").click();
       await contents.getByRole("link", { name: "Field notes", exact: true }).click();
@@ -180,6 +194,7 @@ for (const lesson of lessons) {
         await expect(control).toHaveCSS("outline-style", "solid");
         await page.keyboard.press("Enter");
         await expect(lab.getByRole("alert")).toBeHidden();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         if (lesson.id === "local-history" && index === 2) {
           await expect(lab.getByRole("region", { name: "Queued messages" })).toContainText("a1");
           await expect(lab.getByRole("region", { name: "Queued messages" })).not.toContainText("a2");

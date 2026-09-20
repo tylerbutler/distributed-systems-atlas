@@ -137,6 +137,27 @@ test("generated glossary and bibliography expose published metadata", async ({ p
     .toHaveAttribute("href", "https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/");
 });
 
+test("readers can follow all seven trail steps without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/");
+    await page.locator('a[href="/atlas/local-history/"]').first().click();
+    const titles = ["Local history", "Partial order", "Lamport clocks", "Vector clocks",
+      "Dots and causal context", "Multi-value registers", "Observed-remove sets"];
+    for (const [index, title] of titles.entries()) {
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+      await expect(page.getByRole("navigation", { name: "Sheet position", exact: true }))
+        .toContainText(`Trail ${index + 1} of 7`);
+      const next = page.getByRole("navigation", { name: "Next trail step", exact: true });
+      if (index < titles.length - 1) await next.getByRole("link").click();
+      else await expect(next).toHaveCount(0);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test("sheet terms and references link to generated entries", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   await expect(page.getByRole("complementary", { name: "Terms on this sheet" })

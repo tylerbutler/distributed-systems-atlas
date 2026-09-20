@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { firstTrail } from "../src/lib/atlas/trail";
 
 for (const viewport of [
   { name: "mobile", width: 390, height: 844 },
@@ -7,8 +8,9 @@ for (const viewport of [
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/atlas/", "/atlas/dots-and-causal-context/"]) {
-      await page.goto(path);
+    for (const path of ["/", "/atlas/", "/glossary/", "/bibliography/",
+      ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
+      expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
       expect(await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

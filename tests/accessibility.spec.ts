@@ -1,5 +1,15 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+const labs = [
+  { route: "dots-and-causal-context", edit: "Add beacon at A", queue: "Add beacon at A" },
+  { route: "local-history", edit: "Local event at A", queue: "Send from A to B" },
+  { route: "partial-order", edit: "Local event at A", queue: "Send from A to B" },
+  { route: "lamport-clocks", edit: "Local event at A", queue: "Send from A to B" },
+  { route: "vector-clocks", edit: "Local event at A", queue: "Send from A to B" },
+  { route: "multi-value-registers", edit: "Write red at A", queue: "Write red at A" },
+  { route: "observed-remove-sets", edit: "Add beacon at A", queue: "Add beacon at A" },
+] as const;
+
 test("station identity and causal state do not rely on color", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/atlas/dots-and-causal-context/");
@@ -92,45 +102,54 @@ test("replicas and messages do not rely on color alone", async ({ page }) => {
   }
 });
 
-test("an engine error preserves the last valid state", async ({ page }) => {
-  await page.goto("/atlas/dots-and-causal-context/");
-  const lab = page.getByTestId("causal-lab");
-  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
-  await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
-  const replicas = lab.getByRole("region", { name: /^Replica [AB]$/ });
-  const inspector = lab.getByRole("region", { name: "State inspector", exact: true }).locator("pre");
-  const messages = lab.getByRole("list", { name: "Messages in flight", exact: true }).locator("dl");
-  const history = lab.getByRole("navigation", { name: "Trace history", exact: true });
-  const before = {
-    replicas: await replicas.allTextContents(),
-    inspector: await inspector.allTextContents(),
-    messages: await messages.allTextContents(),
-    history: await history.allTextContents(),
-  };
-  const deliver = lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true });
-  await expect(deliver).toBeDisabled();
-  await expect(deliver).toHaveAccessibleDescription(/active partition/);
-  // A stale action must reach the real engine without weakening the disabled control.
-  await deliver.evaluate((button: HTMLButtonElement) => {
-    button.disabled = false;
-    button.click();
-  });
-  const alert = lab.getByRole("alert");
-  await expect(alert).toBeVisible();
-  await expect(alert).toContainText('{"type":"deliver","message":"m1:A:B"}');
-  await expect(alert).toContainText("dots-concurrent-add-remove");
-  await expect(alert).toContainText("message crosses an active partition");
-  await expect(alert).toContainText("Last valid frame: 2");
-  expect(await replicas.allTextContents()).toEqual(before.replicas);
-  expect(await inspector.allTextContents()).toEqual(before.inspector);
-  expect(await messages.allTextContents()).toEqual(before.messages);
-  expect(await history.allTextContents()).toEqual(before.history);
-  await expect(lab.getByText("Frame 2 of 2", { exact: true })).toBeVisible();
-  await expect(lab.getByRole("region", { name: "Replica A", exact: true })).toContainText("beacon");
-  await expect(lab.getByRole("status")).toBeEmpty();
-  await expect(lab.getByRole("region", { name: "Invariant checks", exact: true })).toBeHidden();
-  await expect(deliver).toBeDisabled();
+for (const lesson of labs) {
+  test(`${lesson.route}: an engine error preserves the last valid state and permits recovery`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/atlas/${lesson.route}/`);
+    const lab = page.getByTestId("causal-lab");
+    await lab.getByRole("button", { name: lesson.queue, exact: true }).click();
+    await lab.getByRole("button", { name: "Partition A and B", exact: true }).click();
+    const replicas = lab.getByRole("region", { name: /^Replica [ABC]$/ });
+    const inspector = lab.getByRole("region", { name: "State inspector", exact: true }).locator("pre");
+    const messages = lab.getByRole("list", { name: "Messages in flight", exact: true }).locator("dl");
+    const history = lab.getByRole("navigation", { name: "Trace history", exact: true });
+    const before = {
+      replicas: await replicas.allTextContents(),
+      inspector: await inspector.allTextContents(),
+      messages: await messages.allTextContents(),
+      history: await history.allTextContents(),
+    };
+    const deliver = lab.getByRole("button", { name: "Deliver m1 from A to B", exact: true });
+    const attemptedAction = await deliver.getAttribute("data-control");
+    await expect(deliver).toBeDisabled();
+    await expect(deliver).toHaveAccessibleDescription(/active partition/);
+    // A stale action must reach the real engine without weakening the disabled control.
+    await deliver.evaluate((button: HTMLButtonElement) => {
+      button.disabled = false;
+      button.click();
+    });
+    const alert = lab.getByRole("alert");
+    await expect(alert).toBeVisible();
+    await expect(alert).toContainText(attemptedAction!);
+    await expect(alert).toContainText((await lab.getAttribute("scenario"))!);
+    await expect(alert).toContainText("message crosses an active partition");
+    await expect(alert).toContainText("Last valid frame: 2");
+    expect(await replicas.allTextContents()).toEqual(before.replicas);
+    expect(await inspector.allTextContents()).toEqual(before.inspector);
+    expect(await messages.allTextContents()).toEqual(before.messages);
+    expect(await history.allTextContents()).toEqual(before.history);
+    await expect(lab.getByText("Frame 2 of 2", { exact: true })).toBeVisible();
+    await expect(lab.getByRole("status")).toBeEmpty();
+    await expect(lab.getByRole("region", { name: "Invariant checks", exact: true })).toBeHidden();
+    await expect(deliver).toBeDisabled();
+    await lab.getByRole("button", { name: "Heal A and B", exact: true }).click();
+    await expect(alert).toBeHidden();
+    await expect(lab.getByRole("region", { name: "Invariant checks", exact: true })).toBeVisible();
+    await deliver.click();
+    await expect(lab.getByText("Frame 4 of 4", { exact: true })).toBeVisible();
+    await expect(deliver).toHaveCount(0);
 });
+}
 
 async function tabTo(page: Page, target: Locator): Promise<void> {
   // Bound traversal by the actual page, not a stale number of preceding links.
@@ -201,43 +220,117 @@ test("lab controls work by keyboard and keep focus through updates", async ({ pa
     .toHaveAttribute("href", "/atlas/multi-value-registers/");
 });
 
-test("reduced motion Play advances exactly one recorded frame and preference changes stop playback", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/atlas/dots-and-causal-context/");
-  const lab = page.getByTestId("causal-lab");
-  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
-  await lab.getByRole("button", { name: "Add beacon at B", exact: true }).click();
-  await lab.getByRole("button", { name: "Frame 0: initial", exact: true }).click();
-  await page.clock.install({ time: new Date(0) });
-  await page.clock.pauseAt(new Date(1000));
-  await lab.getByRole("button", { name: "Next recorded frame", exact: true }).click();
-  await page.clock.runFor(2700);
-  await expect(lab.getByText("Frame 1 of 2", { exact: true })).toBeVisible();
-  await expect(lab.getByRole("status")).toContainText("A created dot A:1");
-  await page.emulateMedia({ reducedMotion: "no-preference" });
-  await lab.getByRole("button", { name: "Play", exact: true }).click();
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(lab.getByRole("button", { name: "Next recorded frame", exact: true })).toBeVisible();
-  await page.clock.runFor(2700);
-  await expect(lab.getByText("Frame 1 of 2", { exact: true })).toBeVisible();
+for (const lesson of labs) {
+  test(`${lesson.route}: reduced motion advances one recorded frame and preference changes stop playback`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/atlas/${lesson.route}/`);
+    const lab = page.getByTestId("causal-lab");
+    await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+    const announcement = await lab.getByRole("status").innerText();
+    await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+    await lab.getByRole("button", { name: "Frame 0: initial", exact: true }).click();
+    await page.clock.install({ time: new Date(0) });
+    await page.clock.pauseAt(new Date(1000));
+    await lab.getByRole("button", { name: "Next recorded frame", exact: true }).click();
+    await page.clock.runFor(2700);
+    await expect(lab.getByText("Frame 1 of 2", { exact: true })).toBeVisible();
+    await expect(lab.getByRole("status")).toContainText(announcement);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await lab.getByRole("button", { name: "Play", exact: true }).click();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await expect(lab.getByRole("button", { name: "Next recorded frame", exact: true })).toBeVisible();
+    await page.clock.runFor(2700);
+    await expect(lab.getByText("Frame 1 of 2", { exact: true })).toBeVisible();
 });
 
-test("reduced motion disables transition animation and responds to preference changes", async ({ page }) => {
+test(`${lesson.route}: reduced motion disables transitions without changing recorded state`, async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/atlas/dots-and-causal-context/");
+  await page.goto(`/atlas/${lesson.route}/`);
   const lab = page.getByTestId("causal-lab");
   await expect(lab).toHaveAttribute("data-motion", "reduced");
-  await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
-  await expect(lab.getByRole("status")).toContainText("A created dot A:1");
+  await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+  const records = lab.locator(".lab-inspector pre");
+  const reduced = await records.allTextContents();
+  const announcement = await lab.getByRole("status").innerText();
+  await expect(lab.locator(".lab-signal")).toHaveCount(0);
   expect(await lab.evaluate((element) => [element, ...element.querySelectorAll("*")].every((node) => {
     const style = getComputedStyle(node);
     return style.animationName === "none" && style.transitionDuration === "0s";
   }))).toBe(true);
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(lab).toHaveAttribute("data-motion", "full");
+  await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
+  await lab.getByRole("button", { name: lesson.edit, exact: true }).click();
+  await expect(lab.getByText("Frame 1 of 1", { exact: true })).toBeVisible();
+  expect(await records.allTextContents()).toEqual(reduced);
+  await expect(lab.getByRole("status")).toHaveText(announcement);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(lab).toHaveAttribute("data-motion", "reduced");
 });
+}
+
+for (const lesson of labs.filter(({ route }) => route !== "dots-and-causal-context")) {
+  test(`${lesson.route}: keyboard controls retain focus or move to the owning heading`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(`/atlas/${lesson.route}/`);
+    const lab = page.getByTestId("causal-lab");
+    const button = (name: string) => lab.getByRole("button", { name, exact: true });
+    const activate = async (target: Locator, key = "Enter") => {
+      await tabTo(page, target);
+      await expect(target).toHaveCSS("outline-style", "solid");
+      await expect(target).toHaveCSS("outline-width", "3px");
+      await page.keyboard.press(key);
+    };
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("main")).toBeFocused();
+    await activate(button(lesson.edit));
+    await expect(button(lesson.edit)).toBeFocused();
+    await expect(lab.getByRole("status")).not.toBeEmpty();
+    await expect(lab.getByRole("status")).toHaveAttribute("aria-live", "polite");
+    if (lesson.queue !== lesson.edit) {
+      await activate(button(lesson.queue), "Space");
+      await expect(button(lesson.queue)).toBeFocused();
+    }
+    if (lesson.route === "partial-order" || lesson.route === "vector-clocks") {
+      await activate(button("Local event at B"));
+      const compare = lab.getByRole("button", {
+        name: lesson.route === "vector-clocks" ? /^Compare \[/ : /^Compare /,
+      }).first();
+      await activate(compare);
+      await expect(compare).toBeFocused();
+      await expect(lab.getByRole("status")).toContainText(/before|after|equal|concurrent/);
+    }
+    const messageId = await lab.locator(".lab-message").first().getAttribute("data-message");
+    const inspect = button(`Inspect ${messageId}`);
+    await activate(inspect);
+    await expect(inspect).toBeFocused();
+    await expect(inspect).toHaveAttribute("aria-pressed", "true");
+    await expect(lab.locator('details[data-inspector="message"]')).toHaveAttribute("open", "");
+    await activate(button("Duplicate m1 from A to B"), "Space");
+    await expect(button("Duplicate m1 from A to B")).toBeFocused();
+    await expect(lab.locator('details[data-inspector="message"]')).toHaveAttribute("open", "");
+    await activate(button("Deliver m1 from A to B"));
+    await expect(lab.getByRole("heading", { name: "Queued messages", exact: true })).toBeFocused();
+    await activate(button("Back"));
+    await expect(button("Back")).toBeFocused();
+    await expect(button(lesson.edit)).toBeDisabled();
+    await activate(button("Forward"));
+    await expect(lab.getByRole("heading", { name: "Trace navigation", exact: true })).toBeFocused();
+    const history = lab.getByRole("navigation", { name: "Trace history", exact: true });
+    await activate(history.getByRole("button").last());
+    await expect(history.getByRole("button").last()).toBeFocused();
+    const disclosure = lab.locator('details[data-inspector="replica-A"]');
+    await activate(disclosure.locator("summary"), "Space");
+    await expect(disclosure).toHaveAttribute("open", "");
+    await expect(disclosure.locator("summary")).toBeFocused();
+    await activate(button("Reset lab"));
+    await expect(button("Reset lab")).toBeFocused();
+    await expect(lab.getByText("Frame 0 of 0", { exact: true })).toBeVisible();
+    await expect(lab.getByRole("alert")).toBeHidden();
+  });
+}
 
 test("replicas reflow without overflow and message paths do not depend on color", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
