@@ -124,20 +124,60 @@ test("the observation rail shell keeps a quiet footer with planned resources", a
   await expect(footer.getByRole("navigation")).toHaveCount(0);
 });
 
-test("Dots sheet contains the full teaching sequence", async ({ page }) => {
+test("the Dots sheet moves from identity to observed removal", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
 
-  for (const heading of [
+  const articleHeadings = page.locator(".sheet-body h2:not(causal-lab h2)");
+  await expect(articleHeadings).toHaveText([
     "One event needs one name",
     "A dot is identity, not a timestamp",
     "Context records what a replica has observed",
-    "Interactive lab",
+    "Compare what each station knows",
     "Remove only what you saw",
     "Break it: discard the context",
     "What causal metadata costs",
     "Field notes",
-  ]) {
-    await expect(page.getByRole("heading", { name: heading, exact: true })).toBeVisible();
+  ]);
+});
+
+test("Dots sheet figures explain identity and vector evidence without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/dots-and-causal-context/");
+    const dots = page.getByRole("figure", { name: "Dot identity", exact: true });
+    await expect(dots).toBeVisible();
+    await expect(dots.getByTestId("station-mark-a")).toBeVisible();
+    await expect(dots.getByTestId("station-mark-b")).toBeVisible();
+    await expect(dots).toContainText("(A, 1)");
+    await expect(dots).toContainText("(B, 1)");
+    await expect(dots).toContainText("The replica ID makes equal counter values distinct");
+    const vectors = page.getByRole("figure", { name: "Version vector comparison", exact: true });
+    await expect(vectors.locator("tbody tr")).toHaveText([
+      "A1=1", "B0<1",
+    ]);
+    await expect(vectors).toContainText("A is before B");
+    await expect(vectors).toContainText("A component: 1 equals 1; B component: 0 is less than 1.");
+    const comparison = page.getByRole("figure", { name: "Incorrect removal rules", exact: true });
+    await expect(comparison.getByRole("columnheader")).toHaveText([
+      "Incorrect: delete by value", "Incorrect: keep every add forever",
+    ]);
+    await expect(comparison).toContainText("Remove beacon at A");
+    await expect(comparison).toContainText("Add beacon at B");
+    await expect(comparison).toContainText("B:1");
+    await expect(comparison).toContainText("A:1");
+    const outsideNotes = await page.locator(".sheet-body").evaluate((body) => {
+      const copy = body.cloneNode(true) as HTMLElement;
+      copy.querySelector(".sheet-field-notes")?.remove();
+      return copy.textContent;
+    });
+    expect(outsideNotes).not.toContain("Watershed");
+    const notes = page.locator(".sheet-field-notes");
+    await expect(notes).toContainText("Watershed");
+    await expect(notes.getByRole("link", { name: "Watershed", exact: true }))
+      .toHaveAttribute("href", "https://github.com/tylerbutler/watershed");
+  } finally {
+    await context.close();
   }
 });
 
@@ -369,6 +409,32 @@ test.describe("collection build fixtures", () => {
 
   test.afterAll(async () => {
     if (root) await rm(root, { recursive: true, force: true });
+  });
+
+  test("Dots sheet vector figures derive all four relations from their props", async ({ page }) => {
+    test.setTimeout(90_000);
+    await writeFile(path.join(root, "src/pages/vector-figures.astro"), `---
+import VectorComparison from "../components/VectorComparison.astro";
+---
+<VectorComparison left={{ A: 1 }} right={{ A: 1, B: 1 }} />
+<VectorComparison left={{ A: 1, B: 1 }} right={{ A: 1 }} />
+<VectorComparison left={{ A: 1 }} right={{ B: 1 }} />
+<VectorComparison left={{}} right={{ A: 0 }} />
+`);
+    const result = await buildFixture(root);
+    expect(result.code, result.output).toBe(0);
+    await page.setContent(await readFile(path.join(root, "dist/vector-figures/index.html"), "utf8"));
+    const figures = page.getByRole("figure", { name: "Version vector comparison", exact: true });
+    for (const [index, relation, rows, evidence] of [
+      [0, "A is before B", ["A1=1", "B0<1"], "A component: 1 equals 1; B component: 0 is less than 1."],
+      [1, "A is after B", ["A1=1", "B1>0"], "A component: 1 equals 1; B component: 1 is greater than 0."],
+      [2, "A and B are concurrent", ["A1>0", "B0<1"], "A component: 1 is greater than 0; B component: 0 is less than 1."],
+      [3, "A and B are equal", ["A0=0"], "A component: 0 equals 0."],
+    ] as const) {
+      await expect(figures.nth(index)).toContainText(relation);
+      await expect(figures.nth(index).locator("tbody tr")).toHaveText([...rows]);
+      await expect(figures.nth(index)).toContainText(evidence);
+    }
   });
 
   test("atlas exposes published collection entries and sheet reading context", async ({ page }) => {

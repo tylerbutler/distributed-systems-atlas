@@ -1,0 +1,57 @@
+---
+import StationMark from "./StationMark.astro";
+---
+
+<figure aria-label="Dot identity">
+  <div class="dot-pair">
+    {["A", "B"].map((station) => (
+      <div class="dot-station">
+        <div class="dot-label"><StationMark station={station} /><strong>Station {station}</strong></div>
+        <dl>
+          <dt>Local counter</dt>
+          <dd><code>1</code></dd>
+          <dt>Dot (replica, counter)</dt>
+          <dd><code>({station}, 1)</code></dd>
+        </dl>
+      </div>
+    ))}
+  </div>
+  <figcaption>
+    The replica ID makes equal counter values distinct: <code>(A, 1)</code> and
+    <code>(B, 1)</code> name different additions. Each station allocated its own counter
+    value of <code>1</code>; the matching numbers say nothing about which event came first.
+  </figcaption>
+</figure>
+
+<style>
+  .dot-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    font-family: var(--font-ui);
+  }
+
+  .dot-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  dl {
+    margin: var(--space-4) 0 0;
+  }
+
+  dt {
+    font-size: 0.875rem;
+  }
+
+  dd {
+    margin: 0 0 var(--space-3);
+  }
+
+  dd:last-child {
+    margin-bottom: 0;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+  }
+</style>

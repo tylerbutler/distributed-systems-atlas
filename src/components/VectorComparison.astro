@@ -1,0 +1,50 @@
+---
+import { compareVectors, type VersionVector } from "../lib/lab/contract";
+
+interface Props {
+  left: VersionVector;
+  right: VersionVector;
+}
+
+const { left, right } = Astro.props;
+const components = [...new Set([...Object.keys(left), ...Object.keys(right)])].sort();
+const rows = components.map((id) => {
+  const a = left[id] ?? 0;
+  const b = right[id] ?? 0;
+  return {
+    id, a, b,
+    symbol: a < b ? "<" : a > b ? ">" : "=",
+    meaning: a < b ? "is less than" : a > b ? "is greater than" : "equals",
+  };
+});
+const relation = compareVectors(left, right);
+const label = relation === "equal" || relation === "concurrent"
+  ? `A and B are ${relation}`
+  : `A is ${relation} B`;
+const evidence = rows.length
+  ? `${rows.map(({ id, a, b, meaning }) => `${id} component: ${a} ${meaning} ${b}`).join("; ")}.`
+  : "Neither vector records an event.";
+---
+
+<figure aria-label="Version vector comparison">
+  <table>
+    <caption>Compare station A with station B</caption>
+    <thead><tr><th scope="col">Component</th><th scope="col">At A</th><th scope="col">Relation</th><th scope="col">At B</th></tr></thead>
+    <tbody>
+      {rows.map(({ id, a, b, symbol }) => (
+        <tr><th scope="row">{id}</th><td>{a}</td><td>{symbol}</td><td>{b}</td></tr>
+      ))}
+    </tbody>
+  </table>
+  <figcaption><strong>{label}.</strong> {evidence}</figcaption>
+</figure>
+
+<style>
+  table {
+    font-family: var(--font-ui);
+  }
+
+  tbody {
+    font-family: var(--font-data);
+  }
+</style>

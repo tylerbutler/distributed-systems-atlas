@@ -22,6 +22,8 @@ references:
 ---
 
 import CausalLab from "../../components/CausalLab.astro";
+import DotDiagram from "../../components/DotDiagram.astro";
+import VectorComparison from "../../components/VectorComparison.astro";
 
 <div class="sheet-opening">
 
@@ -58,6 +60,8 @@ without talking to each other because their replica IDs differ.
 <aside class="sheet-term-note" aria-label="Term: dot">
   <dl><dt>dot</dt><dd>A unique event identifier made from a replica ID and a local counter.</dd></dl>
 </aside>
+
+<DotDiagram />
 
 The uniqueness guarantee has conditions. Each replica ID must identify one
 allocator, and that allocator must not reuse a counter. Restarting A with its
@@ -126,7 +130,22 @@ the partition, so both stations have that addition before they diverge.
   <figcaption>The same notation answers two different questions. Read the field label.</figcaption>
 </figure>
 
-## Interactive lab
+Read a comparison one component at a time. A vector is **before** another when
+none of its components is greater and at least one is smaller. Reverse that
+test for **after**. Matching components mean **equal**; a greater component on
+each side means **concurrent**.
+
+Here, A knows `A:1`. B knows `A:1` and its own `B:1`. Compare the A entries,
+then the B entries:
+
+<VectorComparison left={{ A: 1, B: 0 }} right={{ A: 1, B: 1 }} />
+
+That comparison describes the stations' accumulated knowledge. It doesn't
+order every action in their ledgers. In this model a removal creates no new
+dot, so the vectors alone can't tell you whether B observed A's remove.
+Follow which messages arrived to establish that distinction.
+
+## Compare what each station knows
 
 Start from the initial frame, or choose **Reset lab** if you've experimented.
 Use this order to reproduce the concurrent add/remove case:
@@ -142,13 +161,7 @@ Use this order to reproduce the concurrent add/remove case:
 4. Choose **Deliver m2 from A to B**, then **Deliver m3 from B to A**.
    Now compare the live dots, contexts, and invariant checks.
 
-</div>
-
-<CausalLab scenario="dots-concurrent-add-remove" />
-
-<div class="sheet-continuation">
-
-The state panels and history above come from the engine's trace. **Back** and
+The state panels and history come from the engine's trace. **Back** and
 **Forward** let you inspect recorded states; return to the latest frame before
 issuing another operation. **Play** visits existing frames every 900 ms without
 creating actions or delivering messages. **Pause** or any manual control stops
@@ -160,26 +173,31 @@ deliveries. You can also duplicate a queued message before delivering it.
 Compare the final state rather than expecting identical intermediate views.
 The queue and ledger let you account for the extra delivery.
 
-This lab uses a TypeScript reference model with explicit removed-dot records.
-It is not a Watershed adapter or a production replication service. The
-pseudocode in [Field notes](#field-notes) describes this model's merge rules.
 Without JavaScript, you can read the article and inspect the static initial
 state; the controls require JavaScript.
+
+</div>
+
+<CausalLab scenario="dots-concurrent-add-remove" />
+
+<div class="sheet-continuation">
 
 ## Remove only what you saw
 
 After you complete both final deliveries in the guided run, each replica shows
-`beacon` with the live dot `B:1`. The removed addition is `A:1`. Both replicas
-retain knowledge of both additions, even though only one contributes to visible
-membership.
+`beacon` with the concurrent dot `B:1` still live. The removed addition is
+`A:1`. Both replicas retain knowledge of both additions, even though only one
+contributes to visible membership.
 
 B:1 was never observed by A's remove. At the point of removal, A could name
 `A:1`, but it had received no message about B's new addition. A's removal
+can remove only addition dots for `beacon` in A's observed context. It
 therefore names `A:1`, and merging that removal at B does not remove `B:1`.
 Delivering B's addition at A gives A the surviving dot too.
 
-That is the **add-wins** result for a concurrent add and remove. Here,
-concurrent means neither operation observed the other. The order you pressed
+An **observed-remove set (OR-Set)** uses that observed context to decide which
+additions a removal targets. This is its **add-wins** result for a concurrent
+add and remove. Here, concurrent means neither operation observed the other. The order you pressed
 their buttons in the browser does not establish communication between the
 replicas. The partition keeps those operations apart.
 
@@ -206,20 +224,32 @@ also compares that metadata and requires an empty message queue.
 
 **Warning:** Discarding event identity changes what a remove can mean.
 
-Imagine replacing each replica's state with a plain set of strings. Keep the
-same network schedule, but send commands such as `add beacon` and
-`delete beacon`, with no event identity or observed-dot information. Try to
-apply A's delayed delete at B after B's independent add.
+Keep **Add beacon at A**, **Remove beacon at A**, and **Add beacon at B**.
+Now discard the record of which addition the removal observed. Two tempting
+rules give different wrong answers:
 
-If delete means “erase the value wherever it appears,” B loses its own
-addition. The command cannot distinguish A's observed addition from B's
-unobserved one. Both had the same string. Making that rule deterministic could
-make replicas agree, but it would still violate observed-remove semantics.
+<figure aria-label="Incorrect removal rules">
+  <table>
+    <thead><tr><th scope="col">Incorrect: delete by value</th><th scope="col">Incorrect: keep every add forever</th></tr></thead>
+    <tbody><tr>
+      <td><p>After <strong>Add beacon at B</strong> creates <code>B:1</code>,
+      deliver the update from <strong>Remove beacon at A</strong> to B.
+      Deleting by the string <code>beacon</code> erases B's concurrent
+      addition, even though A never observed it.</p></td>
+      <td><p><strong>Add beacon at A</strong> created <code>A:1</code>.
+      <strong>Remove beacon at A</strong> removed that observed addition.
+      Unioning all additions without removal knowledge restores <code>A:1</code>
+      from B's copy. No new add justifies its return.</p></td>
+    </tr></tbody>
+  </table>
+  <figcaption>Both rules violate observed removal. Delete by value loses
+  <code>B:1</code>; keeping every add resurrects <code>A:1</code>. Seeing
+  <code>beacon</code> at both stations cannot tell you which mistake you made.</figcaption>
+</figure>
 
-Try the opposite shortcut: merge replicas by taking the union of their visible
-strings. A deletes `beacon`, but B still has the earlier copy. Union restores
-the value at A. You have resurrected an addition that A removed, without
-anyone making a new addition.
+The correct model retains `B:1` and rejects the removed `A:1`. In the guided
+run, the surviving value can hide the second rule's mistake: you need the live
+dots to distinguish a valid concurrent addition from a resurrected one.
 
 Retaining a permanent “beacon was deleted” flag avoids that resurrection at the
 cost of forbidding a legitimate re-add. Recording the removed dot instead lets
@@ -298,6 +328,11 @@ should mean before choosing a set implementation.
 <section class="sheet-field-notes" aria-labelledby="field-notes">
 
 ## Field notes
+
+This lab uses a TypeScript reference model with explicit removed-dot records,
+not a production replication service. For a Gleam implementation reference,
+see [Watershed](https://github.com/tylerbutler/watershed). The lab does not run
+that library; the pseudocode below describes the model you've just inspected.
 
 The following pseudocode uses the reference model's explicit tombstones.
 `adds[value]` and `removed[value]` are sets of dots; missing sets start empty.

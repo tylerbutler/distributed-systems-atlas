@@ -189,7 +189,21 @@ test("partition motion opens the route between fixed endpoints", async ({ page }
 
 test("Dots sheet explains the final add-wins result", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
-  await expect(page.getByText(/B:1 was never observed by A['\u2019]s remove/)).toBeVisible();
+  const continuation = page.locator(".sheet-continuation");
+  await expect(continuation.getByText(/B:1 was never observed by A['\u2019]s remove/)).toBeVisible();
+  await expect(continuation).toContainText("concurrent dot");
+  await expect(continuation).toContainText("observed-remove set (OR-Set)");
+  expect(await page.getByTestId("causal-lab").evaluate((lab) => {
+    const body = lab.closest(".sheet-body")!;
+    const headings = [...body.querySelectorAll("h2")].filter((heading) => !heading.closest("causal-lab"));
+    return {
+      before: headings.filter((heading) => heading.compareDocumentPosition(lab) & Node.DOCUMENT_POSITION_FOLLOWING).at(-1)?.textContent,
+      after: headings.find((heading) => heading.compareDocumentPosition(lab) & Node.DOCUMENT_POSITION_PRECEDING)?.textContent,
+    };
+  })).toEqual({
+    before: "Compare what each station knows",
+    after: "Remove only what you saw",
+  });
 });
 
 test("steps through concurrent add and remove", async ({ page }) => {
