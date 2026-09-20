@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 import type { LabAction, OrderingMode, SimulationEngine, TraceFrame } from "./contract";
 import { createEngine } from "./engine-registry";
 import { acceptanceFixtures } from "./fixtures";
@@ -372,6 +372,107 @@ test("event comparison snapshots do not freeze or retain caller-owned pairs", ()
   expect(frame.action).toEqual({ type: "compare-events", pairs: [["a1", "b1"]] });
   dispatch(engine, { type: "reset" });
   expect(engine.current().ordering!.comparisons).toEqual([]);
+});
+
+test("immutable 200-event graphs build reachability once, without repeated predecessor traversal", () => {
+  let predecessorReads = 0;
+  let edgeTraversals = 0;
+  const graph = Object.freeze(Array.from({ length: 200 }, (_, index) => {
+    const predecessors = index === 0 ? [] : [`e${index - 1}`];
+    Object.defineProperty(predecessors, Symbol.iterator, {
+      value() {
+        edgeTraversals++;
+        return Array.prototype[Symbol.iterator].call(this);
+      },
+    });
+    Object.freeze(predecessors);
+    return Object.freeze({
+      id: `e${index}`,
+      get predecessors() { predecessorReads++; return predecessors; },
+    });
+  }));
+  expect(compareEvents(graph, "e0", "e199")).toBe("before");
+  const reads = predecessorReads;
+  const traversals = edgeTraversals;
+  expect(reads).toBeGreaterThan(0);
+  expect(traversals).toBeGreaterThan(0);
+  for (let index = 0; index < 200; index++) {
+    expect(compareEvents(graph, `e${index}`, "e199")).toBe(index === 199 ? "equal" : "before");
+    expect(compareEvents(graph, "e199", `e${index}`)).toBe(index === 199 ? "equal" : "after");
+  }
+  expect(predecessorReads).toBe(reads);
+  expect(edgeTraversals).toBe(traversals);
+});
+
+test.each([20, 200])("comparison dispatches reuse reachability and invariants for %i events", (count) => {
+  const engine = create("vector");
+  for (let index = 0; index < count - 1; index++) {
+    dispatch(engine, { type: "local-event", replica: index % 2 ? "B" : "A", event: `e${index}` });
+  }
+  dispatch(engine, { type: "send", from: "A", to: "B", message: "m1" });
+  const before = engine.current();
+  let graphBuilds = 0;
+  const NativeMap = Map;
+  class CountedMap<K, V> extends NativeMap<K, V> {
+    constructor(entries?: readonly (readonly [K, V])[] | null) {
+      super(entries);
+      graphBuilds++;
+    }
+  }
+  const traversal = vi.spyOn(Array.prototype, "pop");
+  vi.stubGlobal("Map", CountedMap);
+  let after: TraceFrame;
+  let graphTraversals: number;
+  try {
+    engine.dispatch({ type: "compare-events", pairs: [["e0", "e2"], ["e2", "e0"], ["e0", "e0"], ["e0", "e1"]] });
+    engine.dispatch({ type: "compare-vectors", left: { A: 1 }, right: { B: 1 } });
+    engine.dispatch({ type: "duplicate", message: "m1" });
+    engine.dispatch({ type: "partition", left: "A", right: "B" });
+    engine.dispatch({ type: "heal", left: "A", right: "B" });
+    after = engine.current();
+    graphTraversals = traversal.mock.calls.length;
+  } finally {
+    vi.unstubAllGlobals();
+    traversal.mockRestore();
+  }
+  expect(graphBuilds).toBe(0);
+  expect(graphTraversals).toBe(0);
+  expect(after.index).toBe(before.index + 5);
+  expect(after.ordering!.events).toBe(before.ordering!.events);
+  expect(after.invariants).toBe(before.invariants);
+  expect(after.ordering!.comparisons.map(({ relation }) => relation)).toEqual(["before", "after", "equal", "concurrent"]);
+  expect(after.ordering!.vectorComparisons.at(-1)?.relation).toBe("concurrent");
+  const received = dispatch(engine, { type: "deliver", message: "m1", event: "received" });
+  expect(received.ordering!.events).not.toBe(before.ordering!.events);
+  expect(compareEvents(events(received), "e0", "received")).toBe("before");
+  expect(() => compareEvents(events(before), "e0", "received")).toThrow("cannot compare unknown events");
+  expect(Object.isFrozen(before.ordering!.events)).toBe(true);
+  expect(before.ordering!.events.some((event) => event.id === "received")).toBe(false);
+}, 30_000);
+
+test("mutable or shallow-frozen graph inputs never retain stale reachability", () => {
+  for (const [freezeArray, freezeEvents] of [[false, false], [true, false], [true, true]]) {
+    const graph = [{ id: "a", predecessors: [] as string[] }, { id: "b", predecessors: [] as string[] }];
+    if (freezeArray) Object.freeze(graph);
+    if (freezeEvents) graph.forEach(Object.freeze);
+    expect(compareEvents(graph, "a", "b")).toBe("concurrent");
+    graph[1].predecessors.push("a");
+    expect(compareEvents(graph, "a", "b")).toBe("before");
+  }
+});
+
+test("reset can reuse event IDs without changing cached historical relations", () => {
+  const engine = create("vector");
+  dispatch(engine, { type: "local-event", replica: "A", event: "a" });
+  const previous = dispatch(engine, { type: "local-event", replica: "B", event: "b" });
+  expect(compareEvents(events(previous), "a", "b")).toBe("concurrent");
+  dispatch(engine, { type: "reset" });
+  expect(() => compareEvents(events(engine.current()), "a", "b")).toThrow("cannot compare unknown events");
+  dispatch(engine, { type: "local-event", replica: "B", event: "a" });
+  const next = dispatch(engine, { type: "local-event", replica: "B", event: "b" });
+  expect(compareEvents(events(next), "a", "b")).toBe("before");
+  expect(compareEvents(events(previous), "a", "b")).toBe("concurrent");
+  expect(next.invariants).not.toBe(previous.invariants);
 });
 
 test.each([

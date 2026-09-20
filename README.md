@@ -158,6 +158,12 @@ distinguish happens-before from concurrency. Vector receives merge component max
 then increment the receiver's component. The inspector shows one component
 per configured replica and explains the cost of adding another replica.
 
+The engine extends its ancestor index when it records an event. Immutable
+graph snapshots share existing ancestor sets and retain their own event
+membership. Comparison and network-only actions reuse the index and invariant
+results. `compareEvents` also caches reachability for other fully frozen graphs;
+mutable graphs remain uncached so edits cannot produce stale comparisons.
+
 Local, send, and delivery actions accept optional event IDs; send actions
 also accept an optional message ID. Canonical replays use fixture IDs.
 Free-form actions get deterministic generated IDs. Invalid actions return

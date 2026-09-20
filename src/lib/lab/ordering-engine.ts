@@ -7,25 +7,38 @@ import {
 const lexical = (left: string, right: string): number => left < right ? -1 : left > right ? 1 : 0;
 const pair = (left: string, right: string): string => [left, right].sort(lexical).join(":");
 
+type EventGraph = readonly Pick<OrderingEvent, "id" | "predecessors">[];
+type Ancestors = ReadonlyMap<string, ReadonlySet<string>>;
+const reachability = new WeakMap<EventGraph, Ancestors>();
+
 export function compareEvents(
-  events: readonly Pick<OrderingEvent, "id" | "predecessors">[], left: string, right: string,
+  events: EventGraph, left: string, right: string,
 ): CausalRelation {
-  const graph = new Map(events.map((event) => [event.id, event.predecessors]));
-  if (!graph.has(left) || !graph.has(right)) throw new Error("cannot compare unknown events");
-  if (left === right) return "equal";
-  function reaches(from: string, target: string): boolean {
-    const pending = [...(graph.get(target) ?? [])];
-    const visited = new Set<string>();
-    while (pending.length) {
-      const id = pending.pop()!;
-      if (id === from) return true;
-      if (visited.has(id)) continue;
-      visited.add(id);
-      pending.push(...(graph.get(id) ?? []));
+  let ancestors = reachability.get(events);
+  if (!ancestors) {
+    const graph = new Map(events.map((event) => [event.id, event.predecessors]));
+    const computed = new Map<string, ReadonlySet<string>>();
+    for (const [id, predecessors] of graph) {
+      const pending = [...predecessors];
+      const visited = new Set<string>();
+      while (pending.length) {
+        const predecessor = pending.pop()!;
+        if (visited.has(predecessor)) continue;
+        visited.add(predecessor);
+        pending.push(...(graph.get(predecessor) ?? []));
+      }
+      computed.set(id, visited);
     }
-    return false;
+    ancestors = computed;
+    // Mutable caller graphs must reflect edits on the next comparison.
+    if (Object.isFrozen(events) && events.every((event) =>
+      Object.isFrozen(event) && Object.isFrozen(event.predecessors))) {
+      reachability.set(events, ancestors);
+    }
   }
-  return reaches(left, right) ? "before" : reaches(right, left) ? "after" : "concurrent";
+  if (!ancestors.has(left) || !ancestors.has(right)) throw new Error("cannot compare unknown events");
+  if (left === right) return "equal";
+  return ancestors.get(right)!.has(left) ? "before" : ancestors.get(left)!.has(right) ? "after" : "concurrent";
 }
 
 /** This display order adds replica-ID tie breaking, not causal edges. */
@@ -71,6 +84,10 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
   } satisfies ReplicaState]));
   let replicas: Map<string, ReplicaState> = initialReplicas();
   const graph = new Map<string, OrderingEvent>();
+  const ancestors = new Map<string, ReadonlySet<string>>();
+  let events: readonly OrderingEvent[] = Object.freeze([]);
+  let checkedEvents: EventGraph | undefined;
+  let checkedInvariants: TraceFrame["invariants"];
   let messages: QueuedMessage[] = [];
   const messageIds = new Set<string>();
   const partitions = new Set<string>();
@@ -86,8 +103,8 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
     return { observation: "history", events: state.events, observed: [...state.observed].sort(lexical) };
   }
 
-  function frame(index: number, action: LabAction | null, actionLabel: string, explanation: string): TraceFrame {
-    const events = [...graph.values()];
+  function invariantChecks(): TraceFrame["invariants"] {
+    if (checkedEvents === events) return checkedInvariants;
     const states = [...replicas.values()];
     const relation = (left: string, right: string) => compareEvents(events, left, right);
     const invariants: Record<string, boolean> = {
@@ -106,14 +123,19 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
         event.predecessors.every((predecessor) => graph.get(predecessor)!.lamport! < event.lamport!));
     }
     if (mode === "vector") {
-      // ponytail: all-pairs checks suit small lesson traces; cache reachability if traces grow.
       invariants.vectorMatchesGraph = events.every((left) => events.every((right) =>
         compareVectors(left.vector!, right.vector!) === relation(left.id, right.id)));
       invariants.oneComponentPerReplica = states.every((state) => Object.keys(state.vector).length === replicaIds.length);
     }
-    return immutable(structuredClone({
+    checkedEvents = events;
+    checkedInvariants = immutable(invariants);
+    return checkedInvariants;
+  }
+
+  function frame(index: number, action: LabAction | null, actionLabel: string, explanation: string): TraceFrame {
+    const snapshot = structuredClone({
       index, action, actionLabel, explanation,
-      replicas: states.map((state) => ({
+      replicas: [...replicas.values()].map((state) => ({
         id: state.id,
         value: state.events.flatMap((event) => event.value === undefined ? [] : [event.value]),
         ...observation(state),
@@ -126,9 +148,13 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
         }),
       })),
       partitions: [...partitions].sort(lexical),
-      ordering: { events, comparisons, vectorComparisons },
-      invariants,
-    }));
+      ordering: { comparisons, vectorComparisons },
+    });
+    return immutable({
+      ...snapshot,
+      ordering: { ...snapshot.ordering, events },
+      invariants: invariantChecks(),
+    });
   }
 
   let frames: readonly TraceFrame[] = Object.freeze([
@@ -164,7 +190,16 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
       ...(mode === "lamport" ? { lamport: replica.clock } : {}),
       ...(mode === "vector" ? { vector: { ...replica.vector } } : {}),
     };
-    graph.set(event.id, event);
+    const observedAncestors = new Set<string>();
+    for (const predecessor of predecessors) {
+      observedAncestors.add(predecessor);
+      for (const ancestor of ancestors.get(predecessor)!) observedAncestors.add(ancestor);
+    }
+    ancestors.set(event.id, observedAncestors);
+    graph.set(event.id, immutable(event));
+    events = Object.freeze([...events, event]);
+    // Share immutable ancestor sets, but isolate each historical graph's membership.
+    reachability.set(events, new Map(ancestors));
     replica.events.push(event);
     for (const observed of incoming?.observed ?? []) replica.observed.add(observed);
     replica.observed.add(event.id);
@@ -243,7 +278,7 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
           return error(action, "cannot compare unknown events");
         }
         comparisons = action.pairs.map(([left, right]) => ({
-          left, right, relation: compareEvents([...graph.values()], left, right),
+          left, right, relation: compareEvents(events, left, right),
         }));
         return append(action, "compare events", "Causality follows local predecessor and message edges, not button order.");
       }
@@ -261,6 +296,8 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
       case "reset":
         replicas = initialReplicas();
         graph.clear();
+        ancestors.clear();
+        events = Object.freeze([]);
         messages = [];
         messageIds.clear();
         partitions.clear();
