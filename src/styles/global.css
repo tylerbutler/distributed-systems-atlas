@@ -147,7 +147,8 @@ p {
   margin-block: 0 var(--space-4);
 }
 
-.site-header,
+.publication-header,
+.observation-rail-inner,
 .site-main,
 .site-footer {
   max-width: var(--content);
@@ -156,6 +157,10 @@ p {
 }
 
 .site-header {
+  border: 0;
+}
+
+.publication-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -182,7 +187,7 @@ p {
 .site-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
+  gap: var(--space-4) var(--space-5);
   padding: 0;
   margin: 0;
   list-style: none;
@@ -190,12 +195,18 @@ p {
 
 .site-nav li {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.site-nav a[aria-current="page"] {
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.site-nav a[aria-current] {
   color: inherit;
   font-weight: 700;
   text-decoration-thickness: 2px;
@@ -280,6 +291,25 @@ p {
   padding-block: var(--space-5);
   color: var(--muted);
   font-size: 0.875rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: 0;
+}
+
+@media (width < 48rem) {
+  .publication-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .site-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .skip-link {

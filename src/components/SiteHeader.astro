@@ -5,21 +5,23 @@ const path = Astro.url.pathname.replace(/\/$/, "");
 ---
 
 <header class="site-header instrument-panel">
-  <a class="site-name" href="/">
-    <span class="station-pair" aria-hidden="true">
-      <StationMark station="A" size="sm" />
-      <StationMark station="B" size="sm" />
-    </span>
-    <span>Distributed Systems Atlas</span>
-  </a>
-  <nav aria-label="Primary">
-    <ul class="site-nav">
-      <li>
-        <a href="/atlas/" aria-current={path === "/atlas" ? "page" : undefined}>Atlas</a>
-      </li>
-      {["Trails", "Glossary", "References"].map((label) => (
-        <li><span>{label}</span> <span class="status">Planned</span></li>
-      ))}
-    </ul>
-  </nav>
+  <div class="publication-header">
+    <a class="site-name" href="/">
+      <span class="station-pair" aria-hidden="true">
+        <StationMark station="A" size="sm" />
+        <StationMark station="B" size="sm" />
+      </span>
+      <span>Distributed Systems Atlas</span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="site-nav">
+        <li>
+          <a href="/atlas/" aria-current={path === "/atlas" ? "page" : path.startsWith("/atlas/") ? "location" : undefined}>Atlas</a>
+        </li>
+        {["Trails", "Glossary", "References"].map((label) => (
+          <li><span>{label}</span> <span class="status">Planned</span></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
 </header>

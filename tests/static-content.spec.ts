@@ -14,6 +14,58 @@ const plannedTitles = [
   "Observed-remove sets",
 ];
 
+test("the shell distinguishes working and planned navigation", async ({ page }) => {
+  await page.goto("/");
+
+  const nav = page.getByRole("navigation", { name: "Primary", exact: true });
+  await expect(nav.getByRole("link")).toHaveCount(1);
+  await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute(
+    "href",
+    "/atlas/",
+  );
+  for (const label of ["Trails", "Glossary", "References"]) {
+    const item = nav.getByText(label, { exact: true }).locator("..");
+    await expect(item).toContainText("Planned");
+    await expect(item.locator("a, button, [tabindex]")).toHaveCount(0);
+  }
+  await page.goto("/atlas/dots-and-causal-context/");
+  await expect(nav.getByRole("link", { name: "Atlas", exact: true }))
+    .toHaveAttribute("aria-current", "location");
+});
+
+test("the observation rail shows route context without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    for (const route of ["/", "/atlas/"]) {
+      await page.goto(route);
+      await expect(rail.getByRole("listitem")).toHaveText(["Atlas"]);
+    }
+    await page.goto("/atlas/dots-and-causal-context/");
+    await expect(rail.getByRole("listitem")).toHaveText([
+      "Atlas", "Mechanisms", "Dots and causal context", "Trail 5 of 7",
+    ]);
+    await expect(rail.locator('[aria-current="page"]')).toHaveText("Dots and causal context");
+  } finally {
+    await context.close();
+  }
+});
+
+test("the observation rail shell keeps a quiet footer with source notes", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.getByRole("contentinfo");
+  await expect(footer).toContainText("A place to study what replicas know.");
+  await expect(footer.getByRole("link")).toHaveCount(1);
+  await expect(footer.getByRole("link", { name: "Source notes", exact: true }))
+    .toHaveAttribute("href", "/atlas/dots-and-causal-context/#field-notes");
+  await expect(footer.getByText("Bibliography", { exact: true }).locator(".."))
+    .toContainText("Planned");
+  await expect(footer.getByRole("navigation")).toHaveCount(0);
+  await footer.getByRole("link", { name: "Source notes", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
+});
+
 test("Dots sheet contains the full teaching sequence", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
 
@@ -201,9 +253,14 @@ test.describe("collection build fixtures", () => {
     await expect(next.getByRole("link")).toHaveCount(0);
 
     await page.setContent(await readFile(path.join(root, "dist/atlas/local-history/index.html"), "utf8"));
+    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    await expect(rail.getByRole("listitem")).toHaveText([
+      "Atlas", "Mechanisms", "Local history", "Trail 1 of 7",
+    ]);
     await expect(page.getByText("No prerequisite sheet", { exact: true })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Next trail step" })).toContainText("Partial order");
     await page.setContent(await readFile(path.join(root, "dist/atlas/replicated-log/index.html"), "utf8"));
+    await expect(rail.getByRole("listitem")).toHaveText(["Atlas", "Systems", "Replicated log"]);
     await expect(page.getByRole("navigation", { name: "Next trail step" })).toHaveCount(0);
   });
 

@@ -1,0 +1,93 @@
+---
+interface Props {
+  territory?: string;
+  sheetTitle?: string;
+  trailStep?: {
+    current: number;
+    total: number;
+  };
+}
+
+const { territory, sheetTitle, trailStep } = Astro.props;
+---
+
+<nav class="observation-rail instrument-panel" aria-label="Sheet position">
+  <div class="observation-rail-inner">
+    <ol class="observation-context">
+      <li>Atlas</li>
+      {territory && <li>{territory}</li>}
+      {sheetTitle && <li aria-current="page">{sheetTitle}</li>}
+      {trailStep && (
+        <li>
+          Trail <span class="observation-data">{trailStep.current}</span> of <span class="observation-data">{trailStep.total}</span>
+        </li>
+      )}
+    </ol>
+    <span class="observation-trace" aria-hidden="true"></span>
+  </div>
+</nav>
+
+<style>
+  .observation-rail {
+    border: 0;
+    border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 25%, var(--instrument));
+    font-size: 0.875rem;
+  }
+
+  .observation-rail-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    padding-block: var(--space-4);
+  }
+
+  .observation-context {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .observation-context li + li {
+    border-inline-start: var(--rule-width) solid var(--muted);
+    padding-inline-start: var(--space-4);
+  }
+
+  [aria-current="page"] {
+    font-weight: 650;
+  }
+
+  .observation-trace {
+    position: relative;
+    flex: 1 0 4rem;
+    height: var(--rule-width);
+    background: var(--muted);
+  }
+
+  .observation-trace::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--signal);
+    transform: translateY(-50%);
+  }
+
+  @media (width < 48rem) {
+    .observation-rail-inner {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .observation-trace {
+      flex: none;
+      margin-block: var(--space-1);
+    }
+  }
+</style>

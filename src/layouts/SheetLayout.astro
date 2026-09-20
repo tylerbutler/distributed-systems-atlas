@@ -40,7 +40,13 @@ const next = nextStep
   : undefined;
 ---
 
-<BaseLayout title={entry.data.title} description={entry.data.summary}>
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.summary}
+  territory={territories[entry.data.territory]}
+  sheetTitle={entry.data.title}
+  trailStep={position >= 0 ? { current: position + 1, total: trail.length } : undefined}
+>
   <article class="sheet">
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
