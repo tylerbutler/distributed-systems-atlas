@@ -1,0 +1,25 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildGlossary, entryAnchor, type SheetMeta } from "../lib/atlas/graph";
+
+const sheets: SheetMeta[] = (await getCollection("sheet")).map(
+  (entry) => ({ id: entry.id, ...entry.data }),
+);
+const terms = buildGlossary(sheets);
+---
+
+<BaseLayout title="Glossary" description="Definitions for terms used in the published Distributed Systems Atlas sheets.">
+  <header class="page-intro">
+    <h1>Glossary</h1>
+    <p>Definitions collected from published atlas sheets.</p>
+  </header>
+  <dl class="reference-list">
+    {terms.map(({ term, definition }) => (
+      <div id={entryAnchor(term)}>
+        <dt>{term}</dt>
+        <dd>{definition}</dd>
+      </div>
+    ))}
+  </dl>
+</BaseLayout>

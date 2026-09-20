@@ -2,7 +2,8 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import SheetLinks from "../components/SheetLinks.astro";
-import type { SheetMeta } from "../lib/atlas/graph";
+import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
+import { firstTrail, trailPosition } from "../lib/atlas/trail";
 import type { MarkdownHeading } from "astro";
 
 interface Props {
@@ -23,7 +24,8 @@ const sheets: SheetMeta[] = (await getCollection("sheet")).map(
   (sheet) => ({ id: sheet.id, ...sheet.data }),
 );
 const byId = new Map(sheets.map((sheet) => [sheet.id, sheet]));
-const resolve = (id: string): SheetMeta => {
+const resolve = (reference: SheetReference): SheetMeta => {
+  const id = sheetReferenceId(reference);
   const sheet = byId.get(id);
   if (!sheet) throw new Error(`Sheet ${entry.id} references missing sheet ${id}`);
   return sheet;
@@ -34,19 +36,10 @@ const territories = {
   failures: "Failure modes",
   systems: "Systems",
 };
-const trail = [
-  ["local-history", "Local history"],
-  ["partial-order", "Partial order"],
-  ["lamport-clocks", "Lamport clocks"],
-  ["vector-clocks", "Vector clocks"],
-  ["dots-and-causal-context", "Dots and causal context"],
-  ["multi-value-registers", "Multi-value registers"],
-  ["observed-remove-sets", "Observed-remove sets"],
-] as const;
-const position = trail.findIndex(([id]) => id === entry.id);
-const nextStep = position >= 0 ? trail[position + 1] : undefined;
+const position = trailPosition(entry.id);
+const nextStep = position >= 0 ? firstTrail[position + 1] : undefined;
 const next = nextStep
-  ? byId.get(nextStep[0]) ?? { id: nextStep[0], title: nextStep[1], status: "planned" as const }
+  ? byId.get(nextStep.id) ?? { id: nextStep.id, title: nextStep.title, status: "planned" as const }
   : undefined;
 ---
 
@@ -55,7 +48,7 @@ const next = nextStep
   description={entry.data.summary}
   territory={territories[entry.data.territory]}
   sheetTitle={entry.data.title}
-  trailStep={position >= 0 ? { current: position + 1, total: trail.length } : undefined}
+  trailStep={position >= 0 ? { current: position + 1, total: firstTrail.length } : undefined}
 >
   <article class="sheet">
     <header class="sheet-header">
@@ -67,7 +60,7 @@ const next = nextStep
       <p class="sheet-reading-meta">
         <span>{readingMinutes} min read</span>
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
-        {position >= 0 && <span>First trail · {position + 1} of {trail.length}</span>}
+        {position >= 0 && <span>First trail · {position + 1} of {firstTrail.length}</span>}
       </p>
       {entry.data.requires.length > 0
         ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
@@ -85,7 +78,7 @@ const next = nextStep
               </ul>
             </nav>
           </details>
-          {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {trail.length}</p>}
+          {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {firstTrail.length}</p>}
         </div>
       </div>
     ))}
@@ -93,7 +86,9 @@ const next = nextStep
       <aside class="sheet-terms" aria-label="Terms on this sheet">
         <h2>Terms on this sheet</h2>
         <dl>
-          {entry.data.terms.map(({ term, definition }) => <><dt>{term}</dt><dd>{definition}</dd></>)}
+          {entry.data.terms.map(({ term, definition }) => (
+            <><dt><a href={`/glossary/#${entryAnchor(term)}`}>{term}</a></dt><dd>{definition}</dd></>
+          ))}
         </dl>
       </aside>
     )}
@@ -103,8 +98,10 @@ const next = nextStep
         <section class="sheet-references" aria-labelledby="sheet-references">
           <h2 id="sheet-references">References</h2>
           <ol>
-            {entry.data.references.map(({ key, title, url }) => (
-              <li id={`reference-${key}`}><a href={url}>{title}</a></li>
+            {entry.data.references.map(({ key, title }) => (
+              <li id={`reference-${key}`}>
+                <a href={`/bibliography/#${entryAnchor(key)}`}>{title}</a>
+              </li>
             ))}
           </ol>
         </section>

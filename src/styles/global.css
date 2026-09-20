@@ -256,6 +256,30 @@ p {
   margin-bottom: 0;
 }
 
+.reference-list {
+  max-width: var(--measure-reading);
+  padding: 0;
+  margin: 0;
+}
+
+.reference-list > :is(div, li) {
+  padding-block: var(--space-5);
+  border-top: var(--rule-width) solid var(--line);
+  scroll-margin-top: var(--space-5);
+}
+
+.reference-list dt {
+  font: 650 1.125rem/1.4 var(--font-ui);
+}
+
+.reference-list dd {
+  margin: var(--space-2) 0 0;
+}
+
+.reference-list li {
+  padding-inline-start: var(--space-2);
+}
+
 @media (width < 48rem) {
   .publication-header {
     flex-direction: column;

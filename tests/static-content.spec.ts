@@ -67,7 +67,8 @@ test("reading context disclosure and references work without JavaScript", async 
       .toBeInViewport();
     await expect(page.locator(".sheet-term-note")).toHaveCount(2);
     await page.getByRole("link", { name: "Reference: Dotted Version Vectors", exact: true }).click();
-    await expect(page.getByRole("region", { name: "References", exact: true })).toBeInViewport();
+    await expect(page).toHaveURL(/\/bibliography\/#riak-dotted-version-vectors$/);
+    await expect(page.locator("#riak-dotted-version-vectors")).toBeInViewport();
   } finally {
     await context.close();
   }
@@ -77,16 +78,16 @@ test("the shell distinguishes working and planned navigation", async ({ page }) 
   await page.goto("/");
 
   const nav = page.getByRole("navigation", { name: "Primary", exact: true });
-  await expect(nav.getByRole("link")).toHaveCount(1);
+  await expect(nav.getByRole("link")).toHaveCount(3);
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute(
     "href",
     "/atlas/",
   );
-  for (const label of ["Trails", "Glossary", "References"]) {
-    const item = nav.getByText(label, { exact: true }).locator("..");
-    await expect(item).toContainText("Planned");
-    await expect(item.locator("a, button, [tabindex]")).toHaveCount(0);
-  }
+  await expect(nav.getByRole("link", { name: "Glossary", exact: true })).toHaveAttribute("href", "/glossary/");
+  await expect(nav.getByRole("link", { name: "Bibliography", exact: true })).toHaveAttribute("href", "/bibliography/");
+  const trails = nav.getByText("Trails", { exact: true }).locator("..");
+  await expect(trails).toContainText("Planned");
+  await expect(trails.locator("a, button, [tabindex]")).toHaveCount(0);
   await page.goto("/atlas/dots-and-causal-context/");
   await expect(nav.getByRole("link", { name: "Atlas", exact: true }))
     .toHaveAttribute("aria-current", "location");
@@ -111,17 +112,39 @@ test("the observation rail shows route context without JavaScript", async ({ bro
   }
 });
 
-test("the observation rail shell keeps a quiet footer with planned resources", async ({ page }) => {
+test("the observation rail shell links public reference pages", async ({ page }) => {
   await page.goto("/");
   const footer = page.getByRole("contentinfo");
   await expect(footer).toContainText("A place to study what replicas know.");
-  await expect(footer.getByRole("link")).toHaveCount(0);
-  for (const label of ["Source", "Bibliography"]) {
-    const item = footer.getByText(label, { exact: true }).locator("..");
-    await expect(item).toContainText("Planned");
-    await expect(item.locator("a, button, [tabindex]")).toHaveCount(0);
-  }
+  await expect(footer.getByRole("link", { name: "Glossary", exact: true })).toHaveAttribute("href", "/glossary/");
+  await expect(footer.getByRole("link", { name: "Bibliography", exact: true })).toHaveAttribute("href", "/bibliography/");
+  const source = footer.getByText("Source", { exact: true }).locator("..");
+  await expect(source).toContainText("Planned");
+  await expect(source.locator("a, button, [tabindex]")).toHaveCount(0);
   await expect(footer.getByRole("navigation")).toHaveCount(0);
+});
+
+test("generated glossary and bibliography expose published metadata", async ({ page }) => {
+  await page.goto("/glossary/");
+  await expect(page).toHaveTitle("Glossary | Distributed Systems Atlas");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Glossary");
+  await expect(page.locator("#dot")).toContainText("A unique event identifier");
+  await expect(page.locator("#causal-context")).toContainText("A compact record");
+
+  await page.goto("/bibliography/");
+  await expect(page).toHaveTitle("Bibliography | Distributed Systems Atlas");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bibliography");
+  await expect(page.locator("#riak-dotted-version-vectors").getByRole("link"))
+    .toHaveAttribute("href", "https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/");
+});
+
+test("sheet terms and references link to generated entries", async ({ page }) => {
+  await page.goto("/atlas/dots-and-causal-context/");
+  await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
+    .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
+  await expect(page.getByRole("region", { name: "References", exact: true })
+    .getByRole("link", { name: "Dotted Version Vectors", exact: true }))
+    .toHaveAttribute("href", "/bibliography/#riak-dotted-version-vectors");
 });
 
 test("the Dots sheet moves from identity to observed removal", async ({ page }) => {
@@ -197,7 +220,7 @@ test("Dots sheet is a complete article without JavaScript", async ({ browser, re
     );
     await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Dotted Version Vectors", exact: true }))
-      .toHaveAttribute("href", "https://riak.com/posts/technical/vector-clocks-revisited-part-2-dotted-version-vectors/");
+      .toHaveAttribute("href", "/bibliography/#riak-dotted-version-vectors");
     const wordCount = await page.locator(".sheet-body").evaluate((body) => {
       const copy = body.cloneNode(true) as HTMLElement;
       copy.querySelectorAll("causal-lab, pre").forEach((element) => element.remove());
@@ -308,12 +331,12 @@ test("atlas exposes four territories and planned sheets without dead links", asy
     await expect(page.getByRole("link", { name: title, exact: true })).toHaveCount(0);
   }
   const nav = page.getByRole("navigation", { name: "Primary" });
-  await expect(nav.getByRole("link")).toHaveCount(1);
+  await expect(nav.getByRole("link")).toHaveCount(3);
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute("aria-current", "page");
-  for (const title of ["Trails", "Glossary", "References"]) {
-    await expect(nav.getByText(title, { exact: true }).locator("..")).toContainText("Planned");
-    expect((await request.get(`/${title.toLowerCase()}/`)).status()).toBe(404);
-  }
+  await expect(nav.getByText("Trails", { exact: true }).locator("..")).toContainText("Planned");
+  expect((await request.get("/trails/")).status()).toBe(404);
+  expect((await request.get("/glossary/")).status()).toBe(200);
+  expect((await request.get("/bibliography/")).status()).toBe(200);
   for (const id of ["local-history", "partial-order", "lamport-clocks", "vector-clocks", "multi-value-registers", "observed-remove-sets"]) {
     expect((await request.get(`/atlas/${id}/`)).status()).toBe(404);
   }
@@ -393,9 +416,25 @@ test.describe("collection build fixtures", () => {
     await mkdir(path.join(root, "src/content/sheets"), { recursive: true });
     await rm(path.join(root, "src/content/sheets/dots-and-causal-context.mdx"), { force: true });
     const sheets = [
-      { id: "dots-and-causal-context", title: "Dots and causal context", territory: "mechanisms", status: "published", requires: ["local-history", "failure-detectors"], related: ["replicated-log", "failure-detectors"] },
+      {
+        id: "dots-and-causal-context",
+        title: "Dots and causal context",
+        territory: "mechanisms",
+        status: "published",
+        requires: ["local-history", { id: "failure-detectors", planned: true }],
+        related: ["replicated-log", { id: "failure-detectors", planned: true }],
+        terms: [{ term: "dot", definition: "A unique event identifier." }],
+        references: [{ key: "paper", title: "A paper", url: "https://example.com/paper" }],
+      },
       { id: "local-history", title: "Local history", territory: "mechanisms", status: "published" },
-      { id: "failure-detectors", title: "Failure detectors", territory: "failures", status: "planned" },
+      {
+        id: "failure-detectors",
+        title: "Failure detectors",
+        territory: "failures",
+        status: "planned",
+        terms: [{ term: "unpublished", definition: "Not public yet." }],
+        references: [{ key: "unpublished", title: "Not public yet", url: "https://example.com/unpublished" }],
+      },
       { id: "replicated-log", title: "Replicated log", territory: "systems", status: "published" },
     ];
     for (const { id, ...data } of sheets) {
@@ -466,7 +505,8 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("article")).toContainText("Explore dots and causal context.");
     await expect(page.locator(".sheet-header")).toContainText("1 min read");
     await expect(page.locator(".sheet-header")).toContainText("No lab on this sheet");
-    await expect(page.getByRole("complementary", { name: "Terms on this sheet" })).toHaveCount(0);
+    await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
+      .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
     await expect(page.getByRole("heading", { name: "Fixture article" })).toBeVisible();
     const prerequisites = page.getByRole("navigation", { name: "Prerequisites" });
     await expect(prerequisites.getByRole("link", { name: "Local history" })).toHaveAttribute("href", "/atlas/local-history/");
@@ -492,6 +532,13 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.locator(".sheet-header")).toContainText("3 min read");
     await expect(rail.getByRole("listitem")).toHaveText(["Atlas", "Systems", "Replicated log"]);
     await expect(page.getByRole("navigation", { name: "Next trail step" })).toHaveCount(0);
+
+    const glossary = await readFile(path.join(root, "dist/glossary/index.html"), "utf8");
+    expect(glossary).toContain("A unique event identifier.");
+    expect(glossary).not.toContain("Not public yet.");
+    const bibliography = await readFile(path.join(root, "dist/bibliography/index.html"), "utf8");
+    expect(bibliography).toContain("https://example.com/paper");
+    expect(bibliography).not.toContain("https://example.com/unpublished");
   });
 
   test("atlas rejects a nonexistent declared scenario without rendering a lab", async () => {

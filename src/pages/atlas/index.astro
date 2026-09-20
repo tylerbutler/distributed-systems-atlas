@@ -2,7 +2,13 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AtlasTerritory from "../../components/AtlasTerritory.astro";
-import { validateSheetGraph, type SheetMeta, type Territory } from "../../lib/atlas/graph";
+import {
+  sheetReferenceId,
+  validateSheetGraph,
+  type SheetMeta,
+  type Territory,
+} from "../../lib/atlas/graph";
+import { buildAtlasEntries, buildTrail } from "../../lib/atlas/trail";
 import { scenarioIds } from "../../lib/lab/scenarios";
 
 const sheets = await getCollection("sheet");
@@ -16,23 +22,8 @@ if (issues.length > 0) {
   );
 }
 
-const firstTrail = [
-  ["local-history", "Local history", "mechanisms"],
-  ["partial-order", "Partial order", "mechanisms"],
-  ["lamport-clocks", "Lamport clocks", "mechanisms"],
-  ["vector-clocks", "Vector clocks", "mechanisms"],
-  ["dots-and-causal-context", "Dots and causal context", "mechanisms"],
-  ["multi-value-registers", "Multi-value registers", "structures"],
-  ["observed-remove-sets", "Observed-remove sets", "structures"],
-] as const;
-const entries = [
-  ...firstTrail.map(([id, title, territory]) =>
-    metadata.find((sheet) => sheet.id === id)
-      ?? { id, title, territory, status: "planned" as const, summary: "", requires: [] },
-  ),
-  ...metadata.filter((sheet) => !firstTrail.some(([id]) => sheet.id === id)),
-];
-const trail = entries.slice(0, firstTrail.length);
+const entries = buildAtlasEntries(metadata);
+const trail = buildTrail(metadata);
 const territories = [
   ["mechanisms", "Mechanisms", "The small ideas that larger algorithms depend on."],
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
@@ -68,7 +59,9 @@ const territories = [
         {summary}
         sheets={entries.filter((entry) => entry.territory === id).map((sheet) => ({
           ...sheet,
-          prerequisiteTitles: sheet.requires.map((required) => metadata.find((entry) => entry.id === required)!.title),
+          prerequisiteTitles: sheet.requires.map((required) =>
+            metadata.find((entry) => entry.id === sheetReferenceId(required))!.title
+          ),
         }))}
       />
     ))}

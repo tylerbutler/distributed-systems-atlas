@@ -1,6 +1,14 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LandingSignal from "../components/LandingSignal.astro";
+import type { SheetMeta } from "../lib/atlas/graph";
+import { buildTrail } from "../lib/atlas/trail";
+
+const sheets: SheetMeta[] = (await getCollection("sheet")).map(
+  (entry) => ({ id: entry.id, ...entry.data }),
+);
+const trail = buildTrail(sheets);
 ---
 
 <BaseLayout description="Two stations can be correct and still disagree. Follow their events through illustrated essays and deterministic labs on concurrency and causal history.">
@@ -46,13 +54,14 @@ import LandingSignal from "../components/LandingSignal.astro";
         sheet; the rest of this trail is planned.
       </p>
       <ol class="learning-trail" aria-label="First-release learning sequence">
-        <li><span>Local history</span> <span class="status">Planned</span></li>
-        <li><span>Partial order</span> <span class="status">Planned</span></li>
-        <li><span>Lamport clocks</span> <span class="status">Planned</span></li>
-        <li><span>Vector clocks</span> <span class="status">Planned</span></li>
-        <li><a href="/atlas/dots-and-causal-context/">Dots and causal context</a> <span class="status">Read now</span></li>
-        <li><span>Multi-value registers</span> <span class="status">Planned</span></li>
-        <li><span>Observed-remove sets</span> <span class="status">Planned</span></li>
+        {trail.map((sheet) => (
+          <li>
+            {sheet.status === "published"
+              ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
+              : <span>{sheet.title}</span>}
+            {" "}<span class="status">{sheet.status === "published" ? "Read now" : "Planned"}</span>
+          </li>
+        ))}
       </ol>
     </section>
 

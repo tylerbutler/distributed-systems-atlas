@@ -1,0 +1,24 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { buildBibliography, entryAnchor, type SheetMeta } from "../lib/atlas/graph";
+
+const sheets: SheetMeta[] = (await getCollection("sheet")).map(
+  (entry) => ({ id: entry.id, ...entry.data }),
+);
+const references = buildBibliography(sheets);
+---
+
+<BaseLayout title="Bibliography" description="Sources cited by the published Distributed Systems Atlas sheets.">
+  <header class="page-intro">
+    <h1>Bibliography</h1>
+    <p>Sources cited by published atlas sheets.</p>
+  </header>
+  <ol class="reference-list">
+    {references.map(({ key, title, url }) => (
+      <li id={entryAnchor(key)}>
+        <a href={url}>{title}</a>
+      </li>
+    ))}
+  </ol>
+</BaseLayout>
