@@ -1,3 +1,6 @@
+packages:
+  - toolkit
+
 allowBuilds:
   esbuild: true
   sharp: true

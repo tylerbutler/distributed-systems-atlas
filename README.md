@@ -14,7 +14,9 @@ has a global view.
 ## Local development
 
 Use a Node.js version supported by Astro 7 and the pnpm version in
-`package.json` (`pnpm@11.13.1`).
+`package.json` (`pnpm@11.13.1`). Atlas also requires Gleam 1.18.1 and Git.
+`mise.toml` pins Gleam; use `mise install` or install that version directly.
+The first toolkit build fetches its Git and Hex dependencies.
 
 ```sh
 pnpm install
@@ -29,8 +31,9 @@ and `/atlas/dots-and-causal-context/`.
 pnpm verify
 ```
 
-The verification command runs Astro and TypeScript checks, Vitest unit tests,
-Playwright browser tests, and the static Astro build, in that order. It stops
+The verification command builds the Gleam toolkit, then runs Astro and
+TypeScript checks, Gleam and Vitest unit tests, Playwright browser tests,
+and the static Astro build, in that order. It stops
 at the first failing stage and writes a successful build to `dist/`. Use the
 same command in CI after installing dependencies and Chromium. Linux CI hosts
 may need `pnpm exec playwright install --with-deps chromium` to install browser
@@ -98,7 +101,7 @@ disabled; the browser tests also exercise a stale action against the real
 engine to verify its rejection.
 
 The Dots TypeScript model remains a pedagogical reference. The MV-register
-and OR-set adapters import the public `@tylerbutler/watershed-atlas` package.
+and OR-set adapters import the local `@atlas/toolkit` workspace package.
 Do not import Watershed private build paths or generated implementation
 files. The atlas is a separate publication, not Watershed product documentation.
 
@@ -127,15 +130,44 @@ engine or renderer. The shared contract and renderer support those observation
 shapes. The Watershed adapters replay the register and OR-set fixtures through
 the public package API.
 
-### Watershed adapters
+### Gleam toolkit and Watershed adapters
 
-Atlas vendors the reviewed `@tylerbutler/watershed-atlas` 0.1.0 artifact from
-Watershed commit `b1ae781` at
-`vendor/tylerbutler-watershed-atlas-0.1.0.tgz`. The dependency uses the relative
-path `file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz`; no registry release or
-Watershed checkout is required. Its SHA-256 is
-`7a32902d196bb0811cb71cd6c49f5f09676659788c017c0eab26a4adc47fefed`.
-The tarball includes the package's license and third-party notices.
+`toolkit/` is Atlas's JavaScript-target Gleam package and the home for later
+Gleam examples. Its `gleam.toml` enables TypeScript declarations and depends
+on Watershed through Git:
+
+```toml
+watershed = { git = "https://github.com/tylerbutler/watershed", ref = "4a8739323ee491f353fcaa8ccfb0488419c1cd43" }
+```
+
+Commit `toolkit/manifest.toml` when updating dependencies. It locks the Git
+commit and transitive Git/Hex versions. There is no npm Watershed dependency,
+vendored tarball, or sibling-checkout requirement.
+
+`toolkit/src/atlas_toolkit.gleam` calls the public
+`watershed/mv_register_kernel` and `watershed/or_set_kernel` modules. Its
+opaque handles keep kernel types inside the toolkit. It uses the ack-free
+operations and public summaries; no transport or runtime actor is involved.
+New Gleam examples can use this module without depending on the lab engine.
+
+`toolkit/index.ts` is the stable `@atlas/toolkit` export. It converts native
+Gleam records into plain JSON data, validates imported metadata, prevents
+unsafe JavaScript counter increments, and returns tagged errors. It exposes
+`createMvRegister`, `createOrSet`, `write`, `add`, `remove`, `merge`, and
+`inspect`, plus their state/result types. State and operation records use
+version 1. Only the toolkit entry point imports its generated JavaScript;
+adapters do not import generated Watershed files. The Gleam kernels make
+all local-operation and merge decisions.
+
+`pnpm dev`, `pnpm check`, and `pnpm test:browser` build the toolkit first.
+`pnpm test` runs Gleam tests before Vitest. `pnpm build` and `pnpm verify`
+include these steps. Generated JavaScript and declarations in
+`toolkit/build/` are ignored and rebuilt from source:
+
+```sh
+pnpm toolkit:build
+pnpm toolkit:test
+```
 
 Use `createEngine({ id, kind, replicas, initialValues })` with `kind` set to
 `"mv-register"` or `"or-set"`. Register actions use `write`; set actions use `add` and
@@ -146,7 +178,7 @@ initial value; use concurrent writes to create siblings.
 
 Atlas queues the exact operation returned by the package for each peer.
 Delivery calls `merge` with that operation, including for stale or duplicate
-messages. Healing only opens a link. Package errors become `LabError` records
+messages. Healing only opens a link. Toolkit errors become `LabError` records
 with the error tag and diagnostic message; rejected actions retain the last
 frame, queue, and history.
 

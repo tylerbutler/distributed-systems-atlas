@@ -1,9 +1,9 @@
 import { describe, expect, test, vi } from "vitest";
-import * as watershed from "@tylerbutler/watershed-atlas";
+import * as watershed from "@atlas/toolkit";
 import type { EngineKind, LabAction, SimulationEngine, TraceFrame } from "../contract";
 import { createEngine } from "../engine-registry";
 
-vi.mock("@tylerbutler/watershed-atlas", { spy: true });
+vi.mock("@atlas/toolkit", { spy: true });
 
 function create(kind: EngineKind, replicas = ["A", "B"], initialValues: string[] = []) {
   return createEngine({ id: "test", kind, replicas, initialValues });

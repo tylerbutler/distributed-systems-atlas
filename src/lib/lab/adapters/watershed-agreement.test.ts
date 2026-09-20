@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, inspect, merge, remove, write,
   type Change, type Operation, type Result, type State,
-} from "@tylerbutler/watershed-atlas";
+} from "@atlas/toolkit";
 import type { Dot, LabAction, SimulationEngine, TraceFrame } from "../contract";
 import { createEngine } from "../engine-registry";
 import { acceptanceFixtures } from "../fixtures";

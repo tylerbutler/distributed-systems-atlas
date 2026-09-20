@@ -1,0 +1,17 @@
+name = "atlas_toolkit"
+version = "0.1.0"
+target = "javascript"
+gleam = ">= 1.18.1"
+description = "Pure Watershed operations and Gleam examples for Distributed Systems Atlas"
+
+[javascript]
+typescript_declarations = true
+
+[dependencies]
+gleam_stdlib = ">= 0.62.0 and < 2.0.0"
+gleam_json = ">= 3.0.0 and < 4.0.0"
+lattice_core = ">= 2.0.0 and < 3.0.0"
+watershed = { git = "https://github.com/tylerbutler/watershed", ref = "4a8739323ee491f353fcaa8ccfb0488419c1cd43" }
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"

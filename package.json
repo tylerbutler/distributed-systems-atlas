@@ -4,10 +4,12 @@
   "type": "module",
   "packageManager": "pnpm@11.13.1",
   "scripts": {
-    "dev": "astro dev",
-    "check": "astro check && tsc --noEmit",
-    "test": "vitest run",
-    "test:browser": "playwright test",
+    "dev": "pnpm toolkit:build && astro dev",
+    "toolkit:build": "cd toolkit && gleam build",
+    "toolkit:test": "cd toolkit && gleam test",
+    "check": "pnpm toolkit:build && astro check && tsc --noEmit",
+    "test": "pnpm toolkit:test && vitest run",
+    "test:browser": "pnpm toolkit:build && playwright test",
     "verify": "pnpm check && pnpm test && pnpm test:browser && astro build",
     "build": "pnpm check && pnpm test && astro build"
   },
@@ -16,7 +18,7 @@
     "@fontsource-variable/azeret-mono": "^5.3.0",
     "@fontsource-variable/encode-sans": "^5.3.0",
     "@fontsource-variable/roboto-serif": "^5.3.0",
-    "@tylerbutler/watershed-atlas": "file:vendor/tylerbutler-watershed-atlas-0.1.0.tgz",
+    "@atlas/toolkit": "workspace:*",
     "astro": "^7.3.3"
   },
   "devDependencies": {

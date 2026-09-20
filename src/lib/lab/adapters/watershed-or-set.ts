@@ -1,4 +1,4 @@
-import type { Tag } from "@tylerbutler/watershed-atlas";
+import type { Tag } from "@atlas/toolkit";
 import type { Dot, EngineScenario, Observation, SimulationEngine } from "../contract";
 import { createWatershedEngine, tagKey, vector } from "./watershed-engine";
 

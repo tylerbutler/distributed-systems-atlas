@@ -1,7 +1,7 @@
 import {
   add, createMvRegister, createOrSet, inspect, merge, remove, write,
   type Change, type Operation, type Result, type State, type Tag,
-} from "@tylerbutler/watershed-atlas";
+} from "@atlas/toolkit";
 import {
   immutable, type EngineScenario, type LabAction, type LabError, type Observation,
   type SimulationEngine, type TraceFrame, type VersionVector,

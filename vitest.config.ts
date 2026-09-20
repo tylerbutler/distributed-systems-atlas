@@ -2,7 +2,7 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    exclude: [...configDefaults.exclude, "tests/**/*.spec.ts"],
+    exclude: [...configDefaults.exclude, "tests/**/*.spec.ts", "toolkit/build/**"],
     passWithNoTests: true,
   },
 });
