@@ -8,9 +8,9 @@ not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 The first trail contains seven published sheets, each with a deterministic
 browser lab: Local history, Partial order, Lamport clocks, Vector clocks,
 Dots and causal context, Multi-value registers, and Observed-remove sets.
-The observatory setting helps
-you compare what each replica has observed; it does not imply that a replica
-has a global view.
+The observatory setting helps you compare what each replica has observed; it
+does not imply that a replica has a global view. The release builds 11 static
+pages: the seven sheets, landing page, atlas index, glossary, and bibliography.
 
 ## Local development
 
@@ -40,9 +40,10 @@ Open the local URL printed by Astro. The publication includes `/`, `/atlas/`,
 pnpm verify
 ```
 
-The verification command builds the Gleam toolkit, then runs Astro and
-TypeScript checks, Gleam and Vitest unit tests, Playwright browser tests,
-and the static Astro build, in that order. It stops
+The verification command builds the Gleam toolkit, checks its generated
+declarations and package export, then runs Astro and TypeScript checks,
+Gleam and Vitest unit tests, Playwright browser tests, and the static Astro
+build, in that order. It stops
 at the first failing stage and writes a successful build to `dist/`. Use the
 same command in CI after installing dependencies and Chromium. Linux CI hosts
 may need `pnpm exec playwright install --with-deps chromium` to install browser
@@ -53,6 +54,60 @@ For a narrower check, use `pnpm check`, `pnpm test`, or `pnpm test:browser`.
 tests. Playwright starts Astro dev on `127.0.0.1:4321` and can reuse a server
 there outside CI. Stop an unrelated server on that port before verification.
 
+### Release checks
+
+Run the toolkit checks without Astro when changing its public boundary:
+
+```sh
+pnpm toolkit:build
+pnpm toolkit:test
+pnpm toolkit:check
+pnpm toolkit:smoke
+pnpm exec playwright test tests/toolkit.spec.ts
+```
+
+`toolkit:check` checks the TypeScript facade and its generated `.d.mts`
+dependency graph with `skipLibCheck` disabled. `toolkit:smoke` imports
+`@atlas/toolkit` through the workspace package export in Node, without a
+bundler or mocks. It checks register siblings and observed resolution, then
+OR-set removal and stale replay with the raw Watershed tags. The browser
+smoke test also rejects use of clocks, randomness, network, and timers.
+Build before running the declaration or package smoke command.
+
+Canonical fixture, engine, presentation, and adapter-agreement tests cover
+all seven lessons. Browser tests check their article outcomes and intermediate
+states, keyboard focus, static initial records, reduced motion, rejected
+actions and recovery, and layouts at mobile and desktop widths. Reference
+link tests check page status and fragment IDs. Geometry assertions check
+source/target order and arrow direction; release checks do not add decorative
+screenshot baselines.
+
+For a release candidate, also build the committed source with an empty Gleam
+cache and pnpm store. This checks the exact Git dependency rather than a
+prebuilt toolkit or sibling Watershed checkout:
+
+```sh
+release=$(mktemp -d)
+mkdir "$release/source"
+git archive HEAD | tar -x -C "$release/source"
+(
+  cd "$release/source"
+  export XDG_CACHE_HOME="$release/cache"
+  pnpm install --frozen-lockfile --store-dir "$release/store"
+  pnpm toolkit:build
+  pnpm toolkit:test
+  pnpm toolkit:check
+  pnpm toolkit:smoke
+  pnpm build
+  git -C toolkit/build/packages/watershed rev-parse HEAD
+)
+```
+
+The last command must print `4a8739323ee491f353fcaa8ccfb0488419c1cd43`.
+Use the installed Gleam 1.18.1 binary if an isolated home prevents a version
+manager shim from finding its configuration. No Watershed npm package or
+packed tarball is part of this release.
+
 To inspect the generated site:
 
 ```sh
@@ -62,6 +117,24 @@ pnpm exec astro preview --host 127.0.0.1
 With JavaScript disabled, inspect the sheet routes. The articles, atlas
 territories and sheet links, diagrams, initial replica state, bibliography,
 and navigation remain available. Lab controls require JavaScript.
+
+`tests/accessibility.spec.ts`, `tests/trail-content.spec.ts`, and
+`tests/responsive.spec.ts` can also run against `astro preview` on port 4321.
+Outside CI, Playwright reuses that server to check the built site instead of
+starting the development server.
+
+## Generated reference pages
+
+Sheet frontmatter supplies `terms` and `references`. The graph helpers collect
+published entries, deduplicate them, and sort them for `/glossary/` and
+`/bibliography/`. Sheet sidebars and citations use the same `entryAnchor`
+function as those pages. Change the sheet metadata to change a definition or
+source; there is no separate reference-page catalogue.
+
+The content loader rejects conflicting definitions, conflicting reference
+keys, duplicate anchors, missing scenarios, invalid sheet links, and
+prerequisite cycles. `firstTrail` fixes the seven-step reading order.
+Unpublished topics remain labeled as planned without placeholder routes.
 
 ## Project boundaries
 
@@ -139,10 +212,10 @@ engine or renderer. The shared contract and renderer support those observation
 shapes. The Watershed adapters replay the register and OR-set fixtures through
 the public package API.
 
-### Gleam toolkit and Watershed adapters
+### Atlas-side Gleam toolkit and Watershed adapters
 
-`toolkit/` is Atlas's JavaScript-target Gleam package and the home for later
-Gleam examples. Its `gleam.toml` enables TypeScript declarations and depends
+`toolkit/` is Atlas's JavaScript-target Gleam package. Its `gleam.toml` enables
+TypeScript declarations and depends
 on Watershed through Git:
 
 ```toml
@@ -177,6 +250,12 @@ include these steps. Generated JavaScript and declarations in
 pnpm toolkit:build
 pnpm toolkit:test
 ```
+
+The internal adapter registry has four engine kinds: `dots`, `ordering`,
+`mv-register`, and `or-set`. The ordering kind has history, partial-order,
+Lamport, and vector modes. Seven scenarios select these implementations;
+neither the MDX sheets nor the shared renderer select a Watershed module.
+This registry is internal code, not a public plugin API.
 
 Use `createEngine({ id, kind, replicas, initialValues })` with `kind` set to
 `"mv-register"` or `"or-set"`. Register actions use `write`; set actions use `add` and

@@ -2,7 +2,10 @@
 
 ## Status
 
-Approved for implementation planning.
+The seven-sheet release implements this design. The site builds 11 static
+pages: seven lab sheets, the landing page, atlas index, generated glossary,
+and generated bibliography. The proof plan records the earlier Dots milestone;
+the architecture and package boundary below describe the release.
 
 `Distributed Systems Atlas` is a working title. Naming and domain selection are
 separate pre-launch work and do not block the technical plan.
@@ -254,6 +257,12 @@ Build-time validation rejects missing references, duplicate identifiers,
 cycles in the required-reading graph, and links to unpublished sheets unless a
 link is marked as planned.
 
+`src/lib/atlas/graph.ts` also checks conflicting glossary definitions,
+bibliography entries, and generated anchors. The glossary and bibliography
+collect published sheet metadata with the same `entryAnchor` function used by
+sheet links. `src/lib/atlas/trail.ts` defines the seven-step trail order;
+unpublished topics have planned labels rather than routes.
+
 ### Scenario layer
 
 A scenario declares:
@@ -272,19 +281,21 @@ table, and automated tests.
 
 ### Simulation engine
 
-The simulation engine accepts explicit actions:
+The shared contract defines explicit actions:
 
-- local operation;
+- local event, send, register write, set add, or set remove;
 - message delivery;
 - duplicate delivery;
 - partition;
 - heal;
-- logical or wall-clock tick;
+- event or vector comparison;
 - reset.
 
-The engine returns an ordered trace. Each trace frame includes replica state,
-messages in flight, causal metadata, emitted events, and an optional
-explanation key.
+Each engine accepts the actions that apply to its model and rejects unsupported
+actions. Successful actions return an immutable `TraceFrame` with tagged
+replica observations, queued messages, partitions, invariant results, the
+recorded action, and an explanation. An initial frame has `action: null`.
+Rejected actions return `LabError` and retain the last valid frame and history.
 
 The engine does not render HTML and does not depend on browser timing.
 
@@ -303,6 +314,22 @@ names the implementation and links to source notes.
 The first release does not need a public plugin system. The internal contract
 only needs enough stability to support the reference models and Watershed
 adapters.
+
+`src/lib/lab/engine-registry.ts` selects an engine from the scenario's `kind`:
+
+| Kind | Implementation | Sheets |
+| --- | --- | --- |
+| `ordering` | TypeScript reference engine with four modes | Local history, Partial order, Lamport clocks, Vector clocks |
+| `dots` | TypeScript pedagogical model | Dots and causal context |
+| `mv-register` | Atlas adapter through `@atlas/toolkit` | Multi-value registers |
+| `or-set` | Atlas adapter through `@atlas/toolkit` | Observed-remove sets |
+
+The registry rejects unknown kinds. Scenarios declare actions and lesson
+rules; engines record immutable `TraceFrame` data. `presentFrame` converts
+that data into typed controls and observation sections for both
+`TraceFallback.astro` and the shared custom element. Only the selected
+history prefix can supply an outcome. The renderer does not select algorithms
+or compute merge results.
 
 ### Lab renderer
 
@@ -328,7 +355,7 @@ as an immediate before-and-after change with a written event description.
 2. The scenario creates an engine instance through the selected adapter.
 3. A reader action becomes one explicit engine action.
 4. The engine returns the next trace frame or an explicit error.
-5. The lab stores the trace frame in its session history.
+5. The engine appends a successful frame to its in-memory history.
 6. The renderer updates every view from that frame.
 7. The reader can move backward or reset without reconstructing state from the
    DOM.
@@ -429,18 +456,52 @@ diagrams whose geometry communicates causal or ordering information.
 The content build tests metadata references, glossary terms, bibliography
 keys, scenario identifiers, and published-link rules.
 
+`pnpm verify` builds the Gleam toolkit, checks generated declarations and the
+workspace package export, runs Astro and TypeScript checks, then Gleam,
+Vitest, and Playwright tests before building the static site. Existing
+canonical tests cover the seven scenarios and adapter/package agreement.
+Browser checks cover the complete trail, static/live initial-state agreement,
+article outcomes and checkpoints, keyboard focus, reduced motion, errors
+with retained state and recovery, and page overflow.
+
+The release procedure in `README.md` also installs and builds committed source
+with empty Gleam and pnpm caches. Check the fetched Watershed repository HEAD
+against the manifest, then run the focused Gleam tests, declaration check,
+and package smoke test. Browser tests can reuse `astro preview` to check the
+built pages. Geometry checks cover message direction and ordering; screenshots
+are not required for text or state assertions.
+
 ## Repository and Watershed boundary
 
 Treat the publication as a separate project. Do not put its routes, branding,
 or editorial content inside the current Watershed website.
 
-Watershed may provide a package or build artifact that exposes selected pure
-kernels to the browser. The new site owns adapters, scenarios, explanations,
-and rendering. Watershed owns its algorithms and public behavior.
+Atlas owns `toolkit/`, a JavaScript-target Gleam package with TypeScript
+declarations enabled. Its Git dependency and manifest lock Watershed to
+`4a8739323ee491f353fcaa8ccfb0488419c1cd43`. Atlas uses no Watershed npm package,
+vendored tarball, or sibling-checkout dependency.
 
-The site must not import private Watershed build paths. Implementation planning
-must define a stable package or artifact boundary before a Watershed-backed lab
-ships.
+The Gleam module calls the public `watershed/mv_register_kernel` and
+`watershed/or_set_kernel` modules through opaque toolkit handles. Only
+`toolkit/index.ts`, the stable `@atlas/toolkit` workspace export, imports
+generated JavaScript. It validates versioned JSON state and operations,
+checks safe counters, and returns tagged errors. Adapters and renderers do
+not import generated Watershed implementation files.
+
+Atlas owns scheduling, message queues, partitions, and trace history.
+Watershed kernels decide local updates and merges. Adapters queue the exact
+authored operations and submit stale or duplicate deliveries to the same
+merge API. Healing opens a link without delivering messages.
+
+Presentation metadata retains authored register versions and removed
+tag-to-value labels. It does not decide which values survive. OR-set context
+records tag maxima, not a gap-free vector clock. The canonical Watershed
+addition at B uses `B:2`; the Dots model calls its first B addition `B:1`.
+Agreement tests preserve the raw package tags and translate that identity
+only when comparing the overlapping fixture.
+
+Watershed source changes belong in its own repository and commits. Atlas
+owns its adapters, scenarios, explanations, and rendering.
 
 ## Non-goals
 
