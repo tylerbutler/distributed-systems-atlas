@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import AtlasCard from "../../components/AtlasCard.astro";
+import AtlasTerritory from "../../components/AtlasTerritory.astro";
 import { validateSheetGraph, type SheetMeta, type Territory } from "../../lib/atlas/graph";
 
 const sheets = await getCollection("sheet");
@@ -15,43 +15,148 @@ if (issues.length > 0) {
   );
 }
 
-const plannedTrail = [
+const firstTrail = [
   ["local-history", "Local history", "mechanisms"],
   ["partial-order", "Partial order", "mechanisms"],
   ["lamport-clocks", "Lamport clocks", "mechanisms"],
   ["vector-clocks", "Vector clocks", "mechanisms"],
+  ["dots-and-causal-context", "Dots and causal context", "mechanisms"],
   ["multi-value-registers", "Multi-value registers", "structures"],
   ["observed-remove-sets", "Observed-remove sets", "structures"],
 ] as const;
 const entries = [
-  ...metadata,
-  ...plannedTrail
-    .filter(([id]) => !metadata.some((sheet) => sheet.id === id))
-    .map(([id, title, territory]) => ({ id, title, territory, status: "planned" as const, summary: "" })),
+  ...firstTrail.map(([id, title, territory]) =>
+    metadata.find((sheet) => sheet.id === id)
+      ?? { id, title, territory, status: "planned" as const, summary: "", requires: [] },
+  ),
+  ...metadata.filter((sheet) => !firstTrail.some(([id]) => sheet.id === id)),
 ];
+const trail = entries.slice(0, firstTrail.length);
 const territories = [
-  ["mechanisms", "Mechanisms"],
-  ["structures", "Structures"],
-  ["failures", "Failure modes"],
-  ["systems", "Systems"],
-] as const satisfies readonly (readonly [Territory, string])[];
+  ["mechanisms", "Mechanisms", "The small ideas that larger algorithms depend on."],
+  ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
+  ["failures", "Failure modes", "Reproducible bugs and the mechanisms that cause or prevent them."],
+  ["systems", "Systems", "Individual mechanisms connected into larger architectures."],
+] as const satisfies readonly (readonly [Territory, string, string])[];
 ---
 
 <BaseLayout title="Atlas" description="Browse mechanisms, structures, failure modes, and systems. See which sheets you can read now and which are planned.">
   <header class="page-intro">
     <h1>Atlas</h1>
     <p>Follow an event through the machinery, or start with the failure you want to understand.</p>
-    <p>Planned sheets show where we're heading. Published sheets open when you choose a title.</p>
+    <p>Four territories connect the small mechanisms, replicated structures, failure modes, and systems they shape.</p>
   </header>
-  {territories.map(([id, title]) => {
-    const territorySheets = entries.filter((entry) => entry.territory === id);
-    return (
-      <section class="atlas-territory" id={id} aria-labelledby={`${id}-title`}>
-        <h2 id={`${id}-title`}>{title}</h2>
-        {territorySheets.length > 0
-          ? <ul class="atlas-cards">{territorySheets.map((sheet) => <AtlasCard sheet={sheet} />)}</ul>
-          : <p>No sheets here yet.</p>}
-      </section>
-    );
-  })}
+  <nav class="first-trail" aria-labelledby="first-trail-title">
+    <h2 id="first-trail-title">First trail</h2>
+    <ol aria-label="First trail">
+      {trail.map((sheet) => (
+        <li>
+          {sheet.status === "published"
+            ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
+            : <span>{sheet.title}</span>}
+          {" "}<span class="status">{sheet.status === "published" ? "Read now" : "Planned"}</span>
+        </li>
+      ))}
+    </ol>
+  </nav>
+  <div class="territory-chart" data-testid="territory-chart">
+    {territories.map(([id, title, summary]) => (
+      <AtlasTerritory
+        {id}
+        {title}
+        {summary}
+        sheets={entries.filter((entry) => entry.territory === id).map((sheet) => ({
+          ...sheet,
+          prerequisiteTitles: sheet.requires.map((required) => metadata.find((entry) => entry.id === required)!.title),
+        }))}
+      />
+    ))}
+  </div>
+  <p class="publication-note">Only completed sheets link to routes. Planned sheets mark the next stops, not unfinished pages.</p>
 </BaseLayout>
+
+<style>
+  .first-trail {
+    padding-block: var(--space-5);
+    margin-bottom: var(--space-7);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  .first-trail h2 {
+    margin: 0 0 var(--space-4);
+    font-size: 1.25rem;
+  }
+
+  .first-trail ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .first-trail li {
+    flex: 0 1 10rem;
+    padding-right: var(--space-3);
+  }
+
+  .first-trail li::marker {
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .first-trail .status {
+    display: block;
+  }
+
+  .first-trail a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .territory-chart {
+    position: relative;
+  }
+
+  .territory-chart::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 14rem;
+    border-left: var(--rule-width) solid var(--instrument);
+  }
+
+  .publication-note {
+    margin: var(--space-5) 0 0;
+    color: var(--muted);
+    font: 1rem / 1.6 var(--font-ui);
+  }
+
+  @media (width <= 64rem) {
+    .territory-chart::before {
+      left: 0;
+    }
+  }
+
+  @media (width < 40rem) {
+    .first-trail ol {
+      display: block;
+    }
+
+    .first-trail li + li {
+      margin-top: var(--space-3);
+    }
+
+    .first-trail .status {
+      display: inline;
+      margin-left: var(--space-2);
+    }
+
+    .territory-chart::before {
+      display: none;
+    }
+  }
+</style>

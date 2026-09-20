@@ -237,33 +237,6 @@ p {
   font-weight: 700;
 }
 
-.atlas-territory {
-  margin-top: 3rem;
-  scroll-margin-top: 1rem;
-}
-
-.atlas-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.atlas-card {
-  padding: 1.25rem;
-  border: var(--rule-width) solid var(--line);
-}
-
-.atlas-card h3 {
-  margin-block: 0 0.5rem;
-}
-
-.atlas-card p {
-  margin-block: 0.75rem 0;
-}
-
 .sheet {
   max-width: var(--measure-reading);
   margin-inline: auto;

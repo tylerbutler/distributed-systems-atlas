@@ -87,8 +87,9 @@ test("Dots sheet is a complete article without JavaScript", async ({ browser, re
   try {
     const page = await context.newPage();
     await page.goto("/atlas/");
-    await expect(page.getByRole("link", { name: "Dots and causal context", exact: true })).toBeVisible();
-    await page.getByRole("link", { name: "Dots and causal context", exact: true }).click();
+    const sheetLink = page.getByTestId("territory-chart").getByRole("link", { name: "Dots and causal context", exact: true });
+    await expect(sheetLink).toBeVisible();
+    await sheetLink.click();
     await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
     await expect(page).toHaveTitle("Dots and causal context | Distributed Systems Atlas");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Dots and causal context");
@@ -219,6 +220,47 @@ test("atlas exposes four territories and planned sheets without dead links", asy
   }
 });
 
+test("the atlas presents territories as one connected chart without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/");
+    const chart = page.getByTestId("territory-chart");
+    await expect(chart).toBeVisible();
+    await expect(chart.getByRole("heading", { level: 2 })).toHaveText([
+      "Mechanisms", "Structures", "Failure modes", "Systems",
+    ]);
+    const mechanisms = page.getByTestId("territory-mechanisms");
+    await expect(mechanisms.getByRole("heading", { level: 3 })).toHaveText([
+      "Local history", "Partial order", "Lamport clocks", "Vector clocks", "Dots and causal context",
+    ]);
+    await expect(page.getByTestId("territory-structures").getByRole("heading", { level: 3 }))
+      .toHaveText(["Multi-value registers", "Observed-remove sets"]);
+    await expect(chart.getByRole("listitem")).toHaveCount(7);
+    for (const title of plannedTitles) {
+      const station = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
+      await expect(station).toContainText("Planned");
+      await expect(station.locator("a, button, [tabindex]")).toHaveCount(0);
+    }
+    const trail = page.getByRole("list", { name: "First trail", exact: true });
+    await expect(trail.getByRole("listitem")).toHaveText([
+      "Local history Planned", "Partial order Planned", "Lamport clocks Planned",
+      "Vector clocks Planned", "Dots and causal context Read now",
+      "Multi-value registers Planned", "Observed-remove sets Planned",
+    ]);
+    await expect(trail.getByRole("link")).toHaveCount(1);
+    await expect(chart.getByRole("link")).toHaveCount(1);
+    const published = chart.getByRole("link", { name: "Dots and causal context", exact: true });
+    await expect(published).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
+    await published.focus();
+    await expect(published).toHaveCSS("outline-style", "solid");
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+  } finally {
+    await context.close();
+  }
+});
+
 test("atlas shell reflows and retains keyboard focus at narrow widths", async ({ page }) => {
   for (const width of [320, 768, 1280]) {
     await page.setViewportSize({ width, height: 900 });
@@ -277,10 +319,14 @@ test.describe("collection build fixtures", () => {
       readFile(path.resolve("node_modules/.astro/data-store.json"), "utf8"),
     ).resolves.not.toContain("Fixture article");
     await page.setContent(await readFile(path.join(root, "dist/atlas/index.html"), "utf8"));
-    await expect(page.getByRole("link", { name: "Dots and causal context", exact: true })).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
-    await expect(page.getByText("Lamport clocks").locator("..")).toContainText("Planned");
+    const chart = page.getByTestId("territory-chart");
+    await expect(chart.getByRole("link", { name: "Dots and causal context", exact: true })).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
+    await expect(chart.getByText("Lamport clocks").locator("..")).toContainText("Planned");
     await expect(page.getByRole("heading", { name: "Local history", exact: true })).toHaveCount(1);
-    await expect(page.getByRole("link", { name: "Local history", exact: true })).toBeVisible();
+    await expect(chart.getByRole("link", { name: "Local history", exact: true })).toBeVisible();
+    const dots = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Dots and causal context", exact: true }) });
+    await expect(dots).toContainText("Requires: Local history, Failure detectors");
+    await expect(dots.getByRole("link")).toHaveCount(1);
     await expect(page.getByRole("region", { name: "Systems", exact: true }).getByRole("link", { name: "Replicated log" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Failure modes", exact: true })).toContainText("Failure detectors");
     await expect(page.getByRole("link", { name: "Failure detectors" })).toHaveCount(0);

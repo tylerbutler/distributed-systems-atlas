@@ -1,5 +1,72 @@
 import { expect, test } from "@playwright/test";
 
+test("the connected chart reflows to vertical stations below 40rem", async ({ page }) => {
+  await page.goto("/atlas/");
+  for (const width of [320, 390, 639, 640, 768, 1024, 1025, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.evaluate(() => document.fonts.ready);
+    const chart = page.getByTestId("territory-chart");
+    const mechanisms = page.getByTestId("territory-mechanisms");
+    const stations = mechanisms.getByRole("listitem");
+    await expect(stations).toHaveCount(5);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    const first = await stations.nth(0).boundingBox();
+    const second = await stations.nth(1).boundingBox();
+    const heading = await mechanisms.getByRole("heading", { name: "Mechanisms", exact: true }).boundingBox();
+    const list = await mechanisms.getByRole("list").boundingBox();
+    expect(first).not.toBeNull();
+    expect(second).not.toBeNull();
+    expect(heading).not.toBeNull();
+    expect(list).not.toBeNull();
+    if (width < 640) {
+      expect(second!.x).toBe(first!.x);
+      expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height);
+      for (const trace of await chart.locator(".territory-connector").all()) {
+        await expect(trace).toBeHidden();
+      }
+    } else {
+      expect(second!.x).toBeGreaterThan(first!.x);
+      expect(second!.y).toBe(first!.y);
+      for (const trace of await chart.locator(".territory-connector").all()) {
+        await expect(trace).toBeVisible();
+        await expect(trace).toHaveAttribute("aria-hidden", "true");
+      }
+      const field = await mechanisms.locator(".territory-field").boundingBox();
+      for (const station of (await stations.all()).slice(1)) {
+        const box = await station.boundingBox();
+        if (box!.x === first!.x) {
+          const trace = station.locator(".station-trace");
+          await expect(trace).toBeVisible();
+          await expect(trace).toHaveAttribute("aria-hidden", "true");
+          const traceBox = await trace.boundingBox();
+          expect(traceBox!.x).toBe(field!.x);
+          expect(traceBox!.x + traceBox!.width).toBe(box!.x);
+        }
+      }
+    }
+    if (width > 1024) {
+      expect(heading!.x + heading!.width).toBeLessThanOrEqual(list!.x);
+    } else {
+      expect(heading!.y + heading!.height).toBeLessThanOrEqual(list!.y);
+    }
+    for (const station of await chart.getByRole("listitem").all()) {
+      await expect(station).toBeVisible();
+      const box = await station.boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+      const fontSize = await station.getByRole("heading").evaluate((element) =>
+        parseFloat(getComputedStyle(element).fontSize),
+      );
+      expect(fontSize).toBeGreaterThanOrEqual(18);
+    }
+    const link = chart.getByRole("link", { name: "Dots and causal context", exact: true });
+    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    const dense = await mechanisms.boundingBox();
+    const empty = await page.getByTestId("territory-systems").boundingBox();
+    expect(dense!.height).toBeGreaterThan(empty!.height);
+  }
+});
+
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
   test(`landing page works as a station field at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
