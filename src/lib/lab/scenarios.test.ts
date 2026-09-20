@@ -1,14 +1,17 @@
 import { expect, test } from "vitest";
+import { presentFrame } from "./present-frame";
 import {
   buildScenarioRegistry,
   dotsPresentation,
   scenarioById,
   scenarioIds,
+  scenarioTrace,
 } from "./scenarios";
 
-test("publishes the Dots proof scenario", () => {
+test("registers all seven trail scenarios", () => {
   expect(scenarioIds()).toEqual([
     "dots-concurrent-add-remove", "lamport-ordering-concurrency-limit", "local-history-message-observation",
+    "mv-register-concurrent-writes-observed-resolution", "or-set-concurrent-add-remove-stale-replay",
     "partial-order-comparison", "vector-clock-comparisons",
   ]);
   expect(scenarioById("dots-concurrent-add-remove")).toEqual({
@@ -18,6 +21,24 @@ test("publishes the Dots proof scenario", () => {
     initialValues: [],
     presentation: dotsPresentation,
   });
+});
+
+test.each([
+  ["mv-register-concurrent-writes-observed-resolution", 6, "An observed write replaces both siblings"],
+  ["or-set-concurrent-add-remove-stale-replay", 10, "The concurrent add survives stale replay"],
+] as const)("replays %s without concluding before its evidence", (id, steps, heading) => {
+  const scenario = scenarioById(id);
+  const trace = scenarioTrace(id);
+  expect(trace).toHaveLength(steps + 1);
+  for (const frame of trace.slice(0, -1)) {
+    expect(presentFrame(frame, trace, scenario.presentation).outcome).toBeNull();
+    expect(scenario.presentation.controls(frame).some((control) =>
+      control.kind === "action" && control.label.startsWith(`Reference step ${frame.index + 1}:`))).toBe(true);
+  }
+  const final = trace.at(-1)!;
+  expect(final.invariants.converged).toBe(true);
+  expect(presentFrame(final, trace, scenario.presentation).outcome?.heading).toBe(heading);
+  expect(presentFrame(final, [final], scenario.presentation).outcome).toBeNull();
 });
 
 test.each(["missing", "toString", "__proto__"])("rejects unknown scenario %s", (id) => {

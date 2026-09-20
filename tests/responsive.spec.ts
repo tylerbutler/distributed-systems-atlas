@@ -429,7 +429,7 @@ test("working and planned navigation stays visible in a broad publication band",
     const atlas = nav.getByRole("link", { name: "Atlas", exact: true });
     await expect(atlas).toBeInViewport();
     await expect(nav.getByRole("button")).toHaveCount(0);
-    for (const label of ["Trails", "Glossary", "References"]) {
+    for (const label of ["Trails", "Glossary", "Bibliography"]) {
       await expect(nav.getByText(label, { exact: true })).toBeInViewport();
     }
     if (width < 768) {

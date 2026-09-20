@@ -5,9 +5,10 @@ follow a learning trail or open a sheet to inspect one mechanism. The articles
 assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
-This proof milestone includes the landing page, atlas index, and **Dots and
-causal context** sheet with a deterministic browser lab. Other topics have
-planned labels rather than placeholder routes. The observatory setting helps
+The first trail contains seven published sheets, each with a deterministic
+browser lab: Local history, Partial order, Lamport clocks, Vector clocks,
+Dots and causal context, Multi-value registers, and Observed-remove sets.
+The observatory setting helps
 you compare what each replica has observed; it does not imply that a replica
 has a global view.
 
@@ -24,8 +25,16 @@ pnpm exec playwright install chromium
 pnpm dev
 ```
 
-Open the local URL printed by Astro. The published routes are `/`, `/atlas/`,
-and `/atlas/dots-and-causal-context/`.
+Open the local URL printed by Astro. The publication includes `/`, `/atlas/`,
+`/glossary/`, `/bibliography/`, and these sheet routes:
+
+- `/atlas/local-history/`
+- `/atlas/partial-order/`
+- `/atlas/lamport-clocks/`
+- `/atlas/vector-clocks/`
+- `/atlas/dots-and-causal-context/`
+- `/atlas/multi-value-registers/`
+- `/atlas/observed-remove-sets/`
 
 ```sh
 pnpm verify
@@ -50,7 +59,7 @@ To inspect the generated site:
 pnpm exec astro preview --host 127.0.0.1
 ```
 
-With JavaScript disabled, inspect all three routes. The article, atlas
+With JavaScript disabled, inspect the sheet routes. The articles, atlas
 territories and sheet links, diagrams, initial replica state, bibliography,
 and navigation remain available. Lab controls require JavaScript.
 
@@ -223,8 +232,21 @@ Use `createEngine(scenarioById(id))` for these canonical scenarios:
 Each scenario derives its reference actions from `acceptanceFixtures`.
 `scenarioTrace(id)` returns the frozen initial frame and reference replay
 frames for diagrams and static fallbacks. Live labs use the same scenario
-actions and presentation through the existing engine registry. The sheet
-content remains a separate task.
+actions and presentation through the existing engine registry. The four
+clock and ordering sheets describe those reference steps and their exact
+intermediate states.
+
+The structure sheets use `mv-register-concurrent-writes-observed-resolution`
+and `or-set-concurrent-add-remove-stale-replay`. Their numbered reference
+controls preserve the canonical action sequence; their conclusion requires
+that reference history and the final metadata. Free-form controls also permit
+other experiments. The articles distinguish selected vector inputs from
+station clocks, and Watershed's `B:2` tag from the Dots model's `B:1`.
+
+`tests/trail-content.spec.ts` checks the six new articles, static initial
+states, mobile and desktop reference runs, and intermediate sibling and
+replay checkpoints. The shared graph validator checks prerequisites,
+related sheets, scenario IDs, glossary terms, and reference metadata.
 
 History and partial-order sends copy the sender's known events without
 creating another local event, as specified by the canonical fixtures. Clock

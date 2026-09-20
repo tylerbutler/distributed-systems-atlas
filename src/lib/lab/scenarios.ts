@@ -266,8 +266,97 @@ const orderingScenarios: LabScenario[] = orderingFixtures.map((fixture, index) =
   };
 });
 
+const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixtures[6]].map((fixture) => {
+  const kind = fixture.id.startsWith("mv-register") ? "mv-register" : "or-set";
+  const actions = fixture.actions.map((action): LabAction => {
+    switch (action.type) {
+      case "write":
+      case "add":
+      case "remove":
+        return { type: action.type, replica: action.input.replica, value: action.input.value };
+      case "deliver":
+      case "duplicate":
+        return { type: action.type, message: action.input.message };
+      case "partition":
+      case "heal":
+        return { type: action.type, left: action.input.left, right: action.input.right };
+    }
+  });
+  const register = kind === "mv-register";
+  return {
+    id: fixture.id, kind, replicas: ["A", "B"], initialValues: [], actions,
+    presentation: {
+      title: register ? "Multi-value register lab" : "Observed-remove set lab",
+      instructions: "Follow the reference steps to reproduce the article. Reset before a new run. Delivery controls determine which queued delta arrives.",
+      comparisonHeading: "Causal context comparison",
+      inspectorNote: register
+        ? "Each sibling retains its authored version. The merged context does not replace sibling versions."
+        : "Watershed uses a set-wide allocation counter: the concurrent B addition is B:2. Context shows tag maxima, not a gap-free vector clock.",
+      invariantLabels: {
+        uniqueTags: "Unique tags",
+        removeTargetsOnlyObservedDots: "Remove targets only observed dots",
+        concurrentAddSurvives: "Concurrent add survives",
+        removedDotsStayRemoved: "Removed dots stay removed",
+        converged: "Converged",
+      },
+      valueLabel: (replica) => replica.value.join(", ") || (register ? "Empty register" : "Empty set"),
+      controls(frame) {
+        const controls: PresentedControl[] = [];
+        const next = actions[frame.index];
+        if (next && (frame.index === 0 || JSON.stringify(frame.action) === JSON.stringify(actions[frame.index - 1]))) {
+          controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
+        }
+        for (const replica of frame.replicas) {
+          if (register) {
+            for (const value of ["red", "blue", "green"]) controls.push({
+              kind: "action", label: `Write ${value} at ${replica.id}`,
+              action: { type: "write", replica: replica.id, value }, reason: "",
+            });
+          } else {
+            for (const type of ["add", "remove"] as const) controls.push({
+              kind: "action", label: `${type === "add" ? "Add" : "Remove"} beacon at ${replica.id}`,
+              action: { type, replica: replica.id, value: "beacon" },
+              reason: type === "remove" && !replica.value.includes("beacon") ? "No beacon is visible at this replica." : "",
+            });
+          }
+        }
+        return [...controls, ...connectionControls(frame)];
+      },
+      compare: () => null,
+      announce: () => "",
+      complete(frame, history) {
+        // The conclusion describes the reference experiment, including its intermediate evidence.
+        const referenceRun = history.length === actions.length + 1
+          && history.slice(1).every((entry, index) => JSON.stringify(entry.action) === JSON.stringify(actions[index]));
+        if (!referenceRun || !frame.invariants.converged) return null;
+        if (register && frame.replicas.every((replica) =>
+          replica.observation === "mv-register" && replica.siblings.length === 1
+          && replica.siblings[0].value === "green"
+          && replica.siblings[0].version.A === 2 && replica.siblings[0].version.B === 1)) {
+          return {
+            heading: "An observed write replaces both siblings",
+            explanation: "Red and blue coexisted before A wrote green with context A:2, B:1. Both replicas now retain only green.",
+          };
+        }
+        if (!register && frame.replicas.every((replica) =>
+          replica.observation === "or-set" && replica.members.length === 1
+          && replica.members[0].value === "beacon" && replica.members[0].dots.length === 1
+          && replica.members[0].dots[0].replica === "B" && replica.members[0].dots[0].counter === 2
+          && replica.members[0].removed.some((dot) => dot.replica === "A" && dot.counter === 1))) {
+          return {
+            heading: "The concurrent add survives stale replay",
+            explanation: "Both replicas retain B:2 and the removal of A:1. Replaying the old A:1 delta did not restore that addition.",
+          };
+        }
+        return null;
+      },
+    },
+  };
+});
+
 const scenarioDefinitions: readonly LabScenario[] = [
   ...orderingScenarios,
+  ...structureScenarios,
   {
     id: "dots-concurrent-add-remove",
     kind: "dots",

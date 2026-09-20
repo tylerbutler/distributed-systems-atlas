@@ -394,11 +394,12 @@ can supersede the versions its client observed without discarding concurrent
 siblings. That is the source for the event-versus-context distinction here,
 not a claim that Riak uses this lab's explicit-tombstone implementation.
 
-Multi-value registers use the same distinction to retain concurrent versions;
-observed-remove sets use it to define which additions a remove targets. Those
-neighboring sheets remain planned. For now, use the two replicas above to
-check a concrete prediction: name the dots a removal observed, then account
-for each message before deciding what remains visible.
+[Multi-value registers](/atlas/multi-value-registers/) use the same distinction
+to retain concurrent versions; [observed-remove sets](/atlas/observed-remove-sets/)
+use it to define which additions a remove targets. Those labs run the pinned
+Watershed kernels rather than this TypeScript reference model. The OR-set
+sheet explains its different tag allocation and sparse deltas before asking
+you to replay an old addition.
 
 </section>
 </div>

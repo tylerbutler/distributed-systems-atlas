@@ -38,15 +38,16 @@ under Mechanisms, Structures, Failure modes, and Systems.
 
 ## Capabilities and Constraints
 
-The shipped proof milestone contains the landing page, atlas index, and Dots
-and causal context sheet. Other topics carry planned labels, with no
-placeholder routes. Completing the seven-sheet concurrency trail is follow-on
-work, not a shipped capability.
+The publication contains the landing page, atlas index, generated glossary
+and bibliography, and all seven sheets in the first concurrency trail.
+Each sheet includes a complete article and a deterministic browser lab.
+Unpublished topics retain planned labels without placeholder routes.
 
 Astro renders the content shell and useful initial lab state. A native custom
-element uses a deterministic TypeScript reference model. The current repository
-has no Watershed dependency. Future Watershed adapters require a supported
-public package boundary, never private build paths.
+element uses deterministic TypeScript reference engines for ordering, clocks,
+and Dots. The multi-value register and observed-remove set labs run pinned
+Watershed kernels through Atlas's Gleam toolkit and its stable
+`@atlas/toolkit` entry point, never private Watershed build paths.
 
 Simulation state comes from immutable trace frames, not animation or DOM state.
 Runtime errors identify the attempted action and engine while retaining the
@@ -70,8 +71,8 @@ do not belong to this publication.
 
 ## Evidence on Hand
 
-- `src/content/sheets/dots-and-causal-context.mdx`: the published proof article
-  and its bibliography.
+- `src/content/sheets/`: the seven published trail articles and their primary
+  references, including the original Dots proof article.
 - `src/lib/lab/`: the reference engine, scenarios, trace contract, presentation,
   and their unit tests.
 - `tests/`: browser checks for static content, lab behavior, accessibility,

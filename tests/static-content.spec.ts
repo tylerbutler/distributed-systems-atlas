@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 
-const plannedTitles = [
+const trailTitles = [
   "Local history",
   "Partial order",
   "Lamport clocks",
@@ -42,8 +42,7 @@ test("a sheet exposes its reading context and next step", async ({ page }) => {
   await expect(related.getByRole("link")).toHaveCount(0);
   const next = page.getByRole("navigation", { name: "Next trail step", exact: true });
   await expect(next).toContainText("Multi-value registers");
-  await expect(next).toContainText("Planned");
-  await expect(next.getByRole("link")).toHaveCount(0);
+  await expect(next.getByRole("link")).toHaveAttribute("href", "/atlas/multi-value-registers/");
   await expect(page.getByRole("region", { name: "References", exact: true })).toContainText("Dotted Version Vectors");
   await contents.getByRole("link", { name: "Field notes", exact: true }).click();
   await expect(page).toHaveURL(/#field-notes$/);
@@ -272,15 +271,15 @@ test("the landing page demonstrates the premise before explaining it", async ({ 
   ]);
   const trail = page.getByRole("list", { name: "First-release learning sequence" });
   await expect(trail.getByRole("listitem")).toHaveText([
-    "Local history Planned",
-    "Partial order Planned",
-    "Lamport clocks Planned",
-    "Vector clocks Planned",
+    "Local history Read now",
+    "Partial order Read now",
+    "Lamport clocks Read now",
+    "Vector clocks Read now",
     "Dots and causal context Read now",
-    "Multi-value registers Planned",
-    "Observed-remove sets Planned",
+    "Multi-value registers Read now",
+    "Observed-remove sets Read now",
   ]);
-  await expect(trail.getByRole("link")).toHaveCount(1);
+  await expect(trail.getByRole("link")).toHaveCount(7);
   const finalEntry = page.getByRole("link", { name: "Read dots and causal context", exact: true });
   await finalEntry.click();
   await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
@@ -321,14 +320,13 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await context.close();
 });
 
-test("atlas exposes four territories and planned sheets without dead links", async ({ page, request }) => {
+test("atlas exposes four territories and seven published sheets without dead links", async ({ page, request }) => {
   await page.goto("/atlas/");
   for (const name of ["Mechanisms", "Structures", "Failure modes", "Systems"]) {
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   }
-  for (const title of plannedTitles) {
-    await expect(page.getByRole("heading", { name: title, exact: true }).locator("..")).toContainText("Planned");
-    await expect(page.getByRole("link", { name: title, exact: true })).toHaveCount(0);
+  for (const title of trailTitles) {
+    await expect(page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true })).toBeVisible();
   }
   const nav = page.getByRole("navigation", { name: "Primary" });
   await expect(nav.getByRole("link")).toHaveCount(3);
@@ -338,7 +336,7 @@ test("atlas exposes four territories and planned sheets without dead links", asy
   expect((await request.get("/glossary/")).status()).toBe(200);
   expect((await request.get("/bibliography/")).status()).toBe(200);
   for (const id of ["local-history", "partial-order", "lamport-clocks", "vector-clocks", "multi-value-registers", "observed-remove-sets"]) {
-    expect((await request.get(`/atlas/${id}/`)).status()).toBe(404);
+    expect((await request.get(`/atlas/${id}/`)).status()).toBe(200);
   }
 });
 
@@ -359,19 +357,18 @@ test("the atlas presents territories as one connected chart without JavaScript",
     await expect(page.getByTestId("territory-structures").getByRole("heading", { level: 3 }))
       .toHaveText(["Multi-value registers", "Observed-remove sets"]);
     await expect(chart.getByRole("listitem")).toHaveCount(7);
-    for (const title of plannedTitles) {
+    for (const title of trailTitles) {
       const station = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
-      await expect(station).toContainText("Planned");
-      await expect(station.locator("a, button, [tabindex]")).toHaveCount(0);
+      await expect(station.getByRole("link", { name: title, exact: true })).toBeVisible();
     }
     const trail = page.getByRole("list", { name: "First trail", exact: true });
     await expect(trail.getByRole("listitem")).toHaveText([
-      "Local history Planned", "Partial order Planned", "Lamport clocks Planned",
-      "Vector clocks Planned", "Dots and causal context Read now",
-      "Multi-value registers Planned", "Observed-remove sets Planned",
+      "Local history Read now", "Partial order Read now", "Lamport clocks Read now",
+      "Vector clocks Read now", "Dots and causal context Read now",
+      "Multi-value registers Read now", "Observed-remove sets Read now",
     ]);
-    await expect(trail.getByRole("link")).toHaveCount(1);
-    await expect(chart.getByRole("link")).toHaveCount(1);
+    await expect(trail.getByRole("link")).toHaveCount(7);
+    await expect(chart.getByRole("link")).toHaveCount(7);
     const published = chart.getByRole("link", { name: "Dots and causal context", exact: true });
     await expect(published).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
     await published.focus();
@@ -414,7 +411,9 @@ test.describe("collection build fixtures", () => {
     );
     await symlink(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
     await mkdir(path.join(root, "src/content/sheets"), { recursive: true });
-    await rm(path.join(root, "src/content/sheets/dots-and-causal-context.mdx"), { force: true });
+    for (const file of await readdir(path.join(root, "src/content/sheets"))) {
+      if (/\.mdx?$/.test(file)) await rm(path.join(root, "src/content/sheets", file));
+    }
     const sheets = [
       {
         id: "dots-and-causal-context",

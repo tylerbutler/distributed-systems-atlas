@@ -1,0 +1,250 @@
+---
+title: Multi-value registers
+summary: Retain concurrent writes, then replace only the versions a later writer has observed.
+territory: structures
+status: published
+requires: [vector-clocks, dots-and-causal-context]
+introduces: [multi-value register, sibling]
+related: [vector-clocks, dots-and-causal-context, observed-remove-sets]
+scenarios: [mv-register-concurrent-writes-observed-resolution]
+terms:
+  - term: multi-value register
+    definition: A replicated register that retains concurrent writes until a write that observes them supersedes them.
+  - term: sibling
+    definition: A surviving version of a register value with its own write identity and causal history.
+references:
+  - key: shapiro-crdt-catalogue
+    title: A comprehensive study of Convergent and Commutative Replicated Data Types
+    url: https://inria.hal.science/inria-00555588
+  - key: watershed-pinned-mv-register
+    title: Watershed MV-register kernel at 4a8739323ee491f353fcaa8ccfb0488419c1cd43
+    url: https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/mv_register_kernel.gleam
+---
+
+import CausalLab from "../../components/CausalLab.astro";
+import VectorComparison from "../../components/VectorComparison.astro";
+
+<div class="sheet-opening">
+
+## Two stations choose a signal color
+
+A writes `red` to a shared register. Before receiving that write, B writes
+`blue`. Both writes are valid local actions, and neither writer has observed
+the other version. When the messages arrive, which color should the register
+return?
+
+A last-writer rule could select one, but that would require a conflict policy
+that this application has not supplied. A **multi-value register** retains
+both concurrent writes. Its result can contain more than one value even
+though each write assigns one value.
+
+Later, an operator at A reads both colors and writes `green`. That new write
+can replace both observed versions. Its authority comes from the causal
+history of the write, not from the name `green`, its position in a list, or
+the time shown on an operator's clock.
+
+## Keep a version beside each value
+
+Call each surviving version a **sibling**. In this experiment, red starts
+with version `[A:1, B:0]`, while blue starts with `[A:0, B:1]`. Each version
+records a write that lacks the other writer's progress.
+
+<aside class="sheet-term-note" aria-label="Term: sibling">
+  <dl><dt>sibling</dt><dd>A surviving version of a register value with its own write identity and causal history.</dd></dl>
+</aside>
+
+<VectorComparison left={{ A: 1, B: 0 }} right={{ A: 0, B: 1 }} />
+
+The table compares the initial station records. After merging, a station can
+hold both siblings and a combined context `[A:1, B:1]`. That context describes
+what the station knows. It must not replace the individual versions shown
+beside red and blue: neither original write observed both events.
+
+A later local write increments the writer's component in the combined
+context. At A, green therefore receives `[A:2, B:1]`. This version is after
+both red and blue. A can discard those siblings while retaining enough
+context to reject them if an old message arrives again.
+
+The lab uses unique write tags inside the register and displays the authored
+version of each sibling. Two writes with equal value text still have distinct
+identities. Comparing strings alone cannot establish that two replicas have
+the same register metadata.
+
+## Stop at the two-sibling checkpoint
+
+Reset the lab, then use the numbered reference controls. There is no need to
+create a partition: withholding delivery is enough to keep the first writes
+concurrent.
+
+1. **Reference step 1: write** writes red at A and queues `m1`.
+2. **Reference step 2: write** writes blue at B and queues `m2`.
+3. **Reference step 3: deliver** delivers red to B.
+4. **Reference step 4: deliver** delivers blue to A. Stop and inspect both
+   **Register siblings** fields before writing again.
+5. **Reference step 5: write** writes green at A after A has observed both
+   siblings.
+6. **Reference step 6: deliver** delivers green to B.
+
+The ordinary **Write red at A**, **Write blue at B**, and **Write green at A**
+buttons perform those same writes. The numbered controls keep the article's
+sequence explicit. Message controls also let you duplicate or delay a delta
+when exploring a different run.
+
+Without JavaScript, the lab starts with two empty registers. The article's
+version records and checkpoint table remain available. Use **Back** and
+**Forward** in a live run to revisit the checkpoint; selecting an older
+frame does not undo a write in the latest state.
+
+</div>
+
+<CausalLab scenario="mv-register-concurrent-writes-observed-resolution" />
+
+<div class="sheet-continuation">
+
+## Agreement can contain a conflict
+
+After the first write, A holds red and B remains empty. After the second,
+B holds blue but still knows nothing about red. The clicks have a browser
+order; the writes have no causal path between them.
+
+Delivering red gives B two siblings. It also raises B's context to
+`[A:1, B:1]`. A still has only red until the blue message arrives. At step
+4, both replicas retain the same siblings and context, and the queue is empty.
+They have converged even though the register still presents an application
+conflict.
+
+<figure aria-label="Register sibling checkpoints">
+  <table>
+    <thead><tr><th scope="col">Checkpoint</th><th scope="col">At A</th><th scope="col">At B</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Two writes, no delivery</th><td>red</td><td>blue</td></tr>
+      <tr><th scope="row">Both first deltas delivered</th><td>red and blue</td><td>red and blue</td></tr>
+      <tr><th scope="row">A writes green</th><td>green</td><td>red and blue</td></tr>
+      <tr><th scope="row">Green delivered</th><td>green</td><td>green</td></tr>
+    </tbody>
+  </table>
+  <figcaption>At the two-sibling checkpoint, red retains [A:1, B:0] and blue
+  retains [A:0, B:1]. The final green version is [A:2, B:1].</figcaption>
+</figure>
+
+Writing green changes A first. B continues to show two siblings until step
+6. The merge then recognizes that green's context covers the old write tags
+and that green no longer retains those old entries. Both replicas end with
+one sibling, green, and context `[A:2, B:1]`.
+
+Resolution requires observation. For a second run, reset, write red at A and
+blue at B, then write green at A before delivering blue. Green has version
+`[A:2, B:0]`. It supersedes red but cannot supersede the unobserved blue
+write. After the queued deltas arrive, blue and green remain concurrent.
+
+No algorithm can infer that an operator intended to dismiss an unseen write.
+The register supplies causal replacement semantics; the application decides
+what value to write after reading the siblings. The canonical run's green is
+an explicit choice, not an automatic mixture of red and blue.
+
+<section class="sheet-break" aria-labelledby="break-it-keep-only-the-last-arrival">
+
+## Break it: keep only the last arrival
+
+Replace the merge with "assign the incoming value." In the canonical
+exchange, B receives red after writing blue, so B finishes with red. A
+receives blue after writing red, so A finishes with blue. All messages have
+arrived, but the replicas disagree.
+
+Sorting by a scalar timestamp could make that policy deterministic, yet it
+would still discard one concurrent write. That is a different register
+contract. This sheet promises to retain the conflict until a write observes
+the versions it replaces.
+
+The useful check is the intermediate checkpoint, not just the final green.
+A broken implementation could lose blue early and still display green at
+the end. Require both authored sibling versions at both stations after
+step 4, then require exactly green after step 6.
+
+</section>
+
+<section class="sheet-costs" aria-labelledby="what-retained-siblings-cost">
+
+## What retained siblings cost
+
+The register needs storage for surviving values, write identities, and
+causal context. Sibling payload storage grows with unresolved concurrent
+writes, while vector metadata grows with tracked replica identities.
+Convergence does not bound the size of the application values.
+
+An application must handle a read with zero, one, or several versions.
+Choosing a version for display without writing a resolution leaves the
+underlying siblings intact. A user interface that hides them can turn a
+detectable conflict into silent data loss when its next write replaces
+everything the local replica has observed.
+
+The experiment assumes stable writer IDs and counters that do not repeat.
+It delivers the authored deltas rather than replaying a user's write at the
+receiver. Replaying the write would allocate a new local event and claim
+different causal knowledge.
+
+Atlas retains immutable trace frames and authored version records for
+inspection. Those records are teaching overhead in addition to the kernel's
+current register state. The lab has no durable storage, replica retirement,
+or membership protocol. Eventual agreement still requires communication of
+the relevant updates.
+
+</section>
+
+<section class="sheet-field-notes" aria-labelledby="field-notes">
+
+## Field notes
+
+This lab runs **Watershed**, through Atlas's Gleam toolkit, at commit
+`4a8739323ee491f353fcaa8ccfb0488419c1cd43`. You do not need Gleam or
+Watershed knowledge to use it. The implementation boundary is the public
+[`watershed/mv_register_kernel` source](/bibliography/#watershed-pinned-mv-register);
+Atlas imports the stable `@atlas/toolkit` entry point. The toolkit uses
+ack-free kernel operations. Atlas owns message scheduling and trace history;
+Watershed decides writes and merges.
+
+The following pseudocode describes the tag-and-context rule used by the
+pinned register. `entries` maps write tags to values. `context` is a version
+vector; a tag `(writer, n)` is covered when `context[writer] >= n`.
+All merge tests use the two input states before taking their component maxima.
+
+```text
+write(value):
+  context[self] = context[self] + 1
+  tag = (self, context[self])
+  entries = {tag: value}
+  queue(copy(entries), copy(context))
+
+merge(remote):
+  kept = {}
+  for tag in keys(entries) union keys(remote.entries):
+    if tag in entries and tag in remote.entries:
+      kept[tag] = entries[tag]
+    else if tag in entries and not covered(tag, remote.context):
+      kept[tag] = entries[tag]
+    else if tag in remote.entries and not covered(tag, context):
+      kept[tag] = remote.entries[tag]
+  entries = kept
+  context = max_components(context, remote.context)
+```
+
+A covered but absent entry means that side has superseded the write. A
+shared entry survives a duplicate merge. An uncovered entry remains a
+concurrent contribution. Unique tags must identify the same value wherever
+they occur; the toolkit rejects conflicting tag data.
+
+Shapiro, Preguiça, Baquero, and Zawirski's
+[A comprehensive study of Convergent and Commutative Replicated Data Types](/bibliography/#shapiro-crdt-catalogue)
+describes multi-value registers and their causal replacement semantics.
+The pinned kernel source documents the implementation this lab executes.
+The report's abstract data type and the package's representation need not
+have identical storage layouts.
+
+[Dots and causal context](/atlas/dots-and-causal-context/) explains the
+identity-versus-history distinction used here. Continue to
+[Observed-remove sets](/atlas/observed-remove-sets/) to apply observed
+replacement to additions of a set member and test what an old message can
+restore.
+
+</section>
+</div>

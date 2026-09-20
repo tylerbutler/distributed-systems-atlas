@@ -1,0 +1,238 @@
+---
+title: Lamport clocks
+summary: Order causal predecessors with one counter without mistaking scalar order for causality.
+territory: mechanisms
+status: published
+requires: [partial-order]
+introduces: [Lamport clock, total order]
+related: [partial-order, vector-clocks]
+scenarios: [lamport-ordering-concurrency-limit]
+terms:
+  - term: Lamport clock
+    definition: A scalar logical clock that assigns a lower timestamp to every causal predecessor.
+  - term: total order
+    definition: An ordering that compares every distinct pair, including pairs that are concurrent.
+references:
+  - key: lamport-time-clocks
+    title: Time, Clocks, and the Ordering of Events in a Distributed System
+    url: https://lamport.azurewebsites.net/pubs/time-clocks.pdf
+---
+
+import CausalLab from "../../components/CausalLab.astro";
+import StationMark from "../../components/StationMark.astro";
+
+<div class="sheet-opening">
+
+## Put the send before the receive
+
+Two stations record events without a shared physical clock. You want to sort
+their records so that a message receive never appears before its send.
+Copying every predecessor into each record would work as evidence, but you
+want a smaller timestamp for ordering.
+
+A **Lamport clock** gives each station one counter. Local events increase
+it. Messages include the sender's counter, and a receive moves the receiver
+past that value. The rule preserves the direction of causal paths:
+if `x` happens before `y`, then `L(x) < L(y)`.
+
+The reverse statement does not hold. A smaller timestamp can belong to an
+independent event. We'll keep the predecessor graph next to the scalar
+readings so that you can see both facts in the same run.
+
+## One counter advances at each event
+
+Start each counter at zero. Before a local event or send, increment the local
+counter and use the new value as the event's timestamp. A send includes that
+timestamp in its message.
+
+At a receive, take the maximum of the local counter and the message timestamp,
+then add one. Taking the maximum alone would permit the receive to have the
+same timestamp as its send. The extra increment makes the ordering strict.
+
+<aside class="sheet-term-note" aria-label="Term: Lamport clock">
+  <dl><dt>Lamport clock</dt><dd>A scalar logical clock that assigns a lower timestamp to every causal predecessor.</dd></dl>
+</aside>
+
+<figure aria-label="Scalar clocks and message evidence">
+  <dl class="sheet-data">
+    <dt><StationMark station="A" /> Station A</dt>
+    <dd><code>a1@1</code>, then send <code>a2@2</code></dd>
+    <dt>Message m1</dt>
+    <dd>Timestamp <code>2</code>, saved at send time</dd>
+    <dt><StationMark station="B" /> Station B</dt>
+    <dd><code>b1@1</code>, then receive <code>b2@3</code></dd>
+  </dl>
+  <figcaption>Local paths connect a1 to a2 and b1 to b2. The message connects
+  a2 to b2. No path connects b1 to a2, despite their different timestamps.</figcaption>
+</figure>
+
+Read `a2@2` as event `a2` with scalar timestamp `2`. The number measures
+logical progress under these update rules. It is not a duration or a
+wall-clock reading. B can jump from 1 to 3 in one receive; there need not be
+a local B event with timestamp 2.
+
+Unlike the first two sheets, this lesson counts a send as a local event.
+A's second event is the send `a2`. Its message retains timestamp 2 even if
+you later create another event at A.
+
+## Record equal and unequal concurrent timestamps
+
+Reset the lab and use the numbered controls. They reproduce the IDs in the
+figure and keep the comparison independent of generated event names.
+
+1. **Reference step 1: local-event** creates `a1` at A with timestamp 1.
+2. **Reference step 2: local-event** creates `b1` at B with timestamp 1.
+   Neither station has sent a message yet.
+3. **Reference step 3: send** creates `a2` at A with timestamp 2 and queues
+   `m1` for B.
+4. **Reference step 4: deliver** creates `b2` at B with timestamp 3.
+
+At step 2, predict whether matching clock readings imply matching knowledge.
+At step 3, ask whether B's timestamp 1 proves that `b1` caused `a2`.
+After delivery, inspect **Predecessors**, **Event comparison**, and the
+**Total display order** notice rather than reading only the large clock values.
+
+**Back** and **Forward** revisit recorded frames. The lab stores those frames;
+it does not rerun actions when you select them. The static view below starts
+both clocks at zero, with no events or queued messages. The next section
+provides the complete trace for readers without JavaScript.
+
+</div>
+
+<CausalLab scenario="lamport-ordering-concurrency-limit" />
+
+<div class="sheet-continuation">
+
+## Separate the clock condition from its converse
+
+After the two local events, A and B each show 1. There is no causal path
+between `a1` and `b1`. Distinct events with equal Lamport timestamps cannot
+precede one another under the clock condition.
+
+A then sends. It advances to 2, but B's earlier local event still has no path
+to A. The pair `b1@1` and `a2@2` is concurrent even though 1 is less than 2.
+This pair is the counterexample to inferring happens-before from a scalar
+comparison.
+
+On delivery, B computes `max(1, 2) + 1 = 3`. Its receive follows both the
+local predecessor `b1` and the send `a2`. Through `a2`, it also follows `a1`.
+The timestamp exceeds each predecessor's timestamp, as required.
+
+<figure aria-label="Lamport reference timestamps">
+  <table>
+    <thead><tr><th scope="col">Event</th><th scope="col">Timestamp</th><th scope="col">Direct predecessors</th></tr></thead>
+    <tbody>
+      <tr><th scope="row"><code>a1</code></th><td>1</td><td>none</td></tr>
+      <tr><th scope="row"><code>b1</code></th><td>1</td><td>none</td></tr>
+      <tr><th scope="row"><code>a2</code></th><td>2</td><td>a1</td></tr>
+      <tr><th scope="row"><code>b2</code></th><td>3</td><td>b1, a2</td></tr>
+    </tbody>
+  </table>
+  <figcaption>The clock condition holds on every path. The empty predecessor
+  entry for b1 does not change when the browser later records a2.</figcaption>
+</figure>
+
+The lab's **Event comparison** uses graph paths, not scalar values. At the
+end it selects the unequal concurrent pair `b1 / a2`. This is why the panel
+can report concurrency that the scalar fields alone cannot establish.
+
+The total display order sorts by `(timestamp, replica ID)`. In this run it
+is `a1@1/A, b1@1/B, a2@2/A, b2@3/B`. The replica-ID rule puts A before B
+when their timestamps tie. It creates a deterministic display order while
+preserving the causal edges.
+
+That order does not make `a1` a predecessor of `b1`. A different agreed
+replica ordering could reverse the tied pair without violating any causal
+constraint. A **total order** chooses a position for every distinct pair;
+the causal partial order leaves some pairs incomparable.
+
+<section class="sheet-break" aria-labelledby="break-it-smaller-means-observed">
+
+## Break it: smaller means observed
+
+Suppose you keep only scalar timestamps and implement
+`observed(x, y) = L(x) < L(y)`. At step 3 it reports that `a2` observed `b1`,
+since 1 is less than 2. Yet A has received no message from B.
+
+The same test would give the right answer for `a1` and `a2`, which makes the
+bug easy to miss with only local test cases. You need the independent B
+event to show that the counter compresses away a distinction.
+
+Tie breaking cannot repair the lost information. It orders equal timestamps,
+but the false inference already occurs with unequal timestamps. Keep the
+one-way implication: happens-before requires an increasing clock; an
+increasing clock does not prove happens-before.
+
+A rule that selects the largest timestamp as a winning value is an
+application conflict policy. It does not recover which versions a writer
+observed. If your application must preserve concurrent values, discarding
+all but the largest scalar timestamp loses information it needs.
+
+</section>
+
+<section class="sheet-costs" aria-labelledby="one-counter-with-limited-evidence">
+
+## One counter with limited evidence
+
+Each process and message needs one scalar clock rather than a component for
+each process. Updating it requires an increment and, at receive, a maximum.
+That is constant-size metadata in counter entries, though representing an
+unbounded count still requires more bits as it increases.
+
+Counters must not wrap or move backward while their identity remains in use.
+A restart needs durable clock state or an identity policy that prevents
+confusing a new execution with an old one. This short run does not exercise
+counter exhaustion.
+
+The rule assumes local events have an order and messages retain send-time
+timestamps. It does not require synchronized physical clocks or FIFO
+delivery. A duplicate delivery creates a new receive event and advances the
+receiver again; it does not change the original send's timestamp.
+
+Sorting known records is also different from delivering an irrevocable total
+sequence online. A station may receive a lower timestamp later. It needs
+additional protocol rules to know when a prefix is safe to deliver or commit.
+Lamport timestamps alone do not provide consensus, reliable delivery, or
+knowledge that no message remains in transit.
+
+</section>
+
+<section class="sheet-field-notes" aria-labelledby="field-notes">
+
+## Field notes
+
+The clock starts at zero. Record the updated value on the event, not a
+reference to a mutable counter. The last function sorts records already
+available to the caller.
+
+```text
+local_event():
+  clock = clock + 1
+  record_event(clock)
+
+send(peer):
+  clock = clock + 1
+  record_send(clock)
+  queue(peer, timestamp = clock)
+
+receive(message):
+  clock = max(clock, message.timestamp) + 1
+  record_receive(clock)
+
+display_order(events):
+  return sort(events, by = (timestamp, replica_id))
+```
+
+Leslie Lamport's
+[Time, Clocks, and the Ordering of Events in a Distributed System](/bibliography/#lamport-time-clocks)
+states the clock condition, gives logical-clock implementation rules, and
+constructs a total order using a process ordering to break ties. The paper's
+distributed algorithms add communication rules beyond the clock update.
+
+[Partial order](/atlas/partial-order/) explains the graph evidence used beside
+these counters. [Vector clocks](/atlas/vector-clocks/) keeps separate
+components so a comparison can distinguish the two concurrent histories
+that a scalar order puts in one sequence.
+
+</section>
+</div>

@@ -1,0 +1,242 @@
+---
+title: Vector clocks
+summary: Compare every replica component to distinguish causal order from concurrency.
+territory: mechanisms
+status: published
+requires: [lamport-clocks]
+introduces: [vector clock, component-wise order]
+related: [lamport-clocks, dots-and-causal-context, multi-value-registers]
+scenarios: [vector-clock-comparisons]
+terms:
+  - term: vector clock
+    definition: A logical clock with one counter per tracked process, updated by local increments and receive-time component maxima.
+  - term: component-wise order
+    definition: An order in which one vector is no greater than another in every component.
+references:
+  - key: mattern-virtual-time
+    title: Virtual Time and Global States of Distributed Systems
+    url: https://www.vs.inf.ethz.ch/publ/papers/VirtTimeGlobStates.pdf
+---
+
+import CausalLab from "../../components/CausalLab.astro";
+import VectorComparison from "../../components/VectorComparison.astro";
+
+<div class="sheet-opening">
+
+## One number loses the source of progress
+
+A has executed two events without receiving from B. B has observed one event
+from A and executed an event of its own. Which station has more causal
+history?
+
+A has more progress from A. B has progress from B that A lacks. A scalar
+maximum would hide one of those facts. A **vector clock** keeps a separate
+counter for each process so you can compare the histories without first
+forcing them into a total sequence.
+
+Write the component order explicitly. In this sheet, `[2, 0]` means
+`[A:2, B:0]`, and `[1, 1]` means `[A:1, B:1]`. The first vector has a
+greater A component; the second has a greater B component. Neither
+dominates the other.
+
+## Compare down the component columns
+
+Read a vector as one labeled record, not a string of digits. To compare two
+vectors, align their process IDs. In the comparison rule here, an omitted
+component is zero.
+
+A vector is **before** another if no component is greater and at least one
+is smaller. Reverse those conditions for **after**. Matching components give
+**equal**. If each vector has a component greater than the corresponding
+component of the other, they are **concurrent**.
+
+<aside class="sheet-term-note" aria-label="Term: component-wise order">
+  <dl><dt>component-wise order</dt><dd>An order in which one vector is no greater than another in every component.</dd></dl>
+</aside>
+
+<VectorComparison left={{ A: 2, B: 0 }} right={{ A: 1, B: 1 }} />
+
+The table retains the two-station model: each column is one station's
+record, and each row names a source of progress. Its caption states the
+comparison, but neither replica acquires the other vector just because you
+can read both columns.
+
+For event clocks, each process increments its own component at a local
+event or send. A receive first takes the maximum of each local and incoming
+component, then increments the receiver's component. That final increment
+records the receive as a new event.
+
+These rules matter to the interpretation. An arbitrary map of counters does
+not prove causality just because you call it a vector. Event-clock
+comparisons reflect happens-before when the execution uses the required
+updates and includes the communication dependencies.
+
+## Exercise all four relations
+
+This lab's reference run compares fixed example vectors. It does not first
+execute the histories that produced them. The station clocks remain zero
+during these four comparisons; the **Vector comparison** strip reports the
+selected inputs.
+
+Use **Reset lab**, then **Reference step 1: compare-vectors** through
+**Reference step 4: compare-vectors** in order:
+
+1. Compare `[A:1, B:0]` with `[A:1, B:1]`: before.
+2. Reverse those vectors: after.
+3. Compare `[A:1, B:1]` with itself: equal.
+4. Compare `[A:2, B:0]` with `[A:1, B:1]`: concurrent.
+
+You can also select the controls whose labels start **Compare [A:...** to
+repeat an individual case. Each comparison adds a recorded frame and a
+notice. It does not send a message or advance an event clock.
+
+The static initial view below shows two zero vectors and the cost notice:
+two replicas need two components per clock. Without JavaScript, use the
+component table above and the reference table below to perform each
+comparison by hand.
+
+</div>
+
+<CausalLab scenario="vector-clock-comparisons" />
+
+<div class="sheet-continuation">
+
+## Track both the inputs and the station state
+
+The first comparison shares an equal A component. Only B increases, so the
+left vector is before the right. Reversing the inputs reverses that result.
+The third comparison has no strict difference; it is equal rather than
+before.
+
+In the fourth comparison, A's component increases on the left and B's on the
+right. The result is concurrent. A total-order sort could choose one of
+these vectors first, but it would answer a different question.
+
+<figure aria-label="Four vector relations">
+  <table>
+    <thead><tr><th scope="col">Left [A, B]</th><th scope="col">Right [A, B]</th><th scope="col">Result</th></tr></thead>
+    <tbody>
+      <tr><td><code>[1, 0]</code></td><td><code>[1, 1]</code></td><td>before</td></tr>
+      <tr><td><code>[1, 1]</code></td><td><code>[1, 0]</code></td><td>after</td></tr>
+      <tr><td><code>[1, 1]</code></td><td><code>[1, 1]</code></td><td>equal</td></tr>
+      <tr><td><code>[2, 0]</code></td><td><code>[1, 1]</code></td><td>concurrent</td></tr>
+    </tbody>
+  </table>
+  <figcaption>Each row is a selected comparison. These inputs do not
+  mutate the zero-valued station clocks in the reference run.</figcaption>
+</figure>
+
+To see how the engine produces event clocks, reset again. Choose **Local
+event at A**, then **Send from A to B**. A's vector advances first to
+`[A:1, B:0]` and then to `[A:2, B:0]`, because a send counts as an event.
+The queued message contains the second vector.
+
+Choose **Local event at B** before delivering the message. B has
+`[A:0, B:1]`. These station clocks are concurrent. Deliver `m1` and B takes
+component maxima to obtain `[A:2, B:1]`, then increments B to produce
+`[A:2, B:2]`. The receive follows the send and B's local event.
+
+This second run illustrates the update rule; it has different numbers from
+the four fixed comparison inputs. Keep the selected-input comparison
+separate from the current station records when reading the console.
+
+Event vectors also differ from summaries that advance only on writes.
+If a data structure counts writes but not receives or removes, equal
+summaries do not prove identical event histories. The
+[Dots sheet](/atlas/dots-and-causal-context/) uses that narrower kind of
+causal summary and explains what its counters omit.
+
+<section class="sheet-break" aria-labelledby="break-it-compare-only-the-largest-counter">
+
+## Break it: compare only the largest counter
+
+For `[2, 0]` and `[1, 1]`, the largest counters are 2 and 1. Comparing only
+those numbers calls the left vector after the right. It loses B's component,
+which shows progress on the right that the left has not observed.
+
+Adding the components is also insufficient: both sums are 2. Equal sums
+would erase the distinction between two different histories. Lexicographic
+sorting chooses an order using the first differing component, but that is
+a display policy, not component-wise causal order.
+
+Check every component, even after finding a difference. One smaller
+component is enough to rule out after; you must still look for a greater
+one to distinguish before from concurrent.
+
+Do not confuse a zero entry with a retired process. Zero means this clock
+records no progress for that identity. Deleting an entry with prior progress
+changes comparisons unless a separate membership and compaction protocol
+preserves its meaning.
+
+</section>
+
+<section class="sheet-costs" aria-labelledby="a-component-for-each-process">
+
+## A component for each process
+
+With `n` tracked processes, a dense vector needs `n` counters. A send
+includes those counters, and a merge or comparison examines the components.
+The lab labels this cost: two replicas require two components; adding a
+third requires three per clock. Sparse maps can omit zeros but do not
+remove the need to represent identities with retained progress.
+
+Stable identities and counters that do not reset are assumptions. A new
+process incarnation cannot reuse an old identity and start at zero while
+peers still compare it with that identity's earlier vector. Dynamic
+membership needs rules for joining, retiring, and restoring processes.
+
+Vectors record causal progress, not application payloads. Receiving a vector
+that mentions an earlier event does not by itself deliver that event's data.
+A replication protocol must specify whether it sends accumulated state,
+buffers dependent updates, or supplies the missing data another way.
+
+The simulator records every relevant event and message in a controlled
+execution. It makes no physical-time measurements. Vectors do not estimate
+network latency, tell you how long a partition will last, or guarantee
+delivery of a missing message.
+
+</section>
+
+<section class="sheet-field-notes" aria-labelledby="field-notes">
+
+## Field notes
+
+Start all components at zero. `max_components` aligns process IDs and takes
+the maximum of each pair. `self` identifies the local process.
+
+```text
+local_or_send():
+  clock[self] = clock[self] + 1
+  record(copy(clock))
+  if sending: queue(peer, copy(clock))
+
+receive(message):
+  clock = max_components(clock, message.clock)
+  clock[self] = clock[self] + 1
+  record(copy(clock))
+
+compare(left, right):
+  less = false
+  greater = false
+  for id in keys(left) union keys(right):
+    less = less or left.get(id, 0) < right.get(id, 0)
+    greater = greater or left.get(id, 0) > right.get(id, 0)
+  if less and greater: return concurrent
+  if less: return before
+  if greater: return after
+  return equal
+```
+
+Friedemann Mattern's
+[Virtual Time and Global States of Distributed Systems](/bibliography/#mattern-virtual-time)
+describes vector time, its update mechanism, and its relation to causal
+structure. The component comparison here uses that partial order.
+
+Next, [Dots and causal context](/atlas/dots-and-causal-context/) separates an
+individual event's identity from the history a replica has observed.
+[Multi-value registers](/atlas/multi-value-registers/) then uses causal
+metadata to retain concurrent versions instead of choosing one by a scalar
+timestamp.
+
+</section>
+</div>
