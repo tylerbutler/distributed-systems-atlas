@@ -1,15 +1,19 @@
-import { compareVectors, type CausalRelation, type Dot, type TraceFrame, type VersionVector } from "./contract";
+import type { CausalRelation, Dot, LabAction, Observation, ReplicaView, TraceFrame, VersionVector } from "./contract";
+
+export interface PresentedDetail {
+  label: string;
+  value: string;
+}
+
+export type PresentedControl =
+  | { kind: "action"; label: string; action: LabAction; reason: string }
+  | { kind: "notice"; text: string };
 
 export interface PresentedReplica {
   id: string;
   stationShape: "circle" | "diamond" | "hexagon";
-  valueLabel: string;
-  clockLabel: string;
-  dotLabels: string[];
-  dotsLabel: string;
-  contextLabel: string;
-  hasObservedEvents: boolean;
-  canRemoveBeacon: boolean;
+  details: PresentedDetail[];
+  emptyLabel: string | null;
 }
 
 export interface PresentedMessage {
@@ -18,131 +22,147 @@ export interface PresentedMessage {
   to: string;
   routeLabel: string;
   payloadLabel: string;
-  kindLabel: string;
-  dotLabels: string[];
-  dotsLabel: string;
-  contextLabel: string;
+  details: PresentedDetail[];
   blocked: boolean;
 }
 
 export interface PresentedFrame {
   index: number;
+  title: string;
+  instructions: string;
+  comparisonHeading: string;
+  inspectorNote: string;
+  controls: readonly PresentedControl[];
   actionLabel: string;
   explanation: string;
   announcement: string;
   outcome: { heading: string; explanation: string } | null;
   replicas: PresentedReplica[];
   messages: PresentedMessage[];
-  /** The first two replicas in ID order; a single replica has no comparison. */
-  comparison: {
-    relation: CausalRelation;
-    label: string;
-    evidence: string;
-  } | null;
+  comparison: { relation: CausalRelation; label: string; evidence: string } | null;
   links: Array<{ left: string; right: string; partitioned: boolean }>;
   invariants: Array<{ id: string; label: string; passed: boolean }>;
+}
+
+export interface LabPresentation {
+  readonly title: string;
+  readonly instructions: string;
+  readonly comparisonHeading: string;
+  readonly inspectorNote: string;
+  readonly invariantLabels: Readonly<Record<string, string>>;
+  valueLabel(replica: ReplicaView): string;
+  controls(frame: TraceFrame): readonly PresentedControl[];
+  compare(frame: TraceFrame): PresentedFrame["comparison"];
+  announce(frame: TraceFrame): string;
+  complete(frame: TraceFrame, history: readonly TraceFrame[]): PresentedFrame["outcome"];
 }
 
 function lexical(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
 }
 
-function vectorLabel(vector: VersionVector): string {
+export function vectorLabel(vector: VersionVector): string {
   return Object.keys(vector).sort(lexical).map((id) => `${id}:${vector[id]}`).join(", ") || "Empty vector";
 }
 
-function dotLabels(dots: readonly Dot[]): string[] {
+function dotsLabel(dots: readonly Dot[]): string {
   return [...dots]
     .sort((left, right) => lexical(left.replica, right.replica) || left.counter - right.counter)
-    .map((dot) => `${dot.replica}:${dot.counter}`);
+    .map((dot) => `${dot.replica}:${dot.counter}`).join(", ") || "No live dots";
 }
 
-export function presentFrame(frame: TraceFrame, history: readonly TraceFrame[] = []): PresentedFrame {
+function observationDetails(record: Observation, target: "replica" | "message"): PresentedDetail[] {
+  switch (record.observation) {
+    case "history":
+      return [
+        { label: "Local history", value: record.events.map((event) => event.id).join(", ") || "No local events" },
+        { label: "Observed events", value: record.observed.join(", ") || "No events observed" },
+        { label: "Predecessors", value: record.events.map((event) =>
+          `${event.id}: ${event.predecessors.join(", ") || "none"}`).join("; ") || "No predecessors" },
+      ];
+    case "scalar-clock":
+      return [{ label: "Scalar clock", value: String(record.clock) }];
+    case "vector-clock":
+      return [{ label: "Clock", value: vectorLabel(record.clock) }];
+    case "dots":
+      return [
+        { label: "Live dots", value: dotsLabel(record.dots) },
+        ...(target === "replica" ? [{ label: "Clock", value: vectorLabel(record.clock) }] : []),
+        { label: "Causal context", value: vectorLabel(record.context) },
+      ];
+    case "mv-register":
+      return [
+        { label: "Register siblings", value: record.siblings.map((sibling) =>
+          `${sibling.value} [${vectorLabel(sibling.version)}]`).join("; ") || "No register siblings" },
+        { label: "Causal context", value: vectorLabel(record.context) },
+      ];
+    case "or-set":
+      return [
+        { label: "Set membership", value: record.members.map((member) =>
+          `${member.value} [${dotsLabel(member.dots)}]`).join("; ") || "Empty set" },
+        { label: "Removed dots", value: record.members.map((member) =>
+          `${member.value} [${member.removed.length ? dotsLabel(member.removed) : "none"}]`).join("; ") || "No removed dots" },
+        { label: "Causal context", value: vectorLabel(record.context) },
+      ];
+  }
+}
+
+function hasObservedEvents(record: Observation): boolean {
+  switch (record.observation) {
+    case "history": return record.events.length > 0 || record.observed.length > 0;
+    case "scalar-clock": return record.clock !== 0;
+    case "vector-clock": return Object.values(record.clock).some((count) => count !== 0);
+    case "dots":
+    case "mv-register":
+    case "or-set": return Object.values(record.context).some((count) => count !== 0);
+  }
+}
+
+export function presentFrame(
+  frame: TraceFrame,
+  history: readonly TraceFrame[],
+  presentation: LabPresentation,
+): PresentedFrame {
   const ordered = [...frame.replicas].sort((left, right) => lexical(left.id, right.id));
   const blocked = (left: string, right: string): boolean =>
     frame.partitions.includes([left, right].sort(lexical).join(":"));
-  const replicas: PresentedReplica[] = ordered.map((replica) => {
-    const dots = dotLabels(replica.dots);
-    return {
-      id: replica.id,
-      stationShape: replica.id === "A" ? "circle" : replica.id === "B" ? "diamond" : "hexagon",
-      valueLabel: replica.value.join(", ") || "Empty set",
-      clockLabel: vectorLabel(replica.clock),
-      dotLabels: dots,
-      dotsLabel: dots.join(", ") || "No live dots",
-      contextLabel: vectorLabel(replica.context),
-      hasObservedEvents: Object.values(replica.context).some((count) => count !== 0),
-      canRemoveBeacon: replica.value.includes("beacon"),
-    };
-  });
-  const [left, right] = ordered;
-  let comparison: PresentedFrame["comparison"] = null;
-  if (left && right) {
-    const relation = compareVectors(left.clock, right.clock);
-    comparison = {
-      relation,
-      label: relation === "equal" || relation === "concurrent"
-        ? `${left.id} and ${right.id} are ${relation}`
-        : `${left.id} is ${relation} ${right.id}`,
-      evidence: `${left.id} [${vectorLabel(left.clock)}]; ${right.id} [${vectorLabel(right.clock)}]`,
-    };
-  }
-  const added = ordered.find((replica) =>
-    replica.value.some((value) => frame.actionLabel === `add ${value} at ${replica.id}`),
-  );
-  const announcement = [
-    added ? `${added.id} created dot ${added.id}:${added.clock[added.id]}.` : "",
-    frame.explanation,
-    comparison ? `${comparison.label}.` : "",
-  ].filter(Boolean).join(" ");
-  const invariantLabels: Record<string, string> = {
-    uniqueDots: "Unique dots",
-    removedDotsStayRemoved: "Removed dots stay removed",
-    converged: "Converged",
-  };
-  const selectedHistory = history.filter((entry) => entry.index <= frame.index);
-  const observedRemove = selectedHistory.slice(1).some((entry, index) =>
-    entry.actionLabel === "remove beacon at A"
-    && entry.replicas.find((replica) => replica.id === "A")?.context.B === 0
-    && selectedHistory[index].replicas.find((replica) => replica.id === "A")?.dots
-      .some((dot) => dot.replica === "A" && dot.counter === 1),
-  );
-  const unobservedRemovalAtAdd = selectedHistory.some((entry) =>
-    entry.actionLabel === "add beacon at B"
-    && entry.replicas.some((replica) => replica.id === "B" && replica.clock.B === 1
-      && replica.dots.some((dot) => dot.replica === "A" && dot.counter === 1)),
-  );
-  // Healing alone does not earn the lesson; both recorded states must retain only B:1.
-  const outcome = observedRemove && unobservedRemovalAtAdd && frame.invariants.converged
-    && frame.replicas.every((replica) =>
-      replica.value.includes("beacon") && replica.dots.length === 1
-      && replica.dots[0].replica === "B" && replica.dots[0].counter === 1)
-    ? {
-      heading: "The new B dot survives",
-      explanation: "Both replicas retain B:1. A removed the dot it had observed, not B's concurrent add.",
-    } : null;
+  const comparison = presentation.compare(frame);
   return {
     index: frame.index,
+    title: presentation.title,
+    instructions: presentation.instructions,
+    comparisonHeading: presentation.comparisonHeading,
+    inspectorNote: presentation.inspectorNote,
+    controls: presentation.controls(frame),
     actionLabel: frame.actionLabel,
     explanation: frame.explanation,
-    announcement,
-    outcome,
-    replicas,
+    announcement: [
+      presentation.announce(frame), frame.explanation, comparison ? `${comparison.label}.` : "",
+    ].filter(Boolean).join(" "),
+    outcome: presentation.complete(frame, history.filter((entry) => entry.index <= frame.index)),
+    replicas: ordered.map((replica) => ({
+      id: replica.id,
+      stationShape: replica.id === "A" ? "circle" : replica.id === "B" ? "diamond" : "hexagon",
+      details: [
+        { label: "Visible value", value: presentation.valueLabel(replica) },
+        ...observationDetails(replica, "replica"),
+      ],
+      emptyLabel: hasObservedEvents(replica) ? null : "No events observed",
+    })),
     messages: frame.messages.map((message) => {
-      const dots = dotLabels(message.dots);
-      const dotsLabel = dots.join(", ") || "No live dots";
-      const contextLabel = vectorLabel(message.context);
+      const observations = observationDetails(message, "message");
       const [number, , , ...copies] = message.id.split(":");
       return {
         id: message.id,
         from: message.from,
         to: message.to,
         routeLabel: `${[number, ...copies].join(" ")} from ${message.from} to ${message.to}`,
-        payloadLabel: `${message.kind}; live dots: ${dotsLabel}; causal context: ${contextLabel}`,
-        kindLabel: message.kind,
-        dotLabels: dots,
-        dotsLabel,
-        contextLabel,
+        payloadLabel: [message.kind, ...observations.map(({ label, value }) => `${label.toLowerCase()}: ${value}`)].join("; "),
+        details: [
+          { label: "Message ID", value: message.id },
+          { label: "Kind", value: message.kind },
+          ...observations,
+        ],
         blocked: blocked(message.from, message.to),
       };
     }),
@@ -151,7 +171,7 @@ export function presentFrame(frame: TraceFrame, history: readonly TraceFrame[] =
       left: replica.id, right: peer.id, partitioned: blocked(replica.id, peer.id),
     }))),
     invariants: Object.entries(frame.invariants).map(([id, passed]) => ({
-      id, label: invariantLabels[id] ?? id, passed,
+      id, label: presentation.invariantLabels[id] ?? id, passed,
     })),
   };
 }

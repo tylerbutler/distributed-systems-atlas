@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { createCausalEngine } from "./causal-engine";
-import type { LabAction, SimulationEngine, TraceFrame } from "./contract";
+import type { DotsObservation, LabAction, SimulationEngine, TraceFrame } from "./contract";
 
-function dispatch(engine: SimulationEngine, action: LabAction): TraceFrame {
+function dispatch(engine: SimulationEngine<DotsObservation>, action: LabAction): TraceFrame<DotsObservation> {
   const result = engine.dispatch(action);
   if ("message" in result) throw new Error(result.message);
   return result;
@@ -60,6 +60,7 @@ describe("causal engine", () => {
     expect(frame.partitions).toEqual([]);
     expect(frame.replicas).toEqual(
       ["A", "B"].map((id) => ({
+        observation: "dots",
         id,
         value: ["beacon", "zebra"],
         clock: { A: 2, B: 0 },
@@ -83,10 +84,12 @@ describe("causal engine", () => {
     expect(added.messages).toEqual([
       {
         id: "m1:B:A", from: "B", to: "A", kind: "delta",
+        observation: "dots", clock: { A: 0, B: 1, C: 0 },
         dots: [{ replica: "B", counter: 1 }], context: { A: 0, B: 1, C: 0 },
       },
       {
         id: "m1:B:C", from: "B", to: "C", kind: "delta",
+        observation: "dots", clock: { A: 0, B: 1, C: 0 },
         dots: [{ replica: "B", counter: 1 }], context: { A: 0, B: 1, C: 0 },
       },
     ]);
@@ -99,6 +102,7 @@ describe("causal engine", () => {
     ]);
     expect(removed.replicas[1]).toEqual({
       id: "B", value: [], dots: [],
+      observation: "dots",
       clock: { A: 0, B: 1, C: 0 }, context: { A: 0, B: 1, C: 0 },
     });
     expect(removed.messages[2].dots).toEqual([]);

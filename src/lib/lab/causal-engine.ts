@@ -1,5 +1,7 @@
 import type {
   Dot,
+  DotsObservation,
+  EngineScenario,
   LabAction,
   LabError,
   ReplicaView,
@@ -7,6 +9,7 @@ import type {
   TraceFrame,
   VersionVector,
 } from "./contract";
+import { immutable } from "./contract";
 
 interface ElementState {
   adds: Map<string, Dot>;
@@ -31,12 +34,7 @@ interface QueuedMessage {
   context: VersionVector;
 }
 
-export interface CausalScenario {
-  id: string;
-  /** Nonempty, unique list of IDs; ":" is reserved for message and partition keys. */
-  replicas: string[];
-  initialValues: string[];
-}
+export type CausalScenario = Omit<EngineScenario, "kind">;
 
 function lexical(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0;
@@ -56,15 +54,7 @@ function liveDots(element: ElementState): Dot[] {
   return [...element.adds.values()].filter((dot) => !element.removed.has(dotKey(dot)));
 }
 
-function immutable<T>(value: T): T {
-  if (value !== null && typeof value === "object") {
-    for (const child of Object.values(value)) immutable(child);
-    Object.freeze(value);
-  }
-  return value;
-}
-
-export function createCausalEngine(config: CausalScenario): SimulationEngine {
+export function createCausalEngine(config: CausalScenario): SimulationEngine<DotsObservation> {
   const id = config.id;
   const replicaIds = [...config.replicas].sort(lexical);
   if (!replicaIds.length || new Set(replicaIds).size !== replicaIds.length) {
@@ -98,9 +88,10 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
   let operationNumber = 0;
   let copyNumber = 0;
 
-  function frame(index: number, actionLabel: string, explanation: string): TraceFrame {
+  function frame(index: number, action: LabAction | null, actionLabel: string, explanation: string): TraceFrame<DotsObservation> {
     const states = [...replicas.values()];
-    const views: ReplicaView[] = states.map((replica) => ({
+    const views: ReplicaView<DotsObservation>[] = states.map((replica) => ({
+      observation: "dots",
       id: replica.id,
       value: [...replica.elements]
         .filter(([, element]) => liveDots(element).length > 0)
@@ -122,6 +113,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
     }));
     return immutable({
       index,
+      action: action ? { ...action } : null,
       actionLabel,
       explanation,
       replicas: views,
@@ -130,6 +122,8 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         from: message.from,
         to: message.to,
         kind: "delta" as const,
+        observation: "dots" as const,
+        clock: { ...message.context },
         dots: sortDots(message.elements.flatMap((element) =>
           element.adds.filter((dot) => !element.removed.includes(dotKey(dot))),
         )),
@@ -154,19 +148,19 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
     });
   }
 
-  const initialFrame = frame(0, "initial", "Replicas share the initial values and causal state.");
-  let frames: readonly TraceFrame[] = Object.freeze([initialFrame]);
+  const initialFrame = frame(0, null, "initial", "Replicas share the initial values and causal state.");
+  let frames: readonly TraceFrame<DotsObservation>[] = Object.freeze([initialFrame]);
 
-  function current(): TraceFrame {
+  function current(): TraceFrame<DotsObservation> {
     return frames[frames.length - 1];
   }
 
-  function error(action: LabAction, message: string): LabError {
+  function error(action: LabAction, message: string): LabError<DotsObservation> {
     return { action, engine: id, message, lastFrame: current() };
   }
 
-  function append(actionLabel: string, explanation: string): TraceFrame {
-    const next = frame(frames.length, actionLabel, explanation);
+  function append(action: LabAction, actionLabel: string, explanation: string): TraceFrame<DotsObservation> {
+    const next = frame(frames.length, action, actionLabel, explanation);
     frames = Object.freeze([...frames, next]);
     return next;
   }
@@ -175,7 +169,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
     return [left, right].sort(lexical).join(":");
   }
 
-  function dispatch(action: LabAction): TraceFrame | LabError {
+  function dispatch(action: LabAction): TraceFrame<DotsObservation> | LabError<DotsObservation> {
     switch (action.type) {
       case "add":
       case "remove": {
@@ -208,6 +202,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
           });
         }
         return append(
+          action,
           `${action.type} ${action.value} at ${replica.id}`,
           action.type === "add"
             ? `Added ${action.value} with dot ${replica.id}:${replica.clock[replica.id]}; queued a delta with causal state for each peer.`
@@ -222,7 +217,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         if (action.type === "duplicate") {
           const copy = { ...message, id: `${message.id}:copy${++copyNumber}` };
           messages.push(copy);
-          return append(`duplicate ${message.id}`, `Queued ${copy.id} with the same causal payload.`);
+          return append(action, `duplicate ${message.id}`, `Queued ${copy.id} with the same causal payload.`);
         }
         if (partitions.has(pair(message.from, message.to))) {
           return error(action, "message crosses an active partition");
@@ -240,6 +235,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         }
         messages.splice(index, 1);
         return append(
+          action,
           `deliver ${message.id}`,
           `Merged add dots, removed dots, and vector maxima from ${message.from} into ${message.to}.`,
         );
@@ -253,6 +249,7 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         if (action.type === "partition") partitions.add(key);
         else partitions.delete(key);
         return append(
+          action,
           `${action.type} ${key}`,
           action.type === "partition"
             ? `Blocked delivery across ${key}; queued messages are retained.`
@@ -267,6 +264,10 @@ export function createCausalEngine(config: CausalScenario): SimulationEngine {
         copyNumber = 0;
         frames = Object.freeze([initialFrame]);
         return initialFrame;
+      case "local-event":
+      case "send":
+      case "write":
+        return error(action, `unsupported action for dots: ${action.type}`);
     }
   }
 

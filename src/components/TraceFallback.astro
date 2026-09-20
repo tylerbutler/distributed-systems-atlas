@@ -1,38 +1,30 @@
 ---
-import { createCausalEngine } from "../lib/lab/causal-engine";
-import { presentFrame } from "../lib/lab/present-frame";
-import { scenarioById } from "../lib/lab/scenarios";
+import type { PresentedFrame } from "../lib/lab/present-frame";
 
 interface Props {
-  scenario: string;
+  frame: PresentedFrame;
 }
 
-const { scenario } = Astro.props;
-const frame = presentFrame(createCausalEngine(scenarioById(scenario)).current());
+const { frame } = Astro.props;
 ---
 
-<h2>Causal lab</h2>
+<h2>{frame.title}</h2>
 <div class="lab-replicas">
   {frame.replicas.map((replica) => (
     <section class="lab-replica" aria-label={`Replica ${replica.id}`} data-station-shape={replica.stationShape}>
       <h3>Replica {replica.id}</h3>
       <dl>
-        <dt>Visible value</dt>
-        <dd class="observation-data">{replica.valueLabel}</dd>
-        <dt>Live dots</dt>
-        <dd class="observation-data">{replica.dotsLabel}</dd>
-        <dt>Clock</dt>
-        <dd class="observation-data">{replica.clockLabel}</dd>
-        <dt>Causal context</dt>
-        <dd class="observation-data">{replica.contextLabel}</dd>
+        {replica.details.map(({ label, value }) => (
+          <><dt>{label}</dt><dd class="observation-data">{value}</dd></>
+        ))}
       </dl>
-      {!replica.hasObservedEvents && <p>No events observed</p>}
+      {replica.emptyLabel && <p>{replica.emptyLabel}</p>}
     </section>
   ))}
 </div>
 {frame.comparison && (
-  <section class="lab-comparison" aria-label="Vector comparison">
-    <h3>Vector comparison</h3>
+  <section class="lab-comparison" aria-label={frame.comparisonHeading}>
+    <h3>{frame.comparisonHeading}</h3>
     <p>{frame.comparison.label}</p>
     <p class="observation-data">{frame.comparison.evidence}</p>
   </section>
@@ -46,21 +38,19 @@ const frame = presentFrame(createCausalEngine(scenarioById(scenario)).current())
           <h4>{message.routeLabel}</h4>
           <p>{message.blocked ? "Blocked by active partition" : "Ready for delivery"}</p>
           <dl>
-            <dt>Message ID</dt>
-            <dd class="observation-data">{message.id}</dd>
-            <dt>Kind</dt>
-            <dd class="observation-data">{message.kindLabel}</dd>
-            <dt>Live dots</dt>
-            <dd class="observation-data">{message.dotsLabel}</dd>
-            <dt>Causal context</dt>
-            <dd class="observation-data">{message.contextLabel}</dd>
+            {message.details.map(({ label, value }) => (
+              <><dt>{label}</dt><dd class="observation-data">{value}</dd></>
+            ))}
           </dl>
         </li>
       ))}
     </ul>
   ) : <p>No queued messages</p>}
 </section>
-<div class="lab-explanation"><p>{frame.explanation}</p></div>
+<div class="lab-explanation">
+  <p>{frame.explanation}</p>
+  {frame.outcome && <><h3>{frame.outcome.heading}</h3><p>{frame.outcome.explanation}</p></>}
+</div>
 <section class="lab-invariants" aria-label="Invariant checks">
   <h3>Invariant checks</h3>
   <ul>

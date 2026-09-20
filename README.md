@@ -56,9 +56,9 @@ and navigation remain available. Lab controls require JavaScript.
 | Layer | Responsibility |
 | --- | --- |
 | Content | `src/content/sheets/` contains MDX articles and metadata. `src/content.config.ts` defines the schema; `src/lib/atlas/graph.ts` validates sheet and scenario references. Pages and layouts build the publication and link published sheets. |
-| Scenario | `src/lib/lab/scenarios.ts` names the available lessons and returns cloned initial configurations. Unknown scenario IDs are errors. A scenario does not maintain a second simulation state. |
-| Engine | `src/lib/lab/causal-engine.ts` implements the deterministic TypeScript reference model. It owns replica state, queued deltas, partitions, and trace history. `contract.ts` defines actions, immutable trace views, and errors. |
-| Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` into `PresentedFrame`: labels, replica shapes, message routes, vector comparisons, and invariant results. Recorded history up to the selected frame supplies earned lesson conclusions. It does not dispatch actions or change engine state. |
+| Scenario | `src/lib/lab/scenarios.ts` names the available lessons and returns cloned engine configurations with shared immutable presentation rules. Those rules own lesson controls, labels, comparisons, announcements, and completion criteria. Unknown scenario IDs are errors. A scenario does not maintain a second simulation state. |
+| Engine | `src/lib/lab/engine-registry.ts` selects an implementation from the scenario's `kind`. Only `dots` is registered, using `causal-engine.ts`. Unavailable kinds fail explicitly. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Engines own state, messages, partitions, and trace history. |
+| Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
 
 **Labs render from trace frames.** Replica values, clocks, dots, causal
@@ -69,11 +69,27 @@ not generate actions or deliver queued messages. Reduced motion preserves
 the same state and explanations.
 
 The static fallback and live rendering use the same scenario contract:
-`scenarioById` supplies the configuration, the reference engine supplies the
-trace, and `presentFrame` supplies the presentation. The renderer consumes
+`scenarioById` supplies the configuration and presentation rules, `createEngine`
+selects the engine, and `presentFrame` supplies the presentation. The renderer consumes
 `PresentedFrame`; it does not infer algorithm state or decide causal outcomes
 from DOM content. Inspectors display immutable trace records directly, without
 interpreting engine-private fields.
+
+Observation records use the `observation` tag: `history`, `scalar-clock`,
+`vector-clock`, `dots`, `mv-register`, or `or-set`. Each tag has its own typed
+metadata. Register siblings retain their individual version vectors, including
+equal values with different versions. Set members retain live and removed dots.
+The renderer displays labeled fields without requiring Dots metadata on other
+observations. Controls are tagged action buttons or notices; action buttons
+carry a `LabAction`, not a command parsed from their label.
+
+Each successful non-reset frame records the action as immutable data.
+The initial frame has `action: null`; reset returns that same initial frame.
+Engines must copy caller-owned data before using `immutable` to freeze a
+snapshot. Lesson rules use recorded actions rather than `actionLabel` text.
+The contract includes local events, sends, register writes, set adds/removes,
+delivery, duplication, partition/heal, and reset. Dots rejects unsupported
+actions with `LabError` and leaves its history unchanged.
 
 Engine errors identify the attempted action, engine, and error, and retain
 the last valid frame. The renderer must not replace an error with a success
@@ -108,5 +124,5 @@ imagery, focused controls, trace-derived views, and custom-element boundary
 meet the design gate. Canonical acceptance data in
 `src/lib/lab/fixtures.ts` records the required ordering, clock, Dots,
 multi-value register, and observed-remove set results without depending on an
-engine or renderer. Generalize the trace contract against those fixtures
-before adding Watershed adapters.
+engine or renderer. The shared contract and renderer support those observation
+shapes; ordering engines and Watershed adapters remain separate work.

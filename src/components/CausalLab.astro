@@ -1,5 +1,8 @@
 ---
 import TraceFallback from "./TraceFallback.astro";
+import { createEngine } from "../lib/lab/engine-registry";
+import { presentFrame } from "../lib/lab/present-frame";
+import { scenarioById } from "../lib/lab/scenarios";
 import "../styles/lab.css";
 
 interface Props {
@@ -7,10 +10,13 @@ interface Props {
 }
 
 const { scenario } = Astro.props;
+const definition = scenarioById(scenario);
+const engine = createEngine(definition);
+const frame = presentFrame(engine.current(), engine.history(), definition.presentation);
 ---
 
 <causal-lab scenario={scenario} data-testid="causal-lab">
-  <TraceFallback scenario={scenario} />
+  <TraceFallback frame={frame} />
 </causal-lab>
 
 <script>

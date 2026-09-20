@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import { compareVectors, type TraceFrame } from "./contract";
+import { compareVectors, type DotsObservation, type TraceFrame } from "./contract";
 
-function assertReadonly(frame: TraceFrame): void {
+function assertReadonly(frame: TraceFrame<DotsObservation>): void {
   // @ts-expect-error TraceFrame fields are immutable.
   frame.index = 1;
   // @ts-expect-error ReplicaView fields are immutable.
@@ -10,6 +10,10 @@ function assertReadonly(frame: TraceFrame): void {
   frame.messages[0].id = "message-2";
   // @ts-expect-error Dot fields are immutable.
   frame.replicas[0].dots[0].counter = 2;
+  if (frame.action?.type === "add") {
+    // @ts-expect-error Recorded action fields are immutable.
+    frame.action.value = "changed";
+  }
 }
 
 void assertReadonly;

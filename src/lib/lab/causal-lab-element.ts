@@ -1,6 +1,6 @@
-import { createCausalEngine } from "./causal-engine";
+import { createEngine } from "./engine-registry";
 import type { LabAction, LabError, SimulationEngine, TraceFrame } from "./contract";
-import { presentFrame, type PresentedFrame } from "./present-frame";
+import { presentFrame, type LabPresentation, type PresentedFrame } from "./present-frame";
 import { scenarioById } from "./scenarios";
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] {
@@ -30,6 +30,7 @@ let instanceNumber = 0;
 
 class CausalLabElement extends HTMLElement {
   private engine!: SimulationEngine;
+  private presentation!: LabPresentation;
   private traceIndex = 0;
   private lastError?: LabError;
   private selectedMessage?: string;
@@ -39,7 +40,7 @@ class CausalLabElement extends HTMLElement {
   private readonly idPrefix = `causal-lab-${++instanceNumber}`;
   private readonly controls = section("Lesson controls");
   private readonly replicas = node("div");
-  private readonly comparison = section("Vector comparison");
+  private readonly comparison = section("Comparison");
   private readonly messages = section("Queued messages");
   private readonly trace = section("Trace navigation");
   private readonly inspector = section("State inspector");
@@ -54,7 +55,9 @@ class CausalLabElement extends HTMLElement {
       const scenario = this.getAttribute("scenario");
       try {
         if (!scenario?.trim()) throw new Error("Missing required scenario attribute");
-        this.engine = createCausalEngine(scenarioById(scenario));
+        const definition = scenarioById(scenario);
+        this.engine = createEngine(definition);
+        this.presentation = definition.presentation;
       } catch (error) {
         this.alert.setAttribute("role", "alert");
         this.alert.textContent = `Could not start lab (${scenario ?? "no scenario"}): ${
@@ -77,7 +80,7 @@ class CausalLabElement extends HTMLElement {
       this.alert.setAttribute("role", "alert");
       this.alert.hidden = true;
       this.replaceChildren(
-        node("h2", "Causal lab"), this.controls, this.replicas, this.messages,
+        node("h2", this.presentation.title), this.controls, this.replicas, this.messages,
         this.comparison, this.trace, this.inspector, this.invariants, this.status, this.alert,
       );
     }
@@ -176,7 +179,7 @@ class CausalLabElement extends HTMLElement {
       this.traceIndex = result.index;
       this.render(document.activeElement === document.body ? focused : document.activeElement);
       if (action.type === "reset") {
-        this.status.textContent = `Lab reset. Initial replica state restored. ${presentFrame(result).announcement}`;
+        this.status.textContent = `Lab reset. Initial replica state restored. ${this.present(result).announcement}`;
       }
     };
     this.animateAction(action, previous, commit);
@@ -266,7 +269,7 @@ class CausalLabElement extends HTMLElement {
   private render(focused: Element | null = document.activeElement, openMessage = false): void {
     const history = this.engine.history();
     const frame = history[this.traceIndex];
-    const presented = presentFrame(frame, history);
+    const presented = this.present(frame);
     const focusKey = focused instanceof HTMLElement && this.contains(focused)
       ? focused.dataset.control : undefined;
     const focusSection = focused instanceof HTMLElement ? focused.closest("section") : null;
@@ -278,15 +281,17 @@ class CausalLabElement extends HTMLElement {
     this.renderReplicas(presented);
     this.renderMessages(presented);
     this.renderTrace(presented, history);
-    this.renderInspector(frame, openInspectors);
+    this.renderInspector(frame, presented, openInspectors);
     this.comparison.hidden = presented.comparison === null;
-    this.comparison.replaceChildren(node("h3", "Vector comparison"));
+    this.comparison.setAttribute("aria-label", presented.comparisonHeading);
+    this.comparison.replaceChildren(node("h3", presented.comparisonHeading));
     if (presented.comparison) {
       const evidence = node("p", presented.comparison.evidence);
       evidence.className = "observation-data";
       this.comparison.append(node("p", presented.comparison.label), evidence);
     }
-    this.comparison.append(this.explanation);
+    if (presented.comparison) this.comparison.append(this.explanation);
+    else this.comparison.after(this.explanation);
     this.invariants.hidden = this.lastError !== undefined;
     if (this.lastError) this.showError(this.lastError);
     else {
@@ -318,29 +323,24 @@ class CausalLabElement extends HTMLElement {
     }
   }
 
+  private present(frame: TraceFrame): PresentedFrame {
+    return presentFrame(frame, this.engine.history(), this.presentation);
+  }
+
   private renderControls(frame: PresentedFrame): void {
     this.controls.replaceChildren(
       node("h3", "Lesson controls"),
-      node("p", "Add or remove beacon, then choose which delta arrives. The stations only learn from messages you deliver."),
+      node("p", frame.instructions),
     );
     const operations = node("div");
     operations.className = "lab-buttons";
-    for (const replica of frame.replicas) {
-      for (const type of ["add", "remove"] as const) {
+    for (const control of frame.controls) {
+      if (control.kind === "notice") operations.append(node("p", control.text));
+      else {
         operations.append(this.withReason(this.actionButton(
-          `${type === "add" ? "Add" : "Remove"} beacon at ${replica.id}`,
-          { type, replica: replica.id, value: "beacon" },
-          type === "remove" && !replica.canRemoveBeacon ? "No beacon is visible at this replica." : "",
+          control.label, control.action, control.reason,
         )));
       }
-    }
-    for (const { left, right, partitioned } of frame.links) {
-      operations.append(
-        this.withReason(this.actionButton(`Partition ${left} and ${right}`, { type: "partition", left, right },
-          partitioned ? "This connection is already partitioned." : "")),
-        this.withReason(this.actionButton(`Heal ${left} and ${right}`, { type: "heal", left, right },
-          partitioned ? "" : "This connection is already open.")),
-      );
     }
     this.controls.append(operations);
   }
@@ -350,15 +350,8 @@ class CausalLabElement extends HTMLElement {
       const view = section(`Replica ${replica.id}`);
       view.className = "lab-replica";
       view.dataset.stationShape = replica.stationShape;
-      view.append(details([
-        ["Visible value", replica.valueLabel, "data"],
-        ["Live dots", replica.dotsLabel, "data"],
-        ["Clock", replica.clockLabel, "data"],
-        ["Causal context", replica.contextLabel, "data"],
-      ]));
-      if (!replica.hasObservedEvents) {
-        view.append(node("p", "No events observed"));
-      }
+      view.append(details(replica.details.map(({ label, value }) => [label, value, "data"])));
+      if (replica.emptyLabel) view.append(node("p", replica.emptyLabel));
       return view;
     }));
   }
@@ -398,12 +391,8 @@ class CausalLabElement extends HTMLElement {
         this.render(document.activeElement, true);
       });
       select.setAttribute("aria-pressed", String(this.selectedMessage === message.id));
-      item.append(route, this.route(message.blocked, forward), reason, details([
-        ["Message ID", message.id, "data"],
-        ["Kind", message.kindLabel, "data"],
-        ["Live dots", message.dotsLabel, "data"],
-        ["Causal context", message.contextLabel, "data"],
-      ]));
+      item.append(route, this.route(message.blocked, forward), reason,
+        details(message.details.map(({ label, value }) => [label, value, "data"])));
       const copies = message.id.split(":").slice(3);
       if (copies.length) item.append(node("p", `Copy · ${copies.join(" / ")}`));
       const deliver = this.actionButton(`Deliver ${label}`, { type: "deliver", message: message.id },
@@ -442,9 +431,9 @@ class CausalLabElement extends HTMLElement {
     return svg;
   }
 
-  private renderInspector(frame: TraceFrame, open: Set<string | null>): void {
+  private renderInspector(frame: TraceFrame, presented: PresentedFrame, open: Set<string | null>): void {
     this.inspector.replaceChildren(node("h3", "State inspector"),
-      node("p", `Recorded state at frame ${frame.index}. Engine-private removal records are not exposed by this trace.`));
+      node("p", `Recorded state at frame ${frame.index}. ${presented.inspectorNote}`));
     const records: Array<[string, string, unknown]> = frame.replicas.map((replica) =>
       [`replica-${replica.id}`, `Inspect Replica ${replica.id}`, replica]);
     const message = frame.messages.find((entry) => entry.id === this.selectedMessage);
@@ -458,7 +447,7 @@ class CausalLabElement extends HTMLElement {
       summary.dataset.control = `summary-${id}`;
       summary.addEventListener("click", () => {
         this.pause();
-        if (!this.signal) this.renderTrace(presentFrame(frame), this.engine.history());
+        if (!this.signal) this.renderTrace(this.present(frame), this.engine.history());
       });
       const raw = node("pre", JSON.stringify(record, null, 2));
       disclosure.append(summary, raw);
