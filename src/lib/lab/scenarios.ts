@@ -280,7 +280,7 @@ const scenarioDefinitions: readonly LabScenario[] = [
 export function buildScenarioRegistry(
   definitions: readonly LabScenario[],
 ): Readonly<Record<string, LabScenario>> {
-  const registry: Record<string, LabScenario> = {};
+  const registry = Object.create(null) as Record<string, LabScenario>;
   for (const scenario of definitions) {
     if (Object.hasOwn(registry, scenario.id)) {
       throw new Error(`Duplicate scenario ID: ${scenario.id}`);
