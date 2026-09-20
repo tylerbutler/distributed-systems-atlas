@@ -42,6 +42,16 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 500
     lineHeight: 1.5
+  entry-action:
+    fontFamily: '"Encode Sans Variable", sans-serif'
+    fontSize: "clamp(1.05rem, 1rem + 0.2vw, 1.15rem)"
+    fontWeight: 650
+    lineHeight: 1.68
+  lab-control:
+    fontFamily: '"Encode Sans Variable", sans-serif'
+    fontSize: "clamp(1.05rem, 1rem + 0.2vw, 1.15rem)"
+    fontWeight: 400
+    lineHeight: 1.4
   data:
     fontFamily: '"Azeret Mono Variable", monospace'
     fontSize: "0.875rem"
@@ -64,13 +74,13 @@ components:
   trail-entry:
     backgroundColor: "{colors.signal}"
     textColor: "{colors.instrument-deep}"
-    typography: "{typography.label}"
+    typography: "{typography.entry-action}"
     rounded: "{rounded.square}"
     padding: "0.75rem 1rem"
   lab-button:
     backgroundColor: "transparent"
     textColor: "{colors.graphite}"
-    typography: "{typography.label}"
+    typography: "{typography.lab-control}"
     rounded: "{rounded.square}"
     padding: "0.5rem 0.75rem"
     height: "2.75rem"
@@ -165,7 +175,7 @@ The palette separates reading stock, instrument structure, signal activity, inte
 
 **Body Font:** Roboto Serif Variable with a serif fallback
 
-**Label/Mono Font:** Encode Sans Variable for controls and labels; Azeret Mono Variable for recorded data
+**Label/Mono Font:** Encode Sans Variable for labels and controls, with separate entry-action and lab-control roles; Azeret Mono Variable for recorded data
 
 **Character:** Condensed Encode Sans gives headings and controls an instrument-panel economy. Roboto Serif keeps explanatory reading open and humane. Azeret Mono is reserved for values whose alignment and identity matter.
 
@@ -175,7 +185,9 @@ The palette separates reading stock, instrument structure, signal activity, inte
 - **Headline** (650, fluid 1.8–2.5rem, 1.15): Observation questions and major article sections.
 - **Title** (650, 1.4rem, 1.15): Mechanism steps and compact component headings.
 - **Body** (400, fluid 1.05–1.15rem, 1.68): Essays and explanations, capped at 68ch.
-- **Label** (500, 0.875rem, 1.5): Navigation, statuses, metadata, controls, and observation labels.
+- **Label** (500, 0.875rem, 1.5): Navigation, statuses, metadata, and observation labels.
+- **Entry Action** (650, fluid 1.05–1.15rem, 1.68): Landing entry links; their stronger weight distinguishes the primary route into the trail.
+- **Lab Control** (400, fluid 1.05–1.15rem, 1.4): Lab buttons; compact leading keeps multi-line actions legible without giving them label density.
 - **Data** (400, 0.875rem, 1.5): Vectors, dots, clocks, message IDs, trace indices, raw state, and pseudocode. Numerals are tabular.
 
 ### Named Rules
@@ -231,6 +243,7 @@ Small curved geometry appears only where the territory connector physically turn
 ### Entry Actions
 
 - **Shape:** Square, with no shadow.
+- **Typography:** Entry Action role: fluid 1.05–1.15rem Encode Sans, weight 650, with 1.68 line-height.
 - **Primary:** Sulfur field with deep-instrument text and 0.75rem by 1rem padding.
 - **Hover / Focus:** Hover changes the field to Clear Readout; focus uses the context-sensitive three-pixel outline with a four-pixel offset.
 - **Secondary:** A text link with generous vertical hit area and a thicker underline on hover.
@@ -238,6 +251,7 @@ Small curved geometry appears only where the territory connector physically turn
 ### Lab Buttons
 
 - **Shape:** Square outline, at least 2.75rem high.
+- **Typography:** Lab Control role: fluid 1.05–1.15rem Encode Sans, weight 400, with 1.4 line-height.
 - **Default:** Transparent field, current text color, one-pixel current-color border.
 - **Hover / Active:** Hover inverts to Mineral Instrument and Clear Readout. Active uses Sulfur Signal and Deep Instrument.
 - **Disabled:** Keep the label visible, use a dashed border, and place the literal reason beside or below the control.

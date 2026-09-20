@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-20T11:54:48.743-07:00",
+  "generatedAt": "2026-09-20T12:01:23.263-07:00",
   "title": "Design System: Distributed Systems Atlas",
   "extensions": {
     "colorMeta": {
@@ -84,7 +84,15 @@
       },
       "label": {
         "displayName": "Instrument Label",
-        "purpose": "Navigation, controls, statuses, and metadata."
+        "purpose": "Navigation, statuses, metadata, and observation labels."
+      },
+      "entry-action": {
+        "displayName": "Entry Action",
+        "purpose": "Landing entry links at the reading size with stronger route emphasis."
+      },
+      "lab-control": {
+        "displayName": "Lab Control",
+        "purpose": "Lab buttons at the reading size with compact multi-line leading."
       },
       "data": {
         "displayName": "Recorded Data",
@@ -144,7 +152,7 @@
       "refersTo": "trail-entry",
       "description": "Primary entry into the published learning trail.",
       "html": "<a class=\"ds-trail-entry\" href=\"#\">Begin with dots and causal context</a>",
-      "css": ".ds-trail-entry { display: inline-block; padding: 0.75rem 1rem; color: var(--instrument-deep); background: var(--signal); font-family: var(--font-ui); font-weight: 650; text-align: center; text-decoration-thickness: 1px; } .ds-trail-entry:hover { background: var(--clear); text-decoration-thickness: 2px; } .ds-trail-entry:focus-visible { outline: 3px solid var(--signal); outline-offset: 4px; }"
+      "css": ".ds-trail-entry { display: inline-block; padding: 0.75rem 1rem; color: var(--instrument-deep); background: var(--signal); font-family: var(--font-ui); font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem); font-weight: 650; line-height: 1.68; text-align: center; text-decoration-thickness: 1px; } .ds-trail-entry:hover { background: var(--clear); text-decoration-thickness: 2px; } .ds-trail-entry:focus-visible { outline: 3px solid var(--signal); outline-offset: 4px; }"
     },
     {
       "name": "Lab Button",
@@ -152,14 +160,14 @@
       "refersTo": "lab-button",
       "description": "Square, literal control for deterministic lab actions.",
       "html": "<button class=\"ds-lab-button\" type=\"button\">Add beacon at A</button>",
-      "css": ".ds-lab-button { min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1px solid currentColor; border-radius: 0; color: var(--graphite); background: transparent; font-family: var(--font-ui); line-height: 1.4; cursor: pointer; } .ds-lab-button:hover:not(:disabled) { color: var(--clear); background: var(--instrument); } .ds-lab-button:active:not(:disabled) { color: var(--instrument-deep); background: var(--signal); } .ds-lab-button:focus-visible { outline: 3px solid var(--instrument); outline-offset: 4px; } .ds-lab-button:disabled { border-style: dashed; cursor: not-allowed; }"
+      "css": ".ds-lab-button { min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1px solid currentColor; border-radius: 0; color: var(--graphite); background: transparent; font-family: var(--font-ui); font-size: clamp(1.05rem, 1rem + 0.2vw, 1.15rem); font-weight: 400; line-height: 1.4; cursor: pointer; } .ds-lab-button:hover:not(:disabled) { color: var(--clear); background: var(--instrument); } .ds-lab-button:active:not(:disabled) { color: var(--instrument-deep); background: var(--signal); } .ds-lab-button:focus-visible { outline: 3px solid var(--instrument); outline-offset: 4px; } .ds-lab-button:disabled { border-style: dashed; cursor: not-allowed; }"
     },
     {
       "name": "Observation Rail",
       "kind": "nav",
       "description": "Persistent page location and trail position with a signal endpoint.",
       "html": "<nav class=\"ds-observation-rail\" aria-label=\"Sheet position\"><ol><li>Atlas</li><li>Mechanisms</li><li aria-current=\"page\">Dots and causal context</li><li>Trail <span>5</span> of <span>7</span></li></ol><span class=\"ds-observation-trace\" aria-hidden=\"true\"></span></nav>",
-      "css": ".ds-observation-rail { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-4) var(--space-6); color: var(--clear); background: var(--instrument); border-top: 1px solid color-mix(in oklch, var(--clear) 25%, var(--instrument)); font-family: var(--font-ui); font-size: 0.875rem; } .ds-observation-rail ol { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin: 0; padding: 0; list-style: none; } .ds-observation-rail li + li { border-inline-start: 1px solid color-mix(in oklch, var(--clear) 75%, var(--instrument)); padding-inline-start: var(--space-4); } .ds-observation-rail [aria-current=\"page\"] { font-weight: 650; } .ds-observation-trace { position: relative; flex: 1 0 4rem; height: 1px; background: color-mix(in oklch, var(--clear) 75%, var(--instrument)); } .ds-observation-trace::after { content: \"\"; position: absolute; right: 0; top: 50%; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--signal); transform: translateY(-50%); } .ds-observation-rail:focus-within { outline: 3px solid var(--signal); outline-offset: -3px; }"
+      "css": ".ds-observation-rail { display: flex; align-items: center; gap: var(--space-5); padding: var(--space-4) var(--space-6); color: var(--clear); background: var(--instrument); border-top: 1px solid color-mix(in oklch, var(--clear) 25%, var(--instrument)); font-family: var(--font-ui); font-size: 0.875rem; } .ds-observation-rail ol { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin: 0; padding: 0; list-style: none; } .ds-observation-rail li + li { border-inline-start: 1px solid color-mix(in oklch, var(--clear) 75%, var(--instrument)); padding-inline-start: var(--space-4); } .ds-observation-rail [aria-current=\"page\"] { font-weight: 650; } .ds-observation-trace { position: relative; flex: 1 0 4rem; height: 1px; background: color-mix(in oklch, var(--clear) 75%, var(--instrument)); } .ds-observation-trace::after { content: \"\"; position: absolute; right: 0; top: 50%; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--signal); transform: translateY(-50%); } .ds-observation-rail:focus-within { outline: 3px solid var(--signal); outline-offset: -3px; } @media (width < 48rem) { .ds-observation-rail { flex-direction: column; align-items: stretch; } .ds-observation-trace { flex: none; margin-block: var(--space-1); } }"
     },
     {
       "name": "Station Record",
