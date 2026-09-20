@@ -25,3 +25,7 @@ test-results/
 
 # jetbrains setting folder
 .idea/
+
+
+# APM dependencies
+apm_modules/
