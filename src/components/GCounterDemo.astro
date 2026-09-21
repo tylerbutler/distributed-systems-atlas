@@ -60,18 +60,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <section class="sequencer-station" data-sequencer-node aria-label="Sequencer">
         <p class="sequencer-label">Sequencer</p>
         <strong>Total order</strong>
-        <dl>
-          <div>
-            <dt>Queue</dt>
-            <dd class="observation-data" data-pending>0</dd>
-          </div>
-          <div>
-            <dt>Latest</dt>
-            <dd class="observation-data" data-sequence>0</dd>
-          </div>
-        </dl>
         <div class="sequence-track" data-sequence-track aria-hidden="true">
-          <span>Waiting for operations</span>
+          <span>No sequence numbers yet</span>
         </div>
       </section>
 
@@ -272,10 +262,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-network {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.72fr) minmax(0, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
       "a sequencer b"
-      "c sequencer log";
+      ". c ."
+      "log log log";
     border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
@@ -295,13 +286,17 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .replica-c {
     grid-area: c;
-    border-bottom: 0;
+    border-inline: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
   .gcounter-replica header {
     display: flex;
-    gap: var(--space-3);
+    gap: var(--space-2);
     align-items: center;
+  }
+
+  .gcounter-replica h3 {
+    font-size: 1.15rem;
   }
 
   .gcounter-replica header p,
@@ -309,6 +304,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
     color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
     font-family: var(--font-ui);
     font-size: 0.825rem;
+  }
+
+  .gcounter-replica header p {
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
 
   .gcounter-total {
@@ -342,6 +342,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     min-width: 0;
     padding: var(--space-5) var(--space-4);
     border-inline: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
     flex-direction: column;
     justify-content: center;
     text-align: center;
@@ -365,34 +366,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
     letter-spacing: 0.08em;
   }
 
-  .sequencer-station dl {
-    display: grid;
-    gap: var(--space-2);
-    margin: var(--space-5) 0;
-    font-family: var(--font-ui);
-  }
-
-  .sequencer-station dl div {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--space-2);
-    padding-block: var(--space-2);
-    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
-  }
-
-  .sequencer-station :is(dt, dd) {
-    margin: 0;
-  }
-
-  .sequencer-station dd {
-    margin-top: var(--space-1);
-    color: var(--signal);
-  }
-
   .sequence-track {
     display: flex;
-    min-height: 7rem;
+    min-height: 5rem;
+    margin-top: var(--space-5);
     padding-left: var(--space-4);
     border-left: var(--rule-signal) solid var(--signal);
     flex-direction: column;
@@ -418,6 +395,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     grid-area: log;
     min-width: 0;
     padding: var(--space-5);
+    border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
   .operation-log h3 {
@@ -665,6 +643,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
     .sequencer-station {
       border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
       border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    }
+
+    .replica-c {
+      border-inline: 0;
     }
 
     .sequence-track {

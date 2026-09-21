@@ -66,10 +66,9 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
   await demo.getByRole("button", { name: "Add 3 at replica C" }).click();
   await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
   await expect(totals).toHaveText(["1", "0", "3"]);
-  await expect(demo.locator("[data-pending]")).toHaveText("2");
   await demo.getByRole("button", { name: "Play 2 queued operations" }).click();
   await expect(totals).toHaveText(["4", "4", "4"]);
-  await expect(demo.locator("[data-sequence]")).toHaveText("2");
+  await expect(demo.locator("[data-sequence-track]")).toContainText("SN 2 · A");
   await expect(demo.locator('[role="status"]')).toHaveText(
     "The sequencer delivered 2 operations. All three clients read 4.",
   );
@@ -125,8 +124,16 @@ test("G-counter controls meet the keyboard and responsive layout contract", asyn
     const replicas = demo.getByRole("region", { name: /^Replica [AB]$/ });
     const a = (await replicas.nth(0).boundingBox())!;
     const b = (await replicas.nth(1).boundingBox())!;
-    if (width < 768) expect(b.y).toBeGreaterThanOrEqual(a.y + a.height);
-    else expect(b.y).toBe(a.y);
+    const c = (await demo.getByRole("region", { name: "Replica C" }).boundingBox())!;
+    if (width < 768) {
+      expect(b.y).toBeGreaterThanOrEqual(a.y + a.height);
+      expect(c.y).toBeGreaterThanOrEqual(b.y + b.height);
+    } else {
+      expect(b.y).toBe(a.y);
+      expect(c.y).toBeGreaterThanOrEqual(a.y + a.height);
+      expect(c.x).toBeGreaterThan(a.x);
+      expect(c.x).toBeLessThan(b.x);
+    }
   }
   expect(await demo.evaluate((element) => [element, ...element.querySelectorAll("*")].every((node) => {
     const style = getComputedStyle(node);

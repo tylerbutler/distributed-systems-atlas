@@ -266,8 +266,6 @@ class GCounterDemoElement extends HTMLElement {
           String(component.count);
       }
     }
-    this.querySelector("[data-pending]")!.textContent = String(view.queuedOperations);
-    this.querySelector("[data-sequence]")!.textContent = String(view.sequenceNumber);
     const operations = new Map<number, { author: string; destinations: string[] }>();
     for (const delivery of view.deliveries) {
       const operation = operations.get(delivery.sequenceNumber) ?? {
@@ -292,7 +290,7 @@ class GCounterDemoElement extends HTMLElement {
         chip.className = "sequence-chip";
         return chip;
       })
-      : [node("span", view.pending ? "Operations awaiting order" : "Waiting for operations")]));
+      : [node("span", view.pending ? "Operations awaiting order" : "No sequence numbers yet")]));
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
       button.disabled = false;
