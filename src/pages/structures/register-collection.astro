@@ -1,0 +1,97 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { registerCollectionTerm } from "../../lib/atlas/standalone-terms";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout
+  title="RegisterCollection"
+  description="The ranger retains sequenced trail-status versions and chooses an atomic or latest read."
+  territory="Structures"
+  sheetTitle="RegisterCollection"
+>
+  <article class="register-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>RegisterCollection</h1>
+      <p class="structure-summary">
+        The ranger now keeps named status cells at the station. Alice and Bob
+        submit before either sees the other. The station records both versions
+        and lets each read choose a policy.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="DDS"
+      model="Sequenced register collection"
+      updates="Non-optimistic writes to named cells"
+      merge="Retain sequenced versions; read as atomic or latest."
+      delivery="One server-ordered operation stream"
+      bestFor="Named cells that need more than one server-ordered read policy"
+      cost="Retained competing values and sequence numbers"
+    />
+
+    <section aria-labelledby="versions-title">
+      <h2 id="versions-title">The station keeps both sequenced versions</h2>
+      <p>
+        A <dfn><a href="/glossary/#registercollection">RegisterCollection</a></dfn>
+        {" "}stores named registers. Writes stay hidden until the sequencer
+        accepts them. The collection retains competing versions so an atomic
+        read and a latest read can return different answers.
+      </p>
+      <TermCallout {...registerCollectionTerm} />
+      <figure>
+        <table aria-label="RegisterCollection read policies">
+          <thead>
+            <tr><th scope="col">Sequence</th><th scope="col">Report</th><th scope="col">Read effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">SN 1 · Alice</th><td>Trail open</td><td>Atomic winner</td></tr>
+            <tr><th scope="row">SN 2 · Bob</th><td>Trail closed</td><td>Latest version</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Both policies read the same retained history but answer different questions.</figcaption>
+      </figure>
+    </section>
+
+    <RegisterStructureDemo
+      kind="register-collection"
+      title="Read the first winner or the latest version"
+      description="Alice and Bob submit from the same reference point. The ranger sequences both, retains both, and exposes two read policies."
+      rule="Atomic keeps the first uncontested write; latest keeps the greatest sequence number."
+      raceLabel="Race the two station submissions"
+    />
+
+    <section aria-labelledby="choice-title">
+      <h2 id="choice-title">The reader must name the policy</h2>
+      <p>
+        An atomic read returns Alice's first uncontested write. A latest read
+        returns Bob's later sequence number. Neither answer is a merge of the
+        reports, and neither exposes causal siblings like an MvRegister.
+      </p>
+      <p>
+        This is a sequenced distributed data structure, not a CRDT. If the
+        sequencer is unavailable, new writes cannot receive the ordering
+        evidence that both read policies require.
+      </p>
+    </section>
+
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        The demo runs Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/register_collection_kernel.gleam">RegisterCollection kernel</a>
+        {" "}with the authored two-write sequence from its reference demo.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through register structures">
+      <a href="/structures/multi-value-register/">Back to MvRegister</a>
+      <a href="/structures/registers/">Browse register family</a>
+      <a href="/structures/">Continue to maps</a>
+    </nav>
+  </article>
+</BaseLayout>

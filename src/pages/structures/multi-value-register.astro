@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout
+  title="MvRegister"
+  description="Alice and Bob keep concurrent trail-status reports until Carol can inspect and resolve them."
+  territory="Structures"
+  sheetTitle="MvRegister"
+>
+  <article class="register-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>MvRegister</h1>
+      <p class="structure-summary">
+        The ranger cannot discard Alice's open report or Bob's closed report.
+        Carol must see both before she walks to Eagle Creek and resolves the
+        disagreement.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based multi-value register"
+      updates="Causally tagged string writes"
+      merge="Keep writes that are concurrent; replace only observed history."
+      delivery="Safe under repeated and out-of-order delivery"
+      bestFor="One field where valid concurrent answers need explicit resolution"
+      cost="Surviving values, write identities, and causal context"
+    />
+
+    <section aria-labelledby="siblings-title">
+      <h2 id="siblings-title">The register exposes the disagreement</h2>
+      <p>
+        A <dfn><a href="/glossary/#multi-value-register">multi-value register</a></dfn>
+        {" "}keeps concurrent writes as alternatives, often called siblings.
+        Alice had not seen Bob's report, and Bob had not seen Alice's, so
+        neither write replaces the other.
+      </p>
+      <TermCallout
+        term="multi-value register"
+        definition="A replicated register that retains concurrent writes until a write that observes them supersedes them."
+      />
+      <figure>
+        <table aria-label="Concurrent MvRegister reports">
+          <thead>
+            <tr><th scope="col">Replica</th><th scope="col">Visible alternatives after merge</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Alice</th><td>Trail closed · Trail open</td></tr>
+            <tr><th scope="row">Bob</th><td>Trail closed · Trail open</td></tr>
+            <tr><th scope="row">Carol</th><td>Trail closed · Trail open</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Convergence can preserve a conflict instead of hiding it.</figcaption>
+      </figure>
+    </section>
+
+    <RegisterStructureDemo
+      kind="mv-register"
+      title="Keep both trail reports"
+      description="Alice and Bob write without observing each other. Exchange both deltas and inspect the alternatives that every notebook retains."
+      rule="Keep concurrent writes as siblings."
+      raceLabel="Race Alice's and Bob's reports"
+    />
+
+    <section aria-labelledby="resolve-title">
+      <h2 id="resolve-title">Carol resolves what she observed</h2>
+      <p>
+        Carol inspects the bridge, reads both alternatives, and writes a new
+        status. That write replaces the siblings in her causal history. It
+        cannot erase an unseen report from an offline hiker.
+      </p>
+      <p>
+        The deeper Atlas lab exposes the write tags, causal context, delayed
+        messages, and observed resolution step.
+      </p>
+      <p class="lesson-entry">
+        <a href="/atlas/multi-value-registers/">Open the causal MvRegister lab</a>
+      </p>
+    </section>
+
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        The demo runs Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/mv_register_kernel.gleam">MV-register kernel</a>
+        {" "}through the Atlas toolkit.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through register structures">
+      <a href="/structures/lww-register/">Back to LWWRegister</a>
+      <a href="/structures/registers/">Browse register family</a>
+      <a href="/structures/register-collection/">Continue to RegisterCollection</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .lesson-entry {
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+</style>

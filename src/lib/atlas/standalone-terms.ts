@@ -35,11 +35,23 @@ export const twoPSetTerm: GlossaryTerm = {
   definition: "A replicated set with grow-only addition and removal sets, where a removed value cannot be added again.",
 };
 
+export const lwwRegisterTerm: GlossaryTerm = {
+  term: "last-writer-wins register",
+  definition: "A replicated register that keeps the value with the greatest timestamp and uses the writer ID to break equal-time ties.",
+};
+
+export const registerCollectionTerm: GlossaryTerm = {
+  term: "RegisterCollection",
+  definition: "A sequenced collection of named registers that retains competing versions so readers can choose an atomic or latest-value policy.",
+};
+
 export const standaloneTerms = [
   eventualConsistencyTerm,
   gSetTerm,
+  lwwRegisterTerm,
   pnCounterTerm,
   replicaTerm,
+  registerCollectionTerm,
   sequencerTerm,
   sharedCounterTerm,
   twoPSetTerm,

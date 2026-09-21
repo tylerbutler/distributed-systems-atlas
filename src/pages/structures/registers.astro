@@ -1,0 +1,295 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Registers"
+  description="Compare last-writer-wins, multi-value, and policy-selected replicated registers."
+  territory="Structures"
+  sheetTitle="Registers"
+>
+  <article class="register-family">
+    <header class="page-intro">
+      <p class="territory-label">Structure family</p>
+      <h1>Registers</h1>
+      <p>
+        The beacon list is settled, but the ranger still needs one answer:
+        is the Eagle Creek trail open? Alice, Bob, and Carol discover that one
+        shared field still needs a rule for concurrent reports.
+      </p>
+    </header>
+
+    <section aria-labelledby="lww-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="lww-title">LWWRegister</h2>
+          <p>One deterministic winner selected by timestamp and author.</p>
+        </div>
+        <code>lww_register_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice reports <code>Trail open</code> while Bob reports
+            <code>Trail closed</code>. A last-writer-wins register keeps one
+            value. The greater timestamp wins; equal timestamps use the writer
+            ID as a stable tie-breaker.
+          </p>
+          <p>
+            Carol receives the reports in either order and still chooses the
+            same value. The cost is hidden disagreement: the losing report is
+            discarded.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Small settings where one deterministic answer is required</li>
+            <li>Values whose clock policy is trusted</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Timestamped string writes</dd></div>
+          <div><dt>Merge rule</dt><dd>Greatest timestamp, then writer ID</dd></div>
+          <div><dt>Metadata</dt><dd>Value, timestamp, and author</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/lww-register/">
+        Open the LWWRegister lesson
+      </a>
+    </section>
+
+    <section aria-labelledby="mv-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="mv-title">MvRegister</h2>
+          <p>Keep concurrent answers until someone observes and resolves them.</p>
+        </div>
+        <code>mv_register_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            The ranger cannot safely discard either trail report. The
+            multi-value register keeps Alice's and Bob's concurrent answers as
+            siblings. Carol sees the disagreement instead of a silent winner.
+          </p>
+          <p>
+            After Carol inspects the bridge, her next write can replace the
+            alternatives she observed. An unseen report would still survive.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Reviews where a person must resolve concurrent answers</li>
+            <li>Values where losing a valid report would be harmful</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Causally tagged writes</dd></div>
+          <div><dt>Merge rule</dt><dd>Keep concurrent siblings</dd></div>
+          <div><dt>Metadata</dt><dd>Alternatives plus causal context</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/multi-value-register/">
+        Open the MvRegister lesson
+      </a>
+    </section>
+
+    <section aria-labelledby="collection-title">
+      <header>
+        <div>
+          <p class="structure-kind">DDS</p>
+          <h2 id="collection-title">RegisterCollection</h2>
+          <p>Retain sequenced versions and choose a read policy later.</p>
+        </div>
+        <code>register_collection_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice and Bob submit reports before either sees the other. The
+            ranger's sequencer stores both versions. An atomic read keeps the
+            first uncontested write; a latest read returns the greatest
+            sequence number.
+          </p>
+          <p>
+            The collection does not merge by timestamp or preserve causal
+            siblings. It retains sequenced versions so the caller can choose
+            between two server-ordered read policies.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Named cells that need atomic or latest reads</li>
+            <li>Sequenced collaboration where retained versions matter</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Non-optimistic sequenced writes</dd></div>
+          <div><dt>Read rules</dt><dd>Atomic or latest sequence number</dd></div>
+          <div><dt>Metadata</dt><dd>Retained values and sequence numbers</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/register-collection/">
+        Open the RegisterCollection lesson
+      </a>
+    </section>
+
+    <section class="family-comparison" aria-labelledby="register-choice-title">
+      <h2 id="register-choice-title">Choose what disagreement means</h2>
+      <table aria-label="Replicated register comparison">
+        <thead>
+          <tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Trade-off</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">One clock-selected winner</th><td>LWWRegister</td><td>Discard the losing write</td></tr>
+          <tr><th scope="row">Preserve concurrent answers</th><td>MvRegister</td><td>Require later resolution</td></tr>
+          <tr><th scope="row">Choose a server-ordered read</th><td>RegisterCollection</td><td>Require a sequencer</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/sets/">Back to sets</a>
+      <a href="/structures/lww-register/">Start the register lessons</a>
+      <a href="/structures/">Return to structures</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .register-family {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .page-intro {
+    margin-bottom: var(--space-7);
+  }
+
+  .page-intro > p:last-child {
+    font-size: 1.2rem;
+  }
+
+  .register-family > section:not(.family-comparison) {
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border: var(--rule-width) solid var(--line);
+    background: var(--clear);
+  }
+
+  section > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  section h2,
+  section header p {
+    margin: 0;
+  }
+
+  section h2 {
+    margin-block: var(--space-1);
+  }
+
+  .structure-kind {
+    color: var(--instrument);
+    font: 700 0.75rem/1 var(--font-data);
+  }
+
+  section header code {
+    color: var(--muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .structure-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 0.7fr);
+    gap: var(--space-6);
+    padding-block: var(--space-5);
+  }
+
+  .structure-body :is(p, h3) {
+    margin-top: 0;
+  }
+
+  .structure-body h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+  }
+
+  dl {
+    margin: 0;
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  dl div {
+    padding-block: var(--space-3);
+  }
+
+  dl div + div {
+    border-top: var(--rule-width) solid var(--line-faint);
+  }
+
+  dt {
+    color: var(--muted);
+    font: 700 0.8rem/1.3 var(--font-ui);
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+  }
+
+  .structure-link {
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .family-comparison {
+    margin-top: var(--space-7);
+  }
+
+  table {
+    width: 100%;
+    margin-block: var(--space-4);
+    border-collapse: collapse;
+  }
+
+  :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-ui);
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  @media (width < 48rem) {
+    section > header,
+    .structure-body {
+      grid-template-columns: 1fr;
+    }
+
+    section > header {
+      display: grid;
+    }
+  }
+</style>

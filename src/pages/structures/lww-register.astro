@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { lwwRegisterTerm } from "../../lib/atlas/standalone-terms";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout
+  title="LWWRegister"
+  description="Alice and Bob race trail-status reports, and timestamp metadata selects one winner."
+  territory="Structures"
+  sheetTitle="LWWRegister"
+>
+  <article class="register-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>LWWRegister</h1>
+      <p class="structure-summary">
+        The ranger needs one trail status before the morning bulletin. Alice
+        reports open while Bob reports closed. Carol may receive either report
+        first, but every notebook must choose the same answer.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based last-writer-wins register"
+      updates="Timestamped string writes"
+      merge="Keep the greatest timestamp; break ties by writer ID."
+      delivery="Safe under repeated and out-of-order delivery"
+      bestFor="One deterministic value when losing a concurrent write is acceptable"
+      cost="One value, timestamp, and writer ID"
+    />
+
+    <section aria-labelledby="clock-title">
+      <h2 id="clock-title">The clock becomes part of the answer</h2>
+      <p>
+        A <dfn><a href="/glossary/#last-writer-wins-register">last-writer-wins register</a></dfn>
+        {" "}does not use message arrival order. It compares the timestamp
+        carried by each write. If two writes have the same time, the greater
+        writer ID breaks the tie.
+      </p>
+      <TermCallout {...lwwRegisterTerm} />
+      <figure>
+        <table aria-label="Equal-time LWWRegister race">
+          <thead>
+            <tr><th scope="col">Writer</th><th scope="col">Value</th><th scope="col">Timestamp</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Alice · A</th><td>Trail open</td><td>T10</td></tr>
+            <tr><th scope="row">Bob · B</th><td>Trail closed</td><td>T10</td></tr>
+            <tr><th scope="row">Winner</th><td>Trail closed</td><td>B breaks the tie</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Carol gets the same winner even if Alice's report arrives last.</figcaption>
+      </figure>
+      <pre aria-label="LWWRegister merge rule"><code>max(timestamp, writer ID)</code></pre>
+    </section>
+
+    <RegisterStructureDemo
+      kind="lww-register"
+      title="Choose one field report"
+      description="Race equal-time reports from Alice and Bob. Delivery order changes nothing because the timestamp and writer ID travel with the value."
+      rule="Greatest timestamp wins; writer ID breaks a tie."
+      raceLabel="Race the equal-time reports"
+    />
+
+    <section aria-labelledby="limit-title">
+      <h2 id="limit-title">The losing report disappears</h2>
+      <p>
+        The rule gives the ranger one answer, but it cannot show whether Alice
+        and Bob disagreed. If both reports are valid evidence, choosing a winner
+        is too destructive. The next register keeps both concurrent values.
+      </p>
+    </section>
+
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        The demo follows Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/lww_register_kernel.gleam">LWWRegister kernel</a>
+        {" "}and its timestamp-plus-author comparison rule.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through register structures">
+      <a href="/structures/registers/">Back to register family</a>
+      <a href="/structures/multi-value-register/">Continue to MvRegister</a>
+    </nav>
+  </article>
+</BaseLayout>
