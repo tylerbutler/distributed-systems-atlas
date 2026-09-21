@@ -368,6 +368,15 @@ Alice's removal, and SharedDirectory resolves concurrent folder creation to
 one stable path. The focused demos keep three maps visible and leave direct
 controls active while operations travel through the relay.
 
+The Sequences, Coordination, and Transforms families use one compact
+three-client instrument. It keeps Alice, Bob, and Carol visible, states the
+Watershed rule above the controls, and replaces the shared view after the
+authored race. Sequence lessons show stable ordered identity. Coordination
+lessons show one accepted owner or value. Transform lessons show both
+concurrent document operations in the resulting view. The shared shell avoids
+eight nearly identical instruments while each page retains its own story,
+rule, operations, and result.
+
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
 lesson with one authored race. Direct structure controls can supplement that

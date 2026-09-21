@@ -79,14 +79,30 @@ preserves an unseen concurrent tally update, and SharedDirectory gives nested
 folders stable identities. Each structure has a dedicated three-client demo
 that runs through Watershed's public channel API.
 
+The Sequences overview follows the ordered inspection route into SharedSequence
+and SharedText. Stable item and grapheme identities explain why concurrent
+inserts can both survive even when local indexes change.
+
+The Coordination overview covers Claims, OrderedCollection, TaskManager, and
+PactMap. These structures do not merge several valid answers. They use the
+sequencer, queue order, or connected roster to choose one owner, worker,
+assignee, or accepted value.
+
+The Transforms overview covers JsonOt and SharedRichText. Their lessons show
+how concurrent document operations transform before application so edits to
+different paths, text, and formatting can survive together.
+
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
 MvRegister, RegisterCollection, SharedMap, LWWMap, OR-map, and SharedDirectory
-demos and reference engines for ordering, clocks, and Dots. Focused structure
-demos use at least three clients. The counter, set, register, and map lessons
-run pinned Watershed semantics through Atlas's Gleam toolkit and its stable
-`@atlas/toolkit` entry point, never private Watershed build paths.
+demos, plus compact rule models for SharedSequence, SharedText, Claims,
+OrderedCollection, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
+engines cover ordering, clocks, and Dots. Focused structure demos use at least
+three clients. Counter, set, register, and map lessons run pinned Watershed
+semantics through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
+point. Later-family demos model the authored races documented by Watershed's
+public examples without importing private build paths.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
 separate hikes and leave cumulative counts at known trail checkpoints.

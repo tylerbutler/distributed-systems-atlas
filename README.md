@@ -25,8 +25,9 @@ does not imply that a replica has a global view. The release includes the seven
 sheets, landing page, structures index, counter-family and set-family pages,
 dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet,
 observed-remove set, LWWRegister, MvRegister, RegisterCollection, SharedMap,
-LWWMap, OR-map, and SharedDirectory lessons, plus the family overview pages,
-atlas index, glossary, and bibliography.
+LWWMap, OR-map, SharedDirectory, SharedSequence, SharedText, Claims,
+OrderedCollection, TaskManager, PactMap, JsonOt, and SharedRichText lessons,
+plus the seven family overview pages, atlas index, glossary, and bibliography.
 
 ## Local development
 
@@ -49,8 +50,13 @@ Open the local URL printed by Astro. The publication includes `/`,
 `/structures/lww-register/`, `/structures/multi-value-register/`,
 `/structures/register-collection/`, `/structures/maps/`,
 `/structures/shared-map/`, `/structures/lww-map/`, `/structures/or-map/`,
-`/structures/shared-directory/`, `/atlas/`, `/glossary/`, `/bibliography/`, and
-these sheet routes:
+`/structures/shared-directory/`, `/structures/sequences/`,
+`/structures/shared-sequence/`, `/structures/shared-text/`,
+`/structures/coordination/`, `/structures/claims/`,
+`/structures/ordered-collection/`, `/structures/task-manager/`,
+`/structures/pact-map/`, `/structures/transforms/`, `/structures/json-ot/`,
+`/structures/shared-rich-text/`, `/atlas/`, `/glossary/`, `/bibliography/`,
+and these sheet routes:
 
 - `/atlas/local-history/`
 - `/atlas/partial-order/`
