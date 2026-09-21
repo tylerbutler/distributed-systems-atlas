@@ -1,0 +1,559 @@
+---
+import StationMark from "./StationMark.astro";
+import {
+  createSharedCounterDemo,
+  presentSharedCounterDemo,
+  sharedCounterUserName,
+} from "../lib/structure-demo/shared-counter";
+
+const initial = presentSharedCounterDemo(createSharedCounterDemo());
+---
+
+<shared-counter-demo data-testid="shared-counter-demo">
+  <section class="shared-instrument" aria-labelledby="shared-counter-demo-title">
+    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+    <header class="shared-heading">
+      <div>
+        <h2 id="shared-counter-demo-title">Send signed changes through the ranger</h2>
+        <p>
+          Every note reaches the ranger before it reaches another hiker. The
+          ranger stamps one sequence number, then broadcasts numbered copies.
+        </p>
+      </div>
+      <p class="sequence-rule">
+        Application rule
+        <strong>Apply each sequence number once, in sequencer order.</strong>
+      </p>
+    </header>
+
+    <div class="operation-key" aria-label="SharedCounter operation states">
+      <p>
+        <span class="operation-key-mark outbound" aria-hidden="true"></span>
+        <span><strong>Unnumbered note</strong> Traveling to the ranger</span>
+      </p>
+      <p>
+        <span class="operation-key-mark sequenced" aria-hidden="true"></span>
+        <span><strong>Stamped copy</strong> Reaching every hiker</span>
+      </p>
+    </div>
+
+    <div class="shared-network">
+      {initial.replicas.map((replica) => (
+        <section
+          class={`shared-replica replica-${replica.id.toLowerCase()}`}
+          data-client={replica.id}
+          aria-label={`${sharedCounterUserName(replica.id)}'s SharedCounter replica`}
+        >
+          <header>
+            <StationMark station={replica.id} size="lg" />
+            <div>
+              <h3>{sharedCounterUserName(replica.id)}</h3>
+              <p data-replica-state={replica.id}>Applied through baseline</p>
+            </div>
+          </header>
+          <output
+            class="shared-total observation-data"
+            data-shared-total={replica.id}
+          >
+            {replica.value}
+          </output>
+          <p>Birds in this hiker's view</p>
+          <div
+            class="replica-actions"
+            aria-label={`Send signed changes for ${sharedCounterUserName(replica.id)}`}
+          >
+            {[1, 3, -1, -3].map((amount) => (
+              <button
+                type="button"
+                data-replica={replica.id}
+                data-update={amount}
+                aria-label={`Send ${amount > 0 ? "+" : ""}${amount} for ${sharedCounterUserName(replica.id)}`}
+                disabled
+              >
+                {amount > 0 ? "+" : ""}{amount}
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <div class="sequencer-channel">
+        <section
+          class="sequencer-station"
+          data-sequencer-node
+          aria-label="Ranger sequencer"
+        >
+          <span class="sequencer-label">Ranger sequencer</span>
+          <output
+            class="sequencer-counter"
+            data-sequence-counter
+            aria-label="Latest sequence number"
+          >
+            SN 0
+          </output>
+          <span class="sequencer-action">stamp · broadcast</span>
+        </section>
+        <ol
+          class="operation-log"
+          data-operation-log
+          aria-label="Sequenced operation log"
+          aria-live="polite"
+        >
+          <li>No signed change sequenced yet.</li>
+        </ol>
+      </div>
+    </div>
+
+    <section class="shared-controls" aria-label="SharedCounter lesson controls">
+      <button type="button" data-action="race" disabled>
+        Race Alice +3 and Bob -1
+      </button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+      <p data-enhancement-note>
+        Enable JavaScript to run the demo. The numbered example and final
+        result remain available in the article.
+      </p>
+    </section>
+
+    <p class="shared-result" role="status" aria-live="polite" aria-atomic="true">
+      {initial.result}
+    </p>
+    <p class="shared-error" role="alert" hidden></p>
+
+    <details class="shared-explanation">
+      <summary>Open the sequence-number rule</summary>
+      <div>
+        <p>
+          A network can repeat a stamped copy. A replica remembers the
+          sequence numbers it has applied, so the repeated copy does not
+          change the total again.
+        </p>
+        <pre aria-label="SharedCounter sequence-number rule"><code>new SN → apply signed delta
+seen SN → ignore duplicate</code></pre>
+        <p>
+          This demo keeps the log in memory. Durable storage and reconnect
+          recovery are separate runtime responsibilities.
+        </p>
+      </div>
+    </details>
+  </section>
+</shared-counter-demo>
+
+<script>
+  import "../lib/structure-demo/shared-counter-element";
+</script>
+
+<style>
+  shared-counter-demo {
+    display: block;
+    width: min(calc(100vw - 2rem), var(--content));
+    max-width: none;
+    margin-block: var(--space-7);
+    margin-inline: 50%;
+    font-variant-numeric: tabular-nums;
+    transform: translateX(-50%);
+  }
+
+  .shared-instrument {
+    position: relative;
+    padding: clamp(1rem, 3vw, 2rem);
+    border: var(--rule-width) solid var(--instrument-deep);
+    color: var(--clear);
+    background: var(--instrument);
+    --focus-color: var(--signal);
+    --link-color: var(--clear);
+  }
+
+  .operation-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  :global(.shared-operation-pulse) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  :global(.shared-operation-pulse.outbound) {
+    background: var(--signal);
+  }
+
+  :global(.shared-operation-pulse.sequenced) {
+    color: var(--instrument-deep);
+    background: var(--clear);
+  }
+
+  :global(.shared-operation-label) {
+    position: absolute;
+    bottom: calc(100% + var(--space-1));
+    left: 50%;
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  :global(.shared-operation-pulse.sequenced .shared-operation-label) {
+    background: var(--clear);
+  }
+
+  .shared-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.6fr);
+    gap: var(--space-6);
+    align-items: end;
+    padding-bottom: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .shared-heading :is(h2, p),
+  .shared-replica :is(h3, p) {
+    margin: 0;
+  }
+
+  .shared-heading p {
+    margin-top: var(--space-3);
+  }
+
+  .sequence-rule {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 45%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+  }
+
+  .sequence-rule strong {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--signal);
+    font-size: 1.05rem;
+  }
+
+  .operation-key {
+    display: flex;
+    gap: var(--space-5);
+    padding-block: var(--space-3);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .operation-key p {
+    display: flex;
+    margin: 0;
+    align-items: center;
+    gap: var(--space-2);
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+  }
+
+  .operation-key strong {
+    color: var(--clear);
+  }
+
+  .operation-key-mark {
+    width: 12px;
+    height: 12px;
+    border: var(--rule-width) solid currentColor;
+    border-radius: 50%;
+    flex: 0 0 auto;
+  }
+
+  .operation-key-mark.outbound {
+    color: var(--signal);
+    background: var(--signal);
+  }
+
+  .operation-key-mark.sequenced {
+    color: var(--clear);
+    background: var(--clear);
+  }
+
+  .shared-network {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.5fr) minmax(0, 1fr);
+    grid-template-areas:
+      "a sequencer b"
+      "c c c";
+    gap: clamp(var(--space-6), 5vw, var(--space-8));
+    align-items: start;
+    padding-block: var(--space-6);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .shared-replica {
+    min-width: 0;
+    padding: var(--space-5);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    background: color-mix(in oklch, var(--clear) 3%, var(--instrument));
+  }
+
+  .replica-a { grid-area: a; }
+  .replica-b { grid-area: b; }
+  .replica-c {
+    grid-area: c;
+    justify-self: center;
+    width: min(100%, 24rem);
+  }
+
+  .shared-replica header {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .shared-replica h3 {
+    font-size: 1.15rem;
+  }
+
+  .shared-replica header p,
+  .shared-total + p {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.825rem;
+  }
+
+  .shared-replica header p {
+    font-size: 0.75rem;
+  }
+
+  .shared-total {
+    display: block;
+    width: fit-content;
+    margin-top: var(--space-4);
+    color: var(--signal);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 650;
+    line-height: 0.95;
+  }
+
+  .shared-total + p {
+    margin-top: var(--space-2);
+  }
+
+  .replica-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .sequencer-channel {
+    grid-area: sequencer;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding-top: clamp(var(--space-4), 4vw, var(--space-6));
+  }
+
+  .sequencer-station {
+    display: flex;
+    width: min(100%, 12rem);
+    padding: var(--space-4);
+    border: var(--rule-width) solid var(--clear);
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    text-align: center;
+  }
+
+  .sequencer-label {
+    color: var(--signal);
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 650;
+  }
+
+  .sequencer-counter {
+    color: var(--clear);
+    font-family: var(--font-data);
+    font-size: 1.7rem;
+    font-weight: 700;
+  }
+
+  .sequencer-action {
+    color: color-mix(in oklch, var(--clear) 70%, var(--instrument));
+    font-family: var(--font-data);
+    font-size: 0.68rem;
+  }
+
+  .operation-log {
+    display: flex;
+    width: min(100%, 13rem);
+    max-height: 9rem;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
+    mask-image: linear-gradient(black 65%, transparent 100%);
+  }
+
+  .operation-log :global(li) {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-data);
+    font-size: 0.72rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .shared-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-3);
+    align-items: stretch;
+    padding-block: var(--space-5);
+  }
+
+  :is(.replica-actions, .shared-controls) button {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.75rem;
+    border: var(--rule-width) solid currentColor;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    font-family: var(--font-ui);
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .shared-controls [data-action="race"] {
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-weight: 650;
+  }
+
+  :is(.replica-actions, .shared-controls) button:hover:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  :is(.replica-actions, .shared-controls) button:active:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--clear);
+  }
+
+  :is(.replica-actions, .shared-controls) button:disabled {
+    border-style: dashed;
+    color: color-mix(in oklch, var(--clear) 58%, var(--instrument));
+    cursor: not-allowed;
+  }
+
+  [data-enhancement-note] {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .shared-result,
+  .shared-error {
+    max-width: none;
+    margin: 0;
+    padding: var(--space-4);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .shared-error {
+    margin-top: var(--space-3);
+    color: var(--clear);
+    background: var(--interference);
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  .shared-explanation {
+    margin-top: var(--space-5);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .shared-explanation summary {
+    min-height: 44px;
+    padding-block: var(--space-4);
+    font-family: var(--font-ui);
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .shared-explanation summary:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .shared-explanation > div {
+    padding-bottom: var(--space-5);
+  }
+
+  .shared-explanation pre {
+    width: 100%;
+    margin-block: var(--space-4);
+    padding: var(--space-4);
+    overflow-x: auto;
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  @media (width < 48rem) {
+    .shared-heading,
+    .shared-controls,
+    .shared-network {
+      grid-template-columns: 1fr;
+    }
+
+    .shared-network {
+      grid-template-areas:
+        "a"
+        "sequencer"
+        "b"
+        "c";
+      gap: var(--space-5);
+    }
+
+    .operation-key {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .replica-c {
+      justify-self: stretch;
+      width: auto;
+    }
+
+    .sequencer-channel {
+      padding-block: var(--space-3);
+    }
+  }
+
+  @media (width < 24rem) {
+    .replica-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.shared-operation-pulse) {
+      display: none;
+    }
+  }
+</style>

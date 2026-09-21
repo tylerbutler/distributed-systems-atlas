@@ -4,7 +4,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
 <BaseLayout
   title="Counters"
-  description="Compare replicated counters that only grow with counters that also record corrections."
+  description="Compare grow-only, positive-negative, and sequenced distributed counters."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -79,6 +79,37 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         </dl>
       </div>
       <a class="structure-link" href="/structures/pn-counter/">Read the PN-counter lesson</a>
+    </section>
+
+    <section aria-labelledby="shared-counter-title">
+      <header>
+        <div>
+          <p class="structure-kind">DDS</p>
+          <h2 id="shared-counter-title">SharedCounter</h2>
+          <p>A signed counter whose operations pass through one sequencer.</p>
+        </div>
+        <code>counter_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Each replica sends signed deltas to a sequencer. The sequencer
+            assigns one sequence number and broadcasts the numbered operation.
+            Replicas apply each sequence number once.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Shared totals under an ordered collaborative runtime</li>
+            <li>Small summaries where a sequencer already coordinates updates</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Signed integer deltas</dd></div>
+          <div><dt>Application rule</dt><dd>Apply each sequence number once</dd></div>
+          <div><dt>Metadata</dt><dd>One integer plus pending operations</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/shared-counter/">Read the SharedCounter lesson</a>
     </section>
 
     <nav class="structure-next" aria-label="Continue through structures">

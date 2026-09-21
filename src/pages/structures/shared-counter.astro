@@ -1,0 +1,225 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import CounterIllustration from "../../components/CounterIllustration.astro";
+import SharedCounterDemo from "../../components/SharedCounterDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import {
+  sequencerTerm,
+  sharedCounterTerm,
+} from "../../lib/atlas/standalone-terms";
+---
+
+<BaseLayout
+  title="SharedCounter"
+  description="A ranger sequencer numbers signed bird-count changes and broadcasts each operation to Alice, Bob, and Carol."
+  territory="Structures"
+  sheetTitle="SharedCounter"
+>
+  <article class="structure-page">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>SharedCounter</h1>
+      <p class="structure-summary">
+        Alice, Bob, and Carol still need to combine new sightings with
+        corrections. This time, they send each change to a ranger who keeps one
+        numbered station log.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="DDS"
+      model="Sequenced operation-based distributed data structure"
+      updates="Signed integer deltas"
+      merge="Apply each sequencer-assigned operation once, in sequence order."
+      delivery="Repeated network delivery is safe when replicas reject a sequence number they have applied."
+      bestFor="Shared totals under an ordered collaborative runtime"
+      cost="One confirmed integer plus local pending operations"
+    />
+    <CounterIllustration kind="shared-counter" />
+
+    <section aria-labelledby="ranger-log-title">
+      <h2 id="ranger-log-title">The ranger opens a numbered log</h2>
+      <p>
+        The hikers stop exchanging cumulative notebook pages. Each hiker now
+        sends a signed change to the ranger station. The ranger writes the
+        change on the next numbered line and sends a copy to all three hikers.
+      </p>
+      <p>
+        That ranger is a{" "}
+        <dfn><a href="/glossary/#sequencer">sequencer</a></dfn>: a service that
+        gives accepted operations one shared order.
+      </p>
+      <TermCallout {...sequencerTerm} />
+      <p>The sequencer has three jobs in this story:</p>
+      <ol>
+        <li><strong>Assign a number.</strong> Stamp each accepted operation with the next sequence number.</li>
+        <li><strong>Broadcast the operation.</strong> Send the same numbered stream to every replica.</li>
+        <li><strong>Support recovery.</strong> A runtime can store operations or summaries for replicas that reconnect later.</li>
+      </ol>
+      <p>
+        The demo shows the first two jobs. Its log is in memory, so durable
+        storage and reconnect recovery stay outside this lesson.
+      </p>
+    </section>
+
+    <section aria-labelledby="delivery-title">
+      <h2 id="delivery-title">One number means one application</h2>
+      <p>
+        A sequence number does not force the network to deliver one copy. A
+        numbered copy can still arrive twice. The number gives each replica a
+        stable operation identity: apply a new number, and ignore a number that
+        has already been applied.
+      </p>
+      <p>
+        The numbers also show relative order. If <code>SN 2</code> appears
+        before <code>SN 1</code>, the replica can detect a gap instead of
+        silently losing an operation.
+      </p>
+      <pre aria-label="Sequenced operation application rule"><code>new SN → apply signed delta
+seen SN → ignore duplicate
+missing SN → wait or recover the gap</code></pre>
+    </section>
+
+    <section aria-labelledby="shared-race-title">
+      <h2 id="shared-race-title">Two notes reach one log</h2>
+      <p>
+        The group starts from the agreed count of 10. Alice counts 3 new birds.
+        Bob finds one duplicate sighting. They send <code>+3</code> and
+        <code>-1</code> before either sees the other's change.
+      </p>
+      <table aria-label="Bird count as SharedCounter operations are sequenced">
+        <thead>
+          <tr>
+            <th scope="col">Moment</th>
+            <th scope="col">Alice</th>
+            <th scope="col">Bob</th>
+            <th scope="col">Carol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
+          <tr><th scope="row">Notes traveling</th><td>13</td><td>9</td><td>10</td></tr>
+          <tr><th scope="row">SN 1 and SN 2 applied</th><td>12</td><td>12</td><td>12</td></tr>
+        </tbody>
+      </table>
+      <p>
+        A{" "}
+        <dfn><a href="/glossary/#sharedcounter">SharedCounter</a></dfn> stores
+        one integer and sends signed operations through this sequenced path.
+        The local update is optimistic. The numbered broadcast confirms it.
+      </p>
+      <TermCallout {...sharedCounterTerm} />
+    </section>
+
+    <SharedCounterDemo />
+
+    <section aria-labelledby="comparison-title">
+      <h2 id="comparison-title">The number moved; the safety mechanism changed</h2>
+      <p>
+        All three counters reach 12, but they do not exchange the same
+        information. The G-counter sends cumulative positive components. The
+        PN-counter sends cumulative positive and negative components. The
+        SharedCounter sends signed operations with sequence numbers.
+      </p>
+      <p>
+        Signed addition gives the same final sum in either order. The sequencer
+        still matters because a raw <code>+3</code> must be distinguished from
+        a second delivery of the same <code>+3</code>. Other sequenced data
+        structures also use the shared order when operation order changes the
+        result.
+      </p>
+      <p>
+        This design depends on the sequencer. If that service is unavailable,
+        replicas can keep optimistic local work, but they cannot confirm a new
+        shared order until sequencing resumes.
+      </p>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Sources and implementation</h2>
+      <p>
+        This lesson calls Watershed's public{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed.gleam#L1626-L1674">SharedCounter API</a>
+        {" "}and runs three connected documents through Sluice.
+      </p>
+      <p>
+        The signed operation, optimistic state, acknowledgement, rollback, and
+        integer summary are defined by Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/counter_kernel.gleam">counter kernel</a>.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/pn-counter/">Back to PN-counter</a>
+      <a href="/structures/counters/">Browse counter family</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .structure-page {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-page > section {
+    margin-top: var(--space-7);
+  }
+
+  .structure-summary {
+    font-size: 1.2rem;
+  }
+
+  .structure-page > section > p dfn {
+    color: var(--signal);
+    font-style: italic;
+    font-weight: 650;
+  }
+
+  .structure-page > section > p dfn a {
+    color: inherit;
+  }
+
+  pre {
+    padding: var(--space-4);
+    overflow-x: auto;
+    border-block: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+  }
+
+  table {
+    width: 100%;
+    margin-block: var(--space-5);
+    border-collapse: collapse;
+  }
+
+  :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-ui);
+  }
+
+  td {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+</style>

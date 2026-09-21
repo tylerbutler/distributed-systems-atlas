@@ -140,6 +140,12 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#pn-counter")).toContainText(
     "stores increases and decreases in separate grow-only components",
   );
+  await expect(page.locator("#sequencer")).toContainText(
+    "assigns ordered sequence numbers",
+  );
+  await expect(page.locator("#sharedcounter")).toContainText(
+    "applies signed delta operations",
+  );
 
   await page.goto("/bibliography/");
   await expect(page).toHaveTitle("Bibliography | Distributed Systems Atlas");

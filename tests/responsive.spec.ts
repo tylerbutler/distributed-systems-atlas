@@ -8,7 +8,7 @@ for (const viewport of [
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/structures/", "/structures/g-counter/", "/structures/pn-counter/", "/atlas/", "/glossary/", "/bibliography/",
+    for (const path of ["/", "/structures/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
       expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
