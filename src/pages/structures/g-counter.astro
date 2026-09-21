@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import CounterIllustration from "../../components/CounterIllustration.astro";
 import GCounterDemo from "../../components/GCounterDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
@@ -37,6 +38,7 @@ import {
       bestFor="Distributed tallies that never decrease"
       cost="One integer for each replica"
     />
+    <CounterIllustration kind="g-counter" />
 
     <section aria-labelledby="one-counter-title">
       <h2 id="one-counter-title">Alice starts counting birds</h2>

@@ -91,6 +91,9 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     await expect(facts).toContainText("CRDT");
     await expect(facts).toContainText("Increment and decrement");
     await expect(facts).toContainText("Two integers for each replica");
+    await expect(page.getByRole("figure", {
+      name: "Concurrent sightings and corrections merge into one PN-counter",
+    })).toBeVisible();
     await expect(page.getByTestId("g-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", {
       name: "Bob finds a duplicate sighting",

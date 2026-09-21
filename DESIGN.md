@@ -325,6 +325,9 @@ not add playback speed, guided observations, or a replay control.
 Each structure page places a ruled quick-facts label after its introduction.
 The label identifies the structure family, replication model, supported
 updates, merge rule, delivery behavior, best fit, and metadata cost.
+An original line-art field illustration follows the label. It uses generous
+space, a centered notebook or field object, and a small narrative detail to
+explain the merge before the interactive instrument.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary

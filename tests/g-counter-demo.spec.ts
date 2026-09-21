@@ -163,6 +163,9 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     await expect(facts).toContainText("CRDT");
     await expect(facts).toContainText("Increment only");
     await expect(facts).toContainText("One integer for each replica");
+    await expect(page.getByRole("figure", {
+      name: "Three trail notebooks merge into one G-counter",
+    })).toBeVisible();
     await expect(page.getByTestId("pn-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
       .toBeVisible();

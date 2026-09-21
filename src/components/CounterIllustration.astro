@@ -1,0 +1,251 @@
+---
+interface Props {
+  kind: "g-counter" | "pn-counter";
+}
+
+const { kind } = Astro.props;
+const isGrowOnly = kind === "g-counter";
+const title = isGrowOnly
+  ? "Three trail notebooks merge into one G-counter"
+  : "Concurrent sightings and corrections merge into one PN-counter";
+---
+
+<figure class="counter-illustration" aria-labelledby={`${kind}-illustration-title`}>
+  <svg viewBox="0 0 680 430" role="img">
+    <title id={`${kind}-illustration-title`}>{title}</title>
+
+    {isGrowOnly ? (
+      <>
+        <g class="flight-path">
+          <path d="M88 105C152 70 188 92 230 135" />
+          <path d="M592 105C528 70 492 92 450 135" />
+          <path d="M94 324C150 355 195 334 229 302" />
+        </g>
+
+        <g class="station-mark" transform="translate(68 76)">
+          <circle cx="28" cy="28" r="25" />
+          <text x="28" y="35">A</text>
+        </g>
+        <g class="station-mark" transform="translate(556 76)">
+          <path d="M28 2 54 28 28 54 2 28Z" />
+          <text x="28" y="35">B</text>
+        </g>
+        <g class="station-mark" transform="translate(62 296)">
+          <path d="M10 4H46L56 28 46 52H10L0 28Z" />
+          <text x="28" y="35">C</text>
+        </g>
+
+        <g class="notebook" transform="rotate(-1 340 215)">
+          <path d="M218 75H482V352H218Z" />
+          <path class="paper-edge" d="M226 84H490V361H226" />
+          <path d="M248 75V352M218 132H482M218 288H482" />
+          <circle cx="232" cy="112" r="5" />
+          <circle cx="232" cy="170" r="5" />
+          <circle cx="232" cy="228" r="5" />
+          <circle cx="232" cy="318" r="5" />
+          <text class="notebook-title" x="365" y="111">TRAIL NOTEBOOK</text>
+
+          <text class="row-label" x="275" y="171">ALICE</text>
+          <text class="row-rule" x="365" y="171">KEEP MAX</text>
+          <text class="row-value" x="447" y="171">7</text>
+
+          <text class="row-label" x="275" y="221">BOB</text>
+          <text class="row-rule" x="365" y="221">KEEP MAX</text>
+          <text class="row-value" x="447" y="221">3</text>
+
+          <text class="row-label" x="275" y="271">CAROL</text>
+          <text class="row-rule" x="365" y="271">KEEP MAX</text>
+          <text class="row-value" x="447" y="271">0</text>
+
+          <text class="total-label" x="275" y="326">BIRDS SEEN</text>
+          <text class="total" x="447" y="332">10</text>
+        </g>
+
+        <g class="birds">
+          <path d="M516 284q10-12 20 0 10-12 20 0" />
+          <path d="M535 316q8-9 16 0 8-9 16 0" />
+          <path d="M116 184q8-9 16 0 8-9 16 0" />
+        </g>
+      </>
+    ) : (
+      <>
+        <g class="notebook" transform="rotate(1 340 218)">
+          <path d="M188 78H492V350H188Z" />
+          <path class="paper-edge" d="M180 87H484V359H180" />
+          <path d="M222 78V350M188 137H492M188 285H492" />
+          <circle cx="206" cy="110" r="5" />
+          <circle cx="206" cy="170" r="5" />
+          <circle cx="206" cy="230" r="5" />
+          <circle cx="206" cy="317" r="5" />
+          <text class="notebook-title" x="357" y="116">CORRECTED FIELD LOG</text>
+
+          <text class="row-label pn-label" x="242" y="184">SIGHTINGS</text>
+          <text class="equation-note" x="360" y="184">10 + 3</text>
+          <text class="row-value positive" x="457" y="184">13</text>
+
+          <text class="row-label pn-label" x="242" y="243">CORRECTIONS</text>
+          <text class="row-value" x="457" y="243">1</text>
+
+          <text class="total-label" x="252" y="325">BIRDS SEEN</text>
+          <text class="total" x="457" y="331">12</text>
+        </g>
+
+        <g class="new-sightings">
+          <text x="552" y="80">+3</text>
+          <path d="M500 112q11-13 22 0 11-13 22 0" />
+          <path d="M548 138q9-11 18 0 9-11 18 0" />
+          <path d="M584 102q7-9 14 0 7-9 14 0" />
+          <path class="flight-path" d="M524 160C495 180 482 199 474 220" />
+        </g>
+
+        <g class="correction" transform="translate(78 172)">
+          <text x="52" y="-28">-1</text>
+          <path class="bird-body" d="M27 48c8-20 32-24 46-8 9 11 5 31-11 37-16 7-35-7-35-29Z" />
+          <circle cx="63" cy="39" r="2.5" />
+          <path d="m72 46 15 5-15 5M37 69l-8 16m26-12-2 17" />
+          <path class="correction-slash" d="M14 18 88 94M88 18 14 94" />
+          <path class="flight-path" d="M94 65c38 4 54 18 72 42" />
+        </g>
+      </>
+    )}
+  </svg>
+  <figcaption>
+    {isGrowOnly
+      ? "Each hiker owns one row. Merge keeps the largest value in every row, then adds the rows."
+      : "Alice's new sightings and Bob's correction remain separate. Every replica subtracts the correction total from the sightings total."}
+  </figcaption>
+</figure>
+
+<style>
+  .counter-illustration {
+    display: grid;
+    justify-items: center;
+    margin-block: var(--space-7);
+    padding-block: var(--space-5);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  svg {
+    display: block;
+    width: min(100%, 42rem);
+    height: auto;
+    color: var(--ink);
+  }
+
+  :is(.flight-path, .notebook, .station-mark, .birds, .new-sightings, .correction) path,
+  :is(.notebook, .station-mark, .correction) circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .flight-path,
+  path.flight-path {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 7;
+  }
+
+  .station-mark :is(circle, path) {
+    stroke-width: 2;
+  }
+
+  .notebook > path {
+    fill: var(--clear);
+    stroke-width: 2;
+  }
+
+  .notebook .paper-edge {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 1;
+  }
+
+  text {
+    fill: currentColor;
+    font-family: var(--font-ui);
+    font-size: 18px;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+
+  .notebook-title {
+    font-family: var(--font-data);
+    font-size: 15px;
+    letter-spacing: 0.08em;
+  }
+
+  .row-label,
+  .total-label {
+    font-size: 15px;
+    text-anchor: start;
+  }
+
+  .row-rule,
+  .equation-note {
+    fill: var(--muted);
+    font-family: var(--font-data);
+    font-size: 13px;
+  }
+
+  .pn-label {
+    font-size: 13px;
+  }
+
+  .equation-note {
+    font-size: 11px;
+  }
+
+  .row-value {
+    font-family: var(--font-data);
+    font-size: 29px;
+  }
+
+  .positive,
+  .total,
+  .new-sightings text {
+    fill: var(--instrument);
+  }
+
+  .total {
+    font-family: var(--font-data);
+    font-size: 42px;
+  }
+
+  .birds path,
+  .new-sightings path {
+    stroke-width: 2;
+  }
+
+  .new-sightings text,
+  .correction > text {
+    font-family: var(--font-data);
+    font-size: 28px;
+  }
+
+  .correction .bird-body {
+    fill: var(--clear);
+    stroke-width: 2;
+  }
+
+  .correction .correction-slash {
+    stroke: var(--interference);
+    stroke-width: 3;
+  }
+
+  .correction-slash {
+    stroke: var(--interference) !important;
+    stroke-width: 3;
+  }
+
+  figcaption {
+    max-width: 54ch;
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+</style>

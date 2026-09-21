@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import CounterIllustration from "../../components/CounterIllustration.astro";
 import PNCounterDemo from "../../components/PNCounterDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
@@ -33,6 +34,7 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
       bestFor="Offline or unreliable counters that need corrections"
       cost="Two integers for each replica"
     />
+    <CounterIllustration kind="pn-counter" />
 
     <section aria-labelledby="correction-title">
       <h2 id="correction-title">Bob finds a duplicate sighting</h2>
