@@ -330,6 +330,14 @@ export function deliverGCounterRace(current: unknown): Result<GCounterTransportR
   });
 }
 
+export function deliverOneGCounterOperation(current: unknown): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const room = current as GCounterRoom;
+    const [handle, deliveries] = sluiceCore.gcounter_room_deliver_one(roomHandle(room));
+    return { room, view: roomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
 export function resendGCounterComponent(
   current: unknown,
   replicaId: unknown = "B",

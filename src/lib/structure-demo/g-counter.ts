@@ -1,6 +1,7 @@
 import {
   createGCounterRoom,
   deliverGCounterRace,
+  deliverOneGCounterOperation,
   incrementGCounterRoom,
   resendGCounterComponent,
   stageGCounterRace,
@@ -157,6 +158,35 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
         deliveredCounts: { ...state.authoredCounts },
         queuedOperations: 0,
         result: `The sequencer delivered ${operations} ${operations === 1 ? "operation" : "operations"}. All three clients read ${total}.`,
+      },
+    };
+  } catch (error) {
+    return failure(state, "Sequencer delivery", error);
+  }
+}
+
+export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResult {
+  if (!state.view.pending) {
+    return failure(state, "Sequencer delivery", "add an increment first");
+  }
+  try {
+    const delivered = value(deliverOneGCounterOperation(state.room));
+    const queuedOperations = Math.max(0, state.queuedOperations - 1);
+    const complete = queuedOperations === 0;
+    const total = delivered.view.replicas[0]?.value ?? 0;
+    return {
+      ok: true,
+      state: {
+        ...state,
+        phase: complete ? "delivered" : "queued",
+        ...delivered,
+        deliveries: [...state.deliveries, ...delivered.deliveries].slice(-MAX_RECORDED_DELIVERIES),
+        latestDeliveries: delivered.deliveries,
+        deliveredCounts: complete ? { ...state.authoredCounts } : state.deliveredCounts,
+        queuedOperations,
+        result: complete
+          ? `The sequencer delivered the final operation. All three clients read ${total}.`
+          : `The sequencer delivered 1 operation. ${queuedOperations} remain queued.`,
       },
     };
   } catch (error) {

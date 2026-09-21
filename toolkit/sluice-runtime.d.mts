@@ -14,6 +14,9 @@ export function gcounter_room_increment(
 export function gcounter_room_deliver(
   room: GCounterRoom$,
 ): [GCounterRoom$, Iterable<TransportDelivery$>];
+export function gcounter_room_deliver_one(
+  room: GCounterRoom$,
+): [GCounterRoom$, Iterable<TransportDelivery$>];
 export function gcounter_room_resend(
   room: GCounterRoom$,
   replica: string,

@@ -1,6 +1,6 @@
 import {
   createGCounterDemo,
-  deliverRace,
+  deliverNextOperation,
   incrementReplica,
   presentGCounterDemo,
   resendComponent,
@@ -139,7 +139,7 @@ class GCounterDemoElement extends HTMLElement {
         if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
           await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
         }
-        const delivered = deliverRace(this.state);
+        const delivered = deliverNextOperation(this.state);
         if (!delivered.ok) {
           this.apply(delivered, focus);
           return;

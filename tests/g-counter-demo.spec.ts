@@ -25,7 +25,7 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   await expect(totals.first()).toHaveClass(/guided-circle/);
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered 2 operations. All three clients read 10.",
+    "The sequencer delivered the final operation. All three clients read 10.",
   );
   const log = demo.getByRole("list", { name: "Operation log" });
   await expect(log.getByRole("listitem")).toHaveCount(2);
@@ -80,7 +80,7 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
   await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
     .toHaveCount(6);
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered 6 operations. All three clients read 22.",
+    "The sequencer delivered the final operation. All three clients read 22.",
   );
 });
 
@@ -98,9 +98,9 @@ test("auto-deliver keeps replica controls active while operations queue", async 
   await demo.getByRole("button", { name: "Add 1 at replica C" }).click();
   await demo.getByRole("button", { name: "Add 7 at replica C" }).click();
 
-  await expect(totals).toHaveText(["22", "22", "22"]);
+  await expect(totals).toHaveText(["22", "22", "22"], { timeout: 15_000 });
   await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
-    .toHaveCount(6);
+    .toHaveCount(6, { timeout: 15_000 });
 });
 
 test("Counters remains useful without JavaScript", async ({ browser }) => {

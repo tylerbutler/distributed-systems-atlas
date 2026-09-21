@@ -1,5 +1,6 @@
-import atlas_toolkit as toolkit
 import atlas_sluice as sluice
+import atlas_toolkit as toolkit
+import gleam/list
 import gleeunit
 import gleeunit/should
 
@@ -51,15 +52,19 @@ pub fn gcounter_concurrent_increment_and_duplicate_merge_test() {
   let a = toolkit.gcounter_merge(a, b_delta)
   let b = toolkit.gcounter_merge(b, a_delta)
   toolkit.gcounter_snapshot(a)
-  |> should.equal(toolkit.GCounterSnapshot(10, [
-    toolkit.CounterEntry("A", 7),
-    toolkit.CounterEntry("B", 3),
-  ]))
+  |> should.equal(
+    toolkit.GCounterSnapshot(10, [
+      toolkit.CounterEntry("A", 7),
+      toolkit.CounterEntry("B", 3),
+    ]),
+  )
   toolkit.gcounter_snapshot(b)
-  |> should.equal(toolkit.GCounterSnapshot(10, [
-    toolkit.CounterEntry("A", 7),
-    toolkit.CounterEntry("B", 3),
-  ]))
+  |> should.equal(
+    toolkit.GCounterSnapshot(10, [
+      toolkit.CounterEntry("A", 7),
+      toolkit.CounterEntry("B", 3),
+    ]),
+  )
   toolkit.gcounter_merge(a, b_delta) |> should.equal(a)
 }
 
@@ -108,6 +113,24 @@ pub fn gcounter_sluice_room_accepts_direct_client_increment_test() {
   delivered.a |> should.equal(3)
   delivered.b |> should.equal(3)
   delivered.c |> should.equal(3)
+}
+
+pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {
+  let assert Ok(room) = sluice.new_gcounter_room()
+  let assert Ok(room) = sluice.gcounter_room_stage_race(room)
+
+  let #(room, first) = sluice.gcounter_room_deliver_one(room)
+  let assert Ok(partial) = sluice.gcounter_room_snapshot(room)
+  partial.pending |> should.be_true
+  first |> list.length |> should.equal(3)
+
+  let #(room, second) = sluice.gcounter_room_deliver_one(room)
+  let assert Ok(delivered) = sluice.gcounter_room_snapshot(room)
+  delivered.a |> should.equal(10)
+  delivered.b |> should.equal(10)
+  delivered.c |> should.equal(10)
+  delivered.pending |> should.be_false
+  second |> list.length |> should.equal(3)
 }
 
 pub fn equal_siblings_and_unobserved_write_test() {

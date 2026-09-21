@@ -112,10 +112,25 @@ pub fn gcounter_room_deliver(
   room: GCounterRoom,
 ) -> #(GCounterRoom, List(TransportDelivery)) {
   let GCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
-  #(
-    room,
-    drain_deliveries(sluice, a_client, b_client, c_client, []),
-  )
+  #(room, drain_deliveries(sluice, a_client, b_client, c_client, []))
+}
+
+pub fn gcounter_room_deliver_one(
+  room: GCounterRoom,
+) -> #(GCounterRoom, List(TransportDelivery)) {
+  let GCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
+  case sluice_js.step_info(sluice) {
+    Error(_) -> #(room, [])
+    Ok(delivery) -> {
+      let sequence_number = delivery.sequence_number
+      #(
+        room,
+        drain_sequence(sluice, a_client, b_client, c_client, sequence_number, [
+          map_delivery(delivery, a_client, b_client, c_client),
+        ]),
+      )
+    }
+  }
 }
 
 pub fn gcounter_room_resend(
@@ -124,6 +139,26 @@ pub fn gcounter_room_resend(
 ) -> Result(#(GCounterRoom, List(TransportDelivery)), String) {
   use room <- result.try(gcounter_room_increment(room, replica, 0))
   Ok(gcounter_room_deliver(room))
+}
+
+fn drain_sequence(
+  sluice: sluice_js.Sluice,
+  a_client: String,
+  b_client: String,
+  c_client: String,
+  sequence_number: Int,
+  deliveries: List(TransportDelivery),
+) -> List(TransportDelivery) {
+  case sluice_js.peek_info(sluice) {
+    Ok(next) if next.sequence_number == sequence_number -> {
+      let assert Ok(delivery) = sluice_js.step_info(sluice)
+      drain_sequence(sluice, a_client, b_client, c_client, sequence_number, [
+        map_delivery(delivery, a_client, b_client, c_client),
+        ..deliveries
+      ])
+    }
+    _ -> list.reverse(deliveries)
+  }
 }
 
 fn drain_deliveries(
@@ -136,18 +171,27 @@ fn drain_deliveries(
   case sluice_js.step_info(sluice) {
     Error(_) -> list.reverse(deliveries)
     Ok(delivery) -> {
-      let mapped = TransportDelivery(
-        client_name(delivery.to, a_client, b_client, c_client),
-        delivery.event,
-        delivery.sequence_number,
-        client_name(delivery.author, a_client, b_client, c_client),
-      )
+      let mapped = map_delivery(delivery, a_client, b_client, c_client)
       drain_deliveries(sluice, a_client, b_client, c_client, [
         mapped,
         ..deliveries
       ])
     }
   }
+}
+
+fn map_delivery(
+  delivery: sluice_js.Delivery,
+  a_client: String,
+  b_client: String,
+  c_client: String,
+) -> TransportDelivery {
+  TransportDelivery(
+    client_name(delivery.to, a_client, b_client, c_client),
+    delivery.event,
+    delivery.sequence_number,
+    client_name(delivery.author, a_client, b_client, c_client),
+  )
 }
 
 fn client_name(
@@ -185,7 +229,8 @@ fn counter_value(
   replica: String,
 ) -> Result(Int, String) {
   case watershed.g_counter_value(counter) {
-    Error(_) -> Error("the G-counter handle at replica " <> replica <> " is invalid")
+    Error(_) ->
+      Error("the G-counter handle at replica " <> replica <> " is invalid")
     Ok(value) -> Ok(value)
   }
 }
