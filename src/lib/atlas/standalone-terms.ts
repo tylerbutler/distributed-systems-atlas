@@ -30,6 +30,11 @@ export const sharedCounterTerm: GlossaryTerm = {
   definition: "A sequenced distributed counter that applies signed delta operations to one shared integer.",
 };
 
+export const sluiceTerm: GlossaryTerm = {
+  term: "Sluice",
+  definition: "Watershed's in-memory server for one collaborative document. It connects clients, sequences their operations, and lets tests or demos control when messages are delivered.",
+};
+
 export const gSetTerm: GlossaryTerm = {
   term: "GSet",
   definition: "A grow-only replicated set whose replicas merge by taking the union of their members.",
@@ -131,6 +136,7 @@ export const standaloneTerms = [
   sharedRichTextTerm,
   sharedSequenceTerm,
   sharedTextTerm,
+  sluiceTerm,
   taskManagerTerm,
   twoPSetTerm,
 ];

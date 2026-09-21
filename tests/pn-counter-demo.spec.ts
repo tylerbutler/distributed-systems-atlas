@@ -161,6 +161,12 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     }).getByLabel("PN-counter bird total rule")).toContainText(
       "P = sightings G-counter N = corrections G-counter birds = P - N",
     );
+    const sluiceDefinition = page.getByLabel("Sluice definition");
+    await expect(sluiceDefinition).toContainText(
+      "connects clients, sequences their operations",
+    );
+    await expect(sluiceDefinition.getByRole("link", { name: "Sluice" }))
+      .toHaveAttribute("href", "/glossary/#sluice");
     const demo = page.getByTestId("pn-counter-demo");
     await expect(demo.locator("[data-pn-total]")).toHaveText(["10", "10", "10"]);
     await expect(demo.getByRole("button", {

@@ -4,7 +4,10 @@ import CounterIllustration from "../../components/CounterIllustration.astro";
 import PNCounterDemo from "../../components/PNCounterDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
-import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
+import {
+  pnCounterTerm,
+  sluiceTerm,
+} from "../../lib/atlas/standalone-terms";
 ---
 
 <BaseLayout
@@ -180,8 +183,11 @@ birds = P - N</code></pre>
       <p>
         This lesson calls Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/pn_counter_kernel.gleam">PN-counter kernel</a>
-        {" "}and sends the three hikers' notes through Sluice.
+        {" "}and sends the three hikers' notes through{" "}
+        <dfn><a href="/glossary/#sluice">Sluice</a></dfn>, Watershed's in-memory
+        server for a collaborative document.
       </p>
+      <TermCallout {...sluiceTerm} />
       <p>
         The merge rule follows the state-based positive-negative counter
         described in{" "}

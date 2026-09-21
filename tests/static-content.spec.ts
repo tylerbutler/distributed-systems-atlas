@@ -149,6 +149,9 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#sharedcounter")).toContainText(
     "applies signed delta operations",
   );
+  await expect(page.locator("#sluice")).toContainText(
+    "Watershed's in-memory server for one collaborative document",
+  );
 
   await page.goto("/bibliography/");
   await expect(page).toHaveTitle("Bibliography | Distributed Systems Atlas");
