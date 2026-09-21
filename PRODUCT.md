@@ -39,8 +39,9 @@ under Mechanisms, Structures, Failure modes, and Systems.
 
 ## Capabilities and Constraints
 
-The publication contains the landing page, atlas index, generated glossary
-and bibliography, and all seven sheets in the first concurrency trail.
+The publication contains the landing page, a structures index, the focused
+Counters lesson, atlas index, generated glossary and bibliography, and all
+seven sheets in the first concurrency trail.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
 
@@ -53,11 +54,18 @@ next-step links support both structure-first learning and direct reference.
 Published sheet metadata supplies glossary definitions and bibliography
 entries; the build rejects conflicting entries and broken internal references.
 
-Astro renders the content shell and useful initial lab state. A native custom
-element uses deterministic TypeScript reference engines for ordering, clocks,
-and Dots. The multi-value register and observed-remove set labs run pinned
-Watershed kernels through Atlas's Gleam toolkit and its stable
-`@atlas/toolkit` entry point, never private Watershed build paths.
+Astro renders the content shell and useful initial lab state. Native custom
+elements use deterministic TypeScript lesson models for the focused G-counter
+demo and reference engines for ordering, clocks, and Dots. Focused structure
+demos use at least three clients. The G-counter,
+multi-value register, and observed-remove set lessons run pinned Watershed
+kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
+point, never private Watershed build paths.
+
+The G-counter lesson uses Watershed's JavaScript Sluice transport. Atlas
+stages two concurrent increments, exposes whether transport frames are
+waiting, drains the ordered broadcasts, and displays their authors, targets,
+and sequence numbers.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and
@@ -93,9 +101,9 @@ do not belong to this publication.
   references, including the original Dots proof article.
 - `src/lib/lab/`: the reference engine, scenarios, trace contract, presentation,
   and their unit tests.
-- `tests/`: browser checks for static content, lab behavior, accessibility,
-  responsive layouts, generated reference links, and article/lab agreement
-  across the seven sheets.
+- `tests/`: browser checks for static content, focused structure-demo and lab
+  behavior, accessibility, responsive layouts, generated reference links, and
+  article/lab agreement.
 - `toolkit/`: focused Gleam tests, facade tests, a generated-declaration check,
   and a Node package smoke test. The release procedure also builds from empty
   Gleam and pnpm caches against the locked Watershed commit.

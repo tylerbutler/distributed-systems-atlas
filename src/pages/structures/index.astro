@@ -1,0 +1,83 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Structures"
+  description="Learn replicated data structures through focused counter, register, set, and map lessons."
+  sheetTitle="Structures"
+>
+  <header class="page-intro">
+    <h1>Structures</h1>
+    <p>
+      Start with the value you need to share. Each lesson introduces the
+      metadata only when its merge rule needs it.
+    </p>
+  </header>
+
+  <ol class="structure-index" aria-label="Structure lessons">
+    <li>
+      <h2><a href="/structures/counters/">Counters</a></h2>
+      <p>Preserve independent increments without counting a replay twice.</p>
+      <span class="status">Read now</span>
+    </li>
+    <li>
+      <h2><a href="/atlas/multi-value-registers/">Registers</a></h2>
+      <p>Preserve concurrent writes until a reader resolves them.</p>
+      <span class="status">Reference sheet</span>
+    </li>
+    <li>
+      <h2><a href="/atlas/observed-remove-sets/">Sets</a></h2>
+      <p>Remove observed additions without erasing concurrent work.</p>
+      <span class="status">Reference sheet</span>
+    </li>
+    <li>
+      <h2>Maps</h2>
+      <p>Compose conflict rules across named fields.</p>
+      <span class="status">Planned</span>
+    </li>
+  </ol>
+</BaseLayout>
+
+<style>
+  .page-intro,
+  .structure-index {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-index {
+    padding: 0;
+    list-style: none;
+    counter-reset: structures;
+  }
+
+  .structure-index li {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr) auto;
+    gap: var(--space-4);
+    align-items: baseline;
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    counter-increment: structures;
+  }
+
+  .structure-index h2,
+  .structure-index p {
+    margin: 0;
+  }
+
+  .structure-index h2::before {
+    content: counter(structures) ". ";
+    color: var(--muted);
+    font-family: var(--font-data);
+    font-size: 0.875rem;
+  }
+
+  @media (width < 48rem) {
+    .structure-index li {
+      grid-template-columns: 1fr;
+      gap: var(--space-2);
+    }
+  }
+</style>

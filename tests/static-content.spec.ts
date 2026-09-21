@@ -77,7 +77,11 @@ test("the shell distinguishes working and planned navigation", async ({ page }) 
   await page.goto("/");
 
   const nav = page.getByRole("navigation", { name: "Primary", exact: true });
-  await expect(nav.getByRole("link")).toHaveCount(3);
+  await expect(nav.getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("link", { name: "Structures", exact: true })).toHaveAttribute(
+    "href",
+    "/structures/",
+  );
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute(
     "href",
     "/atlas/",
@@ -275,13 +279,13 @@ test("the landing page leads with data structures", async ({ page }) => {
     "Start with the data you need to share",
   );
   await expect(
-    page.getByRole("link", { name: "Start with registers", exact: true }),
-  ).toHaveAttribute("href", "/atlas/multi-value-registers/");
+    page.getByRole("link", { name: "Start with G-counter", exact: true }),
+  ).toHaveAttribute("href", "/structures/counters/");
   await expect(page.getByRole("link", { name: "Open the full atlas", exact: true }))
     .toHaveAttribute("href", "/atlas/");
   const structures = page.getByRole("list", { name: "Data structure learning path" });
   await expect(structures.getByRole("listitem")).toHaveText([
-    "1CountersWhy independent increments can merge without choosing a winner.Planned",
+    "1CountersWhy independent increments can merge without choosing a winner.Read now",
     "2RegistersWhat one shared value should do when two replicas write at once.Read now",
     "3SetsWhy removing an item requires evidence about the additions you saw.Read now",
     "4MapsHow a structure composes conflict rules across named fields.Planned",
@@ -306,9 +310,9 @@ test("the landing page leads with data structures", async ({ page }) => {
     "Vector clocks Read now",
   ]);
   await expect(trail.getByRole("link")).toHaveCount(7);
-  const finalEntry = page.getByRole("link", { name: "Start with multi-value registers", exact: true });
+  const finalEntry = page.getByRole("link", { name: "Start with the G-counter", exact: true });
   await finalEntry.click();
-  await expect(page).toHaveURL(/\/atlas\/multi-value-registers\/$/);
+  await expect(page).toHaveURL(/\/structures\/counters\/$/);
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {
@@ -320,7 +324,7 @@ test("landing page works without client JavaScript", async ({ browser }) => {
     "Start with the data you need to share",
   );
   await expect(page.getByRole("list", { name: "Data structure learning path" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Start with registers", exact: true }))
+  await expect(page.getByRole("link", { name: "Start with G-counter", exact: true }))
     .toBeVisible();
   await expect(page.getByRole("link", { name: "Open the full atlas" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
@@ -330,11 +334,11 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.keyboard.press("Tab");
-  const primary = page.getByRole("link", { name: "Registers", exact: true });
+  const primary = page.getByRole("link", { name: "Counters", exact: true });
   await expect(primary).toBeFocused();
   await expect(primary).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/atlas\/multi-value-registers\/$/);
+  await expect(page).toHaveURL(/\/structures\/counters\/$/);
   await page.goto("/");
   await page.getByRole("link", { name: "Open the full atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();
@@ -350,7 +354,11 @@ test("atlas exposes four territories and seven published sheets without dead lin
     await expect(page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true })).toBeVisible();
   }
   const nav = page.getByRole("navigation", { name: "Primary" });
-  await expect(nav.getByRole("link")).toHaveCount(3);
+  await expect(nav.getByRole("link")).toHaveCount(4);
+  await expect(nav.getByRole("link", { name: "Structures", exact: true })).toHaveAttribute(
+    "href",
+    "/structures/",
+  );
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute("aria-current", "page");
   await expect(nav.getByText("Trails", { exact: true }).locator("..")).toContainText("Planned");
   expect((await request.get("/trails/")).status()).toBe(404);

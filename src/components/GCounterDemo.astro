@@ -1,0 +1,429 @@
+---
+import StationMark from "./StationMark.astro";
+import { createGCounterDemo, presentGCounterDemo } from "../lib/structure-demo/g-counter";
+
+const initial = presentGCounterDemo(createGCounterDemo());
+---
+
+<g-counter-demo data-testid="g-counter-demo">
+  <section class="gcounter-instrument" aria-labelledby="gcounter-demo-title">
+    <header class="gcounter-heading">
+      <div>
+        <h2 id="gcounter-demo-title">Send two increments through Sluice</h2>
+        <p>
+          A adds 7 and B adds 3 before delivery. C makes no local change and
+          shows what a third client learns from the transport.
+        </p>
+      </div>
+      <p class="merge-rule">
+        Merge rule
+        <strong>Keep the largest count reported by each client.</strong>
+      </p>
+    </header>
+
+    <div class="gcounter-replicas">
+      {initial.replicas.map((replica) => (
+        <section class="gcounter-replica" aria-label={`Replica ${replica.id}`}>
+          <header>
+            <StationMark station={replica.id} size="lg" />
+            <div>
+              <h3>Replica {replica.id}</h3>
+              <p data-replica-state={replica.id}>Connected to Sluice</p>
+            </div>
+          </header>
+          <output class="gcounter-total observation-data" data-total={replica.id}>
+            {replica.value}
+          </output>
+          <p>Total increments observed</p>
+        </section>
+      ))}
+    </div>
+
+    <section class="sluice-transport" aria-label="Sluice transport">
+      <header>
+        <h3>Sluice transport</h3>
+        <dl>
+          <div>
+            <dt>Queued frames</dt>
+            <dd class="observation-data" data-pending>No</dd>
+          </div>
+          <div>
+            <dt>Latest operation</dt>
+            <dd class="observation-data" data-sequence>0</dd>
+          </div>
+        </dl>
+      </header>
+      <div class="transport-path" aria-hidden="true">
+        <span>Clients A · B · C</span>
+        <span class="transport-line"></span>
+        <span>Sluice</span>
+        <span class="transport-line"></span>
+        <span>Ordered broadcast</span>
+      </div>
+      <ol class="delivery-log" data-deliveries aria-label="Latest Sluice deliveries">
+        <li>No operation delivered yet.</li>
+      </ol>
+    </section>
+
+    <section class="gcounter-controls" aria-label="Lesson controls">
+      <button type="button" data-action="stage" disabled>
+        Stage race: A +7, B +3
+      </button>
+      <button type="button" data-action="deliver" disabled>
+        Deliver through Sluice
+      </button>
+      <button type="button" data-action="resend" disabled>
+        Resend B's component
+      </button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+      <p data-enhancement-note>
+        Enable JavaScript to run the demo. The initial values and expected
+        result remain available in the article.
+      </p>
+    </section>
+
+    <p class="gcounter-result" role="status" aria-live="polite" aria-atomic="true">
+      {initial.result}
+    </p>
+    <p class="gcounter-error" role="alert" hidden></p>
+
+    <details class="gcounter-explanation">
+      <summary>Explain why resending the component is safe</summary>
+      <div>
+        <p>
+          Each client stores the largest count it has observed for A, B, and
+          C. Sluice orders and broadcasts each operation; the G-counter kernel
+          merges the cumulative components.
+        </p>
+        <table aria-label="Per-client G-counter components">
+          <thead>
+            <tr>
+              <th scope="col">Component</th>
+              <th scope="col">At A</th>
+              <th scope="col">At B</th>
+              <th scope="col">At C</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(["A", "B", "C"] as const).map((component) => (
+              <tr>
+                <th scope="row">{component}</th>
+                {(["A", "B", "C"] as const).map((replica) => (
+                  <td class="observation-data" data-component={`${replica}-${component}`}>0</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p>
+          Resend submits B's current component again as a zero increment. The
+          transport assigns a new sequence number, but every kernel compares 3
+          with 3. The maximum is still 3, so the total stays 10.
+        </p>
+      </div>
+    </details>
+  </section>
+</g-counter-demo>
+
+<script>
+  import "../lib/structure-demo/g-counter-element";
+</script>
+
+<style>
+  g-counter-demo {
+    display: block;
+    max-width: var(--content);
+    margin-block: var(--space-7);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gcounter-instrument {
+    padding: clamp(1rem, 3vw, 2rem);
+    border: var(--rule-width) solid var(--instrument-deep);
+    color: var(--clear);
+    background: var(--instrument);
+    --focus-color: var(--signal);
+    --link-color: var(--clear);
+  }
+
+  .gcounter-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.6fr);
+    gap: var(--space-6);
+    align-items: end;
+    padding-bottom: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .gcounter-heading h2,
+  .gcounter-heading p,
+  .gcounter-replica h3,
+  .gcounter-replica p,
+  .sluice-transport h3 {
+    margin: 0;
+  }
+
+  .gcounter-heading p {
+    margin-top: var(--space-3);
+  }
+
+  .merge-rule {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 45%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.95rem;
+  }
+
+  .merge-rule strong {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--signal);
+    font-size: 1.05rem;
+  }
+
+  .gcounter-replicas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .gcounter-replica {
+    min-width: 0;
+    padding: var(--space-5);
+  }
+
+  .gcounter-replica + .gcounter-replica {
+    border-left: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .gcounter-replica header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .gcounter-replica header p,
+  .gcounter-total + p {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.825rem;
+  }
+
+  .gcounter-total {
+    display: block;
+    margin-top: var(--space-4);
+    color: var(--signal);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 650;
+    line-height: 0.95;
+  }
+
+  .gcounter-total + p {
+    margin-top: var(--space-2);
+  }
+
+  .sluice-transport {
+    padding-block: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .sluice-transport header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+  }
+
+  .sluice-transport dl {
+    display: flex;
+    gap: var(--space-5);
+    margin: 0;
+    font-family: var(--font-ui);
+  }
+
+  .sluice-transport dl div {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .sluice-transport dd {
+    margin: 0;
+    color: var(--signal);
+  }
+
+  .transport-path {
+    display: grid;
+    grid-template-columns: auto minmax(var(--space-6), 1fr) auto minmax(var(--space-6), 1fr) auto;
+    gap: var(--space-2);
+    align-items: center;
+    margin-block: var(--space-4);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .transport-line {
+    height: var(--rule-signal);
+    background: var(--signal);
+  }
+
+  .transport-path span:nth-child(3) {
+    padding: var(--space-2) var(--space-3);
+    border: var(--rule-signal) solid var(--signal);
+    color: var(--signal);
+  }
+
+  .delivery-log {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .delivery-log li {
+    min-width: 0;
+    padding: var(--space-2) var(--space-3);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+  }
+
+  .gcounter-controls {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .gcounter-controls button {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    border: var(--rule-width) solid currentColor;
+    border-radius: 0;
+    color: inherit;
+    background: transparent;
+    font-family: var(--font-ui);
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .gcounter-controls button:hover:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  .gcounter-controls button:active:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--clear);
+  }
+
+  .gcounter-controls button:disabled {
+    border-style: dashed;
+    color: color-mix(in oklch, var(--clear) 58%, var(--instrument));
+    cursor: not-allowed;
+  }
+
+  [data-enhancement-note] {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .gcounter-result,
+  .gcounter-error {
+    max-width: none;
+    margin: 0;
+    padding: var(--space-4);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .gcounter-error {
+    margin-top: var(--space-3);
+    color: var(--clear);
+    background: var(--interference);
+  }
+
+  [hidden] {
+    display: none;
+  }
+
+  .gcounter-explanation {
+    margin-top: var(--space-5);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .gcounter-explanation summary {
+    min-height: 44px;
+    padding-block: var(--space-4);
+    font-family: var(--font-ui);
+    font-weight: 650;
+    cursor: pointer;
+  }
+
+  .gcounter-explanation summary:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .gcounter-explanation > div {
+    padding-bottom: var(--space-5);
+  }
+
+  .gcounter-explanation table {
+    width: 100%;
+    margin-block: var(--space-4);
+    border-collapse: collapse;
+  }
+
+  .gcounter-explanation :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    text-align: left;
+  }
+
+  .gcounter-explanation th {
+    font-family: var(--font-ui);
+  }
+
+  @media (width < 48rem) {
+    .gcounter-heading,
+    .gcounter-replicas,
+    .gcounter-controls,
+    .delivery-log {
+      grid-template-columns: 1fr;
+    }
+
+    .gcounter-replica {
+      padding-inline: 0;
+    }
+
+    .gcounter-replica + .gcounter-replica {
+      border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+      border-left: 0;
+    }
+
+    .transport-path {
+      grid-template-columns: 1fr;
+      text-align: left;
+    }
+
+    .transport-line {
+      display: none;
+    }
+
+    .transport-path span,
+    .transport-path span:first-child,
+    .transport-path span:nth-child(3),
+    .transport-path span:last-child {
+      grid-column: 1;
+    }
+  }
+</style>

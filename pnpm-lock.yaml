@@ -26,6 +26,9 @@ importers:
       astro:
         specifier: ^7.3.3
         version: 7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)
+      phoenix:
+        specifier: ^1.8.14
+        version: 1.8.14
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
@@ -1334,6 +1337,9 @@ packages:
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
+
+  phoenix@1.8.14:
+    resolution: {integrity: sha512-erAGbssrbK7xe4l/tWXZTdsstCY+ufGTt/Kdin4uwceaP2TVqSL6v4s3flQOvIxShpwQx2/8NcOcBXOqgQ+ltw==}
 
   piccolore@0.1.3:
     resolution: {integrity: sha512-o8bTeDWjE086iwKrROaDf31K0qC/BENdm15/uH9usSC/uZjJOKb2YGiVHfLY4GhwsERiPI1jmwI2XrA7ACOxVw==}
@@ -3072,6 +3078,8 @@ snapshots:
   package-manager-detector@1.8.0: {}
 
   path-browserify@1.0.1: {}
+
+  phoenix@1.8.14: {}
 
   piccolore@0.1.3: {}
 

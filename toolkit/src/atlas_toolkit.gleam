@@ -6,7 +6,9 @@ import gleam/dynamic/decode
 import gleam/json
 import gleam/list
 import gleam/result
+import gleam/string
 import lattice_core/replica_id
+import watershed/g_counter_kernel
 import watershed/mv_register_kernel
 import watershed/or_set_kernel
 
@@ -18,8 +20,16 @@ pub opaque type ObservedSet {
   ObservedSet(state: or_set_kernel.OrSetState)
 }
 
+pub opaque type GrowOnlyCounter {
+  GrowOnlyCounter(state: g_counter_kernel.GCounterState)
+}
+
 pub type Tag {
   Tag(replica_id: String, counter: Int)
+}
+
+pub type CounterEntry {
+  CounterEntry(replica_id: String, count: Int)
 }
 
 pub type MvEntry {
@@ -36,6 +46,70 @@ pub type MvSnapshot {
 
 pub type SetSnapshot {
   SetSnapshot(counter: Int, entries: List(SetEntry), tombstones: List(Tag))
+}
+
+pub type GCounterSnapshot {
+  GCounterSnapshot(value: Int, counts: List(CounterEntry))
+}
+
+pub fn new_gcounter(replica: String) -> GrowOnlyCounter {
+  GrowOnlyCounter(g_counter_kernel.new(replica_id.new(replica)))
+}
+
+pub fn gcounter_increment(
+  counter: GrowOnlyCounter,
+  amount: Int,
+) -> Result(#(GrowOnlyCounter, GrowOnlyCounter), g_counter_kernel.EditError) {
+  let GrowOnlyCounter(state) = counter
+  use #(next, _, operation) <- result.try(
+    g_counter_kernel.p2p_increment(state, amount),
+  )
+  let g_counter_kernel.Increment(_, delta) = operation
+  Ok(#(
+    GrowOnlyCounter(next),
+    GrowOnlyCounter(g_counter_kernel.from_sequenced(delta, state.replica_id)),
+  ))
+}
+
+pub fn gcounter_merge(
+  counter: GrowOnlyCounter,
+  remote: GrowOnlyCounter,
+) -> GrowOnlyCounter {
+  let GrowOnlyCounter(state) = counter
+  let GrowOnlyCounter(remote) = remote
+  GrowOnlyCounter(g_counter_kernel.p2p_merge(state, remote.sequenced).0)
+}
+
+pub fn gcounter_restore(
+  source: String,
+  replica: String,
+) -> Result(GrowOnlyCounter, json.DecodeError) {
+  g_counter_kernel.from_summary(source, replica_id.new(replica))
+  |> result.map(GrowOnlyCounter)
+}
+
+pub fn gcounter_snapshot(counter: GrowOnlyCounter) -> GCounterSnapshot {
+  let GrowOnlyCounter(state) = counter
+  let decoder = {
+    use snapshot <- decode.field("state", {
+      use counts <- decode.field(
+        "counts",
+        decode.dict(decode.string, decode.int),
+      )
+      decode.success(GCounterSnapshot(
+        g_counter_kernel.value(state),
+        dict.to_list(counts)
+          |> list.map(fn(entry) { CounterEntry(entry.0, entry.1) })
+          |> list.sort(fn(a, b) {
+            string.compare(a.replica_id, b.replica_id)
+          }),
+      ))
+    })
+    decode.success(snapshot)
+  }
+  let assert Ok(snapshot) =
+    state |> g_counter_kernel.summary |> json.to_string |> json.parse(decoder)
+  snapshot
 }
 
 pub fn new_mv(replica: String) -> Register {

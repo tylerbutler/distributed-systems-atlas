@@ -1,0 +1,174 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GCounterDemo from "../../components/GCounterDemo.astro";
+---
+
+<BaseLayout
+  title="Counters"
+  description="Start with a grow-only counter. Run concurrent increments through Watershed Sluice and see why resending a component does not count twice."
+  territory="Structures"
+  sheetTitle="Counters"
+>
+  <article class="structure-page">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>Counters</h1>
+      <p class="structure-summary">
+        A replicated counter must preserve increments made at different
+        replicas. Start with the smallest useful form: a counter that can only
+        grow.
+      </p>
+    </header>
+
+    <section aria-labelledby="value-title">
+      <h2 id="value-title">The value is familiar</h2>
+      <p>
+        A G-counter stores one nonnegative count for each replica. A replica
+        changes only its own count. The visible value is the sum of every
+        component it has observed.
+      </p>
+      <pre aria-label="G-counter value rule"><code>value = count[A] + count[B] + ...</code></pre>
+    </section>
+
+    <section aria-labelledby="race-title">
+      <h2 id="race-title">What if A and B increment before delivery?</h2>
+      <p>
+        Replica A adds 7 while replica B adds 3. Replica C makes no local
+        change. All three start from the same zero state, and Sluice holds the
+        two operations until you deliver them. Predict the result, then run
+        the race.
+      </p>
+    </section>
+
+    <GCounterDemo />
+
+    <section aria-labelledby="result-title">
+      <h2 id="result-title">Both increments survive</h2>
+      <p>
+        After delivery, all three replicas read 10. A did not overwrite B, and
+        B did not overwrite A. Each writer owns a separate component, so merge
+        can keep both facts and C can learn the complete value.
+      </p>
+      <p>
+        For each replica ID, merge keeps the larger count. This rule is
+        commutative, associative, and idempotent. Arrival order does not change
+        the         answer, and the same component can arrive more than once.
+      </p>
+    </section>
+
+    <section aria-labelledby="limits-title">
+      <h2 id="limits-title">The simple rule has a strict limit</h2>
+      <p>
+        Counts never decrease. A negative increment is rejected before state
+        changes. Every writer also needs a unique replica ID; if two writers
+        share one ID, pairwise maximum can discard one concurrent increment.
+      </p>
+      <table class="counter-family" aria-label="Counter family status">
+        <thead>
+          <tr>
+            <th scope="col">Counter</th>
+            <th scope="col">Use</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">G-counter</th>
+            <td>Increment only</td>
+            <td>Read now</td>
+          </tr>
+          <tr>
+            <th scope="row">Operation counter</th>
+            <td>Add delivered operations once</td>
+            <td>Planned</td>
+          </tr>
+          <tr>
+            <th scope="row">PN-counter</th>
+            <td>Increment and decrement</td>
+            <td>Planned</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Field notes</h2>
+      <p>
+        This lesson calls Watershed's public{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/g_counter_kernel.gleam">G-counter kernel</a>.
+        The three clients run through Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/sluice_js.gleam">JavaScript Sluice transport</a>.
+        Its interaction follows Watershed's focused{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/components/Demo.astro">counter demo</a>
+        {" "}and{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/scripts/demo.ts">runtime</a>,
+        while Atlas owns the three-client lesson schedule and presentation.
+      </p>
+      <p>
+        The merge rule is the state-based grow-only counter described in{" "}
+        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/">Browse all structures</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .structure-page {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-page > section {
+    margin-top: var(--space-7);
+  }
+
+  .structure-summary {
+    font-size: 1.2rem;
+  }
+
+  pre {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+  }
+
+  .counter-family {
+    width: 100%;
+    margin-block: var(--space-5);
+    border-collapse: collapse;
+  }
+
+  .counter-family :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .counter-family th {
+    font-family: var(--font-ui);
+  }
+
+  .counter-family td:last-child {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+</style>

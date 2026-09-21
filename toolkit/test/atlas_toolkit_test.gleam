@@ -1,4 +1,5 @@
 import atlas_toolkit as toolkit
+import atlas_sluice as sluice
 import gleeunit
 import gleeunit/should
 
@@ -40,6 +41,57 @@ pub fn duplicate_merge_test() {
   let #(_, delta) = toolkit.new_set("A") |> toolkit.set_add("same")
   let once = toolkit.new_set("B") |> toolkit.set_merge(delta)
   toolkit.set_merge(once, delta) |> should.equal(once)
+}
+
+pub fn gcounter_concurrent_increment_and_duplicate_merge_test() {
+  let assert Ok(#(a, a_delta)) =
+    toolkit.new_gcounter("A") |> toolkit.gcounter_increment(7)
+  let assert Ok(#(b, b_delta)) =
+    toolkit.new_gcounter("B") |> toolkit.gcounter_increment(3)
+  let a = toolkit.gcounter_merge(a, b_delta)
+  let b = toolkit.gcounter_merge(b, a_delta)
+  toolkit.gcounter_snapshot(a)
+  |> should.equal(toolkit.GCounterSnapshot(10, [
+    toolkit.CounterEntry("A", 7),
+    toolkit.CounterEntry("B", 3),
+  ]))
+  toolkit.gcounter_snapshot(b)
+  |> should.equal(toolkit.GCounterSnapshot(10, [
+    toolkit.CounterEntry("A", 7),
+    toolkit.CounterEntry("B", 3),
+  ]))
+  toolkit.gcounter_merge(a, b_delta) |> should.equal(a)
+}
+
+pub fn gcounter_rejects_negative_increment_test() {
+  toolkit.new_gcounter("A")
+  |> toolkit.gcounter_increment(-1)
+  |> should.be_error
+}
+
+pub fn gcounter_sluice_room_delivers_to_three_clients_test() {
+  let assert Ok(room) = sluice.new_gcounter_room()
+  let assert Ok(room) = sluice.gcounter_room_stage_race(room)
+  let assert Ok(staged) = sluice.gcounter_room_snapshot(room)
+  staged.a |> should.equal(7)
+  staged.b |> should.equal(3)
+  staged.c |> should.equal(0)
+  staged.pending |> should.be_true
+
+  let #(room, deliveries) = sluice.gcounter_room_deliver(room)
+  let assert Ok(delivered) = sluice.gcounter_room_snapshot(room)
+  delivered.a |> should.equal(10)
+  delivered.b |> should.equal(10)
+  delivered.c |> should.equal(10)
+  delivered.pending |> should.be_false
+  deliveries |> should.not_equal([])
+
+  let assert Ok(#(room, replay)) = sluice.gcounter_room_resend_b(room)
+  let assert Ok(replayed) = sluice.gcounter_room_snapshot(room)
+  replayed.a |> should.equal(10)
+  replayed.b |> should.equal(10)
+  replayed.c |> should.equal(10)
+  replay |> should.not_equal([])
 }
 
 pub fn equal_siblings_and_unobserved_write_test() {

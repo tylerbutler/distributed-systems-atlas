@@ -1,5 +1,9 @@
 # Distributed Systems Atlas Site Design
 
+> Superseded for future structure and navigation work by
+> `2026-09-20-structure-first-site-design.md`. This document remains the record
+> of the completed seven-sheet causal proof.
+
 ## Status
 
 The seven-sheet release implements this design. The site builds 11 static

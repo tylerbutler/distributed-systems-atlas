@@ -274,6 +274,25 @@ The console anatomy is fixed: lesson controls, replica stations, message lane, v
 
 **The Trace-Derived Presentation Rule.** The scenario creates the engine; the selected immutable `TraceFrame` passes through `presentFrame`; static fallback and live rendering consume that presentation. Captions, controls, replica records, messages, comparison, outcomes, and invariants must not infer algorithm state from DOM classes, animation progress, or a second copy of state.
 
+### Focused Structure Demo
+
+A structure lesson uses one broad instrument field with the merge question,
+at least three client values, one primary race, one transport or resolution
+action when the rule needs it, reset, and a literal result sentence. The
+familiar value stays larger than its metadata. Per-replica components, dots,
+timestamps, or other bookkeeping stay in an `Explain why` disclosure.
+
+The G-counter demo is the first instance: three station records show only
+their totals by default. A compact Sluice strip reports queued work, sequence
+numbers, authors, and recipients. The A, B, and C components appear in a ruled
+table after disclosure. Structure demos do not inherit the observation
+console's partition controls, trace history, raw inspector, or invariant
+ledger.
+
+**The Structure-First Demo Rule.** A reader must be able to state the merge
+result before opening metadata. One authored action must complete the primary
+lesson in no more than three total controls.
+
 ### Motion and Reduced Motion
 
 Feedback, state, and trace motion use the shipped 120ms, 220ms, and 420ms durations with the shared accelerating exit curve. Motion may show a signal traveling to a queue or destination, a route separating, or a record arriving; state commits at discrete frames.

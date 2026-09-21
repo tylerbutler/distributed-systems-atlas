@@ -8,7 +8,7 @@ for (const viewport of [
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/atlas/", "/glossary/", "/bibliography/",
+    for (const path of ["/", "/structures/", "/structures/counters/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
       expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
@@ -332,7 +332,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     const headline = page.getByRole("heading", { level: 1 });
     const path = page.getByRole("list", { name: "Data structure learning path" });
     const pathItems = path.getByRole("listitem");
-    const primary = page.getByRole("link", { name: "Start with registers", exact: true });
+    const primary = page.getByRole("link", { name: "Start with G-counter", exact: true });
     const secondary = page.getByRole("link", { name: "Open the full atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
@@ -403,7 +403,7 @@ test("working and planned navigation stays visible in a broad publication band",
     const atlas = nav.getByRole("link", { name: "Atlas", exact: true });
     await expect(atlas).toBeInViewport();
     await expect(nav.getByRole("button")).toHaveCount(0);
-    for (const label of ["Trails", "Glossary", "Bibliography"]) {
+    for (const label of ["Structures", "Trails", "Glossary", "Bibliography"]) {
       await expect(nav.getByText(label, { exact: true })).toBeInViewport();
     }
     if (width < 768) {
@@ -413,6 +413,7 @@ test("working and planned navigation stays visible in a broad publication band",
       expect(rows[0]).toBe(rows[1]);
       expect(rows[2]).toBe(rows[3]);
       expect(rows[2]).toBeGreaterThan(rows[0]);
+      expect(rows[4]).toBeGreaterThan(rows[2]);
     }
     await atlas.focus();
     await expect(atlas).toHaveCSS("outline-style", "solid");

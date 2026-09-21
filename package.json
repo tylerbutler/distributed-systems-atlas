@@ -17,11 +17,12 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",
+    "@atlas/toolkit": "workspace:*",
     "@fontsource-variable/azeret-mono": "^5.3.0",
     "@fontsource-variable/encode-sans": "^5.3.0",
     "@fontsource-variable/roboto-serif": "^5.3.0",
-    "@atlas/toolkit": "workspace:*",
-    "astro": "^7.3.3"
+    "astro": "^7.3.3",
+    "phoenix": "^1.8.14"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

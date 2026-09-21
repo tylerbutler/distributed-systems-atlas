@@ -1,4 +1,5 @@
 import * as core from "./build/dev/javascript/atlas_toolkit/atlas_toolkit.mjs";
+import * as sluiceCore from "./sluice-runtime.mjs";
 import { Result$isOk, Result$Ok$0, type Result as GleamResult } from "./build/dev/javascript/prelude.mjs";
 
 export type Tag = { replicaId: string; counter: number };
@@ -10,9 +11,33 @@ export type OrSet = {
   version: 1; kind: "or-set"; replicaId: string; counter: number;
   entries: { value: string; tags: Tag[] }[]; tombstones: Tag[];
 };
+export type GCounter = {
+  version: 1; kind: "g-counter"; replicaId: string;
+  counts: { replicaId: string; count: number }[]; value: number;
+};
 export type State = MvRegister | OrSet;
 export type Operation<S extends State = State> = { version: 1; type: "operation"; delta: S };
 export type Change<S extends State = State> = { state: S; operation: Operation<S> };
+export type GCounterOperation = { version: 1; type: "g-counter-operation"; delta: GCounter };
+export type GCounterChange = { state: GCounter; operation: GCounterOperation };
+declare const gCounterRoomBrand: unique symbol;
+export type GCounterRoom = { readonly [gCounterRoomBrand]: true };
+export type GCounterRoomView = {
+  replicas: Array<{ id: "A" | "B" | "C"; value: number }>;
+  pending: boolean;
+  sequenceNumber: number;
+};
+export type TransportDelivery = {
+  to: string;
+  event: string;
+  sequenceNumber: number;
+  author: string;
+};
+export type GCounterTransportResult = {
+  room: GCounterRoom;
+  view: GCounterRoomView;
+  deliveries: TransportDelivery[];
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -68,6 +93,12 @@ function counter(value: unknown, minimum = 0): number {
   return value;
 }
 
+function incrementAmount(value: unknown): number {
+  requireInput(typeof value === "number" && Number.isSafeInteger(value) && value >= 0,
+    "increment must be a nonnegative safe integer", "invalid-input");
+  return value;
+}
+
 function list<T>(value: unknown, parse: (entry: unknown) => T): T[] {
   requireInput(Array.isArray(value), "expected an array");
   requireInput(Object.values(Object.getOwnPropertyDescriptors(value)).every((field) => "value" in field),
@@ -88,6 +119,23 @@ function tags(value: unknown): Tag[] {
 
 function version(value: unknown): void {
   requireInput(value === 1, "only state and operation version 1 is supported", "unsupported-version");
+}
+
+function gcounterState(value: unknown): GCounter {
+  const input = record(value);
+  version(input.version);
+  requireInput(input.kind === "g-counter", "expected a G-counter state", "kind-mismatch");
+  const replicaId = replica(input.replicaId);
+  const counts = list(input.counts, (entry) => {
+    const component = record(entry);
+    return { replicaId: replica(component.replicaId), count: counter(component.count) };
+  }).sort((a, b) => lexical(a.replicaId, b.replicaId));
+  requireInput(new Set(counts.map((entry) => entry.replicaId)).size === counts.length,
+    "duplicate G-counter components");
+  const valueTotal = counts.reduce((sum, entry) => sum + entry.count, 0);
+  requireInput(Number.isSafeInteger(valueTotal), "G-counter value exceeds the safe integer range");
+  requireInput(counter(input.value) === valueTotal, "G-counter value must equal the sum of its components");
+  return { version: 1, kind: "g-counter", replicaId, counts, value: valueTotal };
 }
 
 function state(value: unknown): State {
@@ -133,6 +181,44 @@ function kernel<T, E>(result: GleamResult<T, E>): T {
   return Result$Ok$0(result)!;
 }
 
+const counterRooms = new WeakMap<GCounterRoom, sluiceCore.GCounterRoom$>();
+
+function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
+  requireInput(
+    value !== null && typeof value === "object" && counterRooms.has(value as GCounterRoom),
+    "expected a live G-counter Sluice room",
+  );
+  return counterRooms.get(value as GCounterRoom)!;
+}
+
+function roomBox(handle: sluiceCore.GCounterRoom$): GCounterRoom {
+  const room = Object.freeze({}) as GCounterRoom;
+  counterRooms.set(room, handle);
+  return room;
+}
+
+function roomView(handle: sluiceCore.GCounterRoom$): GCounterRoomView {
+  const snapshot = kernel(sluiceCore.gcounter_room_snapshot(handle));
+  return {
+    replicas: [
+      { id: "A", value: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$a(snapshot) },
+      { id: "B", value: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$b(snapshot) },
+      { id: "C", value: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$c(snapshot) },
+    ],
+    pending: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$pending(snapshot),
+    sequenceNumber: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$sequence_number(snapshot),
+  };
+}
+
+function transportDeliveries(deliveries: Iterable<sluiceCore.TransportDelivery$>): TransportDelivery[] {
+  return Array.from(deliveries, (delivery) => ({
+    to: sluiceCore.TransportDelivery$TransportDelivery$to(delivery),
+    event: sluiceCore.TransportDelivery$TransportDelivery$event(delivery),
+    sequenceNumber: sluiceCore.TransportDelivery$TransportDelivery$sequence_number(delivery),
+    author: sluiceCore.TransportDelivery$TransportDelivery$author(delivery),
+  })).filter((delivery) => delivery.event === "op");
+}
+
 function loadMv(state: MvRegister) {
   return kernel(core.mv_restore(JSON.stringify({
     type: "mv_register", v: 1, state: {
@@ -149,6 +235,15 @@ function loadSet(state: OrSet) {
       replica_id: state.replicaId, counter: state.counter,
       entries: Object.fromEntries(state.entries.map((entry) => [entry.value, entry.tags.map(wireTag)])),
       tombstones: state.tombstones.map(wireTag),
+    },
+  }), state.replicaId));
+}
+
+function loadGCounter(state: GCounter) {
+  return kernel(core.gcounter_restore(JSON.stringify({
+    type: "g_counter", v: 1, state: {
+      self_id: state.replicaId,
+      counts: Object.fromEntries(state.counts.map((entry) => [entry.replicaId, entry.count])),
     },
   }), state.replicaId));
 }
@@ -178,6 +273,100 @@ function setState(value: core.ObservedSet$, replicaId: string): OrSet {
     })).filter((entry) => entry.tags.length > 0).sort((a, b) => lexical(a.value, b.value)),
     tombstones: Array.from(core.SetSnapshot$SetSnapshot$tombstones(snapshot), snapshotTag).sort(byTag),
   };
+}
+
+function gcounterFromCore(value: core.GrowOnlyCounter$, replicaId: string): GCounter {
+  const snapshot = core.gcounter_snapshot(value);
+  const counts = Array.from(core.GCounterSnapshot$GCounterSnapshot$counts(snapshot), (entry) => ({
+    replicaId: core.CounterEntry$CounterEntry$replica_id(entry),
+    count: core.CounterEntry$CounterEntry$count(entry),
+  })).sort((a, b) => lexical(a.replicaId, b.replicaId));
+  return {
+    version: 1,
+    kind: "g-counter",
+    replicaId,
+    counts,
+    value: core.GCounterSnapshot$GCounterSnapshot$value(snapshot),
+  };
+}
+
+export function createGCounterRoom(): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const handle = kernel(sluiceCore.new_gcounter_room());
+    const room = roomBox(handle);
+    return { room, view: roomView(handle), deliveries: [] };
+  });
+}
+
+export function stageGCounterRace(current: unknown): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const room = current as GCounterRoom;
+    const handle = kernel(sluiceCore.gcounter_room_stage_race(roomHandle(room)));
+    return { room, view: roomView(handle), deliveries: [] };
+  });
+}
+
+export function deliverGCounterRace(current: unknown): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const room = current as GCounterRoom;
+    const [handle, deliveries] = sluiceCore.gcounter_room_deliver(roomHandle(room));
+    return { room, view: roomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function resendGCounterComponent(current: unknown): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const room = current as GCounterRoom;
+    const [handle, deliveries] = kernel(sluiceCore.gcounter_room_resend_b(roomHandle(room)));
+    return { room, view: roomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function createGCounter(replicaId: unknown): Result<GCounter> {
+  return attempt(() => {
+    const id = replica(replicaId, "invalid-input");
+    return gcounterFromCore(core.new_gcounter(id), id);
+  });
+}
+
+export function incrementGCounter(current: unknown, amount: unknown): Result<GCounterChange> {
+  return attempt(() => {
+    const input = gcounterState(current);
+    const delta = incrementAmount(amount);
+    const own = input.counts.find((entry) => entry.replicaId === input.replicaId)?.count ?? 0;
+    requireInput(own <= Number.MAX_SAFE_INTEGER - delta && input.value <= Number.MAX_SAFE_INTEGER - delta,
+      "G-counter value exhausted", "counter-exhausted");
+    const [next, operation] = kernel(core.gcounter_increment(loadGCounter(input), delta));
+    return {
+      state: gcounterFromCore(next, input.replicaId),
+      operation: {
+        version: 1,
+        type: "g-counter-operation",
+        delta: gcounterFromCore(operation, input.replicaId),
+      },
+    };
+  });
+}
+
+export function mergeGCounter(current: unknown, remote: unknown): Result<GCounter> {
+  return attempt(() => {
+    const input = gcounterState(current);
+    const payload = record(remote);
+    if (payload.type === "g-counter-operation") version(payload.version);
+    const incoming = gcounterState(payload.type === "g-counter-operation" ? payload.delta : payload);
+    return gcounterFromCore(core.gcounter_merge(loadGCounter(input), loadGCounter(incoming)), input.replicaId);
+  });
+}
+
+export function inspectGCounter(current: unknown): Result<{
+  value: number;
+  counts: GCounter["counts"];
+  causal: GCounter;
+}> {
+  return attempt(() => {
+    const input = gcounterState(current);
+    return { value: input.value, counts: input.counts, causal: input };
+  });
 }
 
 export function createMvRegister(replicaId: unknown): Result<MvRegister> {
