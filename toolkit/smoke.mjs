@@ -10,11 +10,13 @@ import {
   createSharedCounterRoom,
   createSetRoom,
   createRegisterDemoRoom,
+  createMapRoom,
   deliverGCounterRace,
   deliverPNCounterOperations,
   deliverSharedCounterOperations,
   deliverSetOperations,
   deliverRegisterDemo,
+  deliverMapOperations,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
@@ -30,6 +32,7 @@ import {
   stageSharedCounterRace,
   stageSetRace,
   stageRegisterDemoRace,
+  stageMapRace,
   updatePNCounter,
   updatePNCounterRoom,
   write,
@@ -152,6 +155,20 @@ assert.deepEqual(unwrap(deliverRegisterDemo(collectionRoom)).view.versions, [
   "Trail open",
   "Trail closed",
 ]);
+
+for (const [kind, expected] of [
+  ["shared-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["lww-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["or-map", [{ key: "Eagle Creek", value: "8" }]],
+  ["shared-directory", [{ key: "eagle-creek", value: "folder" }]],
+]) {
+  const mapRoom = unwrap(createMapRoom(kind)).room;
+  unwrap(stageMapRace(mapRoom));
+  assert.deepEqual(
+    unwrap(deliverMapOperations(mapRoom)).view.replicas.map(({ entries }) => entries),
+    [expected, expected, expected],
+  );
+}
 
 const room = unwrap(createGCounterRoom()).room;
 const staged = unwrap(stageGCounterRace(room));

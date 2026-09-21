@@ -280,6 +280,40 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   collection_view.versions |> should.equal(["Trail open", "Trail closed"])
 }
 
+pub fn map_sluice_rooms_show_each_conflict_rule_test() {
+  let assert Ok(shared) = sluice.new_map_room("shared-map")
+  let assert Ok(shared) = sluice.map_room_stage_race(shared)
+  let #(shared, _) = sluice.map_room_deliver(shared)
+  let shared_view = sluice.map_room_snapshot(shared)
+  shared_view.a |> should.equal([sluice.MapEntry("gate-status", "Trail closed")])
+  shared_view.b |> should.equal(shared_view.a)
+  shared_view.c |> should.equal(shared_view.a)
+
+  let assert Ok(lww) = sluice.new_map_room("lww-map")
+  let assert Ok(lww) = sluice.map_room_stage_race(lww)
+  let #(lww, _) = sluice.map_room_deliver(lww)
+  let lww_view = sluice.map_room_snapshot(lww)
+  lww_view.a |> should.equal([sluice.MapEntry("gate-status", "Trail closed")])
+  lww_view.b |> should.equal(lww_view.a)
+  lww_view.c |> should.equal(lww_view.a)
+
+  let assert Ok(or_map) = sluice.new_map_room("or-map")
+  let assert Ok(or_map) = sluice.map_room_stage_race(or_map)
+  let #(or_map, _) = sluice.map_room_deliver(or_map)
+  let or_view = sluice.map_room_snapshot(or_map)
+  or_view.a |> should.equal([sluice.MapEntry("Eagle Creek", "8")])
+  or_view.b |> should.equal(or_view.a)
+  or_view.c |> should.equal(or_view.a)
+
+  let assert Ok(directory) = sluice.new_map_room("shared-directory")
+  let assert Ok(directory) = sluice.map_room_stage_race(directory)
+  let #(directory, _) = sluice.map_room_deliver(directory)
+  let directory_view = sluice.map_room_snapshot(directory)
+  directory_view.a |> should.equal([sluice.MapEntry("eagle-creek", "folder")])
+  directory_view.b |> should.equal(directory_view.a)
+  directory_view.c |> should.equal(directory_view.a)
+}
+
 pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {
   let assert Ok(room) = sluice.new_gcounter_room()
   let assert Ok(room) = sluice.gcounter_room_stage_race(room)

@@ -97,6 +97,20 @@ export type RegisterDemoResult = {
   room: RegisterDemoRoom;
   view: RegisterDemoView;
 };
+export type MapRoomKind = "shared-map" | "lww-map" | "or-map" | "shared-directory";
+export type MapRoomAction = "set" | "remove" | "increment" | "mkdir" | "rmdir";
+declare const mapRoomBrand: unique symbol;
+export type MapRoom = { readonly [mapRoomBrand]: true };
+export type MapRoomView = {
+  replicas: Array<{ id: "A" | "B" | "C"; entries: Array<{ key: string; value: string }> }>;
+  pending: boolean;
+  sequenceNumber: number;
+};
+export type MapTransportResult = {
+  room: MapRoom;
+  view: MapRoomView;
+  deliveries: TransportDelivery[];
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -279,6 +293,7 @@ const pnCounterRooms = new WeakMap<PNCounterRoom, sluiceCore.PnCounterRoom$>();
 const sharedCounterRooms = new WeakMap<SharedCounterRoom, sluiceCore.SharedCounterRoom$>();
 const setRooms = new WeakMap<SetRoom, sluiceCore.SetRoom$>();
 const registerDemoRooms = new WeakMap<RegisterDemoRoom, core.RegisterDemoRoom$>();
+const mapRooms = new WeakMap<MapRoom, sluiceCore.MapRoom$>();
 
 function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
   requireInput(
@@ -349,6 +364,20 @@ function registerDemoHandle(value: unknown): core.RegisterDemoRoom$ {
 function registerDemoBox(handle: core.RegisterDemoRoom$): RegisterDemoRoom {
   const room = Object.freeze({}) as RegisterDemoRoom;
   registerDemoRooms.set(room, handle);
+  return room;
+}
+
+function mapRoomHandle(value: unknown): sluiceCore.MapRoom$ {
+  requireInput(
+    value !== null && typeof value === "object" && mapRooms.has(value as MapRoom),
+    "expected a live map Sluice room",
+  );
+  return mapRooms.get(value as MapRoom)!;
+}
+
+function mapRoomBox(handle: sluiceCore.MapRoom$): MapRoom {
+  const room = Object.freeze({}) as MapRoom;
+  mapRooms.set(room, handle);
   return room;
 }
 
@@ -456,6 +485,24 @@ function registerDemoView(handle: core.RegisterDemoRoom$): RegisterDemoView {
     versions: Array.from(
       core.RegisterDemoSnapshot$RegisterDemoSnapshot$versions(snapshot),
     ),
+  };
+}
+
+function mapRoomView(handle: sluiceCore.MapRoom$): MapRoomView {
+  const snapshot = sluiceCore.map_room_snapshot(handle);
+  const entries = (values: Iterable<sluiceCore.MapEntry$>) =>
+    Array.from(values, (entry) => ({
+      key: sluiceCore.MapEntry$MapEntry$key(entry),
+      value: sluiceCore.MapEntry$MapEntry$value(entry),
+    }));
+  return {
+    replicas: [
+      { id: "A", entries: entries(sluiceCore.MapRoomSnapshot$MapRoomSnapshot$a(snapshot)) },
+      { id: "B", entries: entries(sluiceCore.MapRoomSnapshot$MapRoomSnapshot$b(snapshot)) },
+      { id: "C", entries: entries(sluiceCore.MapRoomSnapshot$MapRoomSnapshot$c(snapshot)) },
+    ],
+    pending: sluiceCore.MapRoomSnapshot$MapRoomSnapshot$pending(snapshot),
+    sequenceNumber: sluiceCore.MapRoomSnapshot$MapRoomSnapshot$sequence_number(snapshot),
   };
 }
 
@@ -859,6 +906,88 @@ export function deliverRegisterDemo(current: unknown): Result<RegisterDemoResult
     const handle = core.register_demo_deliver(registerDemoHandle(room));
     registerDemoRooms.set(room, handle);
     return { room, view: registerDemoView(handle) };
+  });
+}
+
+export function createMapRoom(kind: unknown): Result<MapTransportResult> {
+  return attempt(() => {
+    const mapKind = text(kind, "invalid-input");
+    requireInput(
+      mapKind === "shared-map"
+        || mapKind === "lww-map"
+        || mapKind === "or-map"
+        || mapKind === "shared-directory",
+      "kind must be shared-map, lww-map, or-map, or shared-directory",
+      "invalid-input",
+    );
+    const handle = kernel(sluiceCore.new_map_room(mapKind));
+    const room = mapRoomBox(handle);
+    return { room, view: mapRoomView(handle), deliveries: [] };
+  });
+}
+
+export function stageMapRace(current: unknown): Result<MapTransportResult> {
+  return attempt(() => {
+    const room = current as MapRoom;
+    const handle = kernel(sluiceCore.map_room_stage_race(mapRoomHandle(room)));
+    return { room, view: mapRoomView(handle), deliveries: [] };
+  });
+}
+
+export function updateMapRoom(
+  current: unknown,
+  replicaId: unknown,
+  action: unknown,
+  key: unknown,
+  value: unknown,
+): Result<MapTransportResult> {
+  return attempt(() => {
+    const room = current as MapRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(
+      replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C",
+      "invalid-input",
+    );
+    const mapAction = text(action, "invalid-input");
+    requireInput(
+      mapAction === "set"
+        || mapAction === "remove"
+        || mapAction === "increment"
+        || mapAction === "mkdir"
+        || mapAction === "rmdir",
+      "invalid map action",
+      "invalid-input",
+    );
+    const mapKey = text(key, "invalid-input");
+    requireInput(mapKey.trim().length > 0, "key must not be empty", "invalid-input");
+    const mapValue = text(value, "invalid-input");
+    const handle = kernel(
+      sluiceCore.map_room_update(
+        mapRoomHandle(room),
+        replica,
+        mapAction,
+        mapKey,
+        mapValue,
+      ),
+    );
+    return { room, view: mapRoomView(handle), deliveries: [] };
+  });
+}
+
+export function deliverMapOperations(current: unknown): Result<MapTransportResult> {
+  return attempt(() => {
+    const room = current as MapRoom;
+    const [handle, deliveries] = sluiceCore.map_room_deliver(mapRoomHandle(room));
+    return { room, view: mapRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function deliverOneMapOperation(current: unknown): Result<MapTransportResult> {
+  return attempt(() => {
+    const room = current as MapRoom;
+    const [handle, deliveries] = sluiceCore.map_room_deliver_one(mapRoomHandle(room));
+    return { room, view: mapRoomView(handle), deliveries: transportDeliveries(deliveries) };
   });
 }
 

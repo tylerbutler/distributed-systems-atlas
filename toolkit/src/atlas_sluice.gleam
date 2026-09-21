@@ -1,6 +1,10 @@
+import gleam/dynamic/decode
+import gleam/int
+import gleam/json
 import gleam/list
 import gleam/result
 import watershed
+import watershed/or_map_kernel
 import watershed/sluice_js
 
 pub opaque type GCounterRoom {
@@ -69,6 +73,45 @@ pub opaque type SetRoom {
   )
 }
 
+pub opaque type MapRoom {
+  SharedMapRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.SharedMap,
+    b: watershed.SharedMap,
+    c: watershed.SharedMap,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+  LwwMapRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.LwwMap,
+    b: watershed.LwwMap,
+    c: watershed.LwwMap,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+  OrMapRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.OrMap,
+    b: watershed.OrMap,
+    c: watershed.OrMap,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+  DirectoryRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.SharedDirectory,
+    b: watershed.SharedDirectory,
+    c: watershed.SharedDirectory,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+}
+
 pub type GCounterRoomSnapshot {
   GCounterRoomSnapshot(
     a: Int,
@@ -104,6 +147,20 @@ pub type SetRoomSnapshot {
     a: List(String),
     b: List(String),
     c: List(String),
+    pending: Bool,
+    sequence_number: Int,
+  )
+}
+
+pub type MapEntry {
+  MapEntry(key: String, value: String)
+}
+
+pub type MapRoomSnapshot {
+  MapRoomSnapshot(
+    a: List(MapEntry),
+    b: List(MapEntry),
+    c: List(MapEntry),
     pending: Bool,
     sequence_number: Int,
   )
@@ -262,6 +319,81 @@ pub fn new_set_room(kind: String) -> Result(SetRoom, String) {
   Ok(room(a_client, b_client, c_client))
 }
 
+pub fn new_map_room(kind: String) -> Result(MapRoom, String) {
+  let sluice = sluice_js.start(tenant: "atlas", document: kind <> "-demo")
+  let document_a = sluice_js.connect(sluice, "A")
+  let document_b = sluice_js.connect(sluice, "B")
+  let document_c = sluice_js.connect(sluice, "C")
+  sluice_js.settle(sluice)
+  use room <- result.try(case kind {
+    "shared-map" -> {
+      use a <- result.try(watershed.create_map(document_a))
+      watershed.set(watershed.root(document_a), "map", watershed.handle_of(a))
+      sluice_js.settle(sluice)
+      use b <- result.try(shared_map_from_document(document_b))
+      use c <- result.try(shared_map_from_document(document_c))
+      Ok(fn(a_client, b_client, c_client) {
+        SharedMapRoom(sluice, a, b, c, a_client, b_client, c_client)
+      })
+    }
+    "lww-map" -> {
+      use a <- result.try(watershed.create_lww_map(document_a))
+      watershed.set(
+        watershed.root(document_a),
+        "map",
+        watershed.lww_map_handle_of(a),
+      )
+      sluice_js.settle(sluice)
+      use b <- result.try(lww_map_from_document(document_b))
+      use c <- result.try(lww_map_from_document(document_c))
+      Ok(fn(a_client, b_client, c_client) {
+        LwwMapRoom(sluice, a, b, c, a_client, b_client, c_client)
+      })
+    }
+    "or-map" -> {
+      use a <- result.try(watershed.create_or_map(
+        document_a,
+        or_map_kernel.TallyMode,
+      ))
+      watershed.set(
+        watershed.root(document_a),
+        "map",
+        watershed.or_map_handle_of(a),
+      )
+      sluice_js.settle(sluice)
+      use b <- result.try(or_map_from_document(document_b))
+      use c <- result.try(or_map_from_document(document_c))
+      watershed.or_map_increment(a, "Eagle Creek", 5)
+      sluice_js.settle(sluice)
+      Ok(fn(a_client, b_client, c_client) {
+        OrMapRoom(sluice, a, b, c, a_client, b_client, c_client)
+      })
+    }
+    "shared-directory" -> {
+      use a <- result.try(watershed.create_directory(document_a))
+      watershed.set(
+        watershed.root(document_a),
+        "map",
+        watershed.directory_handle_of(a),
+      )
+      sluice_js.settle(sluice)
+      use b <- result.try(directory_from_document(document_b))
+      use c <- result.try(directory_from_document(document_c))
+      Ok(fn(a_client, b_client, c_client) {
+        DirectoryRoom(sluice, a, b, c, a_client, b_client, c_client)
+      })
+    }
+    _ ->
+      Error(
+        "the map kind must be shared-map, lww-map, or-map, or shared-directory",
+      )
+  })
+  use a_client <- result.try(room_client_id(sluice, document_a))
+  use b_client <- result.try(room_client_id(sluice, document_b))
+  use c_client <- result.try(room_client_id(sluice, document_c))
+  Ok(room(a_client, b_client, c_client))
+}
+
 fn gcounter_from_document(
   document: watershed.Document(a),
 ) -> Result(watershed.GCounter, String) {
@@ -313,6 +445,42 @@ fn orset_from_document(
   case watershed.get(watershed.root(document), "set") {
     Error(_) -> Error("the shared OR-set handle is missing")
     Ok(handle) -> watershed.resolve_or_set(document, handle)
+  }
+}
+
+fn shared_map_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.SharedMap, String) {
+  case watershed.get(watershed.root(document), "map") {
+    Error(_) -> Error("the shared map handle is missing")
+    Ok(handle) -> watershed.resolve(document, handle)
+  }
+}
+
+fn lww_map_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.LwwMap, String) {
+  case watershed.get(watershed.root(document), "map") {
+    Error(_) -> Error("the LWW map handle is missing")
+    Ok(handle) -> watershed.resolve_lww_map(document, handle)
+  }
+}
+
+fn or_map_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.OrMap, String) {
+  case watershed.get(watershed.root(document), "map") {
+    Error(_) -> Error("the OR-map handle is missing")
+    Ok(handle) -> watershed.resolve_or_map(document, handle)
+  }
+}
+
+fn directory_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.SharedDirectory, String) {
+  case watershed.get(watershed.root(document), "map") {
+    Error(_) -> Error("the directory handle is missing")
+    Ok(handle) -> watershed.resolve_directory(document, handle)
   }
 }
 
@@ -420,6 +588,162 @@ pub fn set_room_stage_race(room: SetRoom) -> Result(SetRoom, String) {
     }
   }
   Ok(room)
+}
+
+pub fn map_room_stage_race(room: MapRoom) -> Result(MapRoom, String) {
+  case room {
+    SharedMapRoom(_, a, b, _, _, _, _) -> {
+      watershed.set(a, "gate-status", json.string("Trail open"))
+      watershed.set(b, "gate-status", json.string("Trail closed"))
+      Ok(room)
+    }
+    LwwMapRoom(_, a, b, _, _, _, _) -> {
+      use _ <- result.try(watershed.lww_map_set(a, "gate-status", "Trail open"))
+      use _ <- result.try(watershed.lww_map_set(
+        b,
+        "gate-status",
+        "Trail closed",
+      ))
+      Ok(room)
+    }
+    OrMapRoom(_, a, b, _, _, _, _) -> {
+      watershed.or_map_remove(a, "Eagle Creek")
+      watershed.or_map_increment(b, "Eagle Creek", 3)
+      Ok(room)
+    }
+    DirectoryRoom(_, a, b, _, _, _, _) -> {
+      watershed.directory_create_subdirectory(a, "/", "eagle-creek")
+      watershed.directory_create_subdirectory(b, "/", "eagle-creek")
+      Ok(room)
+    }
+  }
+}
+
+pub fn map_room_update(
+  room: MapRoom,
+  replica: String,
+  action: String,
+  key: String,
+  value: String,
+) -> Result(MapRoom, String) {
+  case room {
+    SharedMapRoom(_, a, b, c, _, _, _) -> {
+      use map <- result.try(select_shared_map(replica, a, b, c))
+      case action {
+        "set" -> {
+          watershed.set(map, key, json.string(value))
+          Ok(room)
+        }
+        "remove" -> {
+          watershed.delete(map, key)
+          Ok(room)
+        }
+        _ -> Error("a SharedMap action must be set or remove")
+      }
+    }
+    LwwMapRoom(_, a, b, c, _, _, _) -> {
+      use map <- result.try(select_lww_map(replica, a, b, c))
+      case action {
+        "set" -> {
+          use _ <- result.try(watershed.lww_map_set(map, key, value))
+          Ok(room)
+        }
+        "remove" -> {
+          use _ <- result.try(watershed.lww_map_remove(map, key))
+          Ok(room)
+        }
+        _ -> Error("an LWWMap action must be set or remove")
+      }
+    }
+    OrMapRoom(_, a, b, c, _, _, _) -> {
+      use map <- result.try(select_or_map(replica, a, b, c))
+      case action {
+        "increment" ->
+          case int.parse(value) {
+            Error(_) -> Error("an OR-map tally increment must be an integer")
+            Ok(amount) -> {
+              watershed.or_map_increment(map, key, amount)
+              Ok(room)
+            }
+          }
+        "remove" -> {
+          watershed.or_map_remove(map, key)
+          Ok(room)
+        }
+        _ -> Error("an OR-map action must be increment or remove")
+      }
+    }
+    DirectoryRoom(_, a, b, c, _, _, _) -> {
+      use directory <- result.try(select_directory(replica, a, b, c))
+      case action {
+        "mkdir" -> {
+          watershed.directory_create_subdirectory(directory, "/", key)
+          Ok(room)
+        }
+        "rmdir" -> {
+          watershed.directory_delete_subdirectory(directory, "/", key)
+          Ok(room)
+        }
+        _ -> Error("a SharedDirectory action must be mkdir or rmdir")
+      }
+    }
+  }
+}
+
+fn select_shared_map(
+  replica: String,
+  a: watershed.SharedMap,
+  b: watershed.SharedMap,
+  c: watershed.SharedMap,
+) -> Result(watershed.SharedMap, String) {
+  case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the map replica must be A, B, or C")
+  }
+}
+
+fn select_lww_map(
+  replica: String,
+  a: watershed.LwwMap,
+  b: watershed.LwwMap,
+  c: watershed.LwwMap,
+) -> Result(watershed.LwwMap, String) {
+  case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the map replica must be A, B, or C")
+  }
+}
+
+fn select_or_map(
+  replica: String,
+  a: watershed.OrMap,
+  b: watershed.OrMap,
+  c: watershed.OrMap,
+) -> Result(watershed.OrMap, String) {
+  case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the map replica must be A, B, or C")
+  }
+}
+
+fn select_directory(
+  replica: String,
+  a: watershed.SharedDirectory,
+  b: watershed.SharedDirectory,
+  c: watershed.SharedDirectory,
+) -> Result(watershed.SharedDirectory, String) {
+  case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the map replica must be A, B, or C")
+  }
 }
 
 pub fn set_room_update(
@@ -592,6 +916,40 @@ pub fn set_room_deliver(
 ) -> #(SetRoom, List(TransportDelivery)) {
   let #(sluice, a_client, b_client, c_client) = set_room_transport(room)
   #(room, drain_deliveries(sluice, a_client, b_client, c_client, []))
+}
+
+pub fn map_room_deliver(
+  room: MapRoom,
+) -> #(MapRoom, List(TransportDelivery)) {
+  let #(sluice, a_client, b_client, c_client) = map_room_transport(room)
+  #(room, drain_deliveries(sluice, a_client, b_client, c_client, []))
+}
+
+pub fn map_room_deliver_one(
+  room: MapRoom,
+) -> #(MapRoom, List(TransportDelivery)) {
+  let #(sluice, a_client, b_client, c_client) = map_room_transport(room)
+  case sluice_js.step_info(sluice) {
+    Error(_) -> #(room, [])
+    Ok(delivery) -> {
+      let sequence_number = delivery.sequence_number
+      #(
+        room,
+        drain_sequence(sluice, a_client, b_client, c_client, sequence_number, [
+          map_delivery(delivery, a_client, b_client, c_client),
+        ]),
+      )
+    }
+  }
+}
+
+fn map_room_transport(room: MapRoom) -> #(sluice_js.Sluice, String, String, String) {
+  case room {
+    SharedMapRoom(sluice, _, _, _, a, b, c) -> #(sluice, a, b, c)
+    LwwMapRoom(sluice, _, _, _, a, b, c) -> #(sluice, a, b, c)
+    OrMapRoom(sluice, _, _, _, a, b, c) -> #(sluice, a, b, c)
+    DirectoryRoom(sluice, _, _, _, a, b, c) -> #(sluice, a, b, c)
+  }
 }
 
 pub fn set_room_deliver_one(
@@ -773,6 +1131,78 @@ pub fn set_room_snapshot(room: SetRoom) -> SetRoomSnapshot {
   }
 }
 
+fn json_text(value: json.Json) -> String {
+  value
+  |> json.to_string
+  |> json.parse(decode.string)
+  |> result.unwrap(json.to_string(value))
+}
+
+fn shared_map_entries(map: watershed.SharedMap) -> List(MapEntry) {
+  watershed.entries(map)
+  |> list.map(fn(entry) { MapEntry(entry.0, json_text(entry.1)) })
+}
+
+fn lww_map_entries(map: watershed.LwwMap) -> List(MapEntry) {
+  watershed.lww_map_entries(map)
+  |> list.map(fn(entry) { MapEntry(entry.0, entry.1) })
+}
+
+fn or_map_entries(map: watershed.OrMap) -> List(MapEntry) {
+  watershed.or_map_entries(map)
+  |> list.map(fn(entry) {
+    let value = case entry.1 {
+      or_map_kernel.Tally(value) -> int.to_string(value)
+      or_map_kernel.Register(value) -> value
+      or_map_kernel.SetMembers(values)
+      | or_map_kernel.MvRegister(values) -> values |> list.intersperse(", ") |> list.fold("", fn(acc, item) { acc <> item })
+    }
+    MapEntry(entry.0, value)
+  })
+}
+
+fn directory_entries(directory: watershed.SharedDirectory) -> List(MapEntry) {
+  watershed.directory_subdirectories(directory, "/")
+  |> list.map(fn(name) { MapEntry(name, "folder") })
+}
+
+pub fn map_room_snapshot(room: MapRoom) -> MapRoomSnapshot {
+  let #(sluice, _, _, _) = map_room_transport(room)
+  case room {
+    SharedMapRoom(_, a, b, c, _, _, _) ->
+      MapRoomSnapshot(
+        shared_map_entries(a),
+        shared_map_entries(b),
+        shared_map_entries(c),
+        sluice_js.pending(sluice),
+        sluice_js.sequence_number(sluice),
+      )
+    LwwMapRoom(_, a, b, c, _, _, _) ->
+      MapRoomSnapshot(
+        lww_map_entries(a),
+        lww_map_entries(b),
+        lww_map_entries(c),
+        sluice_js.pending(sluice),
+        sluice_js.sequence_number(sluice),
+      )
+    OrMapRoom(_, a, b, c, _, _, _) ->
+      MapRoomSnapshot(
+        or_map_entries(a),
+        or_map_entries(b),
+        or_map_entries(c),
+        sluice_js.pending(sluice),
+        sluice_js.sequence_number(sluice),
+      )
+    DirectoryRoom(_, a, b, c, _, _, _) ->
+      MapRoomSnapshot(
+        directory_entries(a),
+        directory_entries(b),
+        directory_entries(c),
+        sluice_js.pending(sluice),
+        sluice_js.sequence_number(sluice),
+      )
+  }
+}
 fn counter_value(
   counter: watershed.GCounter,
   replica: String,

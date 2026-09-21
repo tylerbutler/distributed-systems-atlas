@@ -8,12 +8,16 @@ export type SharedCounterRoom$ = object;
 export type SharedCounterRoomSnapshot$ = object;
 export type SetRoom$ = object;
 export type SetRoomSnapshot$ = object;
+export type MapRoom$ = object;
+export type MapRoomSnapshot$ = object;
+export type MapEntry$ = object;
 export type TransportDelivery$ = object;
 
 export function new_gcounter_room(): Result<GCounterRoom$, string>;
 export function new_pncounter_room(): Result<PnCounterRoom$, string>;
 export function new_sharedcounter_room(): Result<SharedCounterRoom$, string>;
 export function new_set_room(kind: string): Result<SetRoom$, string>;
+export function new_map_room(kind: string): Result<MapRoom$, string>;
 export function gcounter_room_stage_race(room: GCounterRoom$): Result<GCounterRoom$, string>;
 export function gcounter_room_increment(
   room: GCounterRoom$,
@@ -81,6 +85,21 @@ export function set_room_deliver_one(
   room: SetRoom$,
 ): [SetRoom$, Iterable<TransportDelivery$>];
 export function set_room_snapshot(room: SetRoom$): SetRoomSnapshot$;
+export function map_room_stage_race(room: MapRoom$): Result<MapRoom$, string>;
+export function map_room_update(
+  room: MapRoom$,
+  replica: string,
+  action: string,
+  key: string,
+  value: string,
+): Result<MapRoom$, string>;
+export function map_room_deliver(
+  room: MapRoom$,
+): [MapRoom$, Iterable<TransportDelivery$>];
+export function map_room_deliver_one(
+  room: MapRoom$,
+): [MapRoom$, Iterable<TransportDelivery$>];
+export function map_room_snapshot(room: MapRoom$): MapRoomSnapshot$;
 export function GCounterRoomSnapshot$GCounterRoomSnapshot$a(
   value: GCounterRoomSnapshot$,
 ): number;
@@ -141,6 +160,23 @@ export function SetRoomSnapshot$SetRoomSnapshot$pending(
 export function SetRoomSnapshot$SetRoomSnapshot$sequence_number(
   value: SetRoomSnapshot$,
 ): number;
+export function MapRoomSnapshot$MapRoomSnapshot$a(
+  value: MapRoomSnapshot$,
+): Iterable<MapEntry$>;
+export function MapRoomSnapshot$MapRoomSnapshot$b(
+  value: MapRoomSnapshot$,
+): Iterable<MapEntry$>;
+export function MapRoomSnapshot$MapRoomSnapshot$c(
+  value: MapRoomSnapshot$,
+): Iterable<MapEntry$>;
+export function MapRoomSnapshot$MapRoomSnapshot$pending(
+  value: MapRoomSnapshot$,
+): boolean;
+export function MapRoomSnapshot$MapRoomSnapshot$sequence_number(
+  value: MapRoomSnapshot$,
+): number;
+export function MapEntry$MapEntry$key(value: MapEntry$): string;
+export function MapEntry$MapEntry$value(value: MapEntry$): string;
 export function TransportDelivery$TransportDelivery$to(value: TransportDelivery$): string;
 export function TransportDelivery$TransportDelivery$event(value: TransportDelivery$): string;
 export function TransportDelivery$TransportDelivery$sequence_number(

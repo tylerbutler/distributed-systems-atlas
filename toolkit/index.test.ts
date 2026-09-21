@@ -2,9 +2,11 @@ import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
   createRegisterDemoRoom,
+  createMapRoom,
   createSetRoom, createSharedCounterRoom, deliverOneSharedCounterOperation,
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
-  deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  stageMapRace,
   stageRegisterDemoRace,
   stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
@@ -71,6 +73,20 @@ test("RegisterCollection retains both reads after concurrent writes", () => {
     latestValue: "Trail closed",
     versions: ["Trail open", "Trail closed"],
   });
+});
+
+test.each([
+  ["shared-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["lww-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["or-map", [{ key: "Eagle Creek", value: "8" }]],
+  ["shared-directory", [{ key: "eagle-creek", value: "folder" }]],
+] as const)("%s demo converges on its map rule", (kind, expected) => {
+  const room = unwrap(createMapRoom(kind)).room;
+  unwrap(stageMapRace(room));
+  const delivered = unwrap(deliverMapOperations(room));
+  expect(delivered.view.replicas.map(({ entries }) => entries))
+    .toEqual([expected, expected, expected]);
+  expect(delivered.view.pending).toBe(false);
 });
 
 test("equal-string register siblings retain both identities and full authored clocks", () => {
