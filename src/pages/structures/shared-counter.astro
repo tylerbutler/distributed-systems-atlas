@@ -51,6 +51,30 @@ import {
         gives accepted operations one shared order.
       </p>
       <TermCallout {...sequencerTerm} />
+      <p>
+        For Alice and Bob's race, the ranger's ledger has two lines:
+      </p>
+      <table aria-label="Ranger's numbered SharedCounter ledger">
+        <thead>
+          <tr>
+            <th scope="col">Sequence</th>
+            <th scope="col">Note from</th>
+            <th scope="col">Signed change</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">SN 1</th><td>Alice</td><td>+3</td></tr>
+          <tr><th scope="row">SN 2</th><td>Bob</td><td>-1</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The ranger broadcasts each line after he writes it. Carol misses{" "}
+        <code>SN 1</code>, but then receives <code>SN 2</code>. Her notebook
+        says that <code>SN 1</code> must come next, so she holds <code>SN 2</code>
+        {" "}and asks the ranger to resend the missing ledger line. She applies
+        Alice's <code>+3</code> from <code>SN 1</code>, then Bob's{" "}
+        <code>-1</code> from <code>SN 2</code>.
+      </p>
       <p>The sequencer has three jobs in this story:</p>
       <ol>
         <li><strong>Assign a number.</strong> Stamp each accepted operation with the next sequence number.</li>
@@ -58,8 +82,11 @@ import {
         <li><strong>Support recovery.</strong> A runtime can store operations or summaries for replicas that reconnect later.</li>
       </ol>
       <p>
-        The demo shows the first two jobs. Its log is in memory, so durable
-        storage and reconnect recovery stay outside this lesson.
+        Carol can request <code>SN 1</code> only if the ranger or the runtime
+        retains the numbered operations. A production runtime can send a
+        current snapshot instead of replaying old ledger lines. The demo shows
+        assignment and broadcast, and delivers every numbered copy. It does not
+        simulate Carol's missed message or recovery request.
       </p>
     </section>
 
@@ -74,7 +101,9 @@ import {
       <p>
         The numbers also show relative order. If <code>SN 2</code> appears
         before <code>SN 1</code>, the replica can detect a gap instead of
-        silently losing an operation.
+        losing an operation without warning. The sequence number exposes the
+        gap. The replica must ask the runtime to replay the missing operation
+        or send a snapshot.
       </p>
       <pre aria-label="Sequenced operation application rule"><code>new SN → apply signed delta
 seen SN → ignore duplicate

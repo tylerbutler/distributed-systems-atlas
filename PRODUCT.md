@@ -116,22 +116,28 @@ reader-controlled speed. Guided observations explain pairwise maximum and add
 timed callouts and signal-colored marks to the local values and checkpoint.
 
 The PN-counter lesson continues the same hike after the three friends agree on
-10 birds. Alice records 3 new sightings while Bob corrects 1 duplicate. Their
-local views briefly show 13, 9, and 10 before Sluice delivers both notes and all
-three converge on 12. Direct controls send each sighting or correction through
-Sluice immediately. An explanation disclosure shows the two grow-only
-component tables whose difference is the visible count. Each structure has its
-own page and a quick-facts label for its family, replication model, updates,
-merge rule, delivery behavior, best fit, and metadata cost.
+10 birds. The lesson derives a PN-counter from two G-counters: the positive
+counter records sightings, the negative counter records corrections, and the
+visible value is `P - N`. Alice records 3 new sightings while Bob corrects 1
+duplicate. Their local views briefly show 13, 9, and 10 before Sluice delivers
+both notes and all three converge on 12. The article shows that the signed
+updates can arrive in either order. Direct controls send each sighting or
+correction through Sluice immediately. An explanation disclosure shows the two
+G-counter component tables whose difference is the visible count. Each
+structure has its own page and a quick-facts label for its family, replication
+model, updates, merge rule, delivery behavior, best fit, and metadata cost.
 
 The SharedCounter lesson replaces cumulative checkpoint notes with a ranger's
 numbered log. Alice submits `+3` while Bob submits `-1`. The ranger sequencer
 assigns consecutive sequence numbers and broadcasts each signed operation.
 The lesson distinguishes repeated network delivery from once-only application:
 a replica uses the stable sequence number to reject an operation it has
-already applied. It names durable storage and reconnect recovery as possible
-runtime roles but keeps them outside the demo. Direct controls remain active
-while earlier notes are in transit.
+already applied. A static ledger shows `SN 1` for Alice's `+3` and `SN 2` for
+Bob's `-1`. Carol misses `SN 1`, detects the gap when `SN 2` arrives, and asks
+the ranger to replay the missing operation. The article also names snapshot
+recovery as an alternative. The demo continues to deliver every broadcast, so
+message loss and recovery remain article-only examples. Direct controls remain
+active while earlier notes are in transit.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

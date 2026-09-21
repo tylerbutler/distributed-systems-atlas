@@ -20,7 +20,7 @@ test("the correction race converges through Sluice", async ({ page }) => {
   await expect(demo.getByRole("list", { name: "Correction note log" })
     .getByRole("listitem")).toHaveCount(2);
 
-  await demo.getByText("Open the sightings and corrections tables", {
+  await demo.getByText("Open the two G-counter tables", {
     exact: true,
   }).click();
   await expect(demo.getByRole("table", {
@@ -116,8 +116,14 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     })).toBeVisible();
     await expect(page.getByTestId("g-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", {
-      name: "Bob finds a duplicate sighting",
+      name: "Add a second G-counter",
     })).toBeVisible();
+    await expect(page.getByRole("region", {
+      name: "Add a second G-counter",
+    })).toContainText("The positive counter records sightings");
+    await expect(page.getByRole("region", {
+      name: "Add a second G-counter",
+    })).toContainText("The negative counter records corrections");
     await expect(page.getByRole("heading", {
       name: "Two new notes leave at once",
     })).toBeVisible();
@@ -128,9 +134,9 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
       "Both notes arrive121212",
     ]);
     await expect(page.getByRole("region", {
-      name: "Bob finds a duplicate sighting",
+      name: "Add a second G-counter",
     }).getByLabel("PN-counter bird total rule")).toContainText(
-      "birds = sightings - corrections",
+      "P = sightings G-counter N = corrections G-counter birds = P - N",
     );
     const demo = page.getByTestId("pn-counter-demo");
     await expect(demo.locator("[data-pn-total]")).toHaveText(["10", "10", "10"]);

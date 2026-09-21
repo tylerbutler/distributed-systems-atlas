@@ -18,10 +18,9 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
       <p class="territory-label">Structures</p>
       <h1>PN-counter</h1>
       <p class="structure-summary">
-        Alice, Bob, and Carol have agreed on 10 birds. Then Bob finds a
-        duplicate sighting while Alice counts 3 new birds on another trail.
-        Their shared counter must preserve the new sightings and the
-        correction.
+        A G-counter can count new birds, but it cannot count down when Bob
+        finds a duplicate sighting. Alice, Bob, and Carol keep that grow-only
+        sightings counter and add a second G-counter for corrections.
       </p>
     </header>
 
@@ -37,25 +36,32 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
     <CounterIllustration kind="pn-counter" />
 
     <section aria-labelledby="correction-title">
-      <h2 id="correction-title">Bob finds a duplicate sighting</h2>
+      <h2 id="correction-title">Add a second G-counter</h2>
       <p>
-        Bob spots a mistake in the agreed count: one line records the same bird
-        twice. His contribution should fall by one.
+        The hikers agreed on 10 birds. Then Bob spots a mistake: one line
+        records the same bird twice. The shared count must fall by one.
       </p>
       <p>
-        Bob cannot lower a G-counter component. An older note with the larger
-        value could arrive later and restore the mistake. The merge rule must
-        keep the larger value.
+        Their first G-counter can only grow. Bob cannot lower one of its
+        components because an older note with the larger value could arrive
+        later and restore the mistake.
       </p>
       <p>
         A{" "}
         <dfn><a href="/glossary/#pn-counter">PN-counter</a></dfn> records the
-        correction instead. It keeps one grow-only counter for sightings and a
-        second grow-only counter for corrections. Both sides merge by maximum.
-        The visible count subtracts one total from the other.
+        correction in a second G-counter. The positive counter records
+        sightings. The negative counter records corrections. Both counters
+        still grow and merge each hiker's component by maximum.
       </p>
       <TermCallout {...pnCounterTerm} />
-      <pre aria-label="PN-counter bird total rule"><code>birds = sightings - corrections</code></pre>
+      <pre aria-label="PN-counter bird total rule"><code>P = sightings G-counter
+N = corrections G-counter
+birds = P - N</code></pre>
+      <p>
+        The hikers count in both directions without making either G-counter
+        count backward. They increment <code>P</code> for a new bird and
+        increment <code>N</code> for a correction.
+      </p>
     </section>
 
     <section aria-labelledby="correction-race-title">
@@ -82,9 +88,11 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
         </tbody>
       </table>
       <p>
-        The two notes do not cancel in transit. Alice's positive component
-        grows by 3, and Bob's correction component grows by 1. Every hiker
-        eventually computes <code>13 - 1 = 12</code>.
+        Alice increments the sightings G-counter by 3. Bob increments the
+        corrections G-counter by 1. The updates can arrive in either order:
+        <code>10 + 3 - 1</code> and <code>10 - 1 + 3</code> both equal
+        <code>12</code>. Each side also keeps the G-counter merge rule, so
+        repeated notes do not add the same change twice.
       </p>
     </section>
 
@@ -93,10 +101,9 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
     <section aria-labelledby="result-title">
       <h2 id="result-title">The correction survives the merge</h2>
       <p>
-        After both notes arrive, the sightings side totals 13 and the
-        corrections side totals 1. Alice, Bob, and Carol all read 12 birds.
-        Delivery order does not change that result, and a repeated delta does
-        not apply the correction twice.
+        After both notes arrive, the positive G-counter totals 13 and the
+        negative G-counter totals 1. Alice, Bob, and Carol all compute
+        <code>P - N = 13 - 1 = 12</code>.
       </p>
       <p>
         A PN-counter can also produce a negative value. That is correct counter

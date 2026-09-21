@@ -80,6 +80,18 @@ test("SharedCounter content remains useful without JavaScript", async ({ browser
     await expect(page.getByRole("heading", {
       name: "The ranger opens a numbered log",
     })).toBeVisible();
+    await expect(page.getByLabel("Ranger's numbered SharedCounter ledger")
+      .locator("tbody tr")).toHaveText([
+      "SN 1Alice+3",
+      "SN 2Bob-1",
+    ]);
+    const rangerStory = page.locator('section[aria-labelledby="ranger-log-title"]');
+    await expect(rangerStory).toContainText(
+      "Carol misses SN 1, but then receives SN 2",
+    );
+    await expect(rangerStory).toContainText(
+      "asks the ranger to resend the missing ledger line",
+    );
     await expect(page.getByLabel("Bird count as SharedCounter operations are sequenced")
       .locator("tbody tr")).toHaveText([
       "Agreed count101010",
