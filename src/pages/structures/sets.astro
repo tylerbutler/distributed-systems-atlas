@@ -13,16 +13,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <p class="territory-label">Structure family</p>
       <h1>Sets</h1>
       <p>
-        A ranger asks Alice, Bob, and Carol to survey trail beacons before the
-        next hiking season. Each hiker takes a separate route and writes active
-        beacon names in a field notebook. They exchange copies when radio or
-        trail relays permit, and the ranger needs their notebooks to converge
-        on one survey list.
-      </p>
-      <p>
-        The ranger does not assign sequence numbers to these reports. Each set
-        carries enough evidence to merge delayed, repeated, or reordered
-        notebook copies.
+        Replicated sets differ mainly in how they handle removal. Their merge
+        rules preserve enough evidence to remain safe when updates are delayed,
+        repeated, or reordered.
       </p>
     </header>
 
@@ -38,17 +31,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="structure-body">
         <div>
           <p>
-            The survey starts when Alice finds the Eagle Creek beacon and adds
-            its name. Bob and Carol are on other trails, so they may receive
-            her report late or more than once. A GSet handles that uncertainty
-            with one rule: each hiker can add a name, and merge takes the
-            union.
-          </p>
-          <p>
-            Soon Alice returns to Eagle Creek and finds that the old beacon has
-            been taken down. The ranger now needs a list of active beacons, not
-            a permanent record of every beacon ever seen. A GSet cannot record
-            Alice's removal.
+            A GSet can add members but cannot remove them. Merge takes the
+            union, so repeated or reordered state does not change the result.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -79,17 +63,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="structure-body">
         <div>
           <p>
-            The hikers add a second grow-only set for retirements. Alice places
-            <code>Eagle Creek</code> in it. Her notebook now contains the name
-            in both its additions and removals, so her visible list is empty.
-            Bob and Carol may still show Eagle Creek until Alice's removal
-            record reaches them.
-          </p>
-          <p>
-            The next morning, Bob installs a replacement beacon at the same
-            place. Its list name is still <code>Eagle Creek</code>. The old
-            tombstone blocks his new add because a TwoPSet cannot distinguish
-            the replacement from the retired installation.
+            A TwoPSet keeps separate grow-only sets for additions and
+            removals. Removal wins permanently: after a value enters the
+            removal set, the same value cannot be added again.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -120,17 +96,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="structure-body">
         <div>
           <p>
-            The final design gives every installation a unique tag. Alice's
-            notebook marks the old tag <code>A:1</code> as removed. Bob's
-            notebook records the replacement under fresh tag
-            <code>B:2</code>. Carol still has only <code>A:1</code> until the
-            new records arrive. She can receive them in either order: the old
-            installation stays removed, and the replacement remains.
-          </p>
-          <p>
-            The ranger receives the same converged list without assigning an
-            order to the hikers' updates. The tags contain the evidence needed
-            for merge.
+            An observed-remove set assigns a unique tag to each addition.
+            Removal targets only observed tags, so a later or concurrent add
+            of the same value can remain in the set.
           </p>
           <h3>Best for</h3>
           <ul>
