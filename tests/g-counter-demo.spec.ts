@@ -147,7 +147,7 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
     await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
       .toBeVisible();
-    await expect(page.getByText("Its local copy of the shared counter is a replica")).toBeVisible();
+    await expect(page.getByText("Alice's local copy of the shared counter is a replica")).toBeVisible();
     await expect(page.getByRole("heading", {
       name: "Bob takes a different trail",
     })).toBeVisible();
