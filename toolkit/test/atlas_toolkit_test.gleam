@@ -137,6 +137,45 @@ pub fn gcounter_sluice_room_accepts_direct_client_increment_test() {
   delivered.c |> should.equal(3)
 }
 
+pub fn pncounter_sluice_room_delivers_mixed_sign_updates_test() {
+  let assert Ok(room) = sluice.new_pncounter_room()
+  let assert Ok(initial) = sluice.pncounter_room_snapshot(room)
+  initial.a |> should.equal(10)
+  initial.b |> should.equal(10)
+  initial.c |> should.equal(10)
+
+  let assert Ok(room) = sluice.pncounter_room_stage_race(room)
+  let assert Ok(staged) = sluice.pncounter_room_snapshot(room)
+  staged.a |> should.equal(13)
+  staged.b |> should.equal(9)
+  staged.c |> should.equal(10)
+  staged.pending |> should.be_true
+
+  let #(room, deliveries) = sluice.pncounter_room_deliver(room)
+  let assert Ok(delivered) = sluice.pncounter_room_snapshot(room)
+  delivered.a |> should.equal(12)
+  delivered.b |> should.equal(12)
+  delivered.c |> should.equal(12)
+  delivered.pending |> should.be_false
+  deliveries |> should.not_equal([])
+}
+
+pub fn pncounter_sluice_room_accepts_direct_signed_update_test() {
+  let assert Ok(room) = sluice.new_pncounter_room()
+  let assert Ok(room) = sluice.pncounter_room_update(room, "C", -3)
+  let assert Ok(local) = sluice.pncounter_room_snapshot(room)
+  local.a |> should.equal(10)
+  local.b |> should.equal(10)
+  local.c |> should.equal(7)
+  local.pending |> should.be_true
+
+  let #(room, _) = sluice.pncounter_room_deliver(room)
+  let assert Ok(delivered) = sluice.pncounter_room_snapshot(room)
+  delivered.a |> should.equal(7)
+  delivered.b |> should.equal(7)
+  delivered.c |> should.equal(7)
+}
+
 pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {
   let assert Ok(room) = sluice.new_gcounter_room()
   let assert Ok(room) = sluice.gcounter_room_stage_race(room)

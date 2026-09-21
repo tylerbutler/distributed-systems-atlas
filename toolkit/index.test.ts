@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
-  add, createMvRegister, createOrSet, createPNCounter, inspect, inspectPNCounter,
-  merge, mergePNCounter, remove, updatePNCounter, write,
+  add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
+  deliverPNCounterOperations, inspect, inspectPNCounter, merge, mergePNCounter,
+  remove, stagePNCounterRace, updatePNCounter, updatePNCounterRoom, write,
   type Change, type Result, type State,
 } from "@atlas/toolkit";
 
@@ -93,6 +94,31 @@ test("PN-counter supports negative values and validates its component totals", (
   expect(inspectPNCounter({ ...corrected, value: 0 })).toMatchObject({
     ok: false,
     error: { tag: "invalid-state" },
+  });
+});
+
+test("PN-counter Sluice room stages and delivers the correction race", () => {
+  const room = unwrap(createPNCounterRoom()).room;
+  const staged = unwrap(stagePNCounterRace(room));
+  expect(staged.view.replicas.map(({ value }) => value)).toEqual([13, 9, 10]);
+  expect(staged.view.pending).toBe(true);
+  const delivered = unwrap(deliverPNCounterOperations(room));
+  expect(delivered.view.replicas.map(({ value }) => value)).toEqual([12, 12, 12]);
+  expect(delivered.view.pending).toBe(false);
+  expect(delivered.deliveries).toHaveLength(6);
+});
+
+test("PN-counter Sluice room accepts signed updates from all three clients", () => {
+  const room = unwrap(createPNCounterRoom()).room;
+  expect(unwrap(updatePNCounterRoom(room, "C", -3)).view.replicas.map(({ value }) => value))
+    .toEqual([10, 10, 7]);
+  expect(updatePNCounterRoom(room, "D", 1)).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-state" },
+  });
+  expect(updatePNCounterRoom(room, "A", 0)).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-input" },
   });
 });
 

@@ -15,8 +15,30 @@ pub opaque type GCounterRoom {
   )
 }
 
+pub opaque type PnCounterRoom {
+  PnCounterRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.PnCounter,
+    b: watershed.PnCounter,
+    c: watershed.PnCounter,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+}
+
 pub type GCounterRoomSnapshot {
   GCounterRoomSnapshot(
+    a: Int,
+    b: Int,
+    c: Int,
+    pending: Bool,
+    sequence_number: Int,
+  )
+}
+
+pub type PnCounterRoomSnapshot {
+  PnCounterRoomSnapshot(
     a: Int,
     b: Int,
     c: Int,
@@ -63,12 +85,52 @@ pub fn new_gcounter_room() -> Result(GCounterRoom, String) {
   ))
 }
 
+pub fn new_pncounter_room() -> Result(PnCounterRoom, String) {
+  let sluice = sluice_js.start(tenant: "atlas", document: "pncounter-demo")
+  let document_a = sluice_js.connect(sluice, "A")
+  let document_b = sluice_js.connect(sluice, "B")
+  let document_c = sluice_js.connect(sluice, "C")
+  sluice_js.settle(sluice)
+  use counter_a <- result.try(watershed.create_pn_counter(document_a))
+  watershed.set(
+    watershed.root(document_a),
+    "counter",
+    watershed.pn_counter_handle_of(counter_a),
+  )
+  sluice_js.settle(sluice)
+  use counter_b <- result.try(pncounter_from_document(document_b))
+  use counter_c <- result.try(pncounter_from_document(document_c))
+  watershed.pn_counter_update(counter_a, 10)
+  sluice_js.settle(sluice)
+  use a_client <- result.try(room_client_id(sluice, document_a))
+  use b_client <- result.try(room_client_id(sluice, document_b))
+  use c_client <- result.try(room_client_id(sluice, document_c))
+  Ok(PnCounterRoom(
+    sluice,
+    counter_a,
+    counter_b,
+    counter_c,
+    a_client,
+    b_client,
+    c_client,
+  ))
+}
+
 fn gcounter_from_document(
   document: watershed.Document(a),
 ) -> Result(watershed.GCounter, String) {
   case watershed.get(watershed.root(document), "counter") {
     Error(_) -> Error("the shared G-counter handle is missing")
     Ok(handle) -> watershed.resolve_g_counter(document, handle)
+  }
+}
+
+fn pncounter_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.PnCounter, String) {
+  case watershed.get(watershed.root(document), "counter") {
+    Error(_) -> Error("the shared PN-counter handle is missing")
+    Ok(handle) -> watershed.resolve_pn_counter(document, handle)
   }
 }
 
@@ -108,6 +170,32 @@ pub fn gcounter_room_increment(
   Ok(room)
 }
 
+pub fn pncounter_room_stage_race(
+  room: PnCounterRoom,
+) -> Result(PnCounterRoom, String) {
+  let PnCounterRoom(_, a, b, _, _, _, _) = room
+  watershed.pn_counter_update(a, 3)
+  watershed.pn_counter_update(b, -1)
+  Ok(room)
+}
+
+pub fn pncounter_room_update(
+  room: PnCounterRoom,
+  replica: String,
+  amount: Int,
+) -> Result(PnCounterRoom, String) {
+  let PnCounterRoom(_, a, b, c, _, _, _) = room
+  let counter = case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the PN-counter replica must be A, B, or C")
+  }
+  use counter <- result.try(counter)
+  watershed.pn_counter_update(counter, amount)
+  Ok(room)
+}
+
 pub fn gcounter_room_deliver(
   room: GCounterRoom,
 ) -> #(GCounterRoom, List(TransportDelivery)) {
@@ -119,6 +207,31 @@ pub fn gcounter_room_deliver_one(
   room: GCounterRoom,
 ) -> #(GCounterRoom, List(TransportDelivery)) {
   let GCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
+  case sluice_js.step_info(sluice) {
+    Error(_) -> #(room, [])
+    Ok(delivery) -> {
+      let sequence_number = delivery.sequence_number
+      #(
+        room,
+        drain_sequence(sluice, a_client, b_client, c_client, sequence_number, [
+          map_delivery(delivery, a_client, b_client, c_client),
+        ]),
+      )
+    }
+  }
+}
+
+pub fn pncounter_room_deliver(
+  room: PnCounterRoom,
+) -> #(PnCounterRoom, List(TransportDelivery)) {
+  let PnCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
+  #(room, drain_deliveries(sluice, a_client, b_client, c_client, []))
+}
+
+pub fn pncounter_room_deliver_one(
+  room: PnCounterRoom,
+) -> #(PnCounterRoom, List(TransportDelivery)) {
+  let PnCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
   case sluice_js.step_info(sluice) {
     Error(_) -> #(room, [])
     Ok(delivery) -> {
@@ -224,6 +337,22 @@ pub fn gcounter_room_snapshot(
   ))
 }
 
+pub fn pncounter_room_snapshot(
+  room: PnCounterRoom,
+) -> Result(PnCounterRoomSnapshot, String) {
+  let PnCounterRoom(sluice, a, b, c, _, _, _) = room
+  use a_value <- result.try(pncounter_value(a, "A"))
+  use b_value <- result.try(pncounter_value(b, "B"))
+  use c_value <- result.try(pncounter_value(c, "C"))
+  Ok(PnCounterRoomSnapshot(
+    a_value,
+    b_value,
+    c_value,
+    sluice_js.pending(sluice),
+    sluice_js.sequence_number(sluice),
+  ))
+}
+
 fn counter_value(
   counter: watershed.GCounter,
   replica: String,
@@ -231,6 +360,17 @@ fn counter_value(
   case watershed.g_counter_value(counter) {
     Error(_) ->
       Error("the G-counter handle at replica " <> replica <> " is invalid")
+    Ok(value) -> Ok(value)
+  }
+}
+
+fn pncounter_value(
+  counter: watershed.PnCounter,
+  replica: String,
+) -> Result(Int, String) {
+  case watershed.pn_counter_value(counter) {
+    Error(_) ->
+      Error("the PN-counter handle at replica " <> replica <> " is invalid")
     Ok(value) -> Ok(value)
   }
 }

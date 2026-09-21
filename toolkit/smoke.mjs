@@ -6,7 +6,9 @@ import {
   createMvRegister,
   createOrSet,
   createPNCounter,
+  createPNCounterRoom,
   deliverGCounterRace,
+  deliverPNCounterOperations,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
@@ -18,7 +20,9 @@ import {
   remove,
   resendGCounterComponent,
   stageGCounterRace,
+  stagePNCounterRace,
   updatePNCounter,
+  updatePNCounterRoom,
   write,
 } from "@atlas/toolkit";
 
@@ -74,6 +78,20 @@ assert.deepEqual(pnAView.negative, [
   { replicaId: "B", count: 1 },
 ]);
 assert.equal(unwrap(inspectPNCounter(unwrap(mergePNCounter(pnA, correctedBirds.operation)))).value, 2);
+
+const pnRoom = unwrap(createPNCounterRoom()).room;
+const stagedPNRoom = unwrap(stagePNCounterRace(pnRoom));
+assert.deepEqual(stagedPNRoom.view.replicas.map(({ value }) => value), [13, 9, 10]);
+assert.equal(stagedPNRoom.view.pending, true);
+const deliveredPNRoom = unwrap(deliverPNCounterOperations(pnRoom));
+assert.deepEqual(deliveredPNRoom.view.replicas.map(({ value }) => value), [12, 12, 12]);
+assert.equal(deliveredPNRoom.view.pending, false);
+assert.ok(deliveredPNRoom.deliveries.length >= 3);
+const directPNRoom = unwrap(createPNCounterRoom()).room;
+assert.deepEqual(
+  unwrap(updatePNCounterRoom(directPNRoom, "C", -3)).view.replicas.map(({ value }) => value),
+  [10, 10, 7],
+);
 
 const directRoom = unwrap(createGCounterRoom()).room;
 const direct = unwrap(incrementGCounterRoom(directRoom, "C", 3));

@@ -46,6 +46,18 @@ export type GCounterTransportResult = {
   view: GCounterRoomView;
   deliveries: TransportDelivery[];
 };
+declare const pnCounterRoomBrand: unique symbol;
+export type PNCounterRoom = { readonly [pnCounterRoomBrand]: true };
+export type PNCounterRoomView = {
+  replicas: Array<{ id: "A" | "B" | "C"; value: number }>;
+  pending: boolean;
+  sequenceNumber: number;
+};
+export type PNCounterTransportResult = {
+  room: PNCounterRoom;
+  view: PNCounterRoomView;
+  deliveries: TransportDelivery[];
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -224,6 +236,7 @@ function kernel<T, E>(result: GleamResult<T, E>): T {
 }
 
 const counterRooms = new WeakMap<GCounterRoom, sluiceCore.GCounterRoom$>();
+const pnCounterRooms = new WeakMap<PNCounterRoom, sluiceCore.PnCounterRoom$>();
 
 function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
   requireInput(
@@ -239,6 +252,20 @@ function roomBox(handle: sluiceCore.GCounterRoom$): GCounterRoom {
   return room;
 }
 
+function pnRoomHandle(value: unknown): sluiceCore.PnCounterRoom$ {
+  requireInput(
+    value !== null && typeof value === "object" && pnCounterRooms.has(value as PNCounterRoom),
+    "expected a live PN-counter Sluice room",
+  );
+  return pnCounterRooms.get(value as PNCounterRoom)!;
+}
+
+function pnRoomBox(handle: sluiceCore.PnCounterRoom$): PNCounterRoom {
+  const room = Object.freeze({}) as PNCounterRoom;
+  pnCounterRooms.set(room, handle);
+  return room;
+}
+
 function roomView(handle: sluiceCore.GCounterRoom$): GCounterRoomView {
   const snapshot = kernel(sluiceCore.gcounter_room_snapshot(handle));
   return {
@@ -249,6 +276,19 @@ function roomView(handle: sluiceCore.GCounterRoom$): GCounterRoomView {
     ],
     pending: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$pending(snapshot),
     sequenceNumber: sluiceCore.GCounterRoomSnapshot$GCounterRoomSnapshot$sequence_number(snapshot),
+  };
+}
+
+function pnRoomView(handle: sluiceCore.PnCounterRoom$): PNCounterRoomView {
+  const snapshot = kernel(sluiceCore.pncounter_room_snapshot(handle));
+  return {
+    replicas: [
+      { id: "A", value: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$a(snapshot) },
+      { id: "B", value: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$b(snapshot) },
+      { id: "C", value: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$c(snapshot) },
+    ],
+    pending: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$pending(snapshot),
+    sequenceNumber: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$sequence_number(snapshot),
   };
 }
 
@@ -423,6 +463,55 @@ export function resendGCounterComponent(
     requireInput(replica === "A" || replica === "B" || replica === "C", "replicaId must be A, B, or C");
     const [handle, deliveries] = kernel(sluiceCore.gcounter_room_resend(roomHandle(room), replica));
     return { room, view: roomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function createPNCounterRoom(): Result<PNCounterTransportResult> {
+  return attempt(() => {
+    const handle = kernel(sluiceCore.new_pncounter_room());
+    const room = pnRoomBox(handle);
+    return { room, view: pnRoomView(handle), deliveries: [] };
+  });
+}
+
+export function stagePNCounterRace(current: unknown): Result<PNCounterTransportResult> {
+  return attempt(() => {
+    const room = current as PNCounterRoom;
+    const handle = kernel(sluiceCore.pncounter_room_stage_race(pnRoomHandle(room)));
+    return { room, view: pnRoomView(handle), deliveries: [] };
+  });
+}
+
+export function updatePNCounterRoom(
+  current: unknown,
+  replicaId: unknown,
+  amount: unknown,
+): Result<PNCounterTransportResult> {
+  return attempt(() => {
+    const room = current as PNCounterRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C");
+    const update = signedInteger(amount, "invalid-input");
+    requireInput(update !== 0, "amount must be nonzero", "invalid-input");
+    const handle = kernel(sluiceCore.pncounter_room_update(pnRoomHandle(room), replica, update));
+    return { room, view: pnRoomView(handle), deliveries: [] };
+  });
+}
+
+export function deliverPNCounterOperations(current: unknown): Result<PNCounterTransportResult> {
+  return attempt(() => {
+    const room = current as PNCounterRoom;
+    const [handle, deliveries] = sluiceCore.pncounter_room_deliver(pnRoomHandle(room));
+    return { room, view: pnRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function deliverOnePNCounterOperation(current: unknown): Result<PNCounterTransportResult> {
+  return attempt(() => {
+    const room = current as PNCounterRoom;
+    const [handle, deliveries] = sluiceCore.pncounter_room_deliver_one(pnRoomHandle(room));
+    return { room, view: pnRoomView(handle), deliveries: transportDeliveries(deliveries) };
   });
 }
 
