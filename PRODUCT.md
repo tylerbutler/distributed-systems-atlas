@@ -63,9 +63,10 @@ kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 
 The G-counter lesson uses Watershed's JavaScript Sluice transport. Readers can
-play the authored A:+7/B:+3 race and resend the latest cumulative component.
-Atlas sequences and delivers the race automatically, animating each operation
-from its author through Sluice to all clients at a reader-controlled speed.
+increment A, B, or C directly, play the authored A:+7/B:+3 race, and resend the
+latest cumulative component. Atlas sequences and delivers each action
+automatically, animating operations from their authors through Sluice to all
+clients at a reader-controlled speed.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

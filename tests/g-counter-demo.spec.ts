@@ -49,18 +49,20 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   );
 });
 
-test("replaying the race starts from a clean state", async ({ page }) => {
+test("each client can increment through automatic delivery", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
-  const play = demo.getByRole("button", { name: "Play the race" });
 
-  await play.click();
-  await expect(totals).toHaveText(["10", "10", "10"]);
-  await play.click();
-  await expect(totals).toHaveText(["10", "10", "10"]);
+  await demo.getByRole("button", { name: "Add 3 at replica C" }).click();
+  await expect(totals).toHaveText(["3", "3", "3"]);
+  await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
+  await expect(totals).toHaveText(["4", "4", "4"]);
   await expect(demo.locator("[data-sequence]")).toHaveText("2");
+  await expect(demo.locator('[role="status"]')).toHaveText(
+    "Sluice delivered 1 operation. All three clients read 4.",
+  );
 });
 
 test("Counters remains useful without JavaScript", async ({ browser }) => {
@@ -79,6 +81,7 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByText("Sluice is not a data structure")).toBeVisible();
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
     await expect(page.getByText("After delivery, all three replicas read 10.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Play the race" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
     const explanation = page.getByText("Explain why a component resend is safe", { exact: true });

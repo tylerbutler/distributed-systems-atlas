@@ -277,9 +277,9 @@ The console anatomy is fixed: lesson controls, replica stations, message lane, v
 ### Focused Structure Demo
 
 A structure lesson uses one broad instrument field with the merge question,
-at least three client values, one primary race, any resolution action needed
-by the rule, reset, and a literal result sentence. The familiar value stays
-larger than its metadata.
+at least three client values, direct controls on each client, one primary race,
+any resolution action needed by the rule, reset, and a literal result sentence.
+The familiar value stays larger than its metadata.
 Per-replica components, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
@@ -293,7 +293,8 @@ controls, trace history, raw inspector, or invariant ledger.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
-lesson with one authored race.
+lesson with one authored race. Direct structure controls can supplement that
+path when they match the corresponding Watershed demo.
 
 ### Motion and Reduced Motion
 

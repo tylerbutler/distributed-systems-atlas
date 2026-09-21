@@ -1,11 +1,13 @@
 import {
   createGCounterDemo,
   deliverRace,
+  incrementReplica,
   presentGCounterDemo,
   resendComponent,
   stageRace,
   type GCounterDemoResult,
   type GCounterDemoState,
+  type ReplicaId,
 } from "./g-counter";
 
 type Action = "play" | "resend" | "reset";
@@ -26,6 +28,13 @@ class GCounterDemoElement extends HTMLElement {
   connectedCallback(): void {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
+    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
+      button.addEventListener("click", async () => {
+        const replica = button.dataset.replica as ReplicaId;
+        const amount = Number(button.dataset.increment);
+        await this.stageAndDeliver(incrementReplica(this.state, replica, amount), button);
+      });
+    }
     this.button("play").addEventListener("click", async () => {
       await this.playRace();
     });
@@ -59,13 +68,24 @@ class GCounterDemoElement extends HTMLElement {
       this.apply(staged, this.button("play"));
       return;
     }
+    await this.stageAndDeliver(staged, this.button("resend"));
+  }
+
+  private async stageAndDeliver(
+    staged: GCounterDemoResult,
+    focus: HTMLElement,
+  ): Promise<void> {
+    if (!staged.ok) {
+      this.apply(staged, focus);
+      return;
+    }
     this.state = staged.state;
     this.render();
     this.setBusy(true);
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
     }
-    await this.applyAnimated(deliverRace(this.state), this.button("resend"));
+    await this.applyAnimated(deliverRace(this.state), focus);
   }
 
   private apply(result: GCounterDemoResult, focus: HTMLElement): void {
@@ -179,6 +199,9 @@ class GCounterDemoElement extends HTMLElement {
         node("li", `op ${delivery.sequenceNumber}: ${delivery.author} to ${delivery.to}`))
       : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
+    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
+      button.disabled = false;
+    }
     this.button("play").disabled = false;
     this.button("resend").disabled = !view.canResend;
     this.button("resend").textContent = view.latestAuthor
