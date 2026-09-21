@@ -18,11 +18,13 @@ test("station identity and causal state do not rely on color", async ({ page }) 
     const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
     await expect(replica).toContainText(id);
     await expect(replica).toHaveAttribute("data-station-shape", shape);
-    const mark = await replica.locator("h3").evaluate((heading) => {
-      const style = getComputedStyle(heading, "::before");
-      return { radius: style.borderRadius, transform: style.transform, width: parseFloat(style.width) };
+    const heading = replica.locator("h3");
+    await expect.poll(() => heading.evaluate((element) =>
+      parseFloat(getComputedStyle(element, "::before").width))).toBeGreaterThan(0);
+    const mark = await heading.evaluate((element) => {
+      const style = getComputedStyle(element, "::before");
+      return { radius: style.borderRadius, transform: style.transform };
     });
-    expect(mark.width).toBeGreaterThan(0);
     if (id === "A") expect(mark.radius).toBe("50%");
     else expect(mark.transform).not.toBe("none");
   }
