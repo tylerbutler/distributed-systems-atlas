@@ -70,7 +70,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Choose a client and add an increment, or run the authored race.",
+    result: "Play the authored race to send concurrent increments through Sluice.",
   };
 }
 

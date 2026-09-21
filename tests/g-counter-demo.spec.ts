@@ -4,29 +4,17 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
-  const race = demo.getByRole("button", { name: "Race A +7 and B +3" });
-  const deliver = demo.getByRole("button", { name: "Deliver queued operations" });
+  const play = demo.getByRole("button", { name: "Play the race" });
   const resend = demo.locator('[data-action="resend"]');
 
   await expect(totals).toHaveText(["0", "0", "0"]);
-  await expect(race).toBeEnabled();
-  await expect(deliver).toBeDisabled();
+  await expect(play).toBeEnabled();
   await expect(resend).toBeDisabled();
-  const pace = demo.getByRole("slider", { name: "Animation speed" });
+  const pace = demo.getByRole("slider", { name: "Speed" });
   await pace.fill("2");
   await expect(demo.locator("[data-pace-output]")).toHaveText("2×");
-  const jitter = demo.locator("[data-jitter]");
-  await jitter.click();
-  await expect(jitter).toHaveAttribute("aria-pressed", "true");
-  await race.focus();
-  await race.press("Enter");
-  await expect(totals).toHaveText(["7", "3", "0"]);
-  await expect(deliver).toBeFocused();
-  await expect(demo.getByRole("region", { name: "Sluice transport" })).toContainText(
-    "Queued operations2",
-  );
-
-  await deliver.press("Enter");
+  await play.focus();
+  await play.press("Enter");
   await expect(demo.locator(".operation-pulse").first()).toBeVisible();
   await expect(totals).toHaveText(["10", "10", "10"]);
   await expect(resend).toBeFocused();
@@ -55,27 +43,24 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   const reset = demo.getByRole("button", { name: "Reset", exact: true });
   await reset.click();
   await expect(totals).toHaveText(["0", "0", "0"]);
-  await expect(demo.getByRole("button", { name: "Add 1 at replica A" })).toBeFocused();
+  await expect(play).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Choose a client and add an increment, or run the authored race.",
+    "Play the authored race to send concurrent increments through Sluice.",
   );
 });
 
-test("each client can add increments before delivery", async ({ page }) => {
+test("replaying the race starts from a clean state", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
+  const play = demo.getByRole("button", { name: "Play the race" });
 
-  await demo.getByRole("button", { name: "Add 3 at replica C" }).click();
-  await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
-  await expect(totals).toHaveText(["1", "0", "3"]);
-  await expect(demo.locator("[data-pending]")).toHaveText("2");
-
-  await demo.getByRole("button", { name: "Deliver queued operations" }).click();
-  await expect(totals).toHaveText(["4", "4", "4"]);
-  await expect(demo.locator('[role="status"]')).toHaveText(
-    "Sluice delivered 2 operations. All three clients read 4.",
-  );
+  await play.click();
+  await expect(totals).toHaveText(["10", "10", "10"]);
+  await play.click();
+  await expect(totals).toHaveText(["10", "10", "10"]);
+  await expect(demo.locator("[data-sequence]")).toHaveText("2");
 });
 
 test("Counters remains useful without JavaScript", async ({ browser }) => {
@@ -94,8 +79,8 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByText("Sluice is not a data structure")).toBeVisible();
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
     await expect(page.getByText("After delivery, all three replicas read 10.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
-    await expect(page.getByRole("slider", { name: "Animation speed" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Play the race" })).toBeDisabled();
+    await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
     const explanation = page.getByText("Explain why a component resend is safe", { exact: true });
     await explanation.focus();
     await page.keyboard.press("Enter");

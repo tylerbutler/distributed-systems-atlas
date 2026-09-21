@@ -1,16 +1,14 @@
 import {
   createGCounterDemo,
   deliverRace,
-  incrementReplica,
   presentGCounterDemo,
   resendComponent,
   stageRace,
   type GCounterDemoResult,
   type GCounterDemoState,
-  type ReplicaId,
 } from "./g-counter";
 
-type Action = "race" | "deliver" | "resend" | "reset";
+type Action = "play" | "resend" | "reset";
 
 function node<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -24,23 +22,12 @@ function node<K extends keyof HTMLElementTagNameMap>(
 class GCounterDemoElement extends HTMLElement {
   private state: GCounterDemoState = createGCounterDemo();
   private speed = 1;
-  private jitter = false;
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
-    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.addEventListener("click", () => {
-        const replica = button.dataset.replica as ReplicaId;
-        const amount = Number(button.dataset.increment);
-        this.apply(incrementReplica(this.state, replica, amount), button);
-      });
-    }
-    this.button("race").addEventListener("click", () => {
-      this.apply(stageRace(this.state), this.button("deliver"));
-    });
-    this.button("deliver").addEventListener("click", async () => {
-      await this.applyAnimated(deliverRace(this.state), this.button("resend"));
+    this.button("play").addEventListener("click", async () => {
+      await this.playRace();
     });
     this.button("resend").addEventListener("click", async () => {
       await this.applyAnimated(resendComponent(this.state), this.button("resend"));
@@ -48,18 +35,12 @@ class GCounterDemoElement extends HTMLElement {
     this.button("reset").addEventListener("click", () => {
       this.state = createGCounterDemo();
       this.render();
-      this.querySelector<HTMLButtonElement>("[data-increment]")!.focus();
+      this.button("play").focus();
     });
     const pace = this.querySelector<HTMLInputElement>("[data-pace]")!;
     pace.addEventListener("input", () => {
       this.speed = Number(pace.value);
       this.querySelector<HTMLOutputElement>("[data-pace-output]")!.value = `${this.speed}×`;
-    });
-    const jitter = this.querySelector<HTMLButtonElement>("[data-jitter]")!;
-    jitter.addEventListener("click", () => {
-      this.jitter = !this.jitter;
-      jitter.setAttribute("aria-pressed", String(this.jitter));
-      jitter.textContent = `Jitter: ${this.jitter ? "on" : "off"}`;
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -69,6 +50,22 @@ class GCounterDemoElement extends HTMLElement {
     const button = this.querySelector<HTMLButtonElement>(`[data-action="${action}"]`);
     if (!button) throw new Error(`Missing G-counter ${action} control`);
     return button;
+  }
+
+  private async playRace(): Promise<void> {
+    this.state = createGCounterDemo();
+    const staged = stageRace(this.state);
+    if (!staged.ok) {
+      this.apply(staged, this.button("play"));
+      return;
+    }
+    this.state = staged.state;
+    this.render();
+    this.setBusy(true);
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
+    }
+    await this.applyAnimated(deliverRace(this.state), this.button("resend"));
   }
 
   private apply(result: GCounterDemoResult, focus: HTMLElement): void {
@@ -141,8 +138,7 @@ class GCounterDemoElement extends HTMLElement {
     dot.className = "operation-pulse";
     dot.ariaHidden = "true";
     layer.append(dot);
-    const jitter = this.jitter ? (Math.random() * 240) - 120 : 0;
-    const duration = Math.max(120, (420 + jitter) / this.speed);
+    const duration = Math.max(120, 420 / this.speed);
     const animation = dot.animate([
       {
         transform: `translate(${start.left + start.width / 2 - root.left - 10}px, ${start.top + start.height / 2 - root.top - 10}px) scale(.7)`,
@@ -183,18 +179,13 @@ class GCounterDemoElement extends HTMLElement {
         node("li", `op ${delivery.sequenceNumber}: ${delivery.author} to ${delivery.to}`))
       : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
-    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.disabled = false;
-    }
-    this.button("race").disabled = false;
-    this.button("deliver").disabled = !view.canDeliver;
+    this.button("play").disabled = false;
     this.button("resend").disabled = !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Resend ${view.latestAuthor}'s component`
       : "Resend latest component";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
-    this.querySelector<HTMLButtonElement>("[data-jitter]")!.disabled = false;
   }
 }
 
