@@ -6,6 +6,7 @@ import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   eventualConsistencyTerm,
+  gCounterTerm,
   replicaTerm,
 } from "../../lib/atlas/standalone-terms";
 ---
@@ -111,11 +112,14 @@ import {
         Bob has seen 3, their shared total is 10.
       </p>
       <p>
-        This is a grow-only counter, or G-counter. Each replica keeps the
-        largest note it has received from each hiker, then adds those counts.
-        It does not add every message. If Bob leaves the same checkpoint note
-        twice, both messages contain the same count of 3 birds. His count stays 3.
+        This is a grow-only counter, or{" "}
+        <dfn><a href="/glossary/#g-counter">G-counter</a></dfn>. Each replica
+        keeps the largest note it has received from each hiker, then adds those
+        counts. It does not add every message. If Bob leaves the same
+        checkpoint note twice, both messages contain the same count of 3
+        birds. His count stays 3.
       </p>
+      <TermCallout {...gCounterTerm} />
       <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all notes from Alice)
 count[Bob] = max(all notes from Bob)
 birds = count[Alice] + count[Bob] + ...</code></pre>

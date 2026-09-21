@@ -137,6 +137,9 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#eventual-consistency")).toContainText(
     "Each replica sees only the updates it has received",
   );
+  await expect(page.locator("#g-counter")).toContainText(
+    "gives each replica its own nondecreasing component",
+  );
   await expect(page.locator("#pn-counter")).toContainText(
     "stores increases and decreases in separate grow-only components",
   );

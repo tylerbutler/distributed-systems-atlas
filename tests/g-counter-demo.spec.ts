@@ -196,6 +196,12 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
       name: "Bob takes a different trail",
     })).toBeVisible();
     await expect(page.getByText("It does not add every message")).toBeVisible();
+    const gCounterDefinition = page.getByLabel("G-counter definition");
+    await expect(gCounterDefinition).toContainText(
+      "merges each component by maximum",
+    );
+    await expect(gCounterDefinition.getByRole("link", { name: "G-counter" }))
+      .toHaveAttribute("href", "/glossary/#g-counter");
     await expect(page.getByRole("table", {
       name: "Carol's notebook at each checkpoint",
     }).locator("tbody tr")).toHaveText([

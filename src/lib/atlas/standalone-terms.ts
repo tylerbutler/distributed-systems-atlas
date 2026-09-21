@@ -10,6 +10,11 @@ export const eventualConsistencyTerm: GlossaryTerm = {
   definition: "Each replica sees only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
 };
 
+export const gCounterTerm: GlossaryTerm = {
+  term: "G-counter",
+  definition: "A grow-only replicated counter that gives each replica its own nondecreasing component, merges each component by maximum, and sums the components for the total.",
+};
+
 export const pnCounterTerm: GlossaryTerm = {
   term: "PN-counter",
   definition: "A replicated counter that stores increases and decreases in separate grow-only components, then subtracts their totals.",
@@ -108,6 +113,7 @@ export const sharedRichTextTerm: GlossaryTerm = {
 export const standaloneTerms = [
   claimsTerm,
   eventualConsistencyTerm,
+  gCounterTerm,
   gSetTerm,
   jsonOtTerm,
   lwwRegisterTerm,
