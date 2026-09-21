@@ -74,6 +74,28 @@ pub fn gcounter_rejects_negative_increment_test() {
   |> should.be_error
 }
 
+pub fn pncounter_mixed_sign_updates_converge_and_replay_test() {
+  let #(a, a_delta) = toolkit.new_pncounter("A") |> toolkit.pncounter_update(3)
+  let #(b, b_delta) = toolkit.new_pncounter("B") |> toolkit.pncounter_update(-1)
+  let a = toolkit.pncounter_merge(a, b_delta)
+  let b = toolkit.pncounter_merge(b, a_delta)
+  let expected =
+    toolkit.PnCounterSnapshot(2, [toolkit.CounterEntry("A", 3)], [
+      toolkit.CounterEntry("B", 1),
+    ])
+  toolkit.pncounter_snapshot(a) |> should.equal(expected)
+  toolkit.pncounter_snapshot(b) |> should.equal(expected)
+  toolkit.pncounter_merge(a, b_delta) |> should.equal(a)
+}
+
+pub fn pncounter_can_have_a_negative_visible_value_test() {
+  let #(counter, _) = toolkit.new_pncounter("A") |> toolkit.pncounter_update(-3)
+  toolkit.pncounter_snapshot(counter)
+  |> should.equal(
+    toolkit.PnCounterSnapshot(-3, [], [toolkit.CounterEntry("A", 3)]),
+  )
+}
+
 pub fn gcounter_sluice_room_delivers_to_three_clients_test() {
   let assert Ok(room) = sluice.new_gcounter_room()
   let assert Ok(room) = sluice.gcounter_room_stage_race(room)

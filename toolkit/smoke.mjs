@@ -5,16 +5,20 @@ import {
   createGCounterRoom,
   createMvRegister,
   createOrSet,
+  createPNCounter,
   deliverGCounterRace,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
   inspectGCounter,
+  inspectPNCounter,
   merge,
   mergeGCounter,
+  mergePNCounter,
   remove,
   resendGCounterComponent,
   stageGCounterRace,
+  updatePNCounter,
   write,
 } from "@atlas/toolkit";
 
@@ -53,6 +57,23 @@ assert.deepEqual(unwrap(inspectGCounter(mergedA)).counts, [
 ]);
 assert.equal(unwrap(inspectGCounter(unwrap(mergeGCounter(mergedA, countB.operation)))).value, 10);
 assert.equal(incrementGCounter(mergedA, -1).ok, false);
+
+const addedBirds = unwrap(updatePNCounter(unwrap(createPNCounter("A")), 3));
+const correctedBirds = unwrap(updatePNCounter(unwrap(createPNCounter("B")), -1));
+const pnA = unwrap(mergePNCounter(addedBirds.state, correctedBirds.operation));
+const pnB = unwrap(mergePNCounter(correctedBirds.state, addedBirds.operation));
+const pnAView = unwrap(inspectPNCounter(pnA));
+const pnBView = unwrap(inspectPNCounter(pnB));
+assert.equal(pnAView.value, pnBView.value);
+assert.deepEqual(pnAView.positive, pnBView.positive);
+assert.deepEqual(pnAView.negative, pnBView.negative);
+assert.deepEqual(pnAView.positive, [
+  { replicaId: "A", count: 3 },
+]);
+assert.deepEqual(pnAView.negative, [
+  { replicaId: "B", count: 1 },
+]);
+assert.equal(unwrap(inspectPNCounter(unwrap(mergePNCounter(pnA, correctedBirds.operation)))).value, 2);
 
 const directRoom = unwrap(createGCounterRoom()).room;
 const direct = unwrap(incrementGCounterRoom(directRoom, "C", 3));

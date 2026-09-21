@@ -15,11 +15,19 @@ export type GCounter = {
   version: 1; kind: "g-counter"; replicaId: string;
   counts: { replicaId: string; count: number }[]; value: number;
 };
+export type PNCounter = {
+  version: 1; kind: "pn-counter"; replicaId: string;
+  positive: { replicaId: string; count: number }[];
+  negative: { replicaId: string; count: number }[];
+  value: number;
+};
 export type State = MvRegister | OrSet;
 export type Operation<S extends State = State> = { version: 1; type: "operation"; delta: S };
 export type Change<S extends State = State> = { state: S; operation: Operation<S> };
 export type GCounterOperation = { version: 1; type: "g-counter-operation"; delta: GCounter };
 export type GCounterChange = { state: GCounter; operation: GCounterOperation };
+export type PNCounterOperation = { version: 1; type: "pn-counter-operation"; delta: PNCounter };
+export type PNCounterChange = { state: PNCounter; operation: PNCounterOperation };
 declare const gCounterRoomBrand: unique symbol;
 export type GCounterRoom = { readonly [gCounterRoomBrand]: true };
 export type GCounterRoomView = {
@@ -99,6 +107,12 @@ function incrementAmount(value: unknown): number {
   return value;
 }
 
+function signedInteger(value: unknown, tag: ErrorTag = "invalid-state"): number {
+  requireInput(typeof value === "number" && Number.isSafeInteger(value),
+    "expected a safe integer", tag);
+  return value;
+}
+
 function list<T>(value: unknown, parse: (entry: unknown) => T): T[] {
   requireInput(Array.isArray(value), "expected an array");
   requireInput(Object.values(Object.getOwnPropertyDescriptors(value)).every((field) => "value" in field),
@@ -136,6 +150,34 @@ function gcounterState(value: unknown): GCounter {
   requireInput(Number.isSafeInteger(valueTotal), "G-counter value exceeds the safe integer range");
   requireInput(counter(input.value) === valueTotal, "G-counter value must equal the sum of its components");
   return { version: 1, kind: "g-counter", replicaId, counts, value: valueTotal };
+}
+
+function counterComponents(value: unknown, label: string): PNCounter["positive"] {
+  const components = list(value, (entry) => {
+    const component = record(entry);
+    return { replicaId: replica(component.replicaId), count: counter(component.count) };
+  }).sort((a, b) => lexical(a.replicaId, b.replicaId));
+  requireInput(new Set(components.map((entry) => entry.replicaId)).size === components.length,
+    `duplicate PN-counter ${label} components`);
+  return components;
+}
+
+function pncounterState(value: unknown): PNCounter {
+  const input = record(value);
+  version(input.version);
+  requireInput(input.kind === "pn-counter", "expected a PN-counter state", "kind-mismatch");
+  const replicaId = replica(input.replicaId);
+  const positive = counterComponents(input.positive, "positive");
+  const negative = counterComponents(input.negative, "negative");
+  const positiveTotal = positive.reduce((sum, entry) => sum + entry.count, 0);
+  const negativeTotal = negative.reduce((sum, entry) => sum + entry.count, 0);
+  requireInput(Number.isSafeInteger(positiveTotal), "PN-counter positive total exceeds the safe integer range");
+  requireInput(Number.isSafeInteger(negativeTotal), "PN-counter negative total exceeds the safe integer range");
+  const valueTotal = positiveTotal - negativeTotal;
+  requireInput(Number.isSafeInteger(valueTotal), "PN-counter value exceeds the safe integer range");
+  requireInput(signedInteger(input.value) === valueTotal,
+    "PN-counter value must equal positive minus negative components");
+  return { version: 1, kind: "pn-counter", replicaId, positive, negative, value: valueTotal };
 }
 
 function state(value: unknown): State {
@@ -248,6 +290,21 @@ function loadGCounter(state: GCounter) {
   }), state.replicaId));
 }
 
+function loadPNCounter(state: PNCounter) {
+  return kernel(core.pncounter_restore(JSON.stringify({
+    type: "pn_counter", v: 1, state: {
+      positive: {
+        self_id: state.replicaId,
+        counts: Object.fromEntries(state.positive.map((entry) => [entry.replicaId, entry.count])),
+      },
+      negative: {
+        self_id: state.replicaId,
+        counts: Object.fromEntries(state.negative.map((entry) => [entry.replicaId, entry.count])),
+      },
+    },
+  }), state.replicaId));
+}
+
 const snapshotTag = (tag: core.Tag$): Tag => ({
   replicaId: core.Tag$Tag$replica_id(tag), counter: core.Tag$Tag$counter(tag),
 });
@@ -287,6 +344,24 @@ function gcounterFromCore(value: core.GrowOnlyCounter$, replicaId: string): GCou
     replicaId,
     counts,
     value: core.GCounterSnapshot$GCounterSnapshot$value(snapshot),
+  };
+}
+
+const counterEntries = (entries: Iterable<core.CounterEntry$>): PNCounter["positive"] =>
+  Array.from(entries, (entry) => ({
+    replicaId: core.CounterEntry$CounterEntry$replica_id(entry),
+    count: core.CounterEntry$CounterEntry$count(entry),
+  })).sort((a, b) => lexical(a.replicaId, b.replicaId));
+
+function pncounterFromCore(value: core.PositiveNegativeCounter$, replicaId: string): PNCounter {
+  const snapshot = core.pncounter_snapshot(value);
+  return {
+    version: 1,
+    kind: "pn-counter",
+    replicaId,
+    positive: counterEntries(core.PnCounterSnapshot$PnCounterSnapshot$positive(snapshot)),
+    negative: counterEntries(core.PnCounterSnapshot$PnCounterSnapshot$negative(snapshot)),
+    value: core.PnCounterSnapshot$PnCounterSnapshot$value(snapshot),
   };
 }
 
@@ -395,6 +470,68 @@ export function inspectGCounter(current: unknown): Result<{
   return attempt(() => {
     const input = gcounterState(current);
     return { value: input.value, counts: input.counts, causal: input };
+  });
+}
+
+export function createPNCounter(replicaId: unknown): Result<PNCounter> {
+  return attempt(() => {
+    const id = replica(replicaId, "invalid-input");
+    return pncounterFromCore(core.new_pncounter(id), id);
+  });
+}
+
+export function updatePNCounter(current: unknown, amount: unknown): Result<PNCounterChange> {
+  return attempt(() => {
+    const input = pncounterState(current);
+    const delta = signedInteger(amount, "invalid-input");
+    const components = delta >= 0 ? input.positive : input.negative;
+    const magnitude = Math.abs(delta);
+    const own = components.find((entry) => entry.replicaId === input.replicaId)?.count ?? 0;
+    const componentTotal = components.reduce((sum, entry) => sum + entry.count, 0);
+    requireInput(own <= Number.MAX_SAFE_INTEGER - magnitude
+      && componentTotal <= Number.MAX_SAFE_INTEGER - magnitude,
+    "PN-counter component exhausted", "counter-exhausted");
+    requireInput(Number.isSafeInteger(input.value + delta),
+      "PN-counter value exhausted", "counter-exhausted");
+    const [next, operation] = core.pncounter_update(loadPNCounter(input), delta);
+    return {
+      state: pncounterFromCore(next, input.replicaId),
+      operation: {
+        version: 1,
+        type: "pn-counter-operation",
+        delta: pncounterFromCore(operation, input.replicaId),
+      },
+    };
+  });
+}
+
+export function mergePNCounter(current: unknown, remote: unknown): Result<PNCounter> {
+  return attempt(() => {
+    const input = pncounterState(current);
+    const payload = record(remote);
+    if (payload.type === "pn-counter-operation") version(payload.version);
+    const incoming = pncounterState(payload.type === "pn-counter-operation" ? payload.delta : payload);
+    return pncounterFromCore(
+      core.pncounter_merge(loadPNCounter(input), loadPNCounter(incoming)),
+      input.replicaId,
+    );
+  });
+}
+
+export function inspectPNCounter(current: unknown): Result<{
+  value: number;
+  positive: PNCounter["positive"];
+  negative: PNCounter["negative"];
+  causal: PNCounter;
+}> {
+  return attempt(() => {
+    const input = pncounterState(current);
+    return {
+      value: input.value,
+      positive: input.positive,
+      negative: input.negative,
+      causal: input,
+    };
   });
 }
 

@@ -11,6 +11,7 @@ import lattice_core/replica_id
 import watershed/g_counter_kernel
 import watershed/mv_register_kernel
 import watershed/or_set_kernel
+import watershed/pn_counter_kernel
 
 pub opaque type Register {
   Register(state: mv_register_kernel.MvRegisterState)
@@ -22,6 +23,10 @@ pub opaque type ObservedSet {
 
 pub opaque type GrowOnlyCounter {
   GrowOnlyCounter(state: g_counter_kernel.GCounterState)
+}
+
+pub opaque type PositiveNegativeCounter {
+  PositiveNegativeCounter(state: pn_counter_kernel.PnCounterState)
 }
 
 pub type Tag {
@@ -52,6 +57,14 @@ pub type GCounterSnapshot {
   GCounterSnapshot(value: Int, counts: List(CounterEntry))
 }
 
+pub type PnCounterSnapshot {
+  PnCounterSnapshot(
+    value: Int,
+    positive: List(CounterEntry),
+    negative: List(CounterEntry),
+  )
+}
+
 pub fn new_gcounter(replica: String) -> GrowOnlyCounter {
   GrowOnlyCounter(g_counter_kernel.new(replica_id.new(replica)))
 }
@@ -61,9 +74,10 @@ pub fn gcounter_increment(
   amount: Int,
 ) -> Result(#(GrowOnlyCounter, GrowOnlyCounter), g_counter_kernel.EditError) {
   let GrowOnlyCounter(state) = counter
-  use #(next, _, operation) <- result.try(
-    g_counter_kernel.p2p_increment(state, amount),
-  )
+  use #(next, _, operation) <- result.try(g_counter_kernel.p2p_increment(
+    state,
+    amount,
+  ))
   let g_counter_kernel.Increment(_, delta) = operation
   Ok(#(
     GrowOnlyCounter(next),
@@ -100,15 +114,87 @@ pub fn gcounter_snapshot(counter: GrowOnlyCounter) -> GCounterSnapshot {
         g_counter_kernel.value(state),
         dict.to_list(counts)
           |> list.map(fn(entry) { CounterEntry(entry.0, entry.1) })
-          |> list.sort(fn(a, b) {
-            string.compare(a.replica_id, b.replica_id)
-          }),
+          |> list.sort(fn(a, b) { string.compare(a.replica_id, b.replica_id) }),
       ))
     })
     decode.success(snapshot)
   }
   let assert Ok(snapshot) =
     state |> g_counter_kernel.summary |> json.to_string |> json.parse(decoder)
+  snapshot
+}
+
+pub fn new_pncounter(replica: String) -> PositiveNegativeCounter {
+  PositiveNegativeCounter(pn_counter_kernel.new(replica_id.new(replica)))
+}
+
+pub fn pncounter_update(
+  counter: PositiveNegativeCounter,
+  amount: Int,
+) -> #(PositiveNegativeCounter, PositiveNegativeCounter) {
+  let PositiveNegativeCounter(state) = counter
+  let #(next, _, operation) = pn_counter_kernel.p2p_update(state, amount)
+  let pn_counter_kernel.Update(_, delta) = operation
+  #(
+    PositiveNegativeCounter(next),
+    PositiveNegativeCounter(pn_counter_kernel.from_sequenced(
+      delta,
+      state.replica_id,
+    )),
+  )
+}
+
+pub fn pncounter_merge(
+  counter: PositiveNegativeCounter,
+  remote: PositiveNegativeCounter,
+) -> PositiveNegativeCounter {
+  let PositiveNegativeCounter(state) = counter
+  let PositiveNegativeCounter(remote) = remote
+  PositiveNegativeCounter(
+    pn_counter_kernel.p2p_merge(state, remote.sequenced).0,
+  )
+}
+
+pub fn pncounter_restore(
+  source: String,
+  replica: String,
+) -> Result(PositiveNegativeCounter, json.DecodeError) {
+  pn_counter_kernel.from_summary(source, replica_id.new(replica))
+  |> result.map(PositiveNegativeCounter)
+}
+
+fn counter_entries_decoder() -> decode.Decoder(List(CounterEntry)) {
+  decode.dict(decode.string, decode.int)
+  |> decode.map(fn(counts) {
+    dict.to_list(counts)
+    |> list.map(fn(entry) { CounterEntry(entry.0, entry.1) })
+    |> list.sort(fn(a, b) { string.compare(a.replica_id, b.replica_id) })
+  })
+}
+
+fn counter_half_decoder() -> decode.Decoder(List(CounterEntry)) {
+  use counts <- decode.field("counts", counter_entries_decoder())
+  decode.success(counts)
+}
+
+pub fn pncounter_snapshot(
+  counter: PositiveNegativeCounter,
+) -> PnCounterSnapshot {
+  let PositiveNegativeCounter(state) = counter
+  let decoder = {
+    use snapshot <- decode.field("state", {
+      use positive <- decode.field("positive", counter_half_decoder())
+      use negative <- decode.field("negative", counter_half_decoder())
+      decode.success(PnCounterSnapshot(
+        pn_counter_kernel.value(state),
+        positive,
+        negative,
+      ))
+    })
+    decode.success(snapshot)
+  }
+  let assert Ok(snapshot) =
+    state |> pn_counter_kernel.summary |> json.to_string |> json.parse(decoder)
   snapshot
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
-  add, createMvRegister, createOrSet, inspect, merge, remove, write,
+  add, createMvRegister, createOrSet, createPNCounter, inspect, inspectPNCounter,
+  merge, mergePNCounter, remove, updatePNCounter, write,
   type Change, type Result, type State,
 } from "@atlas/toolkit";
 
@@ -65,6 +66,34 @@ test("merged metadata has deterministic order across delivery permutations", () 
     const ba = unwrap(merge(unwrap(merge(start, right.operation)), left.operation));
     expect(JSON.stringify(ab)).toBe(JSON.stringify(ba));
   }
+});
+
+test("PN-counter mixed-sign updates converge and duplicate merge is safe", () => {
+  const a = unwrap(updatePNCounter(unwrap(createPNCounter("A")), 3));
+  const b = unwrap(updatePNCounter(unwrap(createPNCounter("B")), -1));
+  const ab = unwrap(mergePNCounter(unwrap(mergePNCounter(unwrap(createPNCounter("C")), a.operation)), b.operation));
+  const ba = unwrap(mergePNCounter(unwrap(mergePNCounter(unwrap(createPNCounter("C")), b.operation)), a.operation));
+  expect(unwrap(inspectPNCounter(ab))).toMatchObject({
+    value: 2,
+    positive: [{ replicaId: "A", count: 3 }],
+    negative: [{ replicaId: "B", count: 1 }],
+  });
+  expect(ba).toEqual(ab);
+  expect(unwrap(mergePNCounter(ab, b.operation))).toEqual(ab);
+});
+
+test("PN-counter supports negative values and validates its component totals", () => {
+  const corrected = unwrap(updatePNCounter(unwrap(createPNCounter("A")), -3)).state;
+  expect(unwrap(inspectPNCounter(corrected)).value).toBe(-3);
+  const positive = unwrap(updatePNCounter(unwrap(createPNCounter("A")), 1)).state;
+  expect(updatePNCounter(positive, Number.MAX_SAFE_INTEGER)).toMatchObject({
+    ok: false,
+    error: { tag: "counter-exhausted" },
+  });
+  expect(inspectPNCounter({ ...corrected, value: 0 })).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-state" },
+  });
 });
 
 describe("facade validation", () => {
