@@ -1,0 +1,37 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { sharedMapTerm } from "../../lib/atlas/standalone-terms";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout title="SharedMap" description="The ranger sequences concurrent writes to one shared field map." territory="Structures" sheetTitle="SharedMap">
+  <article class="register-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>SharedMap</h1>
+      <p class="structure-summary">
+        The ranger creates a field record with a <code>gate-status</code> key.
+        Alice and Bob write different values before either update reaches the
+        other hikers.
+      </p>
+    </header>
+    <StructureFacts family="DDS" model="Sequenced operation-based map" updates="Set, delete, and clear JSON entries" merge="Highest sequence number wins per key." delivery="One server-ordered operation stream" bestFor="Shared JSON state under a sequenced service" cost="Confirmed entries plus pending local writes" />
+    <section aria-labelledby="order-title">
+      <h2 id="order-title">The station log decides the key</h2>
+      <p>
+        A <dfn><a href="/glossary/#sharedmap">SharedMap</a></dfn> gives every
+        accepted operation a sequence number. When two writes target the same
+        key, the greater sequence number wins.
+      </p>
+      <TermCallout {...sharedMapTerm} />
+      <figure><table aria-label="SharedMap gate-status race"><thead><tr><th scope="col">Sequence</th><th scope="col">Write</th><th scope="col">Visible value</th></tr></thead><tbody><tr><th scope="row">SN 1</th><td>Alice · Trail open</td><td>Trail open</td></tr><tr><th scope="row">SN 2</th><td>Bob · Trail closed</td><td>Trail closed</td></tr></tbody></table><figcaption>The server order is the conflict rule, not a timestamp in the value.</figcaption></figure>
+    </section>
+    <MapStructureDemo kind="shared-map" title="Sequence two writes to one key" description="Alice and Bob edit gate-status inside one delay window. The ranger's numbered stream makes Bob's later operation the winner." rule="Greatest server sequence number wins per key." raceLabel="Race the two gate-status writes" />
+    <section aria-labelledby="limit-title"><h2 id="limit-title">One value survives</h2><p>The rule is simple and useful, but the losing value disappears. If offline clocks should choose the winner, use LWWMap. If a concurrent update must survive deletion, use OR-map.</p></section>
+    <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo runs Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/map_kernel.gleam">SharedMap kernel</a> through a three-client Sluice room.</p></section>
+    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/maps/">Back to map family</a><a href="/structures/lww-map/">Continue to LWWMap</a></nav>
+  </article>
+</BaseLayout>

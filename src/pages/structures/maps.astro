@@ -1,0 +1,167 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Maps"
+  description="Compare sequenced, timestamped, observed-remove, and hierarchical replicated maps."
+  territory="Structures"
+  sheetTitle="Maps"
+>
+  <article class="map-family">
+    <header class="page-intro">
+      <p class="territory-label">Structure family</p>
+      <h1>Maps</h1>
+      <p>
+        The ranger turns the Eagle Creek reports into a field record with named
+        keys. Alice, Bob, and Carol now need rules for conflicting values,
+        removed entries, and folders that can disappear and return.
+      </p>
+    </header>
+
+    <section aria-labelledby="shared-map-title">
+      <header><div><p class="structure-kind">DDS</p><h2 id="shared-map-title">SharedMap</h2><p>Server order selects one value per key.</p></div><code>map_kernel</code></header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice writes <code>gate-status = Trail open</code>. Bob writes
+            <code>Trail closed</code> before he sees her update. The ranger's
+            sequencer places Bob's operation last, so every map keeps Bob's
+            value.
+          </p>
+          <h3>Best for</h3>
+          <ul><li>Shared JSON settings under one sequenced service</li><li>Keys where server-order last-write-wins is acceptable</li></ul>
+        </div>
+        <dl><div><dt>Values</dt><dd>JSON and supported handles</dd></div><div><dt>Conflict rule</dt><dd>Greatest sequence number per key</dd></div><div><dt>Removal</dt><dd>Delete or clear</dd></div></dl>
+      </div>
+      <a class="structure-link" href="/structures/shared-map/">Open the SharedMap lesson</a>
+    </section>
+
+    <section aria-labelledby="lww-map-title">
+      <header><div><p class="structure-kind">CRDT</p><h2 id="lww-map-title">LWWMap</h2><p>Per-key timestamps select values and tombstones.</p></div><code>lww_map_kernel</code></header>
+      <div class="structure-body">
+        <div>
+          <p>
+            The same key can choose a different winner when its timestamp
+            differs from server order. Each key retains the winning value or
+            tombstone with its clock and writer evidence.
+          </p>
+          <h3>Best for</h3>
+          <ul><li>Offline string settings with deterministic winners</li><li>Maps where clocks, not the relay, define “last”</li></ul>
+        </div>
+        <dl><div><dt>Values</dt><dd>Strings</dd></div><div><dt>Conflict rule</dt><dd>Timestamp, tombstone, then writer ID</dd></div><div><dt>Removal</dt><dd>Retained timestamped tombstone</dd></div></dl>
+      </div>
+      <a class="structure-link" href="/structures/lww-map/">Open the LWWMap lesson</a>
+    </section>
+
+    <section aria-labelledby="or-map-title">
+      <header><div><p class="structure-kind">CRDT</p><h2 id="or-map-title">OR-map</h2><p>Concurrent work can survive removal of a key.</p></div><code>or_map_kernel</code></header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice removes the Eagle Creek stockpile after observing 5 crates.
+            Bob concurrently records 3 more. Alice cannot remove Bob's unseen
+            identity, so the stockpile remains with all 8 crates.
+          </p>
+          <h3>Best for</h3>
+          <ul><li>Keyed ledgers and nested CRDT values</li><li>Maps where concurrent update must beat removal</li></ul>
+        </div>
+        <dl><div><dt>Values</dt><dd>Tallies, registers, or string sets</dd></div><div><dt>Conflict rule</dt><dd>Observed-remove, add-wins</dd></div><div><dt>Removal</dt><dd>Tombstone observed key identities</dd></div></dl>
+      </div>
+      <a class="structure-link" href="/structures/or-map/">Open the OR-map lesson</a>
+    </section>
+
+    <section aria-labelledby="directory-title">
+      <header><div><p class="structure-kind">DDS</p><h2 id="directory-title">SharedDirectory</h2><p>A nested map with stable folder identities.</p></div><code>directory_kernel</code></header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice and Bob both create an Eagle Creek folder. The directory
+            merges the concurrent creates into one path. Stable folder identity
+            also prevents stale edits from attaching to a later replacement.
+          </p>
+          <h3>Best for</h3>
+          <ul><li>Collaborative project and document trees</li><li>Nested state where path names can be reused</li></ul>
+        </div>
+        <dl><div><dt>Values</dt><dd>Nested folders and map entries</dd></div><div><dt>Conflict rule</dt><dd>Sequenced values plus stable folder identity</dd></div><div><dt>Removal</dt><dd>Delete a specific folder instance</dd></div></dl>
+      </div>
+      <a class="structure-link" href="/structures/shared-directory/">Open the SharedDirectory lesson</a>
+    </section>
+
+    <section class="family-comparison" aria-labelledby="map-choice-title">
+      <h2 id="map-choice-title">Choose the key conflict rule</h2>
+      <table aria-label="Replicated map comparison">
+        <thead><tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Main cost</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Server-ordered JSON</th><td>SharedMap</td><td>Sequencer dependency</td></tr>
+          <tr><th scope="row">Timestamp-selected strings</th><td>LWWMap</td><td>Clock and tombstones</td></tr>
+          <tr><th scope="row">Concurrent update survives delete</th><td>OR-map</td><td>Causal identities</td></tr>
+          <tr><th scope="row">Nested paths retain identity</th><td>SharedDirectory</td><td>Folder-instance metadata</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/registers/">Back to registers</a>
+      <a href="/structures/shared-map/">Start the map lessons</a>
+      <a href="/structures/">Return to structures</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .map-family { max-width: var(--measure-reading); margin-inline: auto; }
+  .page-intro { margin-bottom: var(--space-7); }
+  .page-intro > p:last-child { font-size: 1.2rem; }
+  .map-family > section:not(.family-comparison) {
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border: var(--rule-width) solid var(--line);
+    background: var(--clear);
+  }
+  section > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+  section h2, section header p { margin: 0; }
+  section h2 { margin-block: var(--space-1); }
+  .structure-kind { color: var(--instrument); font: 700 0.75rem/1 var(--font-data); }
+  section header code { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+  .structure-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 0.7fr);
+    gap: var(--space-6);
+    padding-block: var(--space-5);
+  }
+  .structure-body :is(p, h3) { margin-top: 0; }
+  .structure-body h3 { margin-bottom: var(--space-2); font-size: 1rem; }
+  dl { margin: 0; border-block: var(--rule-width) solid var(--line); }
+  dl div { padding-block: var(--space-3); }
+  dl div + div { border-top: var(--rule-width) solid var(--line-faint); }
+  dt { color: var(--muted); font: 700 0.8rem/1.3 var(--font-ui); }
+  dd { margin: var(--space-1) 0 0; }
+  .structure-link { font-family: var(--font-ui); font-weight: 700; }
+  .family-comparison { margin-top: var(--space-7); }
+  table { width: 100%; margin-block: var(--space-4); border-collapse: collapse; }
+  :is(th, td) { padding: var(--space-3); border-block: var(--rule-width) solid var(--line); text-align: left; vertical-align: top; }
+  th { font-family: var(--font-ui); }
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+  @media (width < 48rem) {
+    section > header, .structure-body { grid-template-columns: 1fr; }
+    section > header { display: grid; }
+  }
+</style>

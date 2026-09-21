@@ -45,14 +45,38 @@ export const registerCollectionTerm: GlossaryTerm = {
   definition: "A sequenced collection of named registers that retains competing versions so readers can choose an atomic or latest-value policy.",
 };
 
+export const sharedMapTerm: GlossaryTerm = {
+  term: "SharedMap",
+  definition: "A sequenced key-value map where the highest server sequence number wins for each key.",
+};
+
+export const lwwMapTerm: GlossaryTerm = {
+  term: "LWWMap",
+  definition: "A replicated map where each key keeps the value or tombstone with the greatest timestamp and writer tie-breaker.",
+};
+
+export const orMapTerm: GlossaryTerm = {
+  term: "OR-map",
+  definition: "An observed-remove map whose key identities let a concurrent update survive removal.",
+};
+
+export const sharedDirectoryTerm: GlossaryTerm = {
+  term: "SharedDirectory",
+  definition: "A sequenced hierarchical map whose folders retain stable identities across concurrent create, delete, and recreate operations.",
+};
+
 export const standaloneTerms = [
   eventualConsistencyTerm,
   gSetTerm,
   lwwRegisterTerm,
+  lwwMapTerm,
+  orMapTerm,
   pnCounterTerm,
   replicaTerm,
   registerCollectionTerm,
   sequencerTerm,
+  sharedDirectoryTerm,
   sharedCounterTerm,
+  sharedMapTerm,
   twoPSetTerm,
 ];

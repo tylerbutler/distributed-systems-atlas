@@ -1,0 +1,20 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { lwwMapTerm } from "../../lib/atlas/standalone-terms";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout title="LWWMap" description="Each Eagle Creek map key carries its own timestamped conflict rule." territory="Structures" sheetTitle="LWWMap">
+  <article class="register-lesson">
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>LWWMap</h1><p class="structure-summary">The hikers still share named fields, but the ranger's delivery order no longer defines “last.” Every key carries its own clock and writer evidence.</p></header>
+    <StructureFacts family="CRDT" model="Per-key last-writer-wins map" updates="Set or remove strings" merge="Keep the greatest timestamp; tombstone and writer ID break ties." delivery="Safe under repeated and out-of-order delivery" bestFor="Offline string settings with a trusted clock policy" cost="Timestamp and writer metadata for values and tombstones" />
+    <section aria-labelledby="clock-title"><h2 id="clock-title">Each key owns a clock</h2><p>An <dfn><a href="/glossary/#lwwmap">LWWMap</a></dfn> compares metadata for each key independently. A newer timestamp can beat a write that the server delivers later. At equal time, a tombstone beats a value, then writer ID breaks a set/set tie.</p><TermCallout {...lwwMapTerm} /><pre aria-label="LWWMap comparison rule"><code>max(timestamp, tombstone, writer ID)</code></pre></section>
+    <MapStructureDemo kind="lww-map" title="Merge timestamped gate settings" description="Alice and Bob write the same key. Every replica applies the same per-key timestamp rule instead of trusting arrival order." rule="Timestamp wins; equal-time ties use removal and writer metadata." raceLabel="Race the timestamped gate writes" />
+    <section aria-labelledby="clock-risk-title"><h2 id="clock-risk-title">“Last” depends on the clock</h2><p>A fast clock can defeat a later human action. Tombstones must remain until the system can safely forget them. Use this map only when a deterministic single winner is worth those costs.</p></section>
+    <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo uses Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/lww_map_kernel.gleam">LWWMap kernel</a> and runtime-issued per-key clocks.</p></section>
+    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/shared-map/">Back to SharedMap</a><a href="/structures/maps/">Browse map family</a><a href="/structures/or-map/">Continue to OR-map</a></nav>
+  </article>
+</BaseLayout>

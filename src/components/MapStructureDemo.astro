@@ -1,0 +1,155 @@
+---
+import StationMark from "./StationMark.astro";
+import {
+  createMapDemo,
+  mapUserName,
+  type MapKind,
+  type MapOperation,
+  type ReplicaId,
+} from "../lib/structure-demo/map-demo";
+import "../styles/map-demo.css";
+
+interface Props {
+  kind: MapKind;
+  title: string;
+  description: string;
+  rule: string;
+  raceLabel: string;
+}
+
+const { kind, title, description, rule, raceLabel } = Astro.props;
+const initial = createMapDemo(kind);
+const folderByReplica: Record<ReplicaId, string> = {
+  A: "eagle-creek",
+  B: "ridge-pass",
+  C: "marsh-loop",
+};
+const statusByReplica: Record<ReplicaId, string> = {
+  A: "Trail open",
+  B: "Trail closed",
+  C: "Inspect bridge",
+};
+
+function operationFor(replica: ReplicaId): MapOperation {
+  if (kind === "or-map") {
+    return replica === "A"
+      ? { author: replica, action: "remove", key: "Eagle Creek", value: "" }
+      : {
+        author: replica,
+        action: "increment",
+        key: "Eagle Creek",
+        value: replica === "B" ? "3" : "1",
+      };
+  }
+  if (kind === "shared-directory") {
+    return {
+      author: replica,
+      action: "mkdir",
+      key: folderByReplica[replica],
+      value: "",
+    };
+  }
+  return {
+    author: replica,
+    action: "set",
+    key: "gate-status",
+    value: statusByReplica[replica],
+  };
+}
+
+function buttonLabel(operation: MapOperation): string {
+  if (operation.action === "remove") return "Remove Eagle Creek";
+  if (operation.action === "increment") return `Add ${operation.value} crates`;
+  if (operation.action === "mkdir") return `Create ${operation.key}`;
+  return `Write ${operation.value}`;
+}
+---
+
+<map-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
+  <section class="map-instrument" aria-labelledby={`${kind}-demo-title`}>
+    <div class="map-operation-layer" data-operation-layer aria-hidden="true"></div>
+    <header class="map-heading">
+      <div>
+        <p class="instrument-kicker">Three field maps</p>
+        <h2 id={`${kind}-demo-title`}>{title}</h2>
+        <p>{description}</p>
+      </div>
+      <p class="merge-rule">Conflict rule <strong>{rule}</strong></p>
+    </header>
+
+    <div class="map-network">
+      {initial.view.replicas.map((replica) => {
+        const operation = operationFor(replica.id);
+        return (
+          <section
+            class={`map-replica replica-${replica.id.toLowerCase()}`}
+            data-client={replica.id}
+            aria-label={`${mapUserName(replica.id)}'s map replica`}
+          >
+            <header>
+              <StationMark station={replica.id} size="lg" />
+              <div>
+                <h3>{mapUserName(replica.id)}</h3>
+                <p data-replica-state={replica.id}>
+                  {replica.entries.length ? "Baseline received" : "Empty map"}
+                </p>
+              </div>
+            </header>
+            <dl class="map-entries" data-map-entries={replica.id}>
+              {replica.entries.length
+                ? replica.entries.map((entry) => (
+                    <div><dt>{entry.key}</dt><dd>{entry.value}</dd></div>
+                  ))
+                : <div class="empty-entry"><dd>No entries</dd></div>}
+            </dl>
+            <button
+              type="button"
+              data-replica={replica.id}
+              data-map-action={operation.action}
+              data-map-key={operation.key}
+              data-map-value={operation.value}
+              disabled
+            >
+              {buttonLabel(operation)}
+            </button>
+          </section>
+        );
+      })}
+
+      <section class="map-relay" data-relay-node aria-label="Map message relay">
+        <span>{kind === "shared-map" ? "Ranger sequencer" : "Trail exchange"}</span>
+        <strong>
+          {kind === "shared-map"
+            ? "Server order selects writes"
+            : kind === "lww-map"
+              ? "Per-key timestamps select writes"
+              : "Identity metadata survives merge"}
+        </strong>
+        <output data-message-count>0 operations shared</output>
+      </section>
+    </div>
+
+    <div class="map-evidence">
+      <p><span>Mechanism evidence</span><strong data-evidence>No race delivered yet.</strong></p>
+      <ol data-history aria-label="Map operation log"><li>No operations shared yet.</li></ol>
+    </div>
+
+    <div class="map-controls">
+      <button type="button" data-action="race" disabled>{raceLabel}</button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+      <p data-enhancement-note>
+        Enable JavaScript to run the demo. The race and expected result remain
+        in the lesson.
+      </p>
+    </div>
+
+    <p class="map-result" role="status" aria-live="polite" aria-atomic="true">
+      {initial.result}
+    </p>
+    <p class="map-error" role="alert" hidden></p>
+  </section>
+</map-structure-demo>
+
+<script>
+  import "../lib/structure-demo/map-demo-element";
+</script>
