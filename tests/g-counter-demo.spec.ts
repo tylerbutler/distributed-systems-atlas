@@ -111,10 +111,10 @@ test("notes travel to checkpoints immediately and shared copies overlap", async 
   await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   await expect(demo.getByLabel("Checkpoint note states")).toContainText(
-    "New note Traveling to a checkpoint",
+    "New note In transit to a checkpoint",
   );
   await expect(demo.getByLabel("Checkpoint note states")).toContainText(
-    "Shared note Reaching the other hikers",
+    "Shared note Being delivered to the other hikers",
   );
   await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
 
@@ -168,6 +168,24 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     })).toBeVisible();
     await expect(page.getByTestId("pn-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
+      .toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Three hikers copy the same notebook" }))
+      .toBeVisible();
+    await expect(page.getByRole("table", {
+      name: "The hikers' notebooks before they share notes",
+    }).locator("tbody tr")).toHaveText([
+      "Alice700",
+      "Bob030",
+      "Carol000",
+      "Birds seen730",
+    ]);
+    await expect(page.getByRole("group", {
+      name: "Checkpoint note examples",
+    }).locator("p")).toHaveText([
+      "AliceRunning bird count7",
+      "BobRunning bird count3",
+    ]);
+    await expect(page.getByRole("heading", { name: "Alice fills in her row" }))
       .toBeVisible();
     await expect(page.getByText("Alice's local copy of the shared counter is a replica")).toBeVisible();
     const replicaDefinition = page.getByLabel("replica definition");
@@ -198,7 +216,7 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
       "count[Alice] = max(all notes from Alice)",
     );
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
-    await expect(page.getByText("After both checkpoint notes arrive")).toBeVisible();
+    await expect(page.getByText("After delivery of both checkpoint notes")).toBeVisible();
     await expect(page.getByRole("button", { name: "Record 1 bird for Alice" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Leave Alice +7 and Bob +3 together" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();

@@ -21,13 +21,59 @@ import {
       <p class="territory-label">Structures</p>
       <h1>G-counter</h1>
       <p class="structure-summary">
-        Before Alice, Bob, and Carol split onto separate trails, they mark the
-        same checkpoints on their maps. Each hiker will count birds and leave
-        notes with a running total. The others may receive those notes late,
-        out of order, or more than once. By the end of the hike, all three need the
-        same bird count.
+        The ranger asks Alice, Bob, and Carol to count birds on three trails.
+        Each hiker tracks their own sightings in a shared three-row format,
+        then leaves notes with their name and running count. The notes may
+        arrive late, out of order, or more than once. By the end of the hike,
+        all three notebooks must show the same total.
       </p>
     </header>
+
+    <section aria-labelledby="notebook-setup-title">
+      <h2 id="notebook-setup-title">Three hikers copy the same notebook</h2>
+      <p>
+        Each notebook has one row for Alice, one for Bob, and one for Carol.
+        A hiker writes new sightings in their own row. The other rows record
+        the latest running counts received from checkpoint notes.
+      </p>
+      <figure class="notebook notebook-setup">
+        <table aria-label="The hikers' notebooks before they share notes">
+          <thead>
+            <tr>
+              <th scope="col">Row</th>
+              <th scope="col">Alice's notebook</th>
+              <th scope="col">Bob's notebook</th>
+              <th scope="col">Carol's notebook</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Alice</th><td>7</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">Bob</th><td>0</td><td>3</td><td>0</td></tr>
+            <tr><th scope="row">Carol</th><td>0</td><td>0</td><td>0</td></tr>
+            <tr class="notebook-total">
+              <th scope="row">Birds seen</th><td>7</td><td>3</td><td>0</td>
+            </tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Before the first notes arrive, each hiker knows only their own
+          running count.
+        </figcaption>
+      </figure>
+      <p>
+        Alice does not send seven separate sightings. She leaves one
+        cumulative note that says her row has reached 7. Bob leaves the same
+        kind of note when his row reaches 3.
+      </p>
+      <div
+        class="checkpoint-notes"
+        role="group"
+        aria-label="Checkpoint note examples"
+      >
+        <p><strong>Alice</strong><span>Running bird count</span><output>7</output></p>
+        <p><strong>Bob</strong><span>Running bird count</span><output>3</output></p>
+      </div>
+    </section>
 
     <StructureFacts
       family="CRDT"
@@ -41,11 +87,11 @@ import {
     <CounterIllustration kind="g-counter" />
 
     <section aria-labelledby="one-counter-title">
-      <h2 id="one-counter-title">Alice starts counting birds</h2>
+      <h2 id="one-counter-title">Alice fills in her row</h2>
       <p>
         Alice takes the ridge trail. Each time she spots a bird, she adds one
-        to her running count. With only Alice hiking, the shared total is simply
-        the number she has seen.
+        to her row. After seven sightings, Alice's notebook reads
+        <code>[Alice: 7, Bob: 0, Carol: 0]</code>, so her local total is 7.
       </p>
       <p>
         Alice's local copy of the shared counter is a{" "}
@@ -78,11 +124,9 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     <section aria-labelledby="race-title">
       <h2 id="race-title">Their checkpoint notes cross</h2>
       <p>
-        Before they part at the trailhead, Alice, Bob, and Carol mark the same
-        checkpoints on their maps. Each carries a notebook with one row for
-        each hiker. When they find a note, they copy its count into that hiker's
-        row only if it is larger than the count already there. The three rows
-        add up to the bird count.
+        When a hiker finds a note, they copy its running count into the named
+        row only if the number is larger than the count already there. The
+        three rows add up to the bird count.
       </p>
       <p>
         On Carol's route, the first note at the north fork is from
@@ -242,11 +286,50 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     border-bottom: 0;
   }
 
+  .notebook-setup .notebook-total :is(th, td) {
+    border-top: calc(var(--rule-width) * 2) solid var(--line);
+    font-weight: 700;
+  }
+
   .notebook figcaption {
     margin-top: var(--space-3);
     color: var(--muted);
     font-family: var(--font-ui);
     font-size: 0.875rem;
+  }
+
+  .checkpoint-notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .checkpoint-notes p {
+    display: grid;
+    min-width: 12rem;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+    font-family: var(--font-ui);
+  }
+
+  .checkpoint-notes strong {
+    font-size: 1.05rem;
+  }
+
+  .checkpoint-notes span {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .checkpoint-notes output {
+    margin-top: var(--space-2);
+    font-family: var(--font-data);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .structure-next {
