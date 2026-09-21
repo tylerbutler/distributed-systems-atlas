@@ -35,6 +35,8 @@ test("replica controls stay active while numbered operations travel", async ({ p
   await expect(demo.locator('[data-leg="outbound"]')).toContainText(
     "Alice +1 · 1000 ms",
   );
+  await expect(demo.locator('[data-leg="sequenced"]').first()).toBeVisible();
+  await expect(demo.locator("[data-shared-total]")).toHaveText(["11", "10", "10"]);
   await expect(bob).toBeEnabled();
   await bob.click();
   await expect(carol).toBeEnabled();

@@ -93,6 +93,8 @@ test("PN-counter notes use the same Sluice motion language", async ({ page }) =>
   await expect(demo.locator('[data-leg="outbound"]')).toContainText(
     "Alice +1 · 1000 ms",
   );
+  await expect(demo.locator('[data-leg="sequenced"]').first()).toBeVisible();
+  await expect(demo.locator("[data-pn-total]")).toHaveText(["11", "10", "10"]);
   await expect(demo.locator("[data-pn-total]")).toHaveText(["11", "11", "11"], {
     timeout: 10_000,
   });

@@ -55,6 +55,23 @@ test("register controls stay active while writes travel", async ({ page }) => {
   });
 });
 
+test("register replicas update after the shared write arrives", async ({ page }) => {
+  await page.goto("/structures/multi-value-register/");
+  const demo = page.getByTestId("mv-register-demo");
+
+  await demo.getByRole("button", { name: "Write Trail open" }).click();
+  await expect(demo.locator(".register-operation-pulse.shared").first()).toBeVisible();
+  await expect(demo.locator("[data-register-values] span")).toHaveText([
+    "Trail open",
+  ]);
+
+  await expect(demo.locator("[data-register-values] span")).toHaveText([
+    "Trail open",
+    "Trail open",
+    "Trail open",
+  ], { timeout: 10_000 });
+});
+
 test("register lessons remain useful without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {

@@ -37,7 +37,6 @@ class PNCounterDemoElement extends HTMLElement {
   private delivering = false;
   private generation = 0;
   private outboundArrivals: Promise<void>[] = [];
-  private activeBroadcasts = new Set<Promise<void>>();
   private activeAnimations = new Set<Animation>();
 
   connectedCallback(): void {
@@ -50,6 +49,7 @@ class PNCounterDemoElement extends HTMLElement {
         const result = updatePNReplica(this.state, replica, amount);
         this.apply(result, button);
         if (!result.ok) return;
+        this.renderReplica(presentPNCounterDemo(this.state), replica);
         this.queueOutbound(replica, `${pnCounterUserName(replica)} ${signed(amount)}`);
         void this.deliverQueued(button);
       });
@@ -106,8 +106,10 @@ class PNCounterDemoElement extends HTMLElement {
         }
         this.state = result.state;
         const view = presentPNCounterDemo(this.state);
-        this.render();
-        this.launchBroadcast(view.latestDeliveries, generation);
+        this.render(false);
+        await this.animateDeliveries(view.latestDeliveries, generation);
+        if (generation !== this.generation) return;
+        this.render(true);
       }
     } finally {
       if (generation !== this.generation) return;
@@ -129,7 +131,7 @@ class PNCounterDemoElement extends HTMLElement {
       alert.textContent = result.error;
       alert.hidden = false;
     }
-    this.render();
+    this.render(!this.delivering);
     (result.ok ? focus : this.button("reset")).focus();
   }
 
@@ -140,20 +142,6 @@ class PNCounterDemoElement extends HTMLElement {
       label,
       "outbound",
     ));
-  }
-
-  private launchBroadcast(
-    deliveries: ReturnType<typeof presentPNCounterDemo>["latestDeliveries"],
-    generation: number,
-  ): void {
-    const broadcast = this.animateDeliveries(deliveries, generation);
-    this.activeBroadcasts.add(broadcast);
-    void broadcast.finally(() => {
-      this.activeBroadcasts.delete(broadcast);
-      if (generation === this.generation && this.activeBroadcasts.size === 0) {
-        this.render();
-      }
-    });
   }
 
   private async animateDeliveries(
@@ -226,7 +214,6 @@ class PNCounterDemoElement extends HTMLElement {
     this.generation += 1;
     this.delivering = false;
     this.outboundArrivals = [];
-    this.activeBroadcasts.clear();
     for (const animation of this.activeAnimations) animation.cancel();
     this.activeAnimations.clear();
     this.querySelector<HTMLElement>("[data-operation-layer]")!.replaceChildren();
@@ -240,28 +227,37 @@ class PNCounterDemoElement extends HTMLElement {
     this.button("reset").disabled = false;
   }
 
-  private render(): void {
+  private renderReplica(
+    view: ReturnType<typeof presentPNCounterDemo>,
+    replicaId: ReplicaId,
+  ): void {
+    const replica = view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    this.querySelector(`[data-pn-total="${replica.id}"]`)!.textContent =
+      String(replica.value);
+    this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
+      view.canDeliver
+        ? "Local view · note in transit"
+        : view.phase === "initial"
+          ? "Agreed count received"
+          : "All checkpoints agree";
+    for (const componentId of pnCounterComponentIds) {
+      this.querySelector(
+        `[data-pn-component="${replica.id}-positive-${componentId}"]`,
+      )!.textContent = String(pnCounterComponentCount(replica.positive, componentId));
+    }
+    for (const author of ["A", "B", "C"] as const) {
+      this.querySelector(
+        `[data-pn-component="${replica.id}-negative-${author}"]`,
+      )!.textContent = String(pnCounterComponentCount(replica.negative, author));
+    }
+  }
+
+  private render(renderReplicas = true): void {
     const view = presentPNCounterDemo(this.state);
     this.dataset.phase = view.phase;
-    for (const replica of view.replicas) {
-      this.querySelector(`[data-pn-total="${replica.id}"]`)!.textContent =
-        String(replica.value);
-      this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
-        view.canDeliver
-          ? "Local view · note in transit"
-          : view.phase === "initial"
-            ? "Agreed count received"
-            : "All checkpoints agree";
-      for (const componentId of pnCounterComponentIds) {
-        this.querySelector(
-          `[data-pn-component="${replica.id}-positive-${componentId}"]`,
-        )!.textContent = String(pnCounterComponentCount(replica.positive, componentId));
-      }
-      for (const author of ["A", "B", "C"] as const) {
-        this.querySelector(
-          `[data-pn-component="${replica.id}-negative-${author}"]`,
-        )!.textContent = String(pnCounterComponentCount(replica.negative, author));
-      }
+    if (renderReplicas) {
+      for (const replica of view.replicas) this.renderReplica(view, replica.id);
     }
     const operations = new Map<
       number,

@@ -82,6 +82,25 @@ test("map controls stay active while operations travel", async ({ page }) => {
   ], { timeout: 10_000 });
 });
 
+test("map replicas update after the shared operation arrives", async ({ page }) => {
+  await page.goto("/structures/shared-map/");
+  const demo = page.getByTestId("shared-map-demo");
+
+  await demo.getByRole("button", { name: "Write Trail open" }).click();
+  await expect(demo.locator(".map-operation-pulse.shared").first()).toBeVisible();
+  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
+    "Trail open",
+    "No entries",
+    "No entries",
+  ]);
+
+  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
+    "Trail open",
+    "Trail open",
+    "Trail open",
+  ], { timeout: 10_000 });
+});
+
 test("the map family links every dedicated lesson", async ({ page }) => {
   await page.goto("/structures/maps/");
   for (const [name, href] of [

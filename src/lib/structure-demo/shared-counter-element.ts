@@ -29,7 +29,6 @@ class SharedCounterDemoElement extends HTMLElement {
   private delivering = false;
   private generation = 0;
   private outboundArrivals: Promise<void>[] = [];
-  private activeBroadcasts = new Set<Promise<void>>();
   private activeAnimations = new Set<Animation>();
 
   connectedCallback(): void {
@@ -42,6 +41,7 @@ class SharedCounterDemoElement extends HTMLElement {
         const result = updateSharedReplica(this.state, replica, amount);
         this.apply(result, button);
         if (!result.ok) return;
+        this.renderReplica(presentSharedCounterDemo(this.state), replica);
         this.queueOutbound(replica, `${sharedCounterUserName(replica)} ${formatSigned(amount)}`);
         void this.deliverQueued(button);
       });
@@ -98,8 +98,10 @@ class SharedCounterDemoElement extends HTMLElement {
         }
         this.state = result.state;
         const view = presentSharedCounterDemo(this.state);
-        this.render();
-        this.launchBroadcast(view.latestDeliveries, generation);
+        this.render(false);
+        await this.animateDeliveries(view.latestDeliveries, generation);
+        if (generation !== this.generation) return;
+        this.render(true);
       }
     } finally {
       if (generation !== this.generation) return;
@@ -121,7 +123,7 @@ class SharedCounterDemoElement extends HTMLElement {
       alert.textContent = result.error;
       alert.hidden = false;
     }
-    this.render();
+    this.render(!this.delivering);
     (result.ok ? focus : this.button("reset")).focus();
   }
 
@@ -132,20 +134,6 @@ class SharedCounterDemoElement extends HTMLElement {
       label,
       "outbound",
     ));
-  }
-
-  private launchBroadcast(
-    deliveries: ReturnType<typeof presentSharedCounterDemo>["latestDeliveries"],
-    generation: number,
-  ): void {
-    const broadcast = this.animateDeliveries(deliveries, generation);
-    this.activeBroadcasts.add(broadcast);
-    void broadcast.finally(() => {
-      this.activeBroadcasts.delete(broadcast);
-      if (generation === this.generation && this.activeBroadcasts.size === 0) {
-        this.render();
-      }
-    });
   }
 
   private async animateDeliveries(
@@ -208,7 +196,6 @@ class SharedCounterDemoElement extends HTMLElement {
     this.generation += 1;
     this.delivering = false;
     this.outboundArrivals = [];
-    this.activeBroadcasts.clear();
     for (const animation of this.activeAnimations) animation.cancel();
     this.activeAnimations.clear();
     this.querySelector<HTMLElement>("[data-operation-layer]")!.replaceChildren();
@@ -222,18 +209,27 @@ class SharedCounterDemoElement extends HTMLElement {
     this.button("reset").disabled = false;
   }
 
-  private render(): void {
+  private renderReplica(
+    view: ReturnType<typeof presentSharedCounterDemo>,
+    replicaId: ReplicaId,
+  ): void {
+    const replica = view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    this.querySelector(`[data-shared-total="${replica.id}"]`)!.textContent =
+      String(replica.value);
+    this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
+      view.canDeliver
+        ? "Optimistic local view"
+        : view.phase === "initial"
+          ? "Applied through baseline"
+          : `Applied through SN ${replica.lastAppliedSequence}`;
+  }
+
+  private render(renderReplicas = true): void {
     const view = presentSharedCounterDemo(this.state);
     this.dataset.phase = view.phase;
-    for (const replica of view.replicas) {
-      this.querySelector(`[data-shared-total="${replica.id}"]`)!.textContent =
-        String(replica.value);
-      this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
-        view.canDeliver
-          ? "Optimistic local view"
-          : view.phase === "initial"
-            ? "Applied through baseline"
-            : `Applied through SN ${replica.lastAppliedSequence}`;
+    if (renderReplicas) {
+      for (const replica of view.replicas) this.renderReplica(view, replica.id);
     }
     const log = this.querySelector<HTMLOListElement>("[data-operation-log]")!;
     log.replaceChildren(...(view.operations.length

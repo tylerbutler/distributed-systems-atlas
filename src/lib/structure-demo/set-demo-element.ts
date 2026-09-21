@@ -53,6 +53,7 @@ class SetStructureDemoElement extends HTMLElement {
         const result = updateSetReplica(this.state, operation);
         this.apply(result, button);
         if (!result.ok) return;
+        this.renderReplica(presentSetDemo(this.state), operation.author);
         this.queueOutbound(operation);
         void this.deliverQueued(button);
       });
@@ -107,8 +108,10 @@ class SetStructureDemoElement extends HTMLElement {
           return;
         }
         this.state = result.state;
-        this.render();
+        this.render(false);
         await this.animateDeliveries(this.state.latestDeliveries, generation);
+        if (generation !== this.generation) return;
+        this.render(true);
       }
     } finally {
       if (generation !== this.generation) return;
@@ -128,7 +131,7 @@ class SetStructureDemoElement extends HTMLElement {
       alert.hidden = false;
       alert.textContent = result.error;
     }
-    this.render();
+    this.render(!this.delivering);
     (result.ok ? focus : this.button("reset")).focus();
   }
 
@@ -217,20 +220,29 @@ class SetStructureDemoElement extends HTMLElement {
     this.button("reset").disabled = false;
   }
 
-  private render(): void {
+  private renderReplica(
+    view: ReturnType<typeof presentSetDemo>,
+    replicaId: ReplicaId,
+  ): void {
+    const replica = view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    const list = this.querySelector<HTMLElement>(`[data-member-list="${replica.id}"]`)!;
+    list.replaceChildren(...(replica.values.length
+      ? replica.values.map((value) => node("span", value))
+      : [node("em", "Empty set")]));
+    this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
+      view.canDeliver
+        ? "Local view · record in transit"
+        : view.phase === "initial"
+          ? this.kind === "g-set" ? "No reports yet" : "Eagle Creek is active"
+          : "Matches the other notebooks";
+  }
+
+  private render(renderReplicas = true): void {
     const view = presentSetDemo(this.state);
     this.dataset.phase = view.phase;
-    for (const replica of view.replicas) {
-      const list = this.querySelector<HTMLElement>(`[data-member-list="${replica.id}"]`)!;
-      list.replaceChildren(...(replica.values.length
-        ? replica.values.map((value) => node("span", value))
-        : [node("em", "Empty set")]));
-      this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
-        view.canDeliver
-          ? "Local view · record in transit"
-          : view.phase === "initial"
-            ? this.kind === "g-set" ? "No reports yet" : "Eagle Creek is active"
-            : "Matches the other notebooks";
+    if (renderReplicas) {
+      for (const replica of view.replicas) this.renderReplica(view, replica.id);
     }
 
     const grouped = new Map<number, typeof view.deliveries>();

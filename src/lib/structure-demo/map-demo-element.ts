@@ -53,6 +53,7 @@ class MapStructureDemoElement extends HTMLElement {
         const result = updateMapReplica(this.state, operation);
         this.apply(result, button);
         if (!result.ok) return;
+        this.renderReplica(operation.author);
         this.queueOutbound(operation);
         void this.deliverQueued(button);
       });
@@ -110,8 +111,10 @@ class MapStructureDemoElement extends HTMLElement {
           return;
         }
         this.state = result.state;
-        this.render();
+        this.render(false);
         await this.animateDeliveries(this.state.latestDeliveries, generation);
+        if (generation !== this.generation) return;
+        this.render(true);
       }
     } finally {
       if (generation !== this.generation) return;
@@ -131,7 +134,7 @@ class MapStructureDemoElement extends HTMLElement {
       alert.hidden = false;
       alert.textContent = result.error;
     }
-    this.render();
+    this.render(!this.delivering);
     (result.ok ? focus : this.button("reset")).focus();
   }
 
@@ -220,21 +223,27 @@ class MapStructureDemoElement extends HTMLElement {
     this.button("reset").disabled = false;
   }
 
-  private render(): void {
-    for (const replica of this.state.view.replicas) {
-      const entries = this.querySelector<HTMLElement>(`[data-map-entries="${replica.id}"]`)!;
-      entries.replaceChildren(...(replica.entries.length
-        ? replica.entries.map((entry) => {
-          const row = node("div", "");
-          row.append(node("dt", entry.key), node("dd", entry.value));
-          return row;
-        })
-        : [Object.assign(node("div", ""), { className: "empty-entry" })]));
-      if (!replica.entries.length) entries.firstElementChild!.append(node("dd", "No entries"));
-      this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
-        this.state.view.pending
-          ? "Local view · operation in transit"
-          : replica.entries.length ? "Matches the other maps" : "Empty map";
+  private renderReplica(replicaId: ReplicaId): void {
+    const replica = this.state.view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    const entries = this.querySelector<HTMLElement>(`[data-map-entries="${replica.id}"]`)!;
+    entries.replaceChildren(...(replica.entries.length
+      ? replica.entries.map((entry) => {
+        const row = node("div", "");
+        row.append(node("dt", entry.key), node("dd", entry.value));
+        return row;
+      })
+      : [Object.assign(node("div", ""), { className: "empty-entry" })]));
+    if (!replica.entries.length) entries.firstElementChild!.append(node("dd", "No entries"));
+    this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
+      this.state.view.pending
+        ? "Local view · operation in transit"
+        : replica.entries.length ? "Matches the other maps" : "Empty map";
+  }
+
+  private render(renderReplicas = true): void {
+    if (renderReplicas) {
+      for (const replica of this.state.view.replicas) this.renderReplica(replica.id);
     }
 
     const grouped = new Map<number, typeof this.state.deliveries>();

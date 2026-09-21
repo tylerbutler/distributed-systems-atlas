@@ -43,6 +43,7 @@ class RegisterStructureDemoElement extends HTMLElement {
         const result = updateRegisterReplica(this.state, operation);
         this.apply(result, button);
         if (!result.ok) return;
+        this.renderReplica(operation.author);
         this.queueOutbound(operation);
         void this.deliverQueued(button);
       });
@@ -100,8 +101,10 @@ class RegisterStructureDemoElement extends HTMLElement {
           return;
         }
         this.state = result.state;
-        this.render();
+        this.render(false);
         await this.animateDeliveries(operations, generation);
+        if (generation !== this.generation) return;
+        this.render(true);
       }
     } finally {
       if (generation !== this.generation) return;
@@ -121,7 +124,7 @@ class RegisterStructureDemoElement extends HTMLElement {
       alert.hidden = false;
       alert.textContent = result.error;
     }
-    this.render();
+    this.render(!this.delivering);
     (result.ok ? focus : this.button("reset")).focus();
   }
 
@@ -201,24 +204,30 @@ class RegisterStructureDemoElement extends HTMLElement {
     this.button("reset").disabled = false;
   }
 
-  private render(): void {
-    for (const replica of this.state.view.replicas) {
-      const values = this.querySelector<HTMLElement>(
-        `[data-register-values="${replica.id}"]`,
-      )!;
-      values.replaceChildren(...(replica.values.length
-        ? replica.values.map((value) => node("span", value))
-        : [node("em", "No status")]));
-      this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
-        this.state.view.pending > 0
-          ? this.kind === "register-collection"
-            ? "Write pending · not visible"
-            : "Local view · write in transit"
-          : replica.values.length > 1
-            ? `${replica.values.length} concurrent alternatives`
-            : replica.values.length === 1
-              ? "One visible value"
-              : "No status received";
+  private renderReplica(replicaId: ReplicaId): void {
+    const replica = this.state.view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    const values = this.querySelector<HTMLElement>(
+      `[data-register-values="${replica.id}"]`,
+    )!;
+    values.replaceChildren(...(replica.values.length
+      ? replica.values.map((value) => node("span", value))
+      : [node("em", "No status")]));
+    this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
+      this.state.view.pending > 0
+        ? this.kind === "register-collection"
+          ? "Write pending · not visible"
+          : "Local view · write in transit"
+        : replica.values.length > 1
+          ? `${replica.values.length} concurrent alternatives`
+          : replica.values.length === 1
+            ? "One visible value"
+            : "No status received";
+  }
+
+  private render(renderReplicas = true): void {
+    if (renderReplicas) {
+      for (const replica of this.state.view.replicas) this.renderReplica(replica.id);
     }
 
     const history = this.querySelector<HTMLOListElement>("[data-history]")!;

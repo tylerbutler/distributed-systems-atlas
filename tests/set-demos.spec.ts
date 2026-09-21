@@ -55,6 +55,22 @@ test("replica controls stay active while set records travel", async ({ page }) =
   });
 });
 
+test("set notebooks update after the shared record arrives", async ({ page }) => {
+  await page.goto("/structures/g-set/");
+  const demo = page.getByTestId("g-set-demo");
+
+  await demo.getByRole("button", { name: "Report Eagle Creek" }).click();
+  await expect(demo.locator(".set-operation-pulse.shared").first()).toBeVisible();
+  await expect(demo.locator("[data-member-list]").nth(0).locator("span"))
+    .toHaveText(["Eagle Creek"]);
+  await expect(demo.locator("[data-member-list]").nth(1).locator("span")).toHaveCount(0);
+  await expect(demo.locator("[data-member-list]").nth(2).locator("span")).toHaveCount(0);
+
+  await expect(demo.locator("[data-member-list] span")).toHaveCount(3, {
+    timeout: 10_000,
+  });
+});
+
 test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
