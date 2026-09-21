@@ -134,15 +134,15 @@ class GCounterDemoElement extends HTMLElement {
       const author = operationDeliveries[0]?.author;
       if (author !== "A" && author !== "B" && author !== "C") continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
-        `Delivering operation ${sequenceNumber} from ${author} through Sluice.`;
+        `The sequencer is delivering operation ${sequenceNumber} from ${author}.`;
       await this.animateHop(
         this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
-        this.querySelector<HTMLElement>("[data-sluice-node]")!,
+        this.querySelector<HTMLElement>("[data-sequencer-node]")!,
         sequenceNumber,
       );
       await Promise.all(operationDeliveries.map((delivery) =>
         this.animateHop(
-          this.querySelector<HTMLElement>("[data-sluice-node]")!,
+          this.querySelector<HTMLElement>("[data-sequencer-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
           sequenceNumber,
         )));
@@ -185,7 +185,7 @@ class GCounterDemoElement extends HTMLElement {
       this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
         view.pending
           ? replica.value > 0 ? "Local view · delivery pending" : "Waiting for delivery"
-          : view.phase === "initial" ? "Connected to Sluice" : "Synchronized";
+          : view.phase === "initial" ? "Connected to sequencer" : "Synchronized";
       for (const component of replica.counts) {
         this.querySelector(`[data-component="${replica.id}-${component.replicaId}"]`)!.textContent =
           String(component.count);
@@ -193,11 +193,31 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.querySelector("[data-pending]")!.textContent = String(view.queuedOperations);
     this.querySelector("[data-sequence]")!.textContent = String(view.sequenceNumber);
+    const operations = new Map<number, { author: string; destinations: string[] }>();
+    for (const delivery of view.deliveries) {
+      const operation = operations.get(delivery.sequenceNumber) ?? {
+        author: delivery.author,
+        destinations: [],
+      };
+      operation.destinations.push(delivery.to);
+      operations.set(delivery.sequenceNumber, operation);
+    }
     const deliveries = this.querySelector<HTMLOListElement>("[data-deliveries]")!;
-    deliveries.replaceChildren(...(view.deliveries.length
-      ? [...view.deliveries].reverse().map((delivery) =>
-        node("li", `op ${delivery.sequenceNumber}: ${delivery.author} to ${delivery.to}`))
+    deliveries.replaceChildren(...(operations.size
+      ? [...operations].map(([sequenceNumber, operation]) =>
+        node(
+          "li",
+          `SN ${sequenceNumber} · ${operation.author} report to ${operation.destinations.join(", ")}`,
+        ))
       : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
+    const sequenceTrack = this.querySelector<HTMLElement>("[data-sequence-track]")!;
+    sequenceTrack.replaceChildren(...(operations.size
+      ? [...operations].map(([sequenceNumber, operation]) => {
+        const chip = node("span", `SN ${sequenceNumber} · ${operation.author}`);
+        chip.className = "sequence-chip";
+        return chip;
+      })
+      : [node("span", view.pending ? "Operations awaiting order" : "Waiting for operations")]));
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
       button.disabled = false;

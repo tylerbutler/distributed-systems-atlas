@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("Sluice delivers the G-counter race and safely resends a component", async ({ page }) => {
+test("the sequencer delivers the G-counter race and safely resends a component", async ({ page }) => {
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
@@ -19,10 +19,13 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   await expect(totals).toHaveText(["10", "10", "10"]);
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Sluice delivered 2 operations. All three clients read 10.",
+    "The sequencer delivered 2 operations. All three clients read 10.",
   );
-  await expect(demo.getByRole("list", { name: "Latest Sluice deliveries" }).getByRole("listitem"))
-    .toHaveCount(6);
+  const log = demo.getByRole("list", { name: "Operation log" });
+  await expect(log.getByRole("listitem")).toHaveCount(2);
+  await expect(log.getByRole("listitem").first()).toContainText(
+    "SN 1 · A report to A, B, C",
+  );
 
   await demo.getByText("Explain why a component resend is safe", { exact: true }).click();
   await expect(demo.getByRole("table", { name: "Per-client G-counter components" })
@@ -33,10 +36,9 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   await expect(totals).toHaveText(["10", "10", "10"]);
   await expect(resendB).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Sluice resent B's component. All three clients still read 10.",
+    "The sequencer resent B's component. All three clients still read 10.",
   );
-  await expect(demo.getByRole("list", { name: "Latest Sluice deliveries" }).getByRole("listitem"))
-    .toHaveCount(9);
+  await expect(log.getByRole("listitem")).toHaveCount(3);
   await resendB.click();
   await expect(totals).toHaveText(["10", "10", "10"]);
 
@@ -45,7 +47,7 @@ test("Sluice delivers the G-counter race and safely resends a component", async 
   await expect(totals).toHaveText(["0", "0", "0"]);
   await expect(play).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Play the authored race to send concurrent increments through Sluice.",
+    "Play the authored race or increment a client to send an operation to the sequencer.",
   );
 });
 
@@ -61,7 +63,7 @@ test("each client can increment through automatic delivery", async ({ page }) =>
   await expect(totals).toHaveText(["4", "4", "4"]);
   await expect(demo.locator("[data-sequence]")).toHaveText("2");
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Sluice delivered 1 operation. All three clients read 4.",
+    "The sequencer delivered 1 operation. All three clients read 4.",
   );
 });
 

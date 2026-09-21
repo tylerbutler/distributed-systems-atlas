@@ -13,7 +13,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <h2 id="gcounter-demo-title">Increment a client or play the race</h2>
         <p>
           Add at A, B, or C. The authored race sends A +7 and B +3 together.
-          Sluice sequences and broadcasts each change automatically.
+          The sequencer orders and broadcasts each change automatically.
         </p>
       </div>
       <p class="merge-rule">
@@ -22,10 +22,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
       </p>
     </header>
 
-    <div class="gcounter-replicas">
+    <div class="gcounter-network">
       {initial.replicas.map((replica) => (
         <section
-          class="gcounter-replica"
+          class={`gcounter-replica replica-${replica.id.toLowerCase()}`}
           data-client={replica.id}
           aria-label={`Replica ${replica.id}`}
         >
@@ -33,7 +33,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
             <StationMark station={replica.id} size="lg" />
             <div>
               <h3>Replica {replica.id}</h3>
-              <p data-replica-state={replica.id}>Connected to Sluice</p>
+              <p data-replica-state={replica.id}>Connected to sequencer</p>
             </div>
           </header>
           <output class="gcounter-total observation-data" data-total={replica.id}>
@@ -55,33 +55,32 @@ const initial = presentGCounterDemo(createGCounterDemo());
           </div>
         </section>
       ))}
-    </div>
 
-    <section class="sluice-transport" aria-label="Sluice transport">
-      <header>
-        <h3>Sluice transport</h3>
+      <section class="sequencer-station" data-sequencer-node aria-label="Sequencer">
+        <p class="sequencer-label">Sequencer</p>
+        <strong>Total order</strong>
         <dl>
           <div>
-            <dt>Queued operations</dt>
+            <dt>Queue</dt>
             <dd class="observation-data" data-pending>0</dd>
           </div>
           <div>
-            <dt>Latest operation</dt>
+            <dt>Latest</dt>
             <dd class="observation-data" data-sequence>0</dd>
           </div>
         </dl>
-      </header>
-      <div class="transport-path" aria-hidden="true">
-        <span>Clients A · B · C</span>
-        <span class="transport-line"></span>
-        <span data-sluice-node>Sluice</span>
-        <span class="transport-line"></span>
-        <span>Ordered broadcast</span>
-      </div>
-      <ol class="delivery-log" data-deliveries aria-label="Latest Sluice deliveries">
-        <li>No operation delivered yet.</li>
-      </ol>
-    </section>
+        <div class="sequence-track" data-sequence-track aria-hidden="true">
+          <span>Waiting for operations</span>
+        </div>
+      </section>
+
+      <section class="operation-log">
+        <h3>Operation log</h3>
+        <ol data-deliveries aria-label="Operation log">
+          <li>No operation delivered yet.</li>
+        </ol>
+      </section>
+    </div>
 
     <section class="gcounter-controls" aria-label="Lesson controls">
       <label class="playback-speed">
@@ -93,7 +92,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
           step="0.5"
           value="1"
           data-pace
-          title="Change playback speed without changing Sluice ordering."
+          title="Change playback speed without changing sequencer ordering."
           disabled
         />
         <output data-pace-output>1×</output>
@@ -121,8 +120,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <div>
         <p>
           Each client stores the largest count it has observed for A, B, and
-          C. Sluice orders and broadcasts each operation; the G-counter kernel
-          merges the cumulative components.
+          C. The sequencer orders and broadcasts each operation; the G-counter
+          kernel merges the cumulative components.
         </p>
         <table aria-label="Per-client G-counter components">
           <thead>
@@ -213,8 +212,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
   .gcounter-heading h2,
   .gcounter-heading p,
   .gcounter-replica h3,
-  .gcounter-replica p,
-  .sluice-transport h3 {
+  .gcounter-replica p {
     margin: 0;
   }
 
@@ -236,19 +234,32 @@ const initial = presentGCounterDemo(createGCounterDemo());
     font-size: 1.05rem;
   }
 
-  .gcounter-replicas {
+  .gcounter-network {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.72fr) minmax(0, 1fr);
+    grid-template-areas:
+      "a sequencer b"
+      "c sequencer log";
     border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
   .gcounter-replica {
     min-width: 0;
     padding: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
-  .gcounter-replica + .gcounter-replica {
-    border-left: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  .replica-a {
+    grid-area: a;
+  }
+
+  .replica-b {
+    grid-area: b;
+  }
+
+  .replica-c {
+    grid-area: c;
+    border-bottom: 0;
   }
 
   .gcounter-replica header {
@@ -289,73 +300,116 @@ const initial = presentGCounterDemo(createGCounterDemo());
     white-space: nowrap;
   }
 
-  .sluice-transport {
-    padding-block: var(--space-5);
-    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
-  }
-
-  .sluice-transport header {
+  .sequencer-station {
+    grid-area: sequencer;
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-3) var(--space-5);
-  }
-
-  .sluice-transport dl {
-    display: flex;
-    gap: var(--space-5);
-    margin: 0;
-    font-family: var(--font-ui);
-  }
-
-  .sluice-transport dl div {
-    display: flex;
-    gap: var(--space-2);
-  }
-
-  .sluice-transport dd {
-    margin: 0;
-    color: var(--signal);
-  }
-
-  .transport-path {
-    display: grid;
-    grid-template-columns: auto minmax(var(--space-6), 1fr) auto minmax(var(--space-6), 1fr) auto;
-    gap: var(--space-2);
-    align-items: center;
-    margin-block: var(--space-4);
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
+    min-width: 0;
+    padding: var(--space-5) var(--space-4);
+    border-inline: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    flex-direction: column;
+    justify-content: center;
     text-align: center;
   }
 
-  .transport-line {
-    height: var(--rule-signal);
-    background: var(--signal);
+  .sequencer-label {
+    margin: 0;
+    color: var(--signal);
+    font-family: var(--font-ui);
+    font-size: 1.15rem;
+    font-weight: 650;
   }
 
-  .transport-path span:nth-child(3) {
-    padding: var(--space-2) var(--space-3);
-    border: var(--rule-signal) solid var(--signal);
+  .sequencer-station > strong {
+    margin-top: var(--space-1);
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .sequencer-station dl {
+    display: grid;
+    gap: var(--space-2);
+    margin: var(--space-5) 0;
+    font-family: var(--font-ui);
+  }
+
+  .sequencer-station dl div {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: var(--space-2);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .sequencer-station :is(dt, dd) {
+    margin: 0;
+  }
+
+  .sequencer-station dd {
+    margin-top: var(--space-1);
     color: var(--signal);
   }
 
-  .delivery-log {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .sequence-track {
+    display: flex;
+    min-height: 7rem;
+    padding-left: var(--space-4);
+    border-left: var(--rule-signal) solid var(--signal);
+    flex-direction: column;
+    justify-content: center;
     gap: var(--space-2);
+    text-align: left;
+  }
+
+  .sequence-track span {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+  }
+
+  .sequence-track :global(.sequence-chip) {
+    width: fit-content;
+    padding: var(--space-1) var(--space-2);
+    border: var(--rule-width) solid var(--signal);
+    color: var(--signal);
+  }
+
+  .operation-log {
+    grid-area: log;
+    min-width: 0;
+    padding: var(--space-5);
+  }
+
+  .operation-log h3 {
     margin: 0;
+  }
+
+  .operation-log ol {
+    display: flex;
+    max-height: 9rem;
+    margin: var(--space-3) 0 0;
     padding: 0;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: var(--space-2);
     list-style: none;
   }
 
-  .delivery-log li {
-    min-width: 0;
-    padding: var(--space-2) var(--space-3);
-    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  .operation-log :global(li) {
+    padding-left: 1rem;
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
     font-family: var(--font-data);
     font-size: 0.75rem;
+    text-indent: -1rem;
+  }
+
+  .operation-log :global(li)::before {
+    content: "· ";
+    color: var(--signal);
   }
 
   .playback-speed {
@@ -492,35 +546,39 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   @media (width < 48rem) {
     .gcounter-heading,
-    .gcounter-replicas,
     .gcounter-controls,
-    .delivery-log {
+    .gcounter-network {
       grid-template-columns: 1fr;
     }
 
-    .gcounter-replica {
+    .gcounter-network {
+      grid-template-areas:
+        "a"
+        "sequencer"
+        "b"
+        "c"
+        "log";
+    }
+
+    .gcounter-replica,
+    .replica-c,
+    .sequencer-station,
+    .operation-log {
       padding-inline: 0;
+      border-inline: 0;
     }
 
-    .gcounter-replica + .gcounter-replica {
+    .replica-c,
+    .sequencer-station {
       border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
-      border-left: 0;
+      border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
     }
 
-    .transport-path {
-      grid-template-columns: 1fr;
+    .sequence-track {
+      min-height: 0;
+      margin-top: var(--space-4);
+      padding-block: var(--space-2);
       text-align: left;
-    }
-
-    .transport-line {
-      display: none;
-    }
-
-    .transport-path span,
-    .transport-path span:first-child,
-    .transport-path span:nth-child(3),
-    .transport-path span:last-child {
-      grid-column: 1;
     }
   }
 </style>

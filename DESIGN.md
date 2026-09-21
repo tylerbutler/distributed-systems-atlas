@@ -284,9 +284,10 @@ Per-replica components, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
 The G-counter demo is the first instance: three station records show only
-their totals by default. A compact Sluice strip reports queued work, sequence
-numbers, authors, and recipients. Operations animate from their author through
-Sluice to all three clients. Readers control playback speed. The A, B, and C
+their totals by default. A sequencer station sits between the clients and
+reports queued work and sequence numbers. A compact chronological log records
+authors and recipients. Operations animate from their author through the
+sequencer to all three clients. Readers control playback speed. The A, B, and C
 components appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.

@@ -70,7 +70,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Play the authored race to send concurrent increments through Sluice.",
+    result: "Play the authored race or increment a client to send an operation to the sequencer.",
   };
 }
 
@@ -103,7 +103,7 @@ export function incrementReplica(
         authoredCounts,
         queuedOperations,
         latestAuthor: replica,
-        result: `${replica} added ${amount}. ${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} waiting in Sluice.`,
+        result: `${replica} added ${amount}. ${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} waiting at the sequencer.`,
       },
     };
   } catch (error) {
@@ -129,7 +129,7 @@ export function stageRace(state: GCounterDemoState): GCounterDemoResult {
         },
         queuedOperations: state.queuedOperations + 2,
         latestAuthor: "B",
-        result: "A added 7 and B added 3. Their operations are waiting together in Sluice.",
+        result: "A added 7 and B added 3. Their operations are waiting together at the sequencer.",
       },
     };
   } catch (error) {
@@ -139,7 +139,7 @@ export function stageRace(state: GCounterDemoState): GCounterDemoResult {
 
 export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
   if (!state.view.pending) {
-    return failure(state, "Sluice delivery", "add an increment first");
+    return failure(state, "Sequencer delivery", "add an increment first");
   }
   try {
     const delivered = value(deliverGCounterRace(state.room));
@@ -155,11 +155,11 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
         latestDeliveries: delivered.deliveries,
         deliveredCounts: { ...state.authoredCounts },
         queuedOperations: 0,
-        result: `Sluice delivered ${operations} ${operations === 1 ? "operation" : "operations"}. All three clients read ${total}.`,
+        result: `The sequencer delivered ${operations} ${operations === 1 ? "operation" : "operations"}. All three clients read ${total}.`,
       },
     };
   } catch (error) {
-    return failure(state, "Sluice delivery", error);
+    return failure(state, "Sequencer delivery", error);
   }
 }
 
@@ -181,7 +181,7 @@ export function resendComponent(state: GCounterDemoState): GCounterDemoResult {
         ...resent,
         deliveries: [...state.deliveries, ...resent.deliveries].slice(-12),
         latestDeliveries: resent.deliveries,
-        result: `Sluice resent ${state.latestAuthor}'s component. All three clients still read ${total}.`,
+        result: `The sequencer resent ${state.latestAuthor}'s component. All three clients still read ${total}.`,
       },
     };
   } catch (error) {
