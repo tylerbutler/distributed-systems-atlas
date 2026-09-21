@@ -308,6 +308,7 @@ const actionCopy = kind === "two-p-set"
   }
 
   .member-list span {
+    position: relative;
     padding: 0.25rem 0.5rem;
     border-radius: 999px;
     color: var(--instrument-deep);
@@ -315,6 +316,13 @@ const actionCopy = kind === "two-p-set"
     font-family: var(--font-data);
     font-size: 0.75rem;
     font-weight: 700;
+  }
+
+  .member-list span:not(:last-of-type)::after {
+    position: absolute;
+    left: calc(100% + var(--space-1));
+    color: var(--clear);
+    content: ",";
   }
 
   .member-list em {

@@ -35,6 +35,18 @@ for (const example of [
       const members = demo.locator("[data-member-list]").nth(index).locator("span");
       await expect(members).toHaveText(values);
     }
+    if (example.testId === "g-set-demo") {
+      const firstMembers = demo.locator("[data-member-list]").first().locator("span");
+      expect(await firstMembers.first().evaluate((element) =>
+        getComputedStyle(element, "::after").content
+      )).toBe('","');
+      expect(await firstMembers.last().evaluate((element) =>
+        getComputedStyle(element, "::after").content
+      )).toBe("none");
+      await expect(demo.locator('[role="status"]')).toContainText(
+        "Eagle Creek, Ridge Pass",
+      );
+    }
     await expect(demo.locator("[data-evidence]")).toContainText(example.evidence);
     await expect(race).toBeFocused();
   });

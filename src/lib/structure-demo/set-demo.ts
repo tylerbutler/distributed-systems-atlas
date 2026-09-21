@@ -204,7 +204,7 @@ export function deliverSetDemoOperations(state: SetDemoState): SetDemoResult {
     const latestDeliveries = labelDeliveries(state.queuedOperations, delivered.deliveries);
     const values = delivered.view.replicas[0]?.values ?? [];
     const result = state.kind === "g-set"
-      ? `The reports were delivered to every hiker. The union contains ${values.join(" and ")}.`
+      ? `The reports were delivered to every hiker. The union contains ${values.join(", ")}.`
       : state.kind === "two-p-set"
         ? "The retirement tombstone was delivered to every hiker. Eagle Creek stays absent."
         : "Both records were delivered to every hiker. Bob's fresh Eagle Creek installation remains.";
