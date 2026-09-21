@@ -6,11 +6,17 @@ export type TransportDelivery$ = object;
 
 export function new_gcounter_room(): Result<GCounterRoom$, string>;
 export function gcounter_room_stage_race(room: GCounterRoom$): Result<GCounterRoom$, string>;
+export function gcounter_room_increment(
+  room: GCounterRoom$,
+  replica: string,
+  amount: number,
+): Result<GCounterRoom$, string>;
 export function gcounter_room_deliver(
   room: GCounterRoom$,
 ): [GCounterRoom$, Iterable<TransportDelivery$>];
-export function gcounter_room_resend_b(
+export function gcounter_room_resend(
   room: GCounterRoom$,
+  replica: string,
 ): Result<[GCounterRoom$, Iterable<TransportDelivery$>], string>;
 export function gcounter_room_snapshot(
   room: GCounterRoom$,

@@ -7,6 +7,7 @@ import {
   createOrSet,
   deliverGCounterRace,
   incrementGCounter,
+  incrementGCounterRoom,
   inspect,
   inspectGCounter,
   merge,
@@ -52,6 +53,17 @@ assert.deepEqual(unwrap(inspectGCounter(mergedA)).counts, [
 ]);
 assert.equal(unwrap(inspectGCounter(unwrap(mergeGCounter(mergedA, countB.operation)))).value, 10);
 assert.equal(incrementGCounter(mergedA, -1).ok, false);
+
+const directRoom = unwrap(createGCounterRoom()).room;
+const direct = unwrap(incrementGCounterRoom(directRoom, "C", 3));
+assert.deepEqual(direct.view.replicas.map(({ value }) => value), [0, 0, 3]);
+assert.equal(direct.view.pending, true);
+assert.deepEqual(
+  unwrap(deliverGCounterRace(directRoom)).view.replicas.map(({ value }) => value),
+  [3, 3, 3],
+);
+assert.equal(incrementGCounterRoom(directRoom, "D", 1).ok, false);
+assert.equal(incrementGCounterRoom(directRoom, "A", 0).ok, false);
 
 const room = unwrap(createGCounterRoom()).room;
 const staged = unwrap(stageGCounterRace(room));

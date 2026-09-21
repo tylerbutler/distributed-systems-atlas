@@ -201,12 +201,15 @@ pnpm toolkit:smoke
 
 - [ ] Implement the operation-counter race: A adds 2, B adds 3, result 5.
 - [ ] Add a three-client G-counter race through `sluice_js`.
-- [ ] Resend B's cumulative component through Sluice and show that the value
-  does not change.
+- [ ] Add Watershed-style +1, +3, and +7 controls to every client.
+- [ ] Animate each operation through Sluice with playback speed and visual
+  jitter controls.
+- [ ] Resend the latest cumulative component through Sluice and show that the
+  value does not change.
 - [ ] Add PN-counter increment/decrement mode.
 - [ ] Add the broken counter-in-a-map comparison as a secondary experiment.
 - [ ] Keep the first viewport to three client values, a compact Sluice strip,
-  Stage race, Deliver, Resend, and Reset.
+  direct increments, Race, Deliver, Resend, and Reset.
 - [ ] Show signed deltas or per-replica components only under “Explain why.”
 - [ ] Replace the landing-page Counters `Planned` label with a route only after
   all checks pass.

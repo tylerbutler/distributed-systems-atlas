@@ -7,12 +7,13 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
 <g-counter-demo data-testid="g-counter-demo">
   <section class="gcounter-instrument" aria-labelledby="gcounter-demo-title">
+    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Send two increments through Sluice</h2>
+        <h2 id="gcounter-demo-title">Increment any client, then deliver</h2>
         <p>
-          A adds 7 and B adds 3 before delivery. C makes no local change and
-          shows what a third client learns from the transport.
+          Add at A, B, or C and compare their local views before delivery.
+          The authored race still sends A +7 and B +3 together.
         </p>
       </div>
       <p class="merge-rule">
@@ -23,7 +24,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
     <div class="gcounter-replicas">
       {initial.replicas.map((replica) => (
-        <section class="gcounter-replica" aria-label={`Replica ${replica.id}`}>
+        <section
+          class="gcounter-replica"
+          data-client={replica.id}
+          aria-label={`Replica ${replica.id}`}
+        >
           <header>
             <StationMark station={replica.id} size="lg" />
             <div>
@@ -35,6 +40,19 @@ const initial = presentGCounterDemo(createGCounterDemo());
             {replica.value}
           </output>
           <p>Total increments observed</p>
+          <div class="replica-actions" aria-label={`Increment replica ${replica.id}`}>
+            {[1, 3, 7].map((amount) => (
+              <button
+                type="button"
+                data-replica={replica.id}
+                data-increment={amount}
+                aria-label={`Add ${amount} at replica ${replica.id}`}
+                disabled
+              >
+                +{amount}
+              </button>
+            ))}
+          </div>
         </section>
       ))}
     </div>
@@ -44,8 +62,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <h3>Sluice transport</h3>
         <dl>
           <div>
-            <dt>Queued frames</dt>
-            <dd class="observation-data" data-pending>No</dd>
+            <dt>Queued operations</dt>
+            <dd class="observation-data" data-pending>0</dd>
           </div>
           <div>
             <dt>Latest operation</dt>
@@ -56,24 +74,49 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <div class="transport-path" aria-hidden="true">
         <span>Clients A · B · C</span>
         <span class="transport-line"></span>
-        <span>Sluice</span>
+        <span data-sluice-node>Sluice</span>
         <span class="transport-line"></span>
         <span>Ordered broadcast</span>
       </div>
       <ol class="delivery-log" data-deliveries aria-label="Latest Sluice deliveries">
         <li>No operation delivered yet.</li>
       </ol>
+      <div class="playback-controls" aria-label="Delivery playback">
+        <label>
+          <span>Animation speed</span>
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            step="0.5"
+            value="1"
+            data-pace
+            title="Change playback speed without changing Sluice ordering."
+            disabled
+          />
+          <output data-pace-output>1×</output>
+        </label>
+        <button
+          type="button"
+          data-jitter
+          aria-pressed="false"
+          title="Vary visual delivery timing by plus or minus 120 milliseconds."
+          disabled
+        >
+          Jitter: off
+        </button>
+      </div>
     </section>
 
     <section class="gcounter-controls" aria-label="Lesson controls">
-      <button type="button" data-action="stage" disabled>
-        Stage race: A +7, B +3
+      <button type="button" data-action="race" disabled>
+        Race A +7 and B +3
       </button>
       <button type="button" data-action="deliver" disabled>
-        Deliver through Sluice
+        Deliver queued operations
       </button>
       <button type="button" data-action="resend" disabled>
-        Resend B's component
+        Resend latest component
       </button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>
@@ -88,7 +131,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <p class="gcounter-error" role="alert" hidden></p>
 
     <details class="gcounter-explanation">
-      <summary>Explain why resending the component is safe</summary>
+      <summary>Explain why a component resend is safe</summary>
       <div>
         <p>
           Each client stores the largest count it has observed for A, B, and
@@ -116,9 +159,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
           </tbody>
         </table>
         <p>
-          Resend submits B's current component again as a zero increment. The
-          transport assigns a new sequence number, but every kernel compares 3
-          with 3. The maximum is still 3, so the total stays 10.
+          Resend submits the latest author's current component again as a zero
+          increment. The transport assigns a new sequence number, but every
+          kernel compares the same cumulative count with itself. The maximum
+          does not change.
         </p>
       </div>
     </details>
@@ -138,12 +182,37 @@ const initial = presentGCounterDemo(createGCounterDemo());
   }
 
   .gcounter-instrument {
+    position: relative;
     padding: clamp(1rem, 3vw, 2rem);
     border: var(--rule-width) solid var(--instrument-deep);
     color: var(--clear);
     background: var(--instrument);
     --focus-color: var(--signal);
     --link-color: var(--clear);
+  }
+
+  .operation-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  :global(.operation-pulse) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border: var(--rule-width) solid var(--instrument-deep);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .gcounter-heading {
@@ -222,6 +291,18 @@ const initial = presentGCounterDemo(createGCounterDemo());
     margin-top: var(--space-2);
   }
 
+  .replica-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .replica-actions button {
+    padding-inline: var(--space-2);
+    white-space: nowrap;
+  }
+
   .sluice-transport {
     padding-block: var(--space-5);
     border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
@@ -291,6 +372,36 @@ const initial = presentGCounterDemo(createGCounterDemo());
     font-size: 0.75rem;
   }
 
+  .playback-controls {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+    font-family: var(--font-ui);
+  }
+
+  .playback-controls label {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2) var(--space-3);
+    align-items: center;
+    min-width: min(100%, 20rem);
+  }
+
+  .playback-controls input {
+    grid-column: 1;
+    width: 100%;
+    accent-color: var(--signal);
+  }
+
+  .playback-controls output {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    color: var(--signal);
+    font-family: var(--font-data);
+  }
+
   .gcounter-controls {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -298,7 +409,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     padding-block: var(--space-5);
   }
 
-  .gcounter-controls button {
+  :is(.replica-actions, .gcounter-controls, .playback-controls) button {
     min-height: 2.75rem;
     padding: 0.65rem 0.85rem;
     border: var(--rule-width) solid currentColor;
@@ -310,17 +421,17 @@ const initial = presentGCounterDemo(createGCounterDemo());
     cursor: pointer;
   }
 
-  .gcounter-controls button:hover:not(:disabled) {
+  :is(.replica-actions, .gcounter-controls, .playback-controls) button:hover:not(:disabled) {
     color: var(--instrument-deep);
     background: var(--signal);
   }
 
-  .gcounter-controls button:active:not(:disabled) {
+  :is(.replica-actions, .gcounter-controls, .playback-controls) button:active:not(:disabled) {
     color: var(--instrument-deep);
     background: var(--clear);
   }
 
-  .gcounter-controls button:disabled {
+  :is(.replica-actions, .gcounter-controls, .playback-controls) button:disabled {
     border-style: dashed;
     color: color-mix(in oklch, var(--clear) 58%, var(--instrument));
     cursor: not-allowed;
@@ -424,6 +535,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
     .transport-path span:nth-child(3),
     .transport-path span:last-child {
       grid-column: 1;
+    }
+
+    .playback-controls {
+      align-items: stretch;
+      flex-direction: column;
     }
   }
 </style>

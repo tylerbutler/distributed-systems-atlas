@@ -91,6 +91,23 @@ pub fn gcounter_room_stage_race(
   Ok(room)
 }
 
+pub fn gcounter_room_increment(
+  room: GCounterRoom,
+  replica: String,
+  amount: Int,
+) -> Result(GCounterRoom, String) {
+  let GCounterRoom(_, a, b, c, _, _, _) = room
+  let counter = case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the G-counter replica must be A, B, or C")
+  }
+  use counter <- result.try(counter)
+  use _ <- result.try(watershed.g_counter_increment(counter, amount))
+  Ok(room)
+}
+
 pub fn gcounter_room_deliver(
   room: GCounterRoom,
 ) -> #(GCounterRoom, List(TransportDelivery)) {
@@ -101,11 +118,11 @@ pub fn gcounter_room_deliver(
   )
 }
 
-pub fn gcounter_room_resend_b(
+pub fn gcounter_room_resend(
   room: GCounterRoom,
+  replica: String,
 ) -> Result(#(GCounterRoom, List(TransportDelivery)), String) {
-  let GCounterRoom(_, _, b, _, _, _, _) = room
-  use _ <- result.try(watershed.g_counter_increment(b, 0))
+  use room <- result.try(gcounter_room_increment(room, replica, 0))
   Ok(gcounter_room_deliver(room))
 }
 

@@ -6,8 +6,9 @@ assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
 The first focused structure lesson uses Watershed's G-counter and JavaScript
-Sluice transport to show concurrent increments across three clients and a
-duplicate-safe component resend. The first trail also contains seven published
+Sluice transport. Readers can increment any of three clients, run the authored
+race, watch delivery at an adjustable speed, add visual jitter, and resend a
+cumulative component safely. The first trail also contains seven published
 reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.
@@ -158,7 +159,7 @@ Unpublished topics remain labeled as planned without placeholder routes.
 | Engine | `src/lib/lab/engine-registry.ts` selects `dots`, `ordering`, `mv-register`, or `or-set` from the scenario's `kind`. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Atlas owns scheduling, messages, partitions, and trace history. The reference engines own their algorithm state; the register and OR-set adapters use Watershed for state and merges. Unknown kinds fail explicitly. |
 | Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
-| Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its merge rule. Structure demos use at least three clients. The G-counter lesson runs the real `watershed/sluice_js` transport without using the broad causal console. |
+| Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its merge rule. Structure demos use at least three clients. The G-counter lesson adds per-client increments and animated delivery over the real `watershed/sluice_js` transport without using the broad causal console. |
 
 **Labs render from trace frames.** Replica values, clocks, dots, causal
 context, messages, inspector records, explanations, and invariant results

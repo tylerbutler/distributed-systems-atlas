@@ -1,14 +1,16 @@
 import {
   createGCounterDemo,
   deliverRace,
+  incrementReplica,
   presentGCounterDemo,
   resendComponent,
   stageRace,
   type GCounterDemoResult,
   type GCounterDemoState,
+  type ReplicaId,
 } from "./g-counter";
 
-type Action = "stage" | "deliver" | "resend" | "reset";
+type Action = "race" | "deliver" | "resend" | "reset";
 
 function node<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -21,23 +23,43 @@ function node<K extends keyof HTMLElementTagNameMap>(
 
 class GCounterDemoElement extends HTMLElement {
   private state: GCounterDemoState = createGCounterDemo();
+  private speed = 1;
+  private jitter = false;
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
-    this.button("stage").addEventListener("click", () => {
-      this.apply(stageRace(this.state), "deliver");
+    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
+      button.addEventListener("click", () => {
+        const replica = button.dataset.replica as ReplicaId;
+        const amount = Number(button.dataset.increment);
+        this.apply(incrementReplica(this.state, replica, amount), button);
+      });
+    }
+    this.button("race").addEventListener("click", () => {
+      this.apply(stageRace(this.state), this.button("deliver"));
     });
-    this.button("deliver").addEventListener("click", () => {
-      this.apply(deliverRace(this.state), "resend");
+    this.button("deliver").addEventListener("click", async () => {
+      await this.applyAnimated(deliverRace(this.state), this.button("resend"));
     });
-    this.button("resend").addEventListener("click", () => {
-      this.apply(resendComponent(this.state), "resend");
+    this.button("resend").addEventListener("click", async () => {
+      await this.applyAnimated(resendComponent(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
       this.state = createGCounterDemo();
       this.render();
-      this.button("stage").focus();
+      this.querySelector<HTMLButtonElement>("[data-increment]")!.focus();
+    });
+    const pace = this.querySelector<HTMLInputElement>("[data-pace]")!;
+    pace.addEventListener("input", () => {
+      this.speed = Number(pace.value);
+      this.querySelector<HTMLOutputElement>("[data-pace-output]")!.value = `${this.speed}×`;
+    });
+    const jitter = this.querySelector<HTMLButtonElement>("[data-jitter]")!;
+    jitter.addEventListener("click", () => {
+      this.jitter = !this.jitter;
+      jitter.setAttribute("aria-pressed", String(this.jitter));
+      jitter.textContent = `Jitter: ${this.jitter ? "on" : "off"}`;
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -49,7 +71,7 @@ class GCounterDemoElement extends HTMLElement {
     return button;
   }
 
-  private apply(result: GCounterDemoResult, focus: Action): void {
+  private apply(result: GCounterDemoResult, focus: HTMLElement): void {
     const alert = this.querySelector<HTMLElement>('[role="alert"]')!;
     if (result.ok) {
       this.state = result.state;
@@ -60,7 +82,83 @@ class GCounterDemoElement extends HTMLElement {
       alert.hidden = false;
     }
     this.render();
-    this.button(result.ok ? focus : "reset").focus();
+    (result.ok ? focus : this.button("reset")).focus();
+  }
+
+  private async applyAnimated(result: GCounterDemoResult, focus: HTMLElement): Promise<void> {
+    if (!result.ok) {
+      this.apply(result, focus);
+      return;
+    }
+    this.setBusy(true);
+    const view = presentGCounterDemo(result.state);
+    await this.animateDeliveries(view.latestDeliveries);
+    this.apply(result, focus);
+  }
+
+  private setBusy(busy: boolean): void {
+    for (const control of this.querySelectorAll<HTMLButtonElement | HTMLInputElement>("button, input")) {
+      control.disabled = busy;
+    }
+  }
+
+  private async animateDeliveries(
+    deliveries: ReturnType<typeof presentGCounterDemo>["latestDeliveries"],
+  ): Promise<void> {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const operations = new Map<number, typeof deliveries>();
+    for (const delivery of deliveries) {
+      operations.set(delivery.sequenceNumber, [
+        ...(operations.get(delivery.sequenceNumber) ?? []),
+        delivery,
+      ]);
+    }
+    for (const [sequenceNumber, operationDeliveries] of operations) {
+      const author = operationDeliveries[0]?.author;
+      if (author !== "A" && author !== "B" && author !== "C") continue;
+      this.querySelector<HTMLElement>('[role="status"]')!.textContent =
+        `Delivering operation ${sequenceNumber} from ${author} through Sluice.`;
+      await this.animateHop(
+        this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
+        this.querySelector<HTMLElement>("[data-sluice-node]")!,
+        sequenceNumber,
+      );
+      await Promise.all(operationDeliveries.map((delivery) =>
+        this.animateHop(
+          this.querySelector<HTMLElement>("[data-sluice-node]")!,
+          this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
+          sequenceNumber,
+        )));
+    }
+  }
+
+  private async animateHop(from: HTMLElement, to: HTMLElement, sequenceNumber: number): Promise<void> {
+    const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
+    const root = layer.getBoundingClientRect();
+    const start = from.getBoundingClientRect();
+    const end = to.getBoundingClientRect();
+    const dot = node("span", String(sequenceNumber));
+    dot.className = "operation-pulse";
+    dot.ariaHidden = "true";
+    layer.append(dot);
+    const jitter = this.jitter ? (Math.random() * 240) - 120 : 0;
+    const duration = Math.max(120, (420 + jitter) / this.speed);
+    const animation = dot.animate([
+      {
+        transform: `translate(${start.left + start.width / 2 - root.left - 10}px, ${start.top + start.height / 2 - root.top - 10}px) scale(.7)`,
+        opacity: 0.55,
+      },
+      {
+        transform: `translate(${end.left + end.width / 2 - root.left - 10}px, ${end.top + end.height / 2 - root.top - 10}px) scale(1)`,
+        opacity: 1,
+      },
+    ], {
+      duration,
+      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      fill: "forwards",
+    });
+    await animation.finished;
+    dot.remove();
   }
 
   private render(): void {
@@ -69,28 +167,34 @@ class GCounterDemoElement extends HTMLElement {
     for (const replica of view.replicas) {
       this.querySelector(`[data-total="${replica.id}"]`)!.textContent = String(replica.value);
       this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
-        view.phase === "initial" ? "Connected to Sluice"
-          : view.phase === "staged" && replica.id === "A" ? "Local increment +7"
-            : view.phase === "staged" && replica.id === "B" ? "Local increment +3"
-              : view.phase === "staged" ? "Waiting for delivery"
-                : "Synchronized";
+        view.pending
+          ? replica.value > 0 ? "Local view · delivery pending" : "Waiting for delivery"
+          : view.phase === "initial" ? "Connected to Sluice" : "Synchronized";
       for (const component of replica.counts) {
         this.querySelector(`[data-component="${replica.id}-${component.replicaId}"]`)!.textContent =
           String(component.count);
       }
     }
-    this.querySelector("[data-pending]")!.textContent = view.pending ? "Yes" : "No";
+    this.querySelector("[data-pending]")!.textContent = String(view.queuedOperations);
     this.querySelector("[data-sequence]")!.textContent = String(view.sequenceNumber);
     const deliveries = this.querySelector<HTMLOListElement>("[data-deliveries]")!;
     deliveries.replaceChildren(...(view.deliveries.length
-      ? view.deliveries.map((delivery) =>
+      ? [...view.deliveries].reverse().map((delivery) =>
         node("li", `op ${delivery.sequenceNumber}: ${delivery.author} to ${delivery.to}`))
-      : [node("li", view.pending ? "Two operations wait for delivery." : "No operation delivered yet.")]));
+      : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
-    this.button("stage").disabled = !view.canStage;
+    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
+      button.disabled = false;
+    }
+    this.button("race").disabled = false;
     this.button("deliver").disabled = !view.canDeliver;
     this.button("resend").disabled = !view.canResend;
+    this.button("resend").textContent = view.latestAuthor
+      ? `Resend ${view.latestAuthor}'s component`
+      : "Resend latest component";
     this.button("reset").disabled = false;
+    this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
+    this.querySelector<HTMLButtonElement>("[data-jitter]")!.disabled = false;
   }
 }
 

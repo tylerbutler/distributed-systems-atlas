@@ -306,6 +306,22 @@ export function stageGCounterRace(current: unknown): Result<GCounterTransportRes
   });
 }
 
+export function incrementGCounterRoom(
+  current: unknown,
+  replicaId: unknown,
+  amount: unknown,
+): Result<GCounterTransportResult> {
+  return attempt(() => {
+    const room = current as GCounterRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(replica === "A" || replica === "B" || replica === "C", "replicaId must be A, B, or C");
+    const increment = incrementAmount(amount);
+    requireInput(increment > 0, "amount must be greater than zero");
+    const handle = kernel(sluiceCore.gcounter_room_increment(roomHandle(room), replica, increment));
+    return { room, view: roomView(handle), deliveries: [] };
+  });
+}
+
 export function deliverGCounterRace(current: unknown): Result<GCounterTransportResult> {
   return attempt(() => {
     const room = current as GCounterRoom;
@@ -314,10 +330,15 @@ export function deliverGCounterRace(current: unknown): Result<GCounterTransportR
   });
 }
 
-export function resendGCounterComponent(current: unknown): Result<GCounterTransportResult> {
+export function resendGCounterComponent(
+  current: unknown,
+  replicaId: unknown = "B",
+): Result<GCounterTransportResult> {
   return attempt(() => {
     const room = current as GCounterRoom;
-    const [handle, deliveries] = kernel(sluiceCore.gcounter_room_resend_b(roomHandle(room)));
+    const replica = text(replicaId, "invalid-input");
+    requireInput(replica === "A" || replica === "B" || replica === "C", "replicaId must be A, B, or C");
+    const [handle, deliveries] = kernel(sluiceCore.gcounter_room_resend(roomHandle(room), replica));
     return { room, view: roomView(handle), deliveries: transportDeliveries(deliveries) };
   });
 }

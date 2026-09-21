@@ -163,13 +163,15 @@ These details belong in an “Explain why” disclosure or a linked mechanism la
 | Demo | Question | Primary actions | Result | Explain why | Watershed reference |
 |---|---|---|---|---|---|
 | Operation counter | What happens when A adds 2 and B adds 3? | Add at A, add at B, race | Both increments survive; total is 5 | Signed deltas commute | `website/src/components/Demo.astro` `.dds-counter` |
-| G-counter | What happens when A and B increment before delivery, then B's component is resent? | Stage race, deliver through Sluice, resend B | A, B, and observer C converge; resend changes nothing | Per-replica maxima make merge idempotent | `website/src/components/Demo.astro` `.dds-gcounter`, `src/watershed/sluice_js.gleam` |
+| G-counter | What happens when clients increment before delivery, then a component is resent? | Add +1/+3/+7 at any client, race A:+7/B:+3, deliver, resend latest | A, B, and C converge; resend changes nothing | Per-replica maxima make merge idempotent | `website/src/components/Demo.astro` `.dds-gcounter`, `website/src/scripts/demo.ts` `localGCounterIncrement`, `src/watershed/sluice_js.gleam` |
 | PN-counter | Can replicas increment and decrement offline? | Add at A, subtract at B, race | Final value is positive total minus negative total | Two grow-only components | `website/src/components/Demo.astro` `.dds-pn` |
 | Counter in a map | Why not read, increment, and write one number? | Run broken race, run counter race | Map loses one update; counter keeps both | Lost update caused by replacement | `website/src/components/CounterBug.astro` and `website/src/scripts/counter-bug.ts` |
 
 The first counter demo is the entry point for the whole site. It shows a
 compact Sluice transport strip with queued state and ordered deliveries. It
-must not show dots, vectors, partitions, trace history, or raw payloads.
+animates each operation from its author through Sluice to all clients, with
+playback speed and visual jitter controls. It must not show vectors,
+partitions, trace history, or raw payloads.
 
 ### Registers
 

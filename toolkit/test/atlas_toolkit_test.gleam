@@ -86,12 +86,28 @@ pub fn gcounter_sluice_room_delivers_to_three_clients_test() {
   delivered.pending |> should.be_false
   deliveries |> should.not_equal([])
 
-  let assert Ok(#(room, replay)) = sluice.gcounter_room_resend_b(room)
+  let assert Ok(#(room, replay)) = sluice.gcounter_room_resend(room, "B")
   let assert Ok(replayed) = sluice.gcounter_room_snapshot(room)
   replayed.a |> should.equal(10)
   replayed.b |> should.equal(10)
   replayed.c |> should.equal(10)
   replay |> should.not_equal([])
+}
+
+pub fn gcounter_sluice_room_accepts_direct_client_increment_test() {
+  let assert Ok(room) = sluice.new_gcounter_room()
+  let assert Ok(room) = sluice.gcounter_room_increment(room, "C", 3)
+  let assert Ok(local) = sluice.gcounter_room_snapshot(room)
+  local.a |> should.equal(0)
+  local.b |> should.equal(0)
+  local.c |> should.equal(3)
+  local.pending |> should.be_true
+
+  let #(room, _) = sluice.gcounter_room_deliver(room)
+  let assert Ok(delivered) = sluice.gcounter_room_snapshot(room)
+  delivered.a |> should.equal(3)
+  delivered.b |> should.equal(3)
+  delivered.c |> should.equal(3)
 }
 
 pub fn equal_siblings_and_unobserved_write_test() {

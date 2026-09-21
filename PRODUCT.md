@@ -62,10 +62,11 @@ multi-value register, and observed-remove set lessons run pinned Watershed
 kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 
-The G-counter lesson uses Watershed's JavaScript Sluice transport. Atlas
-stages two concurrent increments, exposes whether transport frames are
-waiting, drains the ordered broadcasts, and displays their authors, targets,
-and sequence numbers.
+The G-counter lesson uses Watershed's JavaScript Sluice transport. Readers can
+increment A, B, or C directly, stage the authored A:+7/B:+3 race, deliver the
+queued operations, and resend the latest cumulative component. Atlas animates
+each operation from its author through Sluice to all clients, with playback
+speed and optional visual jitter controls.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and
