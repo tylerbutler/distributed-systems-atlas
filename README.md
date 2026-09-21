@@ -23,8 +23,8 @@ context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it
 does not imply that a replica has a global view. The release includes the seven
 sheets, landing page, structures index, counter-family and set-family pages,
-dedicated G-counter, PN-counter, and SharedCounter lessons, atlas index,
-glossary, and bibliography.
+dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet, and
+observed-remove set lessons, atlas index, glossary, and bibliography.
 
 ## Local development
 
@@ -42,8 +42,9 @@ pnpm dev
 Open the local URL printed by Astro. The publication includes `/`,
 `/structures/`, `/structures/counters/`, `/structures/g-counter/`,
 `/structures/pn-counter/`, `/structures/shared-counter/`,
-`/structures/sets/`, `/atlas/`, `/glossary/`, `/bibliography/`, and these sheet
-routes:
+`/structures/sets/`, `/structures/g-set/`, `/structures/two-p-set/`,
+`/structures/observed-remove-set/`, `/atlas/`, `/glossary/`,
+`/bibliography/`, and these sheet routes:
 
 - `/atlas/local-history/`
 - `/atlas/partial-order/`

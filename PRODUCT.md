@@ -64,15 +64,14 @@ path. Alice, Bob, and Carol survey the Eagle Creek trail beacon. Their story
 moves from a permanent record of every beacon observed, through an irreversible
 retirement, to a replacement beacon that needs a fresh identity. The page
 compares Watershed's GSet, TwoPSet, and observed-remove set through that
-progression. The observed-remove section links to the existing detailed lesson
-and deterministic lab.
+progression. Each structure has a dedicated three-client lesson and focused
+demo. The observed-remove page also links to the deeper deterministic lab.
 
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
-PN-counter, and SharedCounter demos and reference engines for ordering, clocks,
-and Dots. Focused structure demos use at least three clients. The G-counter,
-PN-counter, SharedCounter, multi-value register, and observed-remove set
-lessons run pinned Watershed
+PN-counter, SharedCounter, GSet, TwoPSet, and observed-remove set demos and
+reference engines for ordering, clocks, and Dots. Focused structure demos use
+at least three clients. The counter and set lessons run pinned Watershed
 kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 

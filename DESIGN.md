@@ -348,8 +348,11 @@ Bob, and Carol survey the Eagle Creek trail beacon. The same named beacon moves
 through three policies: GSet records that it was ever observed, TwoPSet retires
 the name permanently, and the observed-remove set gives a replacement
 installation a fresh identity. The family page remains a reading surface; the
-existing observed-remove lesson continues that story and owns the interactive
-lab.
+three dedicated lesson pages continue that story. Each page uses the same
+three-notebook instrument and Watershed Sluice transport while changing the
+conflict rule: union for GSet, permanent tombstones for TwoPSet, and observed
+addition identities for the observed-remove set. The observed-remove page also
+links to the deeper causal-tag lab.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
