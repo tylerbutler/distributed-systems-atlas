@@ -368,7 +368,11 @@ test("the sets family compares its three removal rules", async ({ page }) => {
   ]);
   await expect(page.getByRole("link", {
     name: "Open the observed-remove set lesson",
-  })).toHaveAttribute("href", "/atlas/observed-remove-sets/");
+  })).toHaveAttribute("href", "/structures/observed-remove-set/");
+  await expect(page.getByRole("link", { name: "Open the GSet lesson" }))
+    .toHaveAttribute("href", "/structures/g-set/");
+  await expect(page.getByRole("link", { name: "Open the TwoPSet lesson" }))
+    .toHaveAttribute("href", "/structures/two-p-set/");
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {
