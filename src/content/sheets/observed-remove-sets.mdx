@@ -38,13 +38,13 @@ observed-remove set must support the full story.
 
 Alice at station A removes the old installation while Bob at station B reports
 its replacement across a partition. Carol asks what their shared list must
-show after the delayed records arrive. The ranger needs that final list but
+show after delivery of the delayed records. The ranger needs that final list but
 does not sequence their updates. The lab isolates Alice's and Bob's conflicting
 replicas: Bob eventually receives a stale copy of the original addition. You
 need to preserve Bob's replacement without restoring the installation Alice
 removed.
 
-The visible string cannot distinguish those cases. Both messages say
+The visible string cannot distinguish those cases. Both messages contain
 `beacon`. Give each addition a unique tag, and make removal name the tags
 the removing replica observed. Then an old add and a new add can receive
 different treatment even though their value text matches.
@@ -69,7 +69,7 @@ increments it for an add. `B:2` is B's first addition in this run.
 
 Keep that literal tag in the records. Renaming it to `B:1` would hide which
 implementation you are inspecting. A's remove targets `A:1`. It cannot
-target `B:2` because no message about that addition has reached A.
+target `B:2` because A has received no message about that addition.
 
 A <dfn><a href="/glossary/#tombstone">tombstone</a></dfn> preserves the removed
 tag. Membership asks whether a value has any live tags; replay protection asks
@@ -112,7 +112,7 @@ to detect an incorrect resurrection.
 The ordinary controls include **Duplicate m1 from A to B**, **Partition A
 and B**, **Remove beacon at A**, **Add beacon at B**, and **Heal A and B**.
 The saved copy appears as **m1 copy1 from A to B** in the queue. The numbered
-run selects it only after the two new deltas have arrived.
+run selects it only after delivery of the two new deltas.
 
 Without JavaScript, both initial sets below are empty. The article's staged
 records supply the outcome; interactive controls are not needed to understand
@@ -126,7 +126,7 @@ which tags each removal can name.
 
 ## Follow live and removed tags through delivery
 
-After the original `m1` arrives, both stations retain live `A:1`. The saved
+After delivery of the original `m1`, both stations retain live `A:1`. The saved
 copy has the same payload and tag. Duplicating a message does not allocate
 another addition.
 
@@ -159,7 +159,7 @@ then supplies `B:2` to A. Before the stale replay, the replicas already have
 matching set metadata, but the queue still contains the duplicate. Atlas's
 **Converged** check requires matching metadata and an empty queue.
 
-When the duplicate arrives, the merge finds `A:1` in B's tombstones and
+When the duplicate is delivered, the merge finds `A:1` in B's tombstones and
 keeps it out of the live tags. Both stations display beacon through `B:2`.
 This is idempotent replay of the same authored delta, not a new add.
 
@@ -175,7 +175,7 @@ addition events was removed.
 ## Break it: discard the tombstone
 
 Suppose A and B discard `A:1`'s tombstone when their visible sets match
-after step 9. The stale copy then arrives with `A:1`. If the merge has no
+after step 9. The network then delivers the stale copy with `A:1`. If the merge has no
 removal record left, it can accept that old tag as a live addition.
 
 Beacon was already visible, so checking only the list of strings misses the

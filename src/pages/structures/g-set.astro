@@ -19,8 +19,8 @@ import "../../styles/set-lesson.css";
       <h1>GSet</h1>
       <p class="structure-summary">
         The ranger sends Alice, Bob, and Carol onto separate trails to list
-        every beacon they find. Their first rule is simple: names can enter the
-        survey, but they never leave.
+        every beacon they find. Their first rule is simple: they can add names
+        to the survey, but they cannot remove them.
       </p>
     </header>
 
@@ -57,12 +57,12 @@ import "../../styles/set-lesson.css";
             <tr><th scope="col">Moment</th><th scope="col">Alice</th><th scope="col">Bob</th><th scope="col">Carol</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice reports</th><td>{"{ Eagle Creek }"}</td><td>empty</td><td>empty</td></tr>
-            <tr><th scope="row">Report arrives</th><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td></tr>
-            <tr><th scope="row">Old copy repeats</th><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td></tr>
+            <tr><th scope="row">Alice reports</th><td>Eagle Creek</td><td>empty</td><td>empty</td></tr>
+            <tr><th scope="row">Report delivered</th><td>Eagle Creek</td><td>Eagle Creek</td><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Old copy repeats</th><td>Eagle Creek</td><td>Eagle Creek</td><td>Eagle Creek</td></tr>
           </tbody>
         </table>
-        <figcaption>Union keeps one member even when Alice's report arrives more than once.</figcaption>
+        <figcaption>Union keeps one member even when the network delivers Alice's report more than once.</figcaption>
       </figure>
       <pre aria-label="GSet merge rule"><code>local members ∪ remote members</code></pre>
     </section>

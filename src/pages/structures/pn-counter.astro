@@ -42,9 +42,9 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
         records the same bird twice. The shared count must fall by one.
       </p>
       <p>
-        Their first G-counter can only grow. Bob cannot lower one of its
-        components because an older note with the larger value could arrive
-        later and restore the mistake.
+        A G-counter component can only grow. Bob cannot lower his component
+        because an older note with the larger value could arrive later and
+        restore the mistake.
       </p>
       <p>
         A{" "}
@@ -65,14 +65,14 @@ birds = P - N</code></pre>
     </section>
 
     <section aria-labelledby="correction-race-title">
-      <h2 id="correction-race-title">Two new notes leave at once</h2>
+      <h2 id="correction-race-title">Alice and Bob send two notes at once</h2>
       <p>
         While Bob writes a correction for the duplicate sighting, Alice counts
         3 more birds on the ridge trail. Neither has received the other's note.
         Alice's view rises from 10 to 13. Bob's falls from 10 to 9. Carol still
         reads 10.
       </p>
-      <table aria-label="Bird count before PN-counter notes arrive">
+      <table aria-label="Bird count before PN-counter note delivery">
         <thead>
           <tr>
             <th scope="col">Moment</th>
@@ -83,8 +83,8 @@ birds = P - N</code></pre>
         </thead>
         <tbody>
           <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
-          <tr><th scope="row">Notes waiting</th><td>13</td><td>9</td><td>10</td></tr>
-          <tr><th scope="row">Both notes arrive</th><td>12</td><td>12</td><td>12</td></tr>
+          <tr><th scope="row">Notes queued</th><td>13</td><td>9</td><td>10</td></tr>
+          <tr><th scope="row">Both notes delivered</th><td>12</td><td>12</td><td>12</td></tr>
         </tbody>
       </table>
       <p>
@@ -104,6 +104,8 @@ birds = P - N</code></pre>
         After both notes arrive, the positive G-counter totals 13 and the
         negative G-counter totals 1. Alice, Bob, and Carol all compute
         <code>P - N = 13 - 1 = 12</code>.
+        Delivery order does not change that result, and a repeated delta does
+        not apply the correction twice.
       </p>
       <p>
         A PN-counter can also produce a negative value. That is correct counter

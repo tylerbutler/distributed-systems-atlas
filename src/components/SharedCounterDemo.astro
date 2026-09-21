@@ -16,8 +16,8 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       <div>
         <h2 id="shared-counter-demo-title">Send signed changes through the ranger</h2>
         <p>
-          Every note reaches the ranger before it reaches another hiker. The
-          ranger stamps one sequence number, then broadcasts numbered copies.
+          The ranger receives every note before another hiker does. The ranger
+          stamps one sequence number, then broadcasts numbered copies.
         </p>
       </div>
       <p class="sequence-rule">
@@ -29,11 +29,11 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
     <div class="operation-key" aria-label="SharedCounter operation states">
       <p>
         <span class="operation-key-mark outbound" aria-hidden="true"></span>
-        <span><strong>Unnumbered note</strong> Traveling to the ranger</span>
+        <span><strong>Unnumbered note</strong> In transit to the ranger</span>
       </p>
       <p>
         <span class="operation-key-mark sequenced" aria-hidden="true"></span>
-        <span><strong>Stamped copy</strong> Reaching every hiker</span>
+        <span><strong>Stamped copy</strong> Being delivered to every hiker</span>
       </p>
     </div>
 

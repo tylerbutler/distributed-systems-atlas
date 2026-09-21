@@ -37,7 +37,7 @@ describe("G-counter checkpoint lesson", () => {
     expect(view.replicas.map(({ value }) => value)).toEqual([7, 3, 0]);
     expect(view.pending).toBe(true);
     expect(view.queuedOperations).toBe(2);
-    expect(view.result).toContain("checkpoint notes are waiting to be shared");
+    expect(view.result).toContain("checkpoint notes are queued for sharing");
   });
 
   test("both checkpoint notes reach all three clients", () => {

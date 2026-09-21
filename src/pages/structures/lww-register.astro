@@ -39,7 +39,7 @@ import "../../styles/set-lesson.css";
       <p>
         A <dfn><a href="/glossary/#last-writer-wins-register">last-writer-wins register</a></dfn>
         {" "}does not use message arrival order. It compares the timestamp
-        carried by each write. If two writes have the same time, the greater
+        attached to each write. If two writes have the same time, the greater
         writer ID breaks the tie.
       </p>
       <TermCallout {...lwwRegisterTerm} />
@@ -54,7 +54,7 @@ import "../../styles/set-lesson.css";
             <tr><th scope="row">Winner</th><td>Trail closed</td><td>B breaks the tie</td></tr>
           </tbody>
         </table>
-        <figcaption>Carol gets the same winner even if Alice's report arrives last.</figcaption>
+        <figcaption>Carol gets the same winner even if the network delivers Alice's report last.</figcaption>
       </figure>
       <pre aria-label="LWWRegister merge rule"><code>max(timestamp, writer ID)</code></pre>
     </section>
@@ -62,8 +62,8 @@ import "../../styles/set-lesson.css";
     <RegisterStructureDemo
       kind="lww-register"
       title="Choose one field report"
-      description="Race equal-time reports from Alice and Bob. Delivery order changes nothing because the timestamp and writer ID travel with the value."
-      rule="Greatest timestamp wins; writer ID breaks a tie."
+      description="Race equal-time reports from Alice and Bob. Delivery order changes nothing because each value includes the timestamp and writer ID."
+      rule="Use the greatest timestamp; writer ID breaks a tie."
       raceLabel="Race the equal-time reports"
     />
 

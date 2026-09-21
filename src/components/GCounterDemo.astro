@@ -18,7 +18,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <p>
           Record birds for Alice, Bob, or Carol. Each hiker leaves their running
           count at a known checkpoint. Turn off Auto-deliver to hold several
-          notes before they reach the other checkpoints.
+          notes before delivery to the other checkpoints.
         </p>
       </div>
       <p class="merge-rule">
@@ -30,11 +30,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <div class="operation-key" aria-label="Checkpoint note states">
       <p>
         <span class="operation-key-mark outbound" aria-hidden="true"></span>
-        <span><strong>New note</strong> Traveling to a checkpoint</span>
+        <span><strong>New note</strong> In transit to a checkpoint</span>
       </p>
       <p>
         <span class="operation-key-mark sequenced" aria-hidden="true"></span>
-        <span><strong>Shared note</strong> Reaching the other hikers</span>
+        <span><strong>Shared note</strong> Being delivered to the other hikers</span>
       </p>
     </div>
 
@@ -145,7 +145,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
           that hiker.
         </p>
         <p>
-          Notes can arrive in any order or more than once. Alice's 7 still
+          The network can deliver notes in any order or more than once. Alice's 7 still
           replaces Alice's 4, and another copy of Alice's 7 changes nothing.
         </p>
       </div>
@@ -160,7 +160,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <p>
           Each hiker's notebook has one row for Alice, Bob, and Carol. A row
           stores the largest count received from that hiker. Checkpoint notes
-          can arrive in any order.
+          can be delivered in any order.
         </p>
         <table aria-label="Largest counts in each hiker's notebook">
           <thead>

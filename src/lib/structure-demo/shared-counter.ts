@@ -131,7 +131,7 @@ export function updateSharedReplica(
       ok: true,
       state: {
         ...recordUpdate(state, { author: replica, amount }, updated),
-        result: `${sharedCounterUserName(replica)} sent ${formatSigned(amount)} to the ranger. The note is traveling.`,
+        result: `${sharedCounterUserName(replica)} sent ${formatSigned(amount)} to the ranger. The note is in transit.`,
       },
     };
   } catch (error) {
@@ -149,7 +149,7 @@ export function stageSharedRace(
       ok: true,
       state: {
         ...recordUpdate(withAlice, { author: "B", amount: -1 }, staged),
-        result: "Alice sent +3 while Bob sent -1. Both notes are traveling to the ranger.",
+        result: "Alice sent +3 while Bob sent -1. Both notes are in transit to the ranger.",
       },
     };
   } catch (error) {

@@ -24,14 +24,14 @@ import TermCallout from "../../components/TermCallout.astro";
 
 <div class="sheet-opening">
 
-## A message can arrive with old news
+## A delayed message can contain old news
 
 Station A records a draft signal report and sends its record to B. While the
-message waits in the network, A publishes the report. B then receives the
-message. Does B know that A published?
+network delays delivery, A publishes the report. B then receives the message.
+Does B know that A published?
 
 The message contains the record that A sent. It does not acquire A's later
-changes while it waits. B can learn about the draft without learning about
+changes before delivery. B can learn about the draft without learning about
 publication. A successful delivery therefore proves less than "B is up to
 date." You need to identify the information in that particular message.
 
@@ -191,7 +191,7 @@ precise definition of its local ordering. Reusing an event ID after a restart
 would make two events indistinguishable in this graph.
 
 You control delivery. Sending does not guarantee receipt, and healing a
-partition only permits pending messages to arrive. An empty queue here means
+partition only permits delivery of pending messages. An empty queue here means
 there are no queued copies in this simulation. It does not prove that no
 external sender has an update or that all replicas have equal state.
 

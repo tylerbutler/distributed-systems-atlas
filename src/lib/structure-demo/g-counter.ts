@@ -114,7 +114,7 @@ export function incrementReplica(
         authoredCounts,
         queuedOperations,
         latestAuthor: replica,
-        result: `${gCounterUserName(replica)} counted ${amount} more ${amount === 1 ? "bird" : "birds"}. ${queuedOperations} checkpoint ${queuedOperations === 1 ? "note is" : "notes are"} waiting to be shared.`,
+        result: `${gCounterUserName(replica)} counted ${amount} more ${amount === 1 ? "bird" : "birds"}. ${queuedOperations} checkpoint ${queuedOperations === 1 ? "note is" : "notes are"} queued for sharing.`,
       },
     };
   } catch (error) {
@@ -140,7 +140,7 @@ export function stageRace(state: GCounterDemoState): GCounterDemoResult {
         },
         queuedOperations: state.queuedOperations + 2,
         latestAuthor: "B",
-        result: "Alice counted 7 birds and Bob counted 3. Their checkpoint notes are waiting to be shared.",
+        result: "Alice counted 7 birds and Bob counted 3. Their checkpoint notes are queued for sharing.",
       },
     };
   } catch (error) {
@@ -166,7 +166,7 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
         latestDeliveries: delivered.deliveries,
         deliveredCounts: { ...state.authoredCounts },
         queuedOperations: 0,
-        result: `${operations} checkpoint ${operations === 1 ? "note reached" : "notes reached"} every hiker. All three read ${total} birds.`,
+        result: `${operations} checkpoint ${operations === 1 ? "note was" : "notes were"} delivered to every hiker. All three read ${total} birds.`,
       },
     };
   } catch (error) {
@@ -194,8 +194,8 @@ export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResu
         deliveredCounts: complete ? { ...state.authoredCounts } : state.deliveredCounts,
         queuedOperations,
         result: complete
-          ? `The final checkpoint note reached every hiker. All three read ${total} birds.`
-          : `One checkpoint note reached every hiker. ${queuedOperations} remain waiting.`,
+          ? `The final checkpoint note was delivered to every hiker. All three read ${total} birds.`
+          : `One checkpoint note was delivered to every hiker. ${queuedOperations} remain queued.`,
       },
     };
   } catch (error) {
@@ -205,7 +205,7 @@ export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResu
 
 export function resendUserCount(state: GCounterDemoState): GCounterDemoResult {
   if (state.view.pending) {
-    return failure(state, "Note repeat", "share the waiting checkpoint notes first");
+    return failure(state, "Note repeat", "share the queued checkpoint notes first");
   }
   if (state.latestAuthor === null) {
     return failure(state, "Note repeat", "record and share a bird count first");

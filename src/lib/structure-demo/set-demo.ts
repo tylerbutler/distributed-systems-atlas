@@ -146,7 +146,7 @@ export function updateSetReplica(
         ...record(state, operation, updated),
         result: `${setDemoUserName(operation.author)} ${
           operation.action === "add" ? "reported" : "retired"
-        } ${operation.element}. The record is traveling.`,
+        } ${operation.element}. The record is in transit.`,
       },
     };
   } catch (error) {
@@ -167,10 +167,10 @@ export function stageSetDemoRace(state: SetDemoState): SetDemoResult {
         latestDeliveries: [],
         queuedOperations: RACE_OPERATIONS[state.kind],
         result: state.kind === "g-set"
-          ? "Alice and Bob reported different beacons. Both records are traveling."
+          ? "Alice and Bob reported different beacons. Both records are in transit."
           : state.kind === "two-p-set"
-            ? "Alice retired Eagle Creek while Bob reported it again. The records are traveling."
-            : "Alice removed the old installation while Bob reported a fresh replacement. The records are traveling.",
+            ? "Alice retired Eagle Creek while Bob reported it again. The records are in transit."
+            : "Alice removed the old installation while Bob reported a fresh replacement. The records are in transit.",
       },
     };
   } catch (error) {
@@ -204,10 +204,10 @@ export function deliverSetDemoOperations(state: SetDemoState): SetDemoResult {
     const latestDeliveries = labelDeliveries(state.queuedOperations, delivered.deliveries);
     const values = delivered.view.replicas[0]?.values ?? [];
     const result = state.kind === "g-set"
-      ? `The reports reached every hiker. The union contains ${values.join(" and ")}.`
+      ? `The reports were delivered to every hiker. The union contains ${values.join(" and ")}.`
       : state.kind === "two-p-set"
-        ? "The retirement tombstone reached every hiker. Eagle Creek stays absent."
-        : "Both records reached every hiker. Bob's fresh Eagle Creek installation survives.";
+        ? "The retirement tombstone was delivered to every hiker. Eagle Creek stays absent."
+        : "Both records were delivered to every hiker. Bob's fresh Eagle Creek installation remains.";
     return {
       ok: true,
       state: {

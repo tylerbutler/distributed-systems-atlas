@@ -98,7 +98,7 @@ export function updateRegisterReplica(
         queuedOperations: [...state.queuedOperations, operation],
         result: state.kind === "register-collection"
           ? `${registerUserName(operation.author)} submitted "${operation.value}". It stays hidden until it is sequenced.`
-          : `${registerUserName(operation.author)} wrote "${operation.value}". The write is traveling.`,
+          : `${registerUserName(operation.author)} wrote "${operation.value}". The write is in transit.`,
       },
     };
   } catch (error) {
@@ -117,7 +117,7 @@ export function stageRegisterRace(state: RegisterDemoState): RegisterDemoResult 
         queuedOperations: [...RACE_OPERATIONS],
         result: state.kind === "register-collection"
           ? "Alice and Bob submitted without seeing either report. Both writes await sequence numbers."
-          : "Alice wrote \"Trail open\" while Bob wrote \"Trail closed\". Both writes are traveling.",
+          : "Alice wrote \"Trail open\" while Bob wrote \"Trail closed\". Both writes are in transit.",
       },
     };
   } catch (error) {
@@ -134,10 +134,10 @@ export function deliverRegisterOperations(
   try {
     const delivered = value(deliverRegisterDemo(state.room));
     const result = state.kind === "lww-register"
-      ? `Both writes arrived. Bob wins the T10 tie, so every hiker reads "${delivered.view.replicas[0]?.values[0]}".`
+      ? `Both writes were delivered. Bob has the greater writer ID at T10, so every hiker reads "${delivered.view.replicas[0]?.values[0]}".`
       : state.kind === "mv-register"
-        ? "Both writes arrived. Every hiker keeps Trail closed and Trail open as concurrent alternatives."
-        : `Both writes arrived. Atomic reads "${delivered.view.atomicValue}"; latest reads "${delivered.view.latestValue}".`;
+        ? "Both writes were delivered. Every hiker keeps Trail closed and Trail open as concurrent alternatives."
+        : `Both writes were delivered. Atomic reads "${delivered.view.atomicValue}"; latest reads "${delivered.view.latestValue}".`;
     return {
       ok: true,
       state: {

@@ -260,14 +260,14 @@ class MapStructureDemoElement extends HTMLElement {
           return node("li", `${mapUserName(operation.author)} · ${operationLabel(operation)}`);
         })
         : [node("li", this.state.view.pending
-          ? `${this.state.queuedOperations.length} operations are traveling.`
+          ? `${this.state.queuedOperations.length} operations are in transit.`
           : "No operations shared yet.")]),
     );
 
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;
     evidence.textContent = this.kind === "shared-map"
       ? this.state.deliveries.length
-        ? `SN ${this.state.view.sequenceNumber}: the last sequenced write wins gate-status.`
+        ? `SN ${this.state.view.sequenceNumber}: gate-status uses the last sequenced write.`
         : "No race delivered yet."
       : this.kind === "lww-map"
         ? this.state.deliveries.length

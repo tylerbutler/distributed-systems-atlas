@@ -235,7 +235,7 @@ class RegisterStructureDemoElement extends HTMLElement {
       ? [...this.state.history].reverse().map((operation) =>
         node("li", `${registerUserName(operation.author)} wrote ${operation.value}`))
       : [node("li", this.state.view.pending > 0
-        ? `${this.state.queuedOperations.length} writes are traveling.`
+        ? `${this.state.queuedOperations.length} writes are in transit.`
         : "No writes shared yet.")]));
 
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;

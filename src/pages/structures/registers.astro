@@ -33,7 +33,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <p>
             Alice reports <code>Trail open</code> while Bob reports
             <code>Trail closed</code>. A last-writer-wins register keeps one
-            value. The greater timestamp wins; equal timestamps use the writer
+            value. The greater timestamp determines the value; equal timestamps use the writer
             ID as a stable tie-breaker.
           </p>
           <p>

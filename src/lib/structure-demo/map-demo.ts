@@ -117,7 +117,7 @@ export function updateMapReplica(
         deliveries: state.deliveries,
         latestDeliveries: [],
         queuedOperations: [...state.queuedOperations, operation],
-        result: `${mapUserName(operation.author)} recorded ${operation.key}. The map operation is traveling.`,
+        result: `${mapUserName(operation.author)} recorded ${operation.key}. The map operation is in transit.`,
       },
     };
   } catch (error) {

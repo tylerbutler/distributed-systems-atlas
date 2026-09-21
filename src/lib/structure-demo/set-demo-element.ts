@@ -261,11 +261,11 @@ class SetStructureDemoElement extends HTMLElement {
           .join(", ");
         return node(
           "li",
-          `${setDemoUserName(operation.author)} ${operation.action === "add" ? "reported" : "retired"} ${operation.element}; reached ${recipients}`,
+          `${setDemoUserName(operation.author)} ${operation.action === "add" ? "reported" : "retired"} ${operation.element}; delivered to ${recipients}`,
         );
       })
       : [node("li", view.canDeliver
-        ? `${view.queuedOperations} ${view.queuedOperations === 1 ? "record is" : "records are"} traveling.`
+        ? `${view.queuedOperations} ${view.queuedOperations === 1 ? "record is" : "records are"} in transit.`
         : "No records shared yet.")]));
 
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;

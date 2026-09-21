@@ -158,7 +158,7 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
   }
 
   let frames: readonly TraceFrame[] = Object.freeze([
-    frame(0, null, "initial", "Each replica starts with an empty local history. No messages have arrived."),
+    frame(0, null, "initial", "Each replica starts with an empty local history. No messages have been delivered."),
   ]);
   const current = () => frames[frames.length - 1];
   const error = (action: LabAction, message: string): LabError => ({ action, engine: id, message, lastFrame: current() });
@@ -259,7 +259,7 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
           ? `${message.to} sets its clock to max(local, message) + 1. Each duplicate arrival is a new receive event.`
           : mode === "vector"
             ? `${message.to} merges component maxima, then increments its own component. Each arrival is a new receive event.`
-            : `${message.to} records a receive event and learns only the history carried by this message.`);
+            : `${message.to} records a receive event and learns only the history included in this message.`);
       }
       case "partition":
       case "heal": {
@@ -304,7 +304,7 @@ export function createOrderingEngine(config: EngineScenario): SimulationEngine {
         comparisons = [];
         vectorComparisons = [];
         eventNumber = messageNumber = copyNumber = 0;
-        frames = Object.freeze([frame(0, null, "initial", "Each replica starts with an empty local history. No messages have arrived.")]);
+        frames = Object.freeze([frame(0, null, "initial", "Each replica starts with an empty local history. No messages have been delivered.")]);
         return current();
       default:
         return error(action, `unsupported action for ${mode}: ${action.type}`);

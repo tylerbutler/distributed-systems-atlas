@@ -49,7 +49,7 @@ Message delivery connects observations across rows.
 <figure aria-label="One causal path and an independent event">
   <dl class="sheet-data">
     <dt><StationMark station="A" /> Station A</dt>
-    <dd><code>a1</code> enters message <code>m1</code> for B.</dd>
+    <dd>A includes <code>a1</code> in message <code>m1</code> for B.</dd>
     <dt><StationMark station="B" /> Station B</dt>
     <dd><code>b1</code> receives m1. The graph has the edge <code>a1 -&gt; b1</code>.</dd>
     <dt><StationMark station="C" /> Station C</dt>
@@ -86,7 +86,7 @@ Use **Reset lab**, then the numbered reference controls.
 
 1. **Reference step 1: local-event** records `a1` at A.
 2. **Reference step 2: send** queues `m1` from A to B.
-3. **Reference step 3: local-event** records `c1` at C. No message leaves C.
+3. **Reference step 3: local-event** records `c1` at C. C sends no message.
 4. **Reference step 4: deliver** records the receive `b1` at B.
 5. **Reference step 5: compare-events** compares `a1 / b1`, `b1 / c1`,
    and `c1 / c1`.
@@ -160,7 +160,7 @@ A total sequence can still be useful for display. Both `a1, c1, b1` and
 The partial order permits these sequences because it does not constrain C
 relative to the other events.
 
-A sorting rule chooses one permitted sequence. It cannot promote that
+A sorting rule produces one permitted sequence. It cannot promote that
 choice into evidence that an event observed another. To check your model,
 look for the concrete local or message edge behind each claimed dependency.
 If the only reason is "its row appeared first," keep the pair concurrent.

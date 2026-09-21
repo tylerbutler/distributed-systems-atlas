@@ -74,14 +74,14 @@ After that collision, a peer could mistake a new add for an old, removed one.
 Persistence or a fresh replica identity is part of making the name unique.
 
 Within one allocator, the counter records allocation order: A created `A:1`
-before `A:2`. Across allocators, comparing the numbers tells you no such thing.
+before `A:2`. Across allocators, the numbers provide no such information.
 `B:1` might follow an observation of `A:50`, or B might have heard nothing from
 A. You need causal context to distinguish those histories.
 
 The counter also doesn't measure elapsed time. Waiting an hour creates no new
 dot. In this lab, adding a value creates one; removing a value does not. A
 remove records which existing addition dots it removes. The event ledger still
-records the remove as an action, so ledger positions and dot counters answer
+records the remove as an action, so ledger positions and dot counters provide
 different questions.
 
 Attaching a name to each addition also makes retries manageable. Delivering the
@@ -93,8 +93,8 @@ even when its visible string is identical.
 
 One dot names one event. A <dfn><a href="/glossary/#causal-context">causal
 context</a></dfn> records accumulated knowledge of events. After A creates its
-first addition, A knows about `A:1`. B learns about that addition when its
-message arrives. Removing it changes membership without making A forget that
+first addition, A knows about `A:1`. B learns about that addition when it
+receives the message. Removing it changes membership without making A forget that
 the addition happened.
 
 <TermCallout
@@ -116,18 +116,18 @@ removed-dot records for every value with each update. The queue labels these
 messages **delta**, but they include a full causal-state snapshot, not just
 the latest operation. Delivery merges those records along with the vector.
 
-That accompanying state matters when messages arrive out of order. Add twice
+That accompanying state matters when the network delivers messages out of order. Add twice
 at A, then deliver only the second message to B: B learns both `A:1` and `A:2`.
 A removal at B can now remove both additions. Delivering the first message
 later cannot restore either dot. The same rule applies when an update concerns
 a different value or passes through another replica.
 
 The lab's **Clock** and **Causal context** fields show the same vector summary.
-They aren't two independent clocks. The explicit records tell you which
+They aren't two independent clocks. Use the explicit records to identify which
 additions contribute to membership and which have been removed.
 
 A protocol that sends smaller deltas needs another way to preserve causal
-dependencies, such as buffering updates until their predecessors arrive.
+dependencies, such as buffering updates until their predecessors are delivered.
 An exact context for received dots with gaps can use a contiguous prefix plus
 separate dots beyond it. Taking vector maxima alone would let a replica claim
 knowledge of an earlier addition without enough information to remove it.
@@ -154,8 +154,8 @@ then the B entries:
 
 That comparison describes the stations' accumulated knowledge. It doesn't
 order every action in their ledgers. In this model a removal creates no new
-dot, so the vectors alone can't tell you whether B observed A's remove.
-Follow which messages arrived to establish that distinction.
+dot, so the vectors alone can't show whether B observed A's remove.
+Follow which messages have been delivered to establish that distinction.
 
 ## Compare what each station knows
 
@@ -178,7 +178,7 @@ The state panels and history come from the engine's trace. **Back** and
 issuing another operation. **Play** visits existing frames every 900 ms without
 creating actions or delivering messages. **Pause** or any manual control stops
 playback. With reduced motion, **Next recorded frame** advances once per press.
-You still decide when a message arrives.
+You still decide when to deliver a message.
 
 For a second run, reset and follow the same actions but reverse the last two
 deliveries. You can also duplicate a queued message before delivering it.
@@ -215,7 +215,7 @@ replicas. The partition keeps those operations apart.
 
 The timing of the claim matters. Immediately after healing, A still has an
 empty visible set, while B still has both addition dots live. Neither pending
-message has arrived. After delivery of the removal to B, B retains only its
+message has been delivered. After delivery of the removal to B, B retains only its
 new dot; after delivery of the addition to A, both replicas agree. Restoring a
 link isn't evidence of convergence.
 
@@ -256,11 +256,12 @@ rules give different wrong answers:
   </table>
   <figcaption>Both rules violate observed removal. Delete by value loses
   <code>B:1</code>; keeping every add resurrects <code>A:1</code>. Seeing
-  <code>beacon</code> at both stations cannot tell you which mistake you made.</figcaption>
+  <code>beacon</code> at both stations does not show which mistake you made.</figcaption>
 </figure>
 
 The correct model retains `B:1` and rejects the removed `A:1`. In the guided
-run, the surviving value can hide the second rule's mistake: you need the live
+run, the second rule's mistake might not be visible because the value remains:
+you need the live
 dots to distinguish a valid concurrent addition from a resurrected one.
 
 Retaining a permanent “beacon was deleted” flag avoids that resurrection at the
@@ -272,11 +273,12 @@ The lab doesn't offer a broken-algorithm switch. You can test the delayed-messag
 case with the correct model: reset, add at A, duplicate the queued addition,
 and remove at A before delivering anything. Deliver the removal first, then
 the original addition and its duplicate. B keeps the observed addition removed
-because the removal record identifies its dot. The old message cannot undo it.
+because the removal record identifies its dot. Delivery of the old message
+cannot restore the addition.
 
 Discarding causal metadata is tempting when the visible values already match.
-That comparison misses the question an incoming message will pose: is this a
-new contribution or a replay of something we removed? Keeping only the visible
+That comparison does not resolve the question raised at message delivery: is
+this a new contribution or a replay of something we removed? Keeping only the visible
 value throws away the information needed to answer.
 
 </section>
@@ -308,10 +310,10 @@ values. That keeps reordered delivery correct without buffering, but message
 size grows with retained history. This teaching model does not optimize
 delta bandwidth.
 
-Removal knowledge costs storage because messages can arrive late. This model
+Removal knowledge costs storage because the network can deliver messages late. This model
 keeps that knowledge indefinitely. It doesn't implement garbage collection or
 replica retirement. You cannot free a removed-dot record just because the
-current screen says the replicas have converged and expect the same safety in
+current screen shows that the replicas have converged and expect the same safety in
 a system that might later replay an old snapshot.
 
 A production design needs a rule for when old state can no longer reintroduce

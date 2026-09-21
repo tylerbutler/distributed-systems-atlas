@@ -94,7 +94,7 @@ import {
       <h2 id="delivery-title">One number means one application</h2>
       <p>
         A sequence number does not force the network to deliver one copy. A
-        numbered copy can still arrive twice. The number gives each replica a
+        the network can still deliver a numbered copy twice. The number gives each replica a
         stable operation identity: apply a new number, and ignore a number that
         has already been applied.
       </p>
@@ -111,7 +111,7 @@ missing SN → wait or recover the gap</code></pre>
     </section>
 
     <section aria-labelledby="shared-race-title">
-      <h2 id="shared-race-title">Two notes reach one log</h2>
+      <h2 id="shared-race-title">The ranger sequences two notes</h2>
       <p>
         The group starts from the agreed count of 10. Alice counts 3 new birds.
         Bob finds one duplicate sighting. They send <code>+3</code> and
@@ -128,7 +128,7 @@ missing SN → wait or recover the gap</code></pre>
         </thead>
         <tbody>
           <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
-          <tr><th scope="row">Notes traveling</th><td>13</td><td>9</td><td>10</td></tr>
+          <tr><th scope="row">Notes in transit</th><td>13</td><td>9</td><td>10</td></tr>
           <tr><th scope="row">SN 1 and SN 2 applied</th><td>12</td><td>12</td><td>12</td></tr>
         </tbody>
       </table>
@@ -146,7 +146,7 @@ missing SN → wait or recover the gap</code></pre>
     <section aria-labelledby="comparison-title">
       <h2 id="comparison-title">The number moved; the safety mechanism changed</h2>
       <p>
-        All three counters reach 12, but they do not exchange the same
+        All three counters have a value of 12, but they do not exchange the same
         information. The G-counter sends cumulative positive components. The
         PN-counter sends cumulative positive and negative components. The
         SharedCounter sends signed operations with sequence numbers.

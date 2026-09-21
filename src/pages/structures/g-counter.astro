@@ -23,8 +23,8 @@ import {
       <p class="structure-summary">
         Before Alice, Bob, and Carol split onto separate trails, they mark the
         same checkpoints on their maps. Each hiker will count birds and leave
-        notes with a running total. The notes may reach the others late, out of
-        order, or more than once. By the end of the hike, all three need the
+        notes with a running total. The others may receive those notes late,
+        out of order, or more than once. By the end of the hike, all three need the
         same bird count.
       </p>
     </header>
@@ -68,7 +68,7 @@ import {
         This is a grow-only counter, or G-counter. Each replica keeps the
         largest note it has received from each hiker, then adds those counts.
         It does not add every message. If Bob leaves the same checkpoint note
-        twice, both messages say that Bob has seen 3 birds. His count stays 3.
+        twice, both messages contain the same count of 3 birds. His count stays 3.
       </p>
       <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all notes from Alice)
 count[Bob] = max(all notes from Bob)
@@ -80,12 +80,12 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
       <p>
         Before they part at the trailhead, Alice, Bob, and Carol mark the same
         checkpoints on their maps. Each carries a notebook with one row for
-        each hiker. When a note turns up, they copy its count into that hiker's
+        each hiker. When they find a note, they copy its count into that hiker's
         row only if it is larger than the count already there. The three rows
         add up to the bird count.
       </p>
       <p>
-        On Carol's route, the first note waiting at the north fork is from
+        On Carol's route, the first note at the north fork is from
         Alice: 7 birds. At the river bridge, she finds Bob's note for 3. Carol
         has not seen a bird herself, so her own row stays at 0.
       </p>
@@ -112,8 +112,8 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
         </figcaption>
       </figure>
       <p>
-        At the old lookout, Carol finds an earlier note from Alice that says 4.
-        Her notebook already says 7, so she leaves that row alone:
+        At the old lookout, Carol finds an earlier note from Alice with a count of 4.
+        Her notebook already contains 7, so she leaves that row alone:
         <code>max(7, 4) = 7</code>. Had she found 4 first, the row would have
         changed from 0 to 4, then from 4 to 7. Either path through the notes
         leads to the same notebook and the same total.
@@ -131,7 +131,7 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     <section aria-labelledby="result-title">
       <h2 id="result-title">Every trail catches up</h2>
       <p>
-        After both checkpoint notes arrive, Alice, Bob, and Carol all read
+        After delivery of both checkpoint notes, Alice, Bob, and Carol all read
         10. Their views were temporarily inconsistent, but the G-counter kept
         both hikers' observations and made every replica agree.
       </p>
@@ -140,8 +140,8 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
         <dfn><a href="/glossary/#eventual-consistency">eventual consistency</a></dfn>.
         For each hiker, merge keeps the larger count from their checkpoint
         notes. The rule is commutative, associative, and idempotent. Arrival
-        order does not change the answer, and the same checkpoint note can
-        arrive more than once.
+        order does not change the answer, and the network can deliver the same
+        checkpoint note more than once.
       </p>
       <TermCallout {...eventualConsistencyTerm} />
     </section>

@@ -169,7 +169,7 @@ increasing clock does not prove happens-before.
 A rule that selects the largest timestamp as a winning value is an
 application conflict policy. It does not recover which versions a writer
 observed. If your application must preserve concurrent values, discarding
-all but the largest scalar timestamp loses information it needs.
+all but the largest scalar timestamp discards necessary information.
 
 </section>
 

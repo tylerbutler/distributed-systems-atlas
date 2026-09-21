@@ -26,7 +26,7 @@ function connectionControls(frame: TraceFrame): PresentedControl[] {
 
 export const dotsPresentation: LabPresentation = immutable({
   title: "Causal lab",
-  instructions: "Add or remove beacon, then choose which delta arrives. The stations only learn from messages you deliver.",
+  instructions: "Add or remove beacon, then choose which delta to deliver. The stations only learn from messages you deliver.",
   comparisonHeading: "Vector comparison",
   inspectorNote: "Engine-private removal records are not exposed by this trace.",
   invariantLabels: {
@@ -123,11 +123,11 @@ function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[])
   };
   return {
     title: titles[mode],
-    instructions: "Follow the reference steps, or create local events and choose when messages arrive. Reset to restart the reference trace.",
+    instructions: "Follow the reference steps, or create local events and choose when to deliver messages. Reset to restart the reference trace.",
     comparisonHeading: mode === "vector" ? "Vector comparison" : "Event comparison",
     inspectorNote: mode === "lamport"
       ? "The event graph defines causality. Scalar timestamps and replica-ID tie breaking define a separate display order."
-      : mode === "vector" ? "Each clock carries one component per replica. Receive merges maxima, then increments the receiver."
+      : mode === "vector" ? "Each clock includes one component per replica. Receive merges maxima, then increments the receiver."
         : "Local history and delivered observations are separate. Sending copies known history without adding a local event in this lesson.",
     invariantLabels: {
       localHistoryIsOrdered: "Local history is ordered",
@@ -292,7 +292,7 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
     id: fixture.id, kind, replicas: ["A", "B"], initialValues: [], actions,
     presentation: {
       title: register ? "Multi-value register lab" : "Observed-remove set lab",
-      instructions: "Follow the reference steps to reproduce the article. Reset before a new run. Delivery controls determine which queued delta arrives.",
+      instructions: "Follow the reference steps to reproduce the article. Reset before a new run. Delivery controls determine which queued delta is delivered.",
       comparisonHeading: "Causal context comparison",
       inspectorNote: register
         ? "Each sibling retains its authored version. The merged context does not replace sibling versions."

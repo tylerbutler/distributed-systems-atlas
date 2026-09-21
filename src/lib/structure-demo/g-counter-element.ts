@@ -128,7 +128,7 @@ class GCounterDemoElement extends HTMLElement {
     const changed = presentGCounterDemo(this.state).replicas
       .filter((replica) => replica.value > 0);
     this.showGuidedObservation(
-      `${changed.map((replica) => gCounterUserName(replica.id)).join(" and ")} count birds before their checkpoint notes reach the others.`,
+      `${changed.map((replica) => gCounterUserName(replica.id)).join(" and ")} count birds before the others receive their checkpoint notes.`,
       changed.map((replica) =>
         this.querySelector<HTMLElement>(`[data-total="${replica.id}"]`)!),
       "circle",
@@ -282,7 +282,7 @@ class GCounterDemoElement extends HTMLElement {
       const author = operationDeliveries[0]?.author;
       if (!isReplicaId(author)) continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
-        `${gCounterUserName(author)}'s checkpoint note is reaching the other hikers.`;
+        `${gCounterUserName(author)}'s checkpoint note is being delivered to the other hikers.`;
       this.showGuidedObservation(
         `${gCounterUserName(author)}'s latest count is now available at the known checkpoint.`,
         [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
@@ -411,7 +411,7 @@ class GCounterDemoElement extends HTMLElement {
     this.querySelector(`[data-total="${replica.id}"]`)!.textContent = String(replica.value);
     this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
       view.pending
-        ? replica.value > 0 ? "Local view · notes still traveling" : "Waiting for notes"
+        ? replica.value > 0 ? "Local view · notes still in transit" : "Waiting for notes"
         : view.phase === "initial" ? "Connected to checkpoint network" : "All checkpoints agree";
     for (const userCount of replica.counts) {
       this.querySelector(`[data-user-count="${replica.id}-${userCount.replicaId}"]`)!.textContent =
@@ -447,7 +447,7 @@ class GCounterDemoElement extends HTMLElement {
       : [node(
         "li",
         view.pending
-          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note" : "notes"} waiting.`
+          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note" : "notes"} queued.`
           : "No checkpoint note shared yet.",
       )]));
     const sequenceCounter =

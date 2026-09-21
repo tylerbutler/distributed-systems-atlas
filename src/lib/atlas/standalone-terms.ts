@@ -7,7 +7,7 @@ export const replicaTerm: GlossaryTerm = {
 
 export const eventualConsistencyTerm: GlossaryTerm = {
   term: "eventual consistency",
-  definition: "Replicas can disagree while messages are in transit. After every message arrives, they converge on the same value.",
+  definition: "Replicas can disagree while messages are in transit. After delivery of every message, they converge on the same value.",
 };
 
 export const pnCounterTerm: GlossaryTerm = {
@@ -47,7 +47,7 @@ export const registerCollectionTerm: GlossaryTerm = {
 
 export const sharedMapTerm: GlossaryTerm = {
   term: "SharedMap",
-  definition: "A sequenced key-value map where the highest server sequence number wins for each key.",
+  definition: "A sequenced key-value map that uses the highest server sequence number for each key.",
 };
 
 export const lwwMapTerm: GlossaryTerm = {

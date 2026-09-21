@@ -160,7 +160,7 @@ class PNCounterDemoElement extends HTMLElement {
       if (!operation || !isReplicaId(operation.author)) continue;
       const author = operation.author;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
-        `${pnCounterUserName(author)}'s ${operation.amount > 0 ? "sighting" : "correction"} note is reaching the other hikers.`;
+        `${pnCounterUserName(author)}'s ${operation.amount > 0 ? "sighting" : "correction"} note is being delivered to the other hikers.`;
       await Promise.all(operationDeliveries.map((delivery) =>
         this.animateHop(
           this.querySelector<HTMLElement>("[data-sequencer-node]")!,
@@ -285,7 +285,7 @@ class PNCounterDemoElement extends HTMLElement {
       : [node(
         "li",
         view.canDeliver
-          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note is" : "notes are"} traveling.`
+          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note is" : "notes are"} in transit.`
           : "No correction note shared yet.",
       )]));
     this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!.value =

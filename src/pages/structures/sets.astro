@@ -39,11 +39,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         <div>
           <p>
             The survey starts when Alice finds the Eagle Creek beacon and adds
-            its name to her notebook. Alice now has
-            <code>{"{ Eagle Creek }"}</code>; Bob and Carol still have empty
-            sets. Her report may reach them late or more than once. A GSet
-            handles that uncertainty with one rule: each hiker can add a name,
-            and merge takes the union.
+            its name. Bob and Carol are on other trails, so they may receive
+            her report late or more than once. A GSet handles that uncertainty
+            with one rule: each hiker can add a name, and merge takes the
+            union.
           </p>
           <p>
             Soon Alice returns to Eagle Creek and finds that the old beacon has
@@ -130,7 +129,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           </p>
           <p>
             The ranger receives the same converged list without assigning an
-            order to the hikers' updates. The tags carry the evidence needed
+            order to the hikers' updates. The tags contain the evidence needed
             for merge.
           </p>
           <h3>Best for</h3>
@@ -162,7 +161,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         </thead>
         <tbody>
           <tr>
-            <th scope="row">Items never leave</th>
+            <th scope="row">No item removal</th>
             <td>GSet</td>
             <td>Retain each member</td>
           </tr>

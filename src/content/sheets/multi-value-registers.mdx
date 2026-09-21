@@ -31,7 +31,7 @@ import VectorComparison from "../../components/VectorComparison.astro";
 
 A writes `red` to a shared register. Before receiving that write, B writes
 `blue`. Both writes are valid local actions, and neither writer has observed
-the other version. When the messages arrive, which color should the register
+the other version. After delivery of both messages, which color should the register
 return?
 
 A last-writer rule could select one, but that would require a conflict policy
@@ -67,7 +67,7 @@ beside red and blue: neither original write observed both events.
 A later local write increments the writer's component in the combined
 context. At A, green therefore receives `[A:2, B:1]`. This version is after
 both red and blue. A can discard those siblings while retaining enough
-context to reject them if an old message arrives again.
+context to reject them if the network delivers an old message again.
 
 The lab uses unique write tags inside the register and displays the authored
 version of each sibling. Two writes with equal value text still have distinct
@@ -112,7 +112,7 @@ B holds blue but still knows nothing about red. The clicks have a browser
 order; the writes have no causal path between them.
 
 Delivering red gives B two siblings. It also raises B's context to
-`[A:1, B:1]`. A still has only red until the blue message arrives. At step
+`[A:1, B:1]`. A still has only red until delivery of the blue message. At step
 4, both replicas retain the same siblings and context, and the queue is empty.
 They have converged even though the register still presents an application
 conflict.
@@ -139,7 +139,7 @@ one sibling, green, and context `[A:2, B:1]`.
 Resolution requires observation. For a second run, reset, write red at A and
 blue at B, then write green at A before delivering blue. Green has version
 `[A:2, B:0]`. It supersedes red but cannot supersede the unobserved blue
-write. After the queued deltas arrive, blue and green remain concurrent.
+write. After delivery of the queued deltas, blue and green remain concurrent.
 
 No algorithm can infer that an operator intended to dismiss an unseen write.
 The register supplies causal replacement semantics; the application decides
@@ -153,7 +153,7 @@ an explicit choice, not an automatic mixture of red and blue.
 Replace the merge with "assign the incoming value." In the canonical
 exchange, B receives red after writing blue, so B finishes with red. A
 receives blue after writing red, so A finishes with blue. All messages have
-arrived, but the replicas disagree.
+been delivered, but the replicas disagree.
 
 Sorting by a scalar timestamp could make that policy deterministic, yet it
 would still discard one concurrent write. That is a different register

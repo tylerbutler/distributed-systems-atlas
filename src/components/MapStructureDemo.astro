@@ -123,7 +123,7 @@ function buttonLabel(operation: MapOperation): string {
             ? "Server order selects writes"
             : kind === "lww-map"
               ? "Per-key timestamps select writes"
-              : "Identity metadata survives merge"}
+              : "Identity metadata retained after merge"}
         </strong>
         <output data-message-count>0 operations shared</output>
       </section>

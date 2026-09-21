@@ -158,8 +158,8 @@ export function updatePNReplica(
       state: {
         ...next,
         result: amount > 0
-          ? `${pnCounterUserName(replica)} recorded ${magnitude} more ${magnitude === 1 ? "bird" : "birds"}. The checkpoint note is traveling.`
-          : `${pnCounterUserName(replica)} corrected ${magnitude} duplicate ${magnitude === 1 ? "sighting" : "sightings"}. The checkpoint note is traveling.`,
+          ? `${pnCounterUserName(replica)} recorded ${magnitude} more ${magnitude === 1 ? "bird" : "birds"}. The checkpoint note is in transit.`
+          : `${pnCounterUserName(replica)} corrected ${magnitude} duplicate ${magnitude === 1 ? "sighting" : "sightings"}. The checkpoint note is in transit.`,
       },
     };
   } catch (error) {
@@ -179,7 +179,7 @@ export function stageCorrectionRace(state: PNCounterDemoState): PNCounterDemoRes
           -1,
           staged,
         ),
-        result: "Alice recorded 3 more birds while Bob corrected 1 duplicate sighting. Both checkpoint notes are traveling.",
+        result: "Alice recorded 3 more birds while Bob corrected 1 duplicate sighting. Both checkpoint notes are in transit.",
       },
     };
   } catch (error) {
@@ -229,7 +229,7 @@ export function deliverPNOperations(state: PNCounterDemoState): PNCounterDemoRes
         deliveredPositive: { ...state.authoredPositive },
         deliveredNegative: { ...state.authoredNegative },
         queuedUpdates: [],
-        result: `${deliverySubject} reached every hiker. All three read ${total} birds.`,
+        result: `${deliverySubject} was delivered to every hiker. All three read ${total} birds.`,
       },
     };
   } catch (error) {

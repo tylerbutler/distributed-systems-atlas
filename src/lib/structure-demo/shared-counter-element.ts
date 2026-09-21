@@ -241,7 +241,7 @@ class SharedCounterDemoElement extends HTMLElement {
       : [node(
         "li",
         view.canDeliver
-          ? `${view.queuedOperations} unnumbered ${view.queuedOperations === 1 ? "note is" : "notes are"} traveling.`
+          ? `${view.queuedOperations} unnumbered ${view.queuedOperations === 1 ? "note is" : "notes are"} in transit.`
           : "No signed change sequenced yet.",
       )]));
     this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!.value =
