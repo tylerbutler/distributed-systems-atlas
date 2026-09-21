@@ -144,7 +144,7 @@ test("generated glossary and bibliography expose published metadata", async ({ p
     "stores increases and decreases in separate grow-only components",
   );
   await expect(page.locator("#twopset")).toContainText(
-    "composed of two GSets",
+    "A two-phase replicated set composed of two GSets",
   );
   await expect(page.locator("#sequencer")).toContainText(
     "assigns ordered sequence numbers",

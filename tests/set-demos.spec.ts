@@ -106,8 +106,12 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         await expect(page.getByRole("heading", { name: "Add a second GSet" }))
           .toBeVisible();
         await expect(page.getByLabel("TwoPSet definition")).toContainText(
-          "composed of two GSets",
+          "Each value can move from absent, to present, to permanently removed",
         );
+        await expect(page.getByText(
+          "The name means two-phase set, not two-part set.",
+          { exact: false },
+        )).toBeVisible();
         await expect(page.getByLabel("TwoPSet composition and membership rule"))
           .toContainText("TwoPSet = additions GSet + removals GSet");
       }
