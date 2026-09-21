@@ -4,11 +4,11 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
-  const play = demo.getByRole("button", { name: "Play the race" });
+  const race = demo.getByRole("button", { name: "Run A +7 and B +3 race" });
   const resend = demo.locator('[data-action="resend"]');
 
   await expect(totals).toHaveText(["0", "0", "0"]);
-  await expect(play).toBeEnabled();
+  await expect(race).toBeEnabled();
   await expect(resend).toBeDisabled();
   const pace = demo.getByRole("slider", { name: "Speed" });
   await pace.fill("2");
@@ -17,8 +17,8 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   await guided.check();
   await expect(demo.getByRole("heading", { name: "Inside the sequencer" })).toBeVisible();
   await expect(demo.getByText("Sluice is the in-memory server behind this demo")).toBeVisible();
-  await play.focus();
-  await play.press("Enter");
+  await race.focus();
+  await race.press("Enter");
   await expect(demo.locator(".operation-pulse").first()).toBeVisible();
   await expect(demo.getByRole("region", { name: "Sequencer" })).toHaveClass(/guided-box/);
   await expect(totals).toHaveText(["10", "10", "10"]);
@@ -51,9 +51,9 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   const reset = demo.getByRole("button", { name: "Reset", exact: true });
   await reset.click();
   await expect(totals).toHaveText(["0", "0", "0"]);
-  await expect(play).toBeFocused();
+  await expect(race).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Queue client increments, or play the authored race through the sequencer.",
+    "Increment a client, or run the authored race through the sequencer.",
   );
 });
 
@@ -62,15 +62,25 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
+  const autoDeliver = demo.getByRole("checkbox", { name: "Auto-deliver" });
 
-  await demo.getByRole("button", { name: "Add 3 at replica C" }).click();
+  await expect(autoDeliver).toBeChecked();
+  await autoDeliver.uncheck();
   await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
-  await expect(totals).toHaveText(["1", "0", "3"]);
-  await demo.getByRole("button", { name: "Play 2 queued operations" }).click();
-  await expect(totals).toHaveText(["4", "4", "4"]);
-  await expect(demo.locator("[data-sequence-track]")).toContainText("SN 2 · A");
+  await demo.getByRole("button", { name: "Add 3 at replica A" }).click();
+  await demo.getByRole("button", { name: "Add 3 at replica B" }).click();
+  await demo.getByRole("button", { name: "Add 7 at replica B" }).click();
+  await demo.getByRole("button", { name: "Add 1 at replica C" }).click();
+  await demo.getByRole("button", { name: "Add 7 at replica C" }).click();
+  await expect(totals).toHaveText(["4", "10", "8"]);
+  await expect(demo.locator('[role="status"]')).toContainText("6 operations are waiting");
+  await autoDeliver.check();
+  await expect(totals).toHaveText(["22", "22", "22"]);
+  await expect(demo.locator("[data-sequence-track]")).toContainText("SN 6 · C");
+  await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
+    .toHaveCount(6);
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered 2 operations. All three clients read 4.",
+    "The sequencer delivered 6 operations. All three clients read 22.",
   );
 });
 
@@ -96,8 +106,10 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
     await expect(page.getByText("After delivery, all three replicas read 10.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Play the race" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Run A +7 and B +3 race" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
     await expect(page.locator("[data-guided-panel]")).toBeHidden();
     const explanation = page.getByText("Explain why a component resend is safe", { exact: true });

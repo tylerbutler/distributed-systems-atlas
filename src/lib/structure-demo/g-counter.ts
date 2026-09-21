@@ -13,6 +13,7 @@ import {
 export type ReplicaId = "A" | "B" | "C";
 export type GCounterDemoPhase = "initial" | "queued" | "delivered" | "resent";
 type Counts = Record<ReplicaId, number>;
+const MAX_RECORDED_DELIVERIES = 36;
 
 export type GCounterDemoState = {
   phase: GCounterDemoPhase;
@@ -70,7 +71,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Queue client increments, or play the authored race through the sequencer.",
+    result: "Increment a client, or run the authored race through the sequencer.",
   };
 }
 
@@ -151,7 +152,7 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
         ...state,
         phase: "delivered",
         ...delivered,
-        deliveries: [...state.deliveries, ...delivered.deliveries].slice(-12),
+        deliveries: [...state.deliveries, ...delivered.deliveries].slice(-MAX_RECORDED_DELIVERIES),
         latestDeliveries: delivered.deliveries,
         deliveredCounts: { ...state.authoredCounts },
         queuedOperations: 0,
@@ -179,7 +180,7 @@ export function resendComponent(state: GCounterDemoState): GCounterDemoResult {
         ...state,
         phase: "resent",
         ...resent,
-        deliveries: [...state.deliveries, ...resent.deliveries].slice(-12),
+        deliveries: [...state.deliveries, ...resent.deliveries].slice(-MAX_RECORDED_DELIVERIES),
         latestDeliveries: resent.deliveries,
         result: `The sequencer resent ${state.latestAuthor}'s component. All three clients still read ${total}.`,
       },

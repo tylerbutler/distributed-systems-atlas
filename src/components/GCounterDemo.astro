@@ -10,11 +10,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Queue increments, then play them</h2>
+        <h2 id="gcounter-demo-title">Increment any client</h2>
         <p>
-          Add at A, B, or C to build a queue, then play it through the
-          sequencer. If the queue is empty, Play runs the authored A +7 and
-          B +3 race.
+          Add at A, B, or C and the sequencer delivers the operation
+          automatically. Turn off Auto-deliver when you want to build a queue.
         </p>
       </div>
       <p class="merge-rule">
@@ -88,8 +87,12 @@ const initial = presentGCounterDemo(createGCounterDemo());
         />
         <output data-pace-output>1×</output>
       </label>
-      <button type="button" data-action="play" disabled>
-        Play the race
+      <label class="auto-deliver-toggle">
+        <input type="checkbox" data-auto-deliver checked disabled />
+        <span>Auto-deliver</span>
+      </label>
+      <button type="button" data-action="race" disabled>
+        Run A +7 and B +3 race
       </button>
       <button type="button" data-action="resend" disabled>
         Resend latest component
@@ -137,7 +140,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         </p>
       </div>
       <p class="guided-callout" data-guided-callout aria-live="polite">
-        Queue operations, then play them through the sequencer.
+        Turn off Auto-deliver to queue several operations before delivery.
       </p>
     </aside>
 
@@ -308,7 +311,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-replica header p {
     font-size: 0.75rem;
-    white-space: nowrap;
   }
 
   .gcounter-total {
@@ -428,6 +430,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .playback-speed {
     display: grid;
+    grid-area: speed;
     grid-template-columns: 1fr auto;
     gap: var(--space-2) var(--space-3);
     align-items: center;
@@ -450,7 +453,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-controls {
     display: grid;
-    grid-template-columns: minmax(10rem, 1fr) repeat(3, auto);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "speed auto guided"
+      "race resend reset";
     gap: var(--space-3);
     align-items: end;
     padding-block: var(--space-5);
@@ -458,13 +464,30 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .guided-toggle {
     display: flex;
-    grid-column: 1 / -1;
+    grid-area: guided;
     width: fit-content;
     min-height: 44px;
     align-items: center;
     gap: var(--space-2);
     font-family: var(--font-ui);
     cursor: pointer;
+  }
+
+  .auto-deliver-toggle {
+    display: flex;
+    grid-area: auto;
+    min-height: 44px;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .auto-deliver-toggle input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--signal);
   }
 
   .guided-toggle input {
@@ -485,10 +508,19 @@ const initial = presentGCounterDemo(createGCounterDemo());
     cursor: pointer;
   }
 
-  .gcounter-controls [data-action="play"] {
+  .gcounter-controls [data-action="race"] {
+    grid-area: race;
     color: var(--instrument-deep);
     background: var(--signal);
     font-weight: 650;
+  }
+
+  .gcounter-controls [data-action="resend"] {
+    grid-area: resend;
+  }
+
+  .gcounter-controls [data-action="reset"] {
+    grid-area: reset;
   }
 
   :is(.replica-actions, .gcounter-controls) button:hover:not(:disabled) {
@@ -620,6 +652,16 @@ const initial = presentGCounterDemo(createGCounterDemo());
     .gcounter-network,
     .guided-observations {
       grid-template-columns: 1fr;
+    }
+
+    .gcounter-controls {
+      grid-template-areas:
+        "speed"
+        "auto"
+        "race"
+        "resend"
+        "reset"
+        "guided";
     }
 
     .gcounter-network {

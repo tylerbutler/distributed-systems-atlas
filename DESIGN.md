@@ -286,10 +286,11 @@ Per-replica components, dots, timestamps, or other bookkeeping stay in an
 The G-counter demo is the first instance: three station records show only
 their totals by default. A sequencer station sits between the clients and
 records sequence numbers. At wide widths, the three clients form a triangle
-around it. The Play label and status report queued work, while a compact
-chronological log records authors and recipients. Operations animate from their author through the
+around it. The status reports queued work, while a compact chronological log
+records authors and recipients. Operations animate from their author through the
 sequencer to all three clients. Client controls can build a multi-operation
-queue before one Play action starts delivery. Readers control playback speed.
+queue by turning off `Auto-deliver`, which is on by default. Turning it back on
+delivers the queue. Readers control playback speed.
 An optional `Guided observations` layer reveals the Sluice implementation and
 adds timed callouts with signal-colored circle and box marks. The A, B, and C
 components appear in a ruled table after
