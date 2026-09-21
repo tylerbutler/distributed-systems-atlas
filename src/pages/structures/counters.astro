@@ -64,16 +64,16 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     <section aria-labelledby="race-title">
       <h2 id="race-title">Their checkpoint notes cross</h2>
       <p>
-        Before splitting up, the friends agree on known checkpoints where they
-        can leave their latest count. Each hiker keeps a table in a notebook,
-        with one row for Alice, Bob, and Carol. A row holds the largest count
-        that hiker has reported so far. Adding the three rows gives the shared
-        bird count.
+        Before they part at the trailhead, Alice, Bob, and Carol mark the same
+        checkpoints on their maps. Each carries a notebook with one row for
+        each hiker. When a note turns up, they copy its count into that hiker's
+        row only if it is larger than the count already there. The three rows
+        add up to the bird count.
       </p>
       <p>
-        Alice leaves a note after seeing 7 birds. Bob leaves another after
-        seeing 3. Carol has not counted a bird yet. When Carol finds those
-        notes at different checkpoints, her notebook changes like this:
+        On Carol's route, the first note waiting at the north fork is from
+        Alice: 7 birds. At the river bridge, she finds Bob's note for 3. Carol
+        has not seen a bird herself, so her own row stays at 0.
       </p>
       <figure class="notebook">
         <table aria-label="Carol's notebook at each checkpoint">
@@ -94,20 +94,21 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
           </tbody>
         </table>
         <figcaption>
-          Each row shows Carol's notebook after she reads the note at that checkpoint.
+          Carol updates her notebook as she reaches each checkpoint.
         </figcaption>
       </figure>
       <p>
-        Carol might find Alice's note for 7, then Bob's note for 3, then an
-        older Alice note for 4. The last note does not lower Alice's row:
-        <code>max(7, 4) = 7</code>. If Carol finds 4 before 7, the row changes
-        from 0 to 4 to 7. Both arrival orders produce the same notebook and the
-        same total.
+        At the old lookout, Carol finds an earlier note from Alice that says 4.
+        Her notebook already says 7, so she leaves that row alone:
+        <code>max(7, 4) = 7</code>. Had she found 4 first, the row would have
+        changed from 0 to 4, then from 4 to 7. Either path through the notes
+        leads to the same notebook and the same total.
       </p>
       <p>
-        Copies of the notes do not reach every checkpoint at once. Alice can
-        see 7, Bob can see 3, and Carol can still see 0. Use the controls to
-        leave one note at a time, or leave Alice's and Bob's notes together.
+        Elsewhere on the trails, the three notebooks can still disagree. Alice
+        may know only her 7, Bob only his 3, and Carol neither. Walk the next
+        part with them: leave one note at a time, or let Alice and Bob leave
+        their notes together.
       </p>
     </section>
 
