@@ -102,6 +102,15 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         .toContainText("No ordering decision");
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the demo");
+      if (testId === "two-p-set-demo") {
+        await expect(page.getByRole("heading", { name: "Add a second GSet" }))
+          .toBeVisible();
+        await expect(page.getByLabel("TwoPSet definition")).toContainText(
+          "composed of two GSets",
+        );
+        await expect(page.getByLabel("TwoPSet composition and membership rule"))
+          .toContainText("TwoPSet = additions GSet + removals GSet");
+      }
     }
   } finally {
     await context.close();

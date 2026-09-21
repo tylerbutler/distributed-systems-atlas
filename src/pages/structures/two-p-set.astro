@@ -18,9 +18,9 @@ import "../../styles/set-lesson.css";
       <p class="territory-label">Structures</p>
       <h1>TwoPSet</h1>
       <p class="structure-summary">
-        Alice has found that the old Eagle Creek beacon is gone. The ranger
-        needs its name removed from all three notebooks even if Carol later
-        receives a stale copy of the original report.
+        A GSet can record every beacon the hikers find, but it cannot remove
+        one. The hikers add a second GSet for permanent removals. Together,
+        those two grow-only sets form a TwoPSet.
       </p>
     </header>
 
@@ -35,18 +35,23 @@ import "../../styles/set-lesson.css";
     />
 
     <section aria-labelledby="retire-beacon-title">
-      <h2 id="retire-beacon-title">Alice retires the old beacon</h2>
+      <h2 id="retire-beacon-title">Add a second GSet</h2>
       <p>
-        The hikers keep one grow-only set of additions and another grow-only
-        set of removals. Alice puts <code>Eagle Creek</code> in the removal
-        set. Her additions still contain Eagle Creek, but her visible list is
-        empty. Bob and Carol still show Eagle Creek until they receive her
-        removal record.
+        Each notebook has an additions GSet and a removals GSet. The additions
+        GSet records every beacon name a hiker has received. The removals GSet
+        records every name that a hiker knows is permanently retired. Both
+        pages only grow, and the hikers merge each page by union.
       </p>
       <p>
-        A <dfn><a href="/glossary/#twopset">TwoPSet</a></dfn> considers a
-        value present only when it appears in the addition set and not in the
-        removal set.
+        Alice finds that the old Eagle Creek beacon is gone, so she writes
+        <code>Eagle Creek</code> in the removals GSet. Her additions GSet still
+        contains the name, but her visible list is empty. Bob and Carol still
+        show Eagle Creek until they receive her removal record.
+      </p>
+      <p>
+        A <dfn><a href="/glossary/#twopset">TwoPSet</a></dfn> is composed of
+        those two GSets. A value is visible only when it appears in additions
+        and does not appear in removals.
       </p>
       <TermCallout {...twoPSetTerm} />
       <figure>
@@ -67,7 +72,8 @@ import "../../styles/set-lesson.css";
         </table>
         <figcaption>Each hiker computes the visible list from the two sets in that notebook.</figcaption>
       </figure>
-      <pre aria-label="TwoPSet membership rule"><code>members = additions - removals</code></pre>
+      <pre aria-label="TwoPSet composition and membership rule"><code>TwoPSet = additions GSet + removals GSet
+members = additions - removals</code></pre>
       <p>
         After the hikers exchange records, every notebook contains Eagle Creek
         in both sets. All three visible lists are empty. A delayed addition
@@ -104,7 +110,7 @@ import "../../styles/set-lesson.css";
       <p>
         Watershed's{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/two_p_set_kernel.gleam">TwoPSet kernel</a>
-        {" "}stores additions and removals as two monotonic sets.
+        {" "}stores additions and permanent removals as two grow-only sets.
       </p>
     </section>
 

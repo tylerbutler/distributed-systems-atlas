@@ -42,7 +42,7 @@ export const gSetTerm: GlossaryTerm = {
 
 export const twoPSetTerm: GlossaryTerm = {
   term: "TwoPSet",
-  definition: "A replicated set with grow-only addition and removal sets, where a removed value cannot be added again.",
+  definition: "A replicated set composed of two GSets: one records additions and one records permanent removals. A value in both sets remains removed.",
 };
 
 export const lwwRegisterTerm: GlossaryTerm = {
