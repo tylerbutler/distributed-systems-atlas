@@ -16,25 +16,25 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <div>
         <h2 id="gcounter-demo-title">Count birds on three hikes</h2>
         <p>
-          Record birds for Alice, Bob, or Carol. Each change sends that hiker's
-          running count through the sequencer. Turn off Auto-deliver to hold
-          several checkpoint reports.
+          Record birds for Alice, Bob, or Carol. Each hiker leaves their running
+          count at a known checkpoint. Turn off Auto-deliver to hold several
+          notes before they reach the other checkpoints.
         </p>
       </div>
       <p class="merge-rule">
         Merge rule
-        <strong>Keep the largest bird count reported by each hiker.</strong>
+        <strong>Keep the largest bird count left by each hiker.</strong>
       </p>
     </header>
 
-    <div class="operation-key" aria-label="Checkpoint report states">
+    <div class="operation-key" aria-label="Checkpoint note states">
       <p>
         <span class="operation-key-mark outbound" aria-hidden="true"></span>
-        <span><strong>Unsequenced</strong> Checkpoint report traveling in</span>
+        <span><strong>New note</strong> Traveling to a checkpoint</span>
       </p>
       <p>
         <span class="operation-key-mark sequenced" aria-hidden="true"></span>
-        <span><strong>Sequenced</strong> Numbered report traveling out</span>
+        <span><strong>Shared note</strong> Reaching the other hikers</span>
       </p>
     </div>
 
@@ -49,7 +49,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
             <StationMark station={replica.id} size="lg" />
             <div>
               <h3>{gCounterUserName(replica.id)}</h3>
-              <p data-replica-state={replica.id}>Connected to sequencer</p>
+              <p data-replica-state={replica.id}>Connected to checkpoint network</p>
             </div>
           </header>
           <output class="gcounter-total observation-data" data-total={replica.id}>
@@ -73,14 +73,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
       ))}
 
       <div class="sequencer-channel">
-        <section class="sequencer-station" data-sequencer-node aria-label="Sequencer">
-          <span class="sequencer-label">Sequencer</span>
-          <output class="sequencer-counter" data-sequence-counter aria-label="Latest sequence number">
-            SN 0
+        <section class="sequencer-station" data-sequencer-node aria-label="Known checkpoint">
+          <span class="sequencer-label">Known checkpoint</span>
+          <output class="sequencer-counter" data-sequence-counter aria-label="Notes left at checkpoint">
+            0 notes
           </output>
         </section>
-        <ol class="operation-log" data-deliveries aria-label="Checkpoint report log">
-          <li>No checkpoint report delivered yet.</li>
+        <ol class="operation-log" data-deliveries aria-label="Checkpoint note log">
+          <li>No checkpoint note shared yet.</li>
         </ol>
       </div>
     </div>
@@ -95,7 +95,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
           step="0.25"
           value="1"
           data-pace
-          title="Change playback speed without changing sequencer ordering."
+          title="Change playback speed without changing note delivery."
           disabled
         />
         <output data-pace-output>1×</output>
@@ -105,10 +105,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <span>Auto-deliver</span>
       </label>
       <button type="button" data-action="race" disabled>
-        Send Alice +7 and Bob +3 together
+        Leave Alice +7 and Bob +3 together
       </button>
       <button type="button" data-action="resend" disabled>
-        Resend latest checkpoint report
+        Repeat latest checkpoint note
       </button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <label class="guided-toggle">
@@ -138,34 +138,31 @@ const initial = presentGCounterDemo(createGCounterDemo());
       hidden
     >
       <div>
-        <h3>Inside the sequencer</h3>
+        <h3>How checkpoint notes merge</h3>
         <p>
-          At each checkpoint, a hiker sends their current bird count. Sluice is
-          the in-memory server behind this demo. It accepts those reports, puts
-          them in one total order, and relays them to every connected replica.
+          Each note contains a hiker's name and cumulative bird count. When a
+          replica receives a note, it keeps the larger count already stored for
+          that hiker.
         </p>
         <p>
-          Some data structures use the sequence number in their conflict rule.
-          The G-counter does not, but it still needs the relay so every replica
-          receives each hiker's latest count. The hikers' phones could exchange
-          reports directly instead; a server sequencer provides one transport
-          for many kinds of data structure.
+          Notes can arrive in any order or more than once. Alice's 7 still
+          replaces Alice's 4, and another copy of Alice's 7 changes nothing.
         </p>
       </div>
       <p class="guided-callout" data-guided-callout aria-live="polite">
-        Turn off Auto-deliver to hold several checkpoint reports.
+        Turn off Auto-deliver to hold several checkpoint notes.
       </p>
     </aside>
 
     <details class="gcounter-explanation">
-      <summary>Explain why repeating a checkpoint report is safe</summary>
+      <summary>Explain why repeating a checkpoint note is safe</summary>
       <div>
         <p>
           Each client stores the largest bird count it has observed for Alice,
-          Bob, and Carol. The sequencer orders and broadcasts each report; the
-          G-counter kernel keeps the largest count reported by each hiker.
+          Bob, and Carol. Checkpoint notes can arrive in any order; the
+          G-counter kernel keeps the largest count left by each hiker.
         </p>
-        <table aria-label="Bird counts reported by each hiker">
+        <table aria-label="Bird counts left by each hiker">
           <thead>
             <tr>
               <th scope="col">Hiker</th>
@@ -186,9 +183,9 @@ const initial = presentGCounterDemo(createGCounterDemo());
           </tbody>
         </table>
         <p>
-          Resend sends the latest hiker's running count again. The transport
-          assigns a new sequence number, but every replica compares the same
-          cumulative count with itself. The maximum does not change.
+          Repeat sends the latest hiker's running count again. Every replica
+          compares the same cumulative count with itself, so the maximum does
+          not change.
         </p>
       </div>
     </details>
@@ -344,7 +341,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
   .gcounter-network {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(8rem, 0.45fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(11rem, 0.45fr) minmax(0, 1fr);
     grid-template-areas:
       "a sequencer b"
       "c c c";

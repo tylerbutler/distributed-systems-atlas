@@ -13,7 +13,7 @@ const success = <T extends { ok: boolean }>(result: T): Extract<T, { ok: true }>
   return result as Extract<T, { ok: true }>;
 };
 
-describe("G-counter sequencer lesson", () => {
+describe("G-counter checkpoint lesson", () => {
   test("lets each client increment its user's local count", () => {
     let state = success(incrementReplica(createGCounterDemo(), "C", 3)).state;
     state = success(incrementReplica(state, "A", 1)).state;
@@ -37,10 +37,10 @@ describe("G-counter sequencer lesson", () => {
     expect(view.replicas.map(({ value }) => value)).toEqual([7, 3, 0]);
     expect(view.pending).toBe(true);
     expect(view.queuedOperations).toBe(2);
-    expect(view.result).toContain("waiting together at the sequencer");
+    expect(view.result).toContain("checkpoint notes are waiting to be shared");
   });
 
-  test("the sequencer delivers both operations to all three clients", () => {
+  test("both checkpoint notes reach all three clients", () => {
     const staged = success(stageRace(createGCounterDemo())).state;
     const delivered = success(deliverRace(staged)).state;
     const view = presentGCounterDemo(delivered);

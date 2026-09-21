@@ -63,14 +63,12 @@ kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
-separate hikes and send cumulative reports from trail checkpoints through
-Watershed's JavaScript Sluice transport. Auto-deliver is on by default, so each
-report enters the sequenced stream immediately. Readers can turn it off to hold
-several reports, then turn it back on to deliver them. Atlas animates reports
-from their hikers through Sluice to all clients at a reader-controlled speed.
-Guided observations reveal the Sluice
-implementation and add timed callouts and signal-colored marks to the values
-and sequencer.
+separate hikes and leave cumulative counts at known trail checkpoints.
+Auto-deliver is on by default, so each note reaches the other hikers
+immediately. Readers can turn it off to hold several notes, then turn it back on
+to share them. Atlas animates notes between hikers and checkpoints at a
+reader-controlled speed. Guided observations explain pairwise maximum and add
+timed callouts and signal-colored marks to the local values and checkpoint.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

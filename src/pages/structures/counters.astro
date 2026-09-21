@@ -5,7 +5,7 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
 
 <BaseLayout
   title="Counters"
-  description="Follow three friends counting birds on separate hikes. Their checkpoint reports arrive at different times, then a G-counter brings every view to the same total."
+  description="Follow three friends counting birds on separate hikes. Their checkpoint notes arrive at different times, then a G-counter brings every view to the same total."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -15,9 +15,9 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       <h1>Counters</h1>
       <p class="structure-summary">
         Alice, Bob, and Carol count birds on separate hikes. At each checkpoint,
-        they leave a message with their running count. Those messages arrive at
-        different times, so the three friends can temporarily see different
-        totals.
+        they leave a note with their name and running count. Copies of those
+        notes reach other checkpoints at different times, so the three friends
+        can temporarily see different totals.
       </p>
     </header>
 
@@ -45,27 +45,27 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       </p>
       <p>
         This is a grow-only counter, or G-counter. Each replica keeps the
-        largest report it has received from each hiker, then adds those counts.
-        It does not add every message. If Bob leaves the same checkpoint report
+        largest note it has received from each hiker, then adds those counts.
+        It does not add every message. If Bob leaves the same checkpoint note
         twice, both messages say that Bob has seen 3 birds. His count stays 3.
       </p>
-      <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all reports from Alice)
-count[Bob] = max(all reports from Bob)
+      <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all notes from Alice)
+count[Bob] = max(all notes from Bob)
 birds = count[Alice] + count[Bob] + ...</code></pre>
     </section>
 
     <section aria-labelledby="race-title">
-      <h2 id="race-title">Their checkpoint reports cross</h2>
+      <h2 id="race-title">Their checkpoint notes cross</h2>
       <p>
-        Alice reaches a checkpoint after seeing 7 birds. Bob reaches another
-        after seeing 3. Carol is on the forest trail and has not counted a bird
-        yet. Their phones send reports through a server sequencer, which puts
-        the messages in one order and relays them to all three hikers.
+        Before splitting up, the friends agree on known checkpoints where they
+        can leave their latest count. Alice leaves a note after seeing 7 birds.
+        Bob leaves another after seeing 3. Carol is on the forest trail and has
+        not counted a bird yet.
       </p>
       <p>
-        While the reports travel, Alice can see 7, Bob can see 3, and Carol can
-        still see 0. Use the controls to send one report at a time, or send
-        Alice's and Bob's reports together.
+        Copies of the notes do not reach every checkpoint at once. Alice can
+        see 7, Bob can see 3, and Carol can still see 0. Use the controls to
+        leave one note at a time, or leave Alice's and Bob's notes together.
       </p>
     </section>
 
@@ -74,15 +74,15 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     <section aria-labelledby="result-title">
       <h2 id="result-title">Every trail catches up</h2>
       <p>
-        After both checkpoint reports arrive, Alice, Bob, and Carol all read
+        After both checkpoint notes arrive, Alice, Bob, and Carol all read
         10. Their views were temporarily inconsistent, but the G-counter kept
         both hikers' observations and made every replica agree.
       </p>
       <p>
         This is eventual consistency. For each hiker, merge keeps the larger
-        reported count. The rule is
-        commutative, associative, and idempotent. Arrival order does not change
-        the answer, and the same checkpoint report can arrive more than once.
+        count from their checkpoint notes. The rule is commutative,
+        associative, and idempotent. Arrival order does not change the answer,
+        and the same checkpoint note can arrive more than once.
       </p>
     </section>
 
@@ -127,13 +127,10 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
       <p>
         This lesson calls Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/g_counter_kernel.gleam">G-counter kernel</a>.
-        The three clients run through Watershed's{" "}
-        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/sluice_js.gleam">JavaScript Sluice transport</a>.
         Its interaction follows Watershed's focused{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/components/Demo.astro">counter demo</a>
-        {" "}and{" "}
-        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/scripts/demo.ts">runtime</a>,
-        while Atlas owns the three-client lesson schedule and presentation.
+        , while Atlas owns the three-client lesson schedule and presentation.
+        The merge rule keeps the largest cumulative count for each hiker.
       </p>
       <p>
         The merge rule is the state-based grow-only counter described in{" "}

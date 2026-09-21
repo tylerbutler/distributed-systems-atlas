@@ -56,7 +56,7 @@ class GCounterDemoElement extends HTMLElement {
         if (result.ok) {
           this.queueOutbound(replica, `+${amount}`);
           this.showGuidedObservation(
-            `${gCounterUserName(replica)} records ${amount} more ${amount === 1 ? "bird" : "birds"} and sends a checkpoint report.`,
+            `${gCounterUserName(replica)} records ${amount} more ${amount === 1 ? "bird" : "birds"} and leaves a checkpoint note.`,
             [this.querySelector<HTMLElement>(`[data-total="${replica}"]`)!],
             "circle",
           );
@@ -75,7 +75,7 @@ class GCounterDemoElement extends HTMLElement {
       this.state = createGCounterDemo();
       this.render();
       this.showGuidedObservation(
-        "Turn off Auto-deliver to hold several checkpoint reports.",
+        "Turn off Auto-deliver to hold several checkpoint notes.",
         [],
       );
       this.button("race").focus();
@@ -98,7 +98,7 @@ class GCounterDemoElement extends HTMLElement {
       this.querySelector<HTMLElement>("[data-guided-panel]")!.hidden = !this.guided;
       if (this.guided) {
         this.showGuidedObservation(
-          "Turn off Auto-deliver to hold several checkpoint reports.",
+          "Turn off Auto-deliver to hold several checkpoint notes.",
           [],
         );
       } else {
@@ -128,7 +128,7 @@ class GCounterDemoElement extends HTMLElement {
     const changed = presentGCounterDemo(this.state).replicas
       .filter((replica) => replica.value > 0);
     this.showGuidedObservation(
-      `${changed.map((replica) => gCounterUserName(replica.id)).join(" and ")} count birds before their checkpoint reports arrive.`,
+      `${changed.map((replica) => gCounterUserName(replica.id)).join(" and ")} count birds before their checkpoint notes reach the others.`,
       changed.map((replica) =>
         this.querySelector<HTMLElement>(`[data-total="${replica.id}"]`)!),
       "circle",
@@ -153,7 +153,7 @@ class GCounterDemoElement extends HTMLElement {
         if (generation !== this.generation) return;
         const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
         this.showGuidedObservation(
-          `${queuedOperations} checkpoint ${queuedOperations === 1 ? "report is" : "reports are"} ready for the sequencer.`,
+          `${queuedOperations} checkpoint ${queuedOperations === 1 ? "note is" : "notes are"} ready to be shared.`,
           [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
           "box",
         );
@@ -215,7 +215,7 @@ class GCounterDemoElement extends HTMLElement {
     await broadcast.finally(() => this.activeBroadcasts.delete(broadcast));
     this.apply(result, focus);
     this.showGuidedObservation(
-      "Each hiker keeps the largest bird count reported by Alice, Bob, and Carol, then adds them.",
+      "Each hiker keeps the largest bird count left by Alice, Bob, and Carol, then adds them.",
       [...this.querySelectorAll<HTMLElement>("[data-total]")],
       "circle",
     );
@@ -257,7 +257,7 @@ class GCounterDemoElement extends HTMLElement {
         this.render();
         this.deliveryFocus?.focus();
         this.showGuidedObservation(
-          "Each hiker keeps the largest bird count reported by Alice, Bob, and Carol, then adds them.",
+          "Each hiker keeps the largest bird count left by Alice, Bob, and Carol, then adds them.",
           [...this.querySelectorAll<HTMLElement>("[data-total]")],
           "circle",
         );
@@ -282,9 +282,9 @@ class GCounterDemoElement extends HTMLElement {
       const author = operationDeliveries[0]?.author;
       if (!isReplicaId(author)) continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
-        `The sequencer is delivering checkpoint report ${sequenceNumber} from ${gCounterUserName(author)}.`;
+        `${gCounterUserName(author)}'s checkpoint note is reaching the other hikers.`;
       this.showGuidedObservation(
-        `The sequencer assigns SN ${sequenceNumber} to ${gCounterUserName(author)}'s checkpoint report.`,
+        `${gCounterUserName(author)}'s latest count is now available at the known checkpoint.`,
         [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
         "box",
       );
@@ -292,7 +292,7 @@ class GCounterDemoElement extends HTMLElement {
         await this.animateHop(
           this.querySelector<HTMLElement>("[data-sequencer-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
-          `SN ${sequenceNumber}`,
+          `${gCounterUserName(author)} note`,
           "sequenced",
         );
         if (
@@ -412,8 +412,8 @@ class GCounterDemoElement extends HTMLElement {
     this.querySelector(`[data-total="${replica.id}"]`)!.textContent = String(replica.value);
     this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
       view.pending
-        ? replica.value > 0 ? "Local view · reports in transit" : "Waiting for reports"
-        : view.phase === "initial" ? "Connected to sequencer" : "All reports received";
+        ? replica.value > 0 ? "Local view · notes still traveling" : "Waiting for notes"
+        : view.phase === "initial" ? "Connected to checkpoint network" : "All checkpoints agree";
     for (const userCount of replica.counts) {
       this.querySelector(`[data-user-count="${replica.id}-${userCount.replicaId}"]`)!.textContent =
         String(userCount.count);
@@ -441,20 +441,21 @@ class GCounterDemoElement extends HTMLElement {
       ? [...operations].reverse().map(([sequenceNumber, operation]) =>
         node(
           "li",
-          `SN ${sequenceNumber} · ${gCounterUserName(operation.author)} checkpoint report to ${
+          `${gCounterUserName(operation.author)} left a checkpoint note for ${
             operation.destinations.map(gCounterUserName).join(", ")
           }`,
         ))
       : [node(
         "li",
         view.pending
-          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "report" : "reports"} waiting.`
-          : "No checkpoint report delivered yet.",
+          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note" : "notes"} waiting.`
+          : "No checkpoint note shared yet.",
       )]));
     const sequenceCounter =
       this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!;
     const previousSequence = sequenceCounter.value;
-    sequenceCounter.value = `SN ${view.sequenceNumber}`;
+    sequenceCounter.value =
+      `${view.sequenceNumber} ${view.sequenceNumber === 1 ? "note" : "notes"}`;
     if (previousSequence !== sequenceCounter.value && view.sequenceNumber > 0) {
       sequenceCounter.classList.remove("stamped");
       void sequenceCounter.offsetWidth;
@@ -466,13 +467,13 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.button("race").disabled = false;
     this.button("race").textContent = this.autoDeliver
-      ? "Send Alice +7 and Bob +3 together"
-      : "Hold Alice +7 and Bob +3 reports";
+      ? "Leave Alice +7 and Bob +3 together"
+      : "Hold Alice +7 and Bob +3 notes";
     this.button("resend").disabled =
       this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
-      ? `Resend ${gCounterUserName(view.latestAuthor)}'s report`
-      : "Resend latest checkpoint report";
+      ? `Repeat ${gCounterUserName(view.latestAuthor)}'s note`
+      : "Repeat latest checkpoint note";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
     this.querySelector<HTMLInputElement>("[data-auto-deliver]")!.disabled = false;

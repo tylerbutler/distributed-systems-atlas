@@ -286,23 +286,20 @@ Per-user counts, dots, timestamps, or other bookkeeping stay in an
 The G-counter demo is the first instance. Alice, Bob, and Carol count birds on
 separate hikes and send cumulative reports from trail checkpoints. Three
 separate station records show only their local totals by default, making
-temporary disagreement visible before the reports arrive. A compact
-pill-shaped sequencer sits in the open
-space between them, shows only the latest sequence number, and keeps a narrow
-newest-first log beneath it. At wide widths, generous gaps separate the three
-clients and sequencer into a triangle. An unsequenced operation leaves its author as
-soon as the reader submits it. The sequencer assigns its sequence number on
-arrival, then sends one concurrent broadcast wave to all three clients. A later
-outbound operation can overlap an earlier return wave while FIFO arrival order
-keeps sequencing deterministic. Sulfur marks operations before sequencing;
-clear, ink-like marks and labels identify sequenced broadcasts and log entries.
-Moving operations are circular and label both the operation and its unscaled
+temporary disagreement visible before the notes arrive. A compact pill-shaped
+known checkpoint sits in the open space between them, shows how many reports
+have been left, and keeps a narrow newest-first log beneath it. At wide widths,
+generous gaps separate the three clients and checkpoint into a triangle. A new
+note leaves its hiker as soon as the reader submits it, then copies fan out to
+all three clients. A later outbound note can overlap an earlier return wave.
+Sulfur marks new notes; clear marks identify copies traveling to other hikers.
+Moving notes are circular and label both the hiker and their unscaled
 1000ms network latency.
-Client controls can build a multi-operation queue by turning off
+Client controls can hold several checkpoint notes by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
 Readers control playback speed.
-An optional `Guided observations` layer reveals the Sluice implementation and
-adds timed callouts with signal-colored `rough-notation` circle and box marks,
+An optional `Guided observations` layer explains pairwise maximum and repeated
+checkpoint notes with signal-colored `rough-notation` circle and box marks,
 using the same annotation library and flash lifecycle as Watershed. The counts
 for Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
@@ -317,7 +314,7 @@ path when they match the corresponding Watershed demo.
 
 Feedback, state, and trace motion use the shipped 120ms, 220ms, and 420ms
 durations with the shared accelerating exit curve. The G-counter transport uses
-a 1000ms hop at `1×` so readers can follow each operation; its speed control
+a 1000ms hop at `1×` so readers can follow each checkpoint note; its speed control
 ranges from `¼×` to `2×`. Motion may show a signal traveling to a queue or
 destination, a route separating, or a record arriving; state commits at
 discrete frames.
