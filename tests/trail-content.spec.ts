@@ -147,21 +147,20 @@ for (const lesson of lessons) {
       await expect(page.locator(".sheet-terms dt")).toHaveText([...lesson.terms]);
       await expect(page.locator(".sheet-references a").first())
         .toHaveAttribute("href", `/bibliography/#${lesson.reference}`);
-      if (lesson.id === "local-history") {
-        await expect(page.locator(".sheet-header")).toContainText("No prerequisite sheet");
+      if (["local-history", "dots-and-causal-context"].includes(lesson.id)) {
+        await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
       } else {
-        expect(await page.getByRole("navigation", { name: "Prerequisites", exact: true })
+        expect(await page.getByRole("navigation", { name: "Ideas used on this sheet", exact: true })
           .getByRole("link").count()).toBeGreaterThan(0);
       }
       expect(await page.getByRole("navigation", { name: "Related sheets", exact: true })
         .getByRole("link").count()).toBeGreaterThan(0);
       const next = firstTrail[firstTrail.findIndex(({ id }) => id === lesson.id) + 1];
       if (next) {
-        await expect(page.getByRole("navigation", { name: "Next trail step", exact: true }).getByRole("link"))
+        await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true }).getByRole("link"))
           .toHaveAttribute("href", `/atlas/${next.id}/`);
       } else {
-        await expect(page.getByRole("navigation", { name: "Next trail step", exact: true })).toHaveCount(0);
-        await expect(page.locator(".sheet-field-notes a[href='/atlas/']")).toBeVisible();
+        await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true })).toHaveCount(0);
       }
       const destinations = await page.locator("article a[href^='/']").evaluateAll((links) =>
         [...new Set(links.map((link) => link.getAttribute("href")!))]);

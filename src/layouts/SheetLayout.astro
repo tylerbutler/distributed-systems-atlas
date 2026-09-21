@@ -60,11 +60,11 @@ const next = nextStep
       <p class="sheet-reading-meta">
         <span>{readingMinutes} min read</span>
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
-        {position >= 0 && <span>First trail · {position + 1} of {firstTrail.length}</span>}
+        {position >= 0 && <span>Structure-first trail · {position + 1} of {firstTrail.length}</span>}
       </p>
       {entry.data.requires.length > 0
-        ? <SheetLinks heading="Prerequisites" sheets={entry.data.requires.map(resolve)} />
-        : <p class="sheet-prerequisites">No prerequisite sheet</p>}
+        ? <SheetLinks heading="Ideas used on this sheet" sheets={entry.data.requires.map(resolve)} />
+        : <p class="sheet-prerequisites">No supporting sheet required</p>}
     </header>
     {["opening", "continuation"].map((section) => (
       <div class={`sheet-local sheet-local-${section}`}>
@@ -78,7 +78,7 @@ const next = nextStep
               </ul>
             </nav>
           </details>
-          {position >= 0 && <p class="sheet-trail">First trail · {position + 1} of {firstTrail.length}</p>}
+          {position >= 0 && <p class="sheet-trail">Structure-first trail · {position + 1} of {firstTrail.length}</p>}
         </div>
       </div>
     ))}
@@ -107,7 +107,7 @@ const next = nextStep
         </section>
       )}
       <SheetLinks heading="Related sheets" sheets={entry.data.related.map(resolve)} emptyText="No related sheets" />
-      {next && <SheetLinks heading="Next trail step" sheets={[next]} />}
+      {next && <SheetLinks heading="Next in the structure-first trail" sheets={[next]} />}
     </footer>
   </article>
 </BaseLayout>

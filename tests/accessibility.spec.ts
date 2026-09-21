@@ -216,8 +216,8 @@ test("lab controls work by keyboard and keep focus through updates", async ({ pa
   const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
   await expect(related).toContainText("No related sheets");
   await expect(related.getByRole("link")).toHaveCount(0);
-  await expect(page.getByRole("navigation", { name: "Next trail step" }).getByRole("link"))
-    .toHaveAttribute("href", "/atlas/multi-value-registers/");
+  await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" }).getByRole("link"))
+    .toHaveAttribute("href", "/atlas/local-history/");
 });
 
 for (const lesson of labs) {

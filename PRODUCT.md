@@ -44,10 +44,13 @@ and bibliography, and all seven sheets in the first concurrency trail.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
 
-The trail runs through Local history, Partial order, Lamport clocks, Vector
-clocks, Dots and causal context, Multi-value registers, and Observed-remove
-sets. Prerequisites, related sheets, and next-step links support both reading
-styles. Published sheet metadata supplies glossary definitions and bibliography
+The site leads with familiar data structures: counters, registers, sets, maps,
+and later structure families. The first complete trail starts with Multi-value
+registers and Observed-remove sets, then introduces Dots and causal context,
+Local history, Partial order, Lamport clocks, and Vector clocks as the
+bookkeeping that explains those structures. Supporting-idea, related-sheet, and
+next-step links support both structure-first learning and direct reference.
+Published sheet metadata supplies glossary definitions and bibliography
 entries; the build rejects conflicting entries and broken internal references.
 
 Astro renders the content shell and useful initial lab state. A native custom
@@ -101,7 +104,8 @@ do not belong to this publication.
 
 ## Product Principles
 
-- Teach mechanisms through concrete problems and reproducible experiments.
+- Teach data structures first, then introduce mechanisms through the concrete
+  merge problems they solve.
 - Keep partial knowledge explicit; never give a replica a global observer.
 - Derive explanatory views from the same trace as the simulation.
 - Explain costs and assumptions alongside convergence and conflict semantics.

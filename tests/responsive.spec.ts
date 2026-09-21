@@ -199,7 +199,7 @@ test("sheet reading context resumes sticky contents after the unobstructed lab w
       await page.locator(".sheet-continuation").evaluate((element) =>
         window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + 300));
       const resumed = page.locator(".sheet-local").last();
-      await expect(resumed.getByText("First trail · 5 of 7", { exact: true })).toBeInViewport();
+      await expect(resumed.getByText("Structure-first trail · 3 of 7", { exact: true })).toBeInViewport();
       await resumed.getByRole("link", { name: "Field notes", exact: true }).click();
       await expect(page).toHaveURL(/#field-notes$/);
       await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
@@ -322,50 +322,33 @@ test("the connected chart reflows to vertical stations below 40rem", async ({ pa
 });
 
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
-  test(`landing page works as a station field at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+  test(`landing structure path fits at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
 
-    const figure = page.getByRole("figure");
+    const hero = page.getByRole("region", { name: "Start with the data you need to share" });
     const headline = page.getByRole("heading", { level: 1 });
-    const stationA = figure.getByText("Station A records A:1", { exact: true });
-    const stationB = figure.getByText("Station B records B:1", { exact: true });
-    const relation = figure.locator("figcaption");
-    const primary = page.getByRole("link", { name: "Begin with dots and causal context", exact: true });
-    const secondary = page.getByRole("link", { name: "Open the atlas", exact: true });
-    const sectionTwo = page.getByRole("region", { name: "What the atlas lets you inspect", exact: true });
-    await expect(figure).toBeVisible();
-    await expect(relation).toHaveText("Concurrent — neither station has observed the other event");
+    const path = page.getByRole("list", { name: "Data structure learning path" });
+    const pathItems = path.getByRole("listitem");
+    const primary = page.getByRole("link", { name: "Start with registers", exact: true });
+    const secondary = page.getByRole("link", { name: "Open the full atlas", exact: true });
+    const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
+    await expect(hero).toBeVisible();
+    await expect(pathItems).toHaveCount(4);
 
     const sectionBox = await sectionTwo.boundingBox();
     expect(sectionBox).not.toBeNull();
-    for (const element of [headline, stationA, stationB, relation, primary, secondary]) {
+    for (const element of [headline, ...await pathItems.all(), primary, secondary]) {
       await expect(element).toBeVisible();
       const box = await element.boundingBox();
       expect(box).not.toBeNull();
       expect(box!.x).toBeGreaterThanOrEqual(0);
       expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
-      expect(box!.y + box!.height).toBeLessThanOrEqual(sectionBox!.y);
-      await expect(element).toBeInViewport({ ratio: 1 });
-    }
-    const a = await stationA.boundingBox();
-    const b = await stationB.boundingBox();
-    expect(b!.y).toBeGreaterThan(a!.y + a!.height);
-    if (viewport.width === 390) {
-      expect(b!.x).toBe(a!.x);
-      const path = await figure.locator(".signal-path").boundingBox();
-      expect(path!.y).toBeGreaterThanOrEqual(a!.y + a!.height);
-      expect(path!.y + path!.height).toBeLessThanOrEqual(b!.y);
-    } else {
-      expect(b!.x).toBeGreaterThan(a!.x + a!.width);
+      expect(box!.y).toBeLessThan(sectionBox!.y);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width);
-    expect(await figure.evaluate((element) => element.getAnimations({ subtree: true }).length)).toBe(0);
-    for (const element of [stationA, stationB, relation]) {
-      await expect(element).toHaveCSS("opacity", "1");
-    }
     for (const link of [primary, secondary]) {
       const box = await link.boundingBox();
       expect(box!.height).toBeGreaterThanOrEqual(44);
@@ -373,23 +356,10 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
   });
 }
 
-test("the landing relation appears after both observations in normal motion", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "no-preference" });
+test("the landing structure path keeps its intended order", async ({ page }) => {
   await page.goto("/");
-
-  const relation = page.getByRole("figure").locator("figcaption");
-  const opacityAt = (time: number) => relation.evaluate((element, currentTime) => {
-    const animation = element.getAnimations().find(
-      (candidate) => (candidate as CSSAnimation).animationName === "relation-arrives",
-    );
-    if (!animation) throw new Error("Relation animation not found");
-    animation.pause();
-    animation.currentTime = currentTime;
-    return getComputedStyle(element).opacity;
-  }, time);
-
-  expect(await opacityAt(499)).toBe("0");
-  expect(await opacityAt(720)).toBe("1");
+  await expect(page.getByRole("list", { name: "Data structure learning path" })
+    .getByRole("heading", { level: 2 })).toHaveText(["Counters", "Registers", "Sets", "Maps"]);
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {

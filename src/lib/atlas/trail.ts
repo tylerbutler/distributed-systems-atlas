@@ -7,13 +7,13 @@ export interface TrailStep {
 }
 
 export const firstTrail = [
+  { id: "multi-value-registers", title: "Multi-value registers", territory: "structures" },
+  { id: "observed-remove-sets", title: "Observed-remove sets", territory: "structures" },
+  { id: "dots-and-causal-context", title: "Dots and causal context", territory: "mechanisms" },
   { id: "local-history", title: "Local history", territory: "mechanisms" },
   { id: "partial-order", title: "Partial order", territory: "mechanisms" },
   { id: "lamport-clocks", title: "Lamport clocks", territory: "mechanisms" },
   { id: "vector-clocks", title: "Vector clocks", territory: "mechanisms" },
-  { id: "dots-and-causal-context", title: "Dots and causal context", territory: "mechanisms" },
-  { id: "multi-value-registers", title: "Multi-value registers", territory: "structures" },
-  { id: "observed-remove-sets", title: "Observed-remove sets", territory: "structures" },
 ] as const satisfies readonly TrailStep[];
 
 export type TrailEntry = Pick<

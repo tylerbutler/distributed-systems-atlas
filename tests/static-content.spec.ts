@@ -6,12 +6,12 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const trailTitles = [
+  "Multi-value registers",
+  "Observed-remove sets",
   "Local history",
   "Partial order",
   "Lamport clocks",
   "Vector clocks",
-  "Multi-value registers",
-  "Observed-remove sets",
 ];
 
 test("a sheet exposes its reading context and next step", async ({ page }) => {
@@ -34,15 +34,15 @@ test("a sheet exposes its reading context and next step", async ({ page }) => {
   await expect(terms.locator("p")).toHaveCount(0);
   await expect(page.locator(".sheet-header")).toContainText(/\d+ min read/);
   await expect(page.locator(".sheet-header")).toContainText("Lab available");
-  await expect(page.locator(".sheet-header")).toContainText("No prerequisite sheet");
-  await expect(page.locator(".sheet-header")).toContainText("First trail · 5 of 7");
+  await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
+  await expect(page.locator(".sheet-header")).toContainText("Structure-first trail · 3 of 7");
   await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeVisible();
   const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
   await expect(related).toContainText("No related sheets");
   await expect(related.getByRole("link")).toHaveCount(0);
-  const next = page.getByRole("navigation", { name: "Next trail step", exact: true });
-  await expect(next).toContainText("Multi-value registers");
-  await expect(next.getByRole("link")).toHaveAttribute("href", "/atlas/multi-value-registers/");
+  const next = page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true });
+  await expect(next).toContainText("Local history");
+  await expect(next.getByRole("link")).toHaveAttribute("href", "/atlas/local-history/");
   await expect(page.getByRole("region", { name: "References", exact: true })).toContainText("Dotted Version Vectors");
   await contents.getByRole("link", { name: "Field notes", exact: true }).click();
   await expect(page).toHaveURL(/#field-notes$/);
@@ -103,7 +103,7 @@ test("the observation rail shows route context without JavaScript", async ({ bro
     }
     await page.goto("/atlas/dots-and-causal-context/");
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Atlas", "Mechanisms", "Dots and causal context", "Trail 5 of 7",
+      "Atlas", "Mechanisms", "Dots and causal context", "Trail 3 of 7",
     ]);
     await expect(rail.locator('[aria-current="page"]')).toHaveText("Dots and causal context");
   } finally {
@@ -142,14 +142,14 @@ test("readers can follow all seven trail steps without JavaScript", async ({ bro
   try {
     const page = await context.newPage();
     await page.goto("/");
-    await page.locator('a[href="/atlas/local-history/"]').first().click();
-    const titles = ["Local history", "Partial order", "Lamport clocks", "Vector clocks",
-      "Dots and causal context", "Multi-value registers", "Observed-remove sets"];
+    await page.locator('a[href="/atlas/multi-value-registers/"]').first().click();
+    const titles = ["Multi-value registers", "Observed-remove sets", "Dots and causal context",
+      "Local history", "Partial order", "Lamport clocks", "Vector clocks"];
     for (const [index, title] of titles.entries()) {
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       await expect(page.getByRole("navigation", { name: "Sheet position", exact: true }))
         .toContainText(`Trail ${index + 1} of 7`);
-      const next = page.getByRole("navigation", { name: "Next trail step", exact: true });
+      const next = page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true });
       if (index < titles.length - 1) await next.getByRole("link").click();
       else await expect(next).toHaveCount(0);
     }
@@ -268,42 +268,47 @@ async function buildFixture(root: string) {
   }
 }
 
-test("the landing page demonstrates the premise before explaining it", async ({ page }) => {
+test("the landing page leads with data structures", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Two stations can be correct and still disagree",
+    "Start with the data you need to share",
   );
   await expect(
-    page.getByRole("link", { name: "Begin with dots and causal context", exact: true }),
-  ).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
-  await expect(page.getByRole("link", { name: "Open the atlas", exact: true }))
+    page.getByRole("link", { name: "Start with registers", exact: true }),
+  ).toHaveAttribute("href", "/atlas/multi-value-registers/");
+  await expect(page.getByRole("link", { name: "Open the full atlas", exact: true }))
     .toHaveAttribute("href", "/atlas/");
-  const figure = page.getByRole("figure");
-  await expect(figure.getByText("Station A records A:1", { exact: true })).toBeVisible();
-  await expect(figure.getByText("Station B records B:1", { exact: true })).toBeVisible();
-  await expect(figure).toContainText(
-    "Concurrent — neither station has observed the other event",
-  );
-  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
-    "What the atlas lets you inspect",
-    "One trail, seven connected ideas",
-    "Read it or run it",
+  const structures = page.getByRole("list", { name: "Data structure learning path" });
+  await expect(structures.getByRole("listitem")).toHaveText([
+    "1CountersWhy independent increments can merge without choosing a winner.Planned",
+    "2RegistersWhat one shared value should do when two replicas write at once.Read now",
+    "3SetsWhy removing an item requires evidence about the additions you saw.Read now",
+    "4MapsHow a structure composes conflict rules across named fields.Planned",
   ]);
-  const trail = page.getByRole("list", { name: "First-release learning sequence" });
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+    "Counters",
+    "Registers",
+    "Sets",
+    "Maps",
+    "Learn the behavior before the bookkeeping",
+    "From merge behavior to causal evidence",
+    "Open the machinery when you need it",
+  ]);
+  const trail = page.getByRole("list", { name: "Structure-first learning sequence" });
   await expect(trail.getByRole("listitem")).toHaveText([
+    "Multi-value registers Read now",
+    "Observed-remove sets Read now",
+    "Dots and causal context Read now",
     "Local history Read now",
     "Partial order Read now",
     "Lamport clocks Read now",
     "Vector clocks Read now",
-    "Dots and causal context Read now",
-    "Multi-value registers Read now",
-    "Observed-remove sets Read now",
   ]);
   await expect(trail.getByRole("link")).toHaveCount(7);
-  const finalEntry = page.getByRole("link", { name: "Read dots and causal context", exact: true });
+  const finalEntry = page.getByRole("link", { name: "Start with multi-value registers", exact: true });
   await finalEntry.click();
-  await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+  await expect(page).toHaveURL(/\/atlas\/multi-value-registers\/$/);
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {
@@ -312,17 +317,12 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    "Two stations can be correct and still disagree",
+    "Start with the data you need to share",
   );
-  const figure = page.getByRole("figure");
-  await expect(figure.getByText("Station A records A:1", { exact: true })).toBeVisible();
-  await expect(figure.getByText("Station B records B:1", { exact: true })).toBeVisible();
-  await expect(figure).toContainText(
-    "Concurrent — neither station has observed the other event",
-  );
-  await expect(page.getByRole("link", { name: "Begin with dots and causal context", exact: true }))
+  await expect(page.getByRole("list", { name: "Data structure learning path" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start with registers", exact: true }))
     .toBeVisible();
-  await expect(page.getByRole("link", { name: "Open the atlas" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open the full atlas" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
   await expect(page.getByRole("contentinfo")).toBeVisible();
   await page.keyboard.press("Tab");
@@ -330,13 +330,13 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.keyboard.press("Tab");
-  const primary = page.getByRole("link", { name: "Begin with dots and causal context", exact: true });
+  const primary = page.getByRole("link", { name: "Registers", exact: true });
   await expect(primary).toBeFocused();
   await expect(primary).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
+  await expect(page).toHaveURL(/\/atlas\/multi-value-registers\/$/);
   await page.goto("/");
-  await page.getByRole("link", { name: "Open the atlas" }).click();
+  await page.getByRole("link", { name: "Open the full atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();
   await context.close();
 });
@@ -369,11 +369,11 @@ test("the atlas presents territories as one connected chart without JavaScript",
     const chart = page.getByTestId("territory-chart");
     await expect(chart).toBeVisible();
     await expect(chart.getByRole("heading", { level: 2 })).toHaveText([
-      "Mechanisms", "Structures", "Failure modes", "Systems",
+      "Structures", "Mechanisms", "Failure modes", "Systems",
     ]);
     const mechanisms = page.getByTestId("territory-mechanisms");
     await expect(mechanisms.getByRole("heading", { level: 3 })).toHaveText([
-      "Local history", "Partial order", "Lamport clocks", "Vector clocks", "Dots and causal context",
+      "Dots and causal context", "Local history", "Partial order", "Lamport clocks", "Vector clocks",
     ]);
     await expect(page.getByTestId("territory-structures").getByRole("heading", { level: 3 }))
       .toHaveText(["Multi-value registers", "Observed-remove sets"]);
@@ -382,11 +382,11 @@ test("the atlas presents territories as one connected chart without JavaScript",
       const station = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
       await expect(station.getByRole("link", { name: title, exact: true })).toBeVisible();
     }
-    const trail = page.getByRole("list", { name: "First trail", exact: true });
+    const trail = page.getByRole("list", { name: "Structure-first trail", exact: true });
     await expect(trail.getByRole("listitem")).toHaveText([
-      "Local history Read now", "Partial order Read now", "Lamport clocks Read now",
-      "Vector clocks Read now", "Dots and causal context Read now",
       "Multi-value registers Read now", "Observed-remove sets Read now",
+      "Dots and causal context Read now", "Local history Read now",
+      "Partial order Read now", "Lamport clocks Read now", "Vector clocks Read now",
     ]);
     await expect(trail.getByRole("link")).toHaveCount(7);
     await expect(chart.getByRole("link")).toHaveCount(7);
@@ -528,30 +528,29 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
       .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
     await expect(page.getByRole("heading", { name: "Fixture article" })).toBeVisible();
-    const prerequisites = page.getByRole("navigation", { name: "Prerequisites" });
-    await expect(prerequisites.getByRole("link", { name: "Local history" })).toHaveAttribute("href", "/atlas/local-history/");
-    await expect(prerequisites).toContainText("Failure detectors");
-    await expect(prerequisites).toContainText("Planned");
-    await expect(prerequisites.getByRole("link")).toHaveCount(1);
+    const supportingIdeas = page.getByRole("navigation", { name: "Ideas used on this sheet" });
+    await expect(supportingIdeas.getByRole("link", { name: "Local history" })).toHaveAttribute("href", "/atlas/local-history/");
+    await expect(supportingIdeas).toContainText("Failure detectors");
+    await expect(supportingIdeas).toContainText("Planned");
+    await expect(supportingIdeas.getByRole("link")).toHaveCount(1);
     const related = page.getByRole("navigation", { name: "Related sheets" });
     await expect(related.getByRole("link", { name: "Replicated log" })).toHaveAttribute("href", "/atlas/replicated-log/");
     await expect(related.getByRole("link")).toHaveCount(1);
-    const next = page.getByRole("navigation", { name: "Next trail step" });
-    await expect(next).toContainText("Multi-value registers");
-    await expect(next).toContainText("Planned");
-    await expect(next.getByRole("link")).toHaveCount(0);
+    const next = page.getByRole("navigation", { name: "Next in the structure-first trail" });
+    await expect(next).toContainText("Local history");
+    await expect(next.getByRole("link")).toHaveAttribute("href", "/atlas/local-history/");
 
     await page.setContent(await readFile(path.join(root, "dist/atlas/local-history/index.html"), "utf8"));
     const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Atlas", "Mechanisms", "Local history", "Trail 1 of 7",
+      "Atlas", "Mechanisms", "Local history", "Trail 4 of 7",
     ]);
-    await expect(page.getByText("No prerequisite sheet", { exact: true })).toBeVisible();
-    await expect(page.getByRole("navigation", { name: "Next trail step" })).toContainText("Partial order");
+    await expect(page.getByText("No supporting sheet required", { exact: true })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toContainText("Partial order");
     await page.setContent(await readFile(path.join(root, "dist/atlas/replicated-log/index.html"), "utf8"));
     await expect(page.locator(".sheet-header")).toContainText("3 min read");
     await expect(rail.getByRole("listitem")).toHaveText(["Atlas", "Systems", "Replicated log"]);
-    await expect(page.getByRole("navigation", { name: "Next trail step" })).toHaveCount(0);
+    await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toHaveCount(0);
 
     const glossary = await readFile(path.join(root, "dist/glossary/index.html"), "utf8");
     expect(glossary).toContain("A unique event identifier.");

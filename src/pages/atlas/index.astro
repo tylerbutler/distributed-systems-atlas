@@ -25,22 +25,22 @@ if (issues.length > 0) {
 const entries = buildAtlasEntries(metadata);
 const trail = buildTrail(metadata);
 const territories = [
-  ["mechanisms", "Mechanisms", "The small ideas that larger algorithms depend on."],
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
+  ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
   ["failures", "Failure modes", "Reproducible bugs and the mechanisms that cause or prevent them."],
   ["systems", "Systems", "Individual mechanisms connected into larger architectures."],
 ] as const satisfies readonly (readonly [Territory, string, string])[];
 ---
 
-<BaseLayout title="Atlas" description="Browse mechanisms, structures, failure modes, and systems. See which sheets you can read now and which are planned.">
+<BaseLayout title="Atlas" description="Browse replicated data structures first, then open the causal mechanisms, failure modes, and systems that explain their behavior.">
   <header class="page-intro">
     <h1>Atlas</h1>
-    <p>Follow an event through the machinery, or start with the failure you want to understand.</p>
-    <p>Four territories connect the small mechanisms, replicated structures, failure modes, and systems they shape.</p>
+    <p>Start with the state you need to share: a counter, register, set, map, sequence, or larger system.</p>
+    <p>Open the causal machinery when a structure's merge rule raises a question.</p>
   </header>
   <nav class="first-trail" aria-labelledby="first-trail-title">
-    <h2 id="first-trail-title">First trail</h2>
-    <ol aria-label="First trail">
+    <h2 id="first-trail-title">Structure-first trail</h2>
+    <ol aria-label="Structure-first trail">
       {trail.map((sheet) => (
         <li>
           {sheet.status === "published"

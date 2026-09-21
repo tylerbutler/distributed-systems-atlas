@@ -123,8 +123,8 @@ The emitted direction contract is:
 
 - **THESIS:** Compare partial observations in a daylit signal observatory, refusing the glowing network dashboard.
 - **OWN-WORLD:** Mineral-blue instruments, white-blue reading fields, sulfur signals, vermilion interference; square stations and thin ruled records.
-- **STORY:** Engineers compare what each station knows, deliver a signal, and inspect one shared trace. Motion snaps between recorded frames.
-- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing pairs two large station records with a concurrency explanation and entry action. Sheets open with title, reading context, and prose; the console interrupts below.
+- **STORY:** Engineers choose a familiar data structure, observe its merge behavior, then inspect the causal evidence that makes the result possible. Motion snaps between recorded frames.
+- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing presents a numbered path through counters, registers, sets, and maps with direct entry to the first published structure. Sheets open with title, reading context, and prose; the console interrupts below.
 - **FORM:** Signal observatory is brief-pinned, overriding roll index 3; seed key `e7ba61a7`.
 - **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -198,7 +198,7 @@ The palette separates reading stock, instrument structure, signal activity, inte
 
 ## Layout
 
-The root content field is 72rem wide with fluid horizontal padding. The landing signal is a composed instrument field, the atlas is a connected territory chart, and sheets use a reading topology rather than repeated cards.
+The root content field is 72rem wide with fluid horizontal padding. The landing signal is a numbered data-structure path inside one composed instrument field, the atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
 
 The observation rail persists below primary navigation. It presents Atlas, territory, sheet, and trail position as ordinary text, followed by a thin trace and a sulfur current point. Below 48rem, its text wraps and the trace moves to its own row; the primary navigation also wraps into two visible rows rather than hiding behind a menu.
 

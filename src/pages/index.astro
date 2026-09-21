@@ -11,49 +11,45 @@ const sheets: SheetMeta[] = (await getCollection("sheet")).map(
 const trail = buildTrail(sheets);
 ---
 
-<BaseLayout description="Two stations can be correct and still disagree. Follow their events through illustrated essays and deterministic labs on concurrency and causal history.">
+<BaseLayout description="Start with counters, registers, sets, and maps. Use illustrated essays and deterministic labs to see which causal machinery each replicated data structure needs.">
   <LandingSignal />
 
   <div class="landing-reading">
-    <section aria-labelledby="inspect-title">
-      <h2 id="inspect-title">What the atlas lets you inspect</h2>
+    <section aria-labelledby="structure-title">
+      <h2 id="structure-title">Learn the behavior before the bookkeeping</h2>
       <p>
-        A message hasn't arrived. Is the other station behind, or did it make
-        a change you haven't seen? Follow the evidence each replica has, and
-        see where its view ends.
+        A counter, register, set, and map each make a different promise when
+        updates arrive late or in a different order. Start with that promise.
+        Then open the metadata that makes it possible.
       </p>
       <dl>
         <div>
-          <dt>Replicas</dt>
-          <dd>Compare what each station holds without pretending that either can see the whole system.</dd>
+          <dt>Counters</dt>
+          <dd>Independent increments can combine because addition does not need a winner.</dd>
         </div>
         <div>
-          <dt>Messages</dt>
-          <dd>Deliver, delay, or duplicate an update. Watch which observations reach the other station.</dd>
+          <dt>Registers</dt>
+          <dd>Concurrent writes force a choice: select one value or preserve every sibling.</dd>
         </div>
         <div>
-          <dt>Clocks</dt>
-          <dd>Separate an event's counter from the causal order you can prove.</dd>
+          <dt>Sets</dt>
+          <dd>Removal needs a rule for additions that were observed, concurrent, or replayed later.</dd>
         </div>
         <div>
-          <dt>Context</dt>
-          <dd>Read the record of events a replica has observed, including the ones it has removed.</dd>
-        </div>
-        <div>
-          <dt>Merge results</dt>
-          <dd>Find out which concurrent changes survive when the stations exchange what they know.</dd>
+          <dt>Maps</dt>
+          <dd>Each key composes one of those conflict rules into a larger state model.</dd>
         </div>
       </dl>
     </section>
 
     <section aria-labelledby="trail-title">
-      <h2 id="trail-title">One trail, seven connected ideas</h2>
+      <h2 id="trail-title">From merge behavior to causal evidence</h2>
       <p>
-        Start with a local event and work toward structures that preserve
-        concurrent changes. All seven sheets include a complete article and
-        a deterministic lab.
+        Start with two structures that expose the problem. Then inspect dots,
+        histories, orders, and clocks in the context of the behavior they
+        support. All seven sheets include an article and a deterministic lab.
       </p>
-      <ol class="learning-trail" aria-label="First-release learning sequence">
+      <ol class="learning-trail" aria-label="Structure-first learning sequence">
         {trail.map((sheet) => (
           <li>
             {sheet.status === "published"
@@ -66,22 +62,22 @@ const trail = buildTrail(sheets);
     </section>
 
     <section aria-labelledby="read-title">
-      <h2 id="read-title">Read it or run it</h2>
+      <h2 id="read-title">Open the machinery when you need it</h2>
       <p>
-        Read the explanation, diagrams, and field notes without JavaScript.
-        Each sheet gives you the argument and the references, whether you
-        touch a control or not.
+        When a structure keeps a concurrent value or rejects a stale replay,
+        inspect the dots, causal context, and clocks behind that result. The
+        mechanism is attached to a concrete question instead of presented as
+        vocabulary to memorize first.
       </p>
       <p>
-        When you want to test your understanding, run the browser lab. Create
-        an event, hold back a message, then inspect the result. The same
-        sequence of actions produces the same trace, so you can return to
-        the exact step where your prediction went wrong.
+        Every explanation and diagram works without JavaScript. The browser
+        labs let you delay a message, make concurrent updates, and inspect the
+        exact state that explains the merge result.
       </p>
     </section>
 
     <p class="final-entry">
-      <a class="atlas-entry" href="/atlas/dots-and-causal-context/">Read dots and causal context</a>
+      <a class="atlas-entry" href="/atlas/multi-value-registers/">Start with multi-value registers</a>
     </p>
   </div>
 </BaseLayout>
