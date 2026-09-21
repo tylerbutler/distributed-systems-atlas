@@ -70,7 +70,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Play the authored race or increment a client to send an operation to the sequencer.",
+    result: "Queue client increments, or play the authored race through the sequencer.",
   };
 }
 

@@ -24,19 +24,33 @@ function node<K extends keyof HTMLElementTagNameMap>(
 class GCounterDemoElement extends HTMLElement {
   private state: GCounterDemoState = createGCounterDemo();
   private speed = 1;
+  private guided = false;
+  private guidedTimer: number | undefined;
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.addEventListener("click", async () => {
+      button.addEventListener("click", () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.increment);
-        await this.stageAndDeliver(incrementReplica(this.state, replica, amount), button);
+        const result = incrementReplica(this.state, replica, amount);
+        this.apply(result, button);
+        if (result.ok) {
+          this.showGuidedObservation(
+            `${replica} updates its local count and queues one operation.`,
+            [this.querySelector<HTMLElement>(`[data-total="${replica}"]`)!],
+            "circle",
+          );
+        }
       });
     }
     this.button("play").addEventListener("click", async () => {
-      await this.playRace();
+      if (presentGCounterDemo(this.state).canDeliver) {
+        await this.deliverQueued(this.button("play"));
+      } else {
+        await this.playRace();
+      }
     });
     this.button("resend").addEventListener("click", async () => {
       await this.applyAnimated(resendComponent(this.state), this.button("resend"));
@@ -44,12 +58,29 @@ class GCounterDemoElement extends HTMLElement {
     this.button("reset").addEventListener("click", () => {
       this.state = createGCounterDemo();
       this.render();
+      this.showGuidedObservation(
+        "Queue operations, then play them through the sequencer.",
+        [],
+      );
       this.button("play").focus();
     });
     const pace = this.querySelector<HTMLInputElement>("[data-pace]")!;
     pace.addEventListener("input", () => {
       this.speed = Number(pace.value);
       this.querySelector<HTMLOutputElement>("[data-pace-output]")!.value = `${this.speed}×`;
+    });
+    const guided = this.querySelector<HTMLInputElement>("[data-guided-observations]")!;
+    guided.addEventListener("change", () => {
+      this.guided = guided.checked;
+      this.querySelector<HTMLElement>("[data-guided-panel]")!.hidden = !this.guided;
+      if (this.guided) {
+        this.showGuidedObservation(
+          "Queue operations, then play them through the sequencer.",
+          [],
+        );
+      } else {
+        this.clearGuidedMarks();
+      }
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -68,19 +99,28 @@ class GCounterDemoElement extends HTMLElement {
       this.apply(staged, this.button("play"));
       return;
     }
-    await this.stageAndDeliver(staged, this.button("resend"));
-  }
-
-  private async stageAndDeliver(
-    staged: GCounterDemoResult,
-    focus: HTMLElement,
-  ): Promise<void> {
-    if (!staged.ok) {
-      this.apply(staged, focus);
-      return;
-    }
     this.state = staged.state;
     this.render();
+    const changed = presentGCounterDemo(this.state).replicas
+      .filter((replica) => replica.value > 0);
+    this.showGuidedObservation(
+      `${changed.map((replica) => replica.id).join(" and ")} ${
+        changed.length === 1 ? "updates its" : "update their"
+      } local count before delivery.`,
+      changed.map((replica) =>
+        this.querySelector<HTMLElement>(`[data-total="${replica.id}"]`)!),
+      "circle",
+    );
+    await this.deliverQueued(this.button("resend"));
+  }
+
+  private async deliverQueued(focus: HTMLElement): Promise<void> {
+    const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
+    this.showGuidedObservation(
+      `${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} ready for the sequencer.`,
+      [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
+      "box",
+    );
     this.setBusy(true);
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
       await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
@@ -111,6 +151,11 @@ class GCounterDemoElement extends HTMLElement {
     const view = presentGCounterDemo(result.state);
     await this.animateDeliveries(view.latestDeliveries);
     this.apply(result, focus);
+    this.showGuidedObservation(
+      "Each replica keeps the largest report from every client, then adds those counts.",
+      [...this.querySelectorAll<HTMLElement>("[data-total]")],
+      "circle",
+    );
   }
 
   private setBusy(busy: boolean): void {
@@ -135,6 +180,11 @@ class GCounterDemoElement extends HTMLElement {
       if (author !== "A" && author !== "B" && author !== "C") continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
         `The sequencer is delivering operation ${sequenceNumber} from ${author}.`;
+      this.showGuidedObservation(
+        `The sequencer assigns SN ${sequenceNumber} to ${author}'s report.`,
+        [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
+        "box",
+      );
       await this.animateHop(
         this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
         this.querySelector<HTMLElement>("[data-sequencer-node]")!,
@@ -175,6 +225,31 @@ class GCounterDemoElement extends HTMLElement {
     });
     await animation.finished;
     dot.remove();
+  }
+
+  private showGuidedObservation(
+    text: string,
+    elements: HTMLElement[],
+    shape: "circle" | "box" = "box",
+  ): void {
+    if (!this.guided) return;
+    this.clearGuidedMarks();
+    this.querySelector<HTMLElement>("[data-guided-callout]")!.textContent = text;
+    const className = shape === "circle" ? "guided-circle" : "guided-box";
+    for (const element of elements) element.classList.add(className);
+    if (elements.length === 0) return;
+    this.guidedTimer = window.setTimeout(
+      () => this.clearGuidedMarks(),
+      Math.max(900, 1400 / this.speed),
+    );
+  }
+
+  private clearGuidedMarks(): void {
+    if (this.guidedTimer !== undefined) window.clearTimeout(this.guidedTimer);
+    this.guidedTimer = undefined;
+    for (const element of this.querySelectorAll<HTMLElement>(".guided-circle, .guided-box")) {
+      element.classList.remove("guided-circle", "guided-box");
+    }
   }
 
   private render(): void {
@@ -223,12 +298,16 @@ class GCounterDemoElement extends HTMLElement {
       button.disabled = false;
     }
     this.button("play").disabled = false;
+    this.button("play").textContent = view.canDeliver
+      ? `Play ${view.queuedOperations} queued ${view.queuedOperations === 1 ? "operation" : "operations"}`
+      : "Play the race";
     this.button("resend").disabled = !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Resend ${view.latestAuthor}'s component`
       : "Resend latest component";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
+    this.querySelector<HTMLInputElement>("[data-guided-observations]")!.disabled = false;
   }
 }
 

@@ -64,9 +64,11 @@ point, never private Watershed build paths.
 
 The G-counter lesson uses Watershed's JavaScript Sluice transport. Readers can
 increment A, B, or C directly, play the authored A:+7/B:+3 race, and resend the
-latest cumulative component. Atlas sequences and delivers each action
-automatically, animating operations from their authors through Sluice to all
-clients at a reader-controlled speed.
+latest cumulative component. Client actions can queue before one Play action
+sends them through the sequencer. Atlas animates operations from their authors
+through Sluice to all clients at a reader-controlled speed. Guided observations
+reveal the Sluice implementation and add timed callouts and signal-colored
+marks to the values and sequencer.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

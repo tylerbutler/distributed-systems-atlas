@@ -13,10 +13,16 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   const pace = demo.getByRole("slider", { name: "Speed" });
   await pace.fill("2");
   await expect(demo.locator("[data-pace-output]")).toHaveText("2×");
+  const guided = demo.getByRole("checkbox", { name: "Guided observations" });
+  await guided.check();
+  await expect(demo.getByRole("heading", { name: "Inside the sequencer" })).toBeVisible();
+  await expect(demo.getByText("Sluice is the in-memory server behind this demo")).toBeVisible();
   await play.focus();
   await play.press("Enter");
   await expect(demo.locator(".operation-pulse").first()).toBeVisible();
+  await expect(demo.getByRole("region", { name: "Sequencer" })).toHaveClass(/guided-box/);
   await expect(totals).toHaveText(["10", "10", "10"]);
+  await expect(totals.first()).toHaveClass(/guided-circle/);
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
     "The sequencer delivered 2 operations. All three clients read 10.",
@@ -47,23 +53,25 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   await expect(totals).toHaveText(["0", "0", "0"]);
   await expect(play).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Play the authored race or increment a client to send an operation to the sequencer.",
+    "Queue client increments, or play the authored race through the sequencer.",
   );
 });
 
-test("each client can increment through automatic delivery", async ({ page }) => {
+test("multiple client operations can queue before sequencer delivery", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
 
   await demo.getByRole("button", { name: "Add 3 at replica C" }).click();
-  await expect(totals).toHaveText(["3", "3", "3"]);
   await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
+  await expect(totals).toHaveText(["1", "0", "3"]);
+  await expect(demo.locator("[data-pending]")).toHaveText("2");
+  await demo.getByRole("button", { name: "Play 2 queued operations" }).click();
   await expect(totals).toHaveText(["4", "4", "4"]);
   await expect(demo.locator("[data-sequence]")).toHaveText("2");
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered 1 operation. All three clients read 4.",
+    "The sequencer delivered 2 operations. All three clients read 4.",
   );
 });
 
@@ -76,14 +84,9 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     const page = await context.newPage();
     await page.goto("/structures/counters/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
-    await expect(
-      page.getByRole("heading", { name: "Sluice sequences and relays changes" }),
-    ).toBeVisible();
-    await expect(page.getByText("puts them in one total order")).toBeVisible();
-    await expect(page.getByText("A client is an application connected")).toBeVisible();
-    await expect(page.getByText("Sluice is not a data structure")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Start with one person counting" }))
       .toBeVisible();
+    await expect(page.getByText("Its local copy of the counter is a replica")).toBeVisible();
     await expect(page.getByRole("heading", {
       name: "Give the second person a separate count",
     })).toBeVisible();
@@ -96,6 +99,8 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Play the race" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
+    await expect(page.locator("[data-guided-panel]")).toBeHidden();
     const explanation = page.getByText("Explain why a component resend is safe", { exact: true });
     await explanation.focus();
     await page.keyboard.press("Enter");

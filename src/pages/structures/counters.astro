@@ -20,43 +20,17 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       </p>
     </header>
 
-    <section aria-labelledby="sluice-title">
-      <h2 id="sluice-title">Sluice sequences and relays changes</h2>
-      <p>
-        Replicas in a distributed data structure need a way to exchange their
-        changes. They can send changes directly to their peers, or they can
-        send them through a server. The demos on this site use Sluice, a small
-        server sequencer. It accepts operations from the clients, puts them in
-        one total order, and relays them to every connected replica.
-      </p>
-      <p>
-        A client is an application connected to the shared document. A replica
-        is that client's local copy of a data structure. Each client in this
-        demo owns one replica, so client A and replica A refer to the same
-        participant here.
-      </p>
-      <p>
-        Data structures define different operations and use the ordered stream
-        in different ways. Some use the sequence number to resolve changes.
-        Others, including the G-counter below, do not use it in their merge
-        rule. They still need the relay so each replica receives the changes.
-        A server sequencer provides one transport model that can carry all of
-        these data structures.
-      </p>
-      <p>
-        Sluice is not a data structure, and it does not decide how changes
-        merge. It plays the server's role inside the demos and lets them pause
-        delivery so clients can change independently. You can then release the
-        queued operations and watch the replicas converge.
-      </p>
-    </section>
-
     <section aria-labelledby="one-counter-title">
       <h2 id="one-counter-title">Start with one person counting</h2>
       <p>
         Suppose one person uses client A to count arrivals. Client A keeps one
         nonnegative total and increases it for each new arrival. With one
         client, the shared value is just A's count.
+      </p>
+      <p>
+        A client is an application connected to the shared data. Its local copy
+        of the counter is a replica. In this demo, each client owns one replica,
+        so client A and replica A refer to the same participant.
       </p>
       <pre aria-label="Single-client counter value"><code>value = count[A]</code></pre>
     </section>
@@ -83,9 +57,9 @@ value = count[A] + count[B] + ...</code></pre>
       <h2 id="race-title">Now let both people count at once</h2>
       <p>
         Replica A adds 7 while replica B adds 3. Replica C makes no local
-        change. Sluice sequences the two operations and relays them to all
-        three replicas. Use the controls on one client at a time, or play the
-        authored race to send both changes together.
+        change. A server sequencer orders the two operations and relays them to
+        all three replicas. Use the controls on one client at a time, or play
+        the authored race to send both changes together.
       </p>
     </section>
 
@@ -141,7 +115,7 @@ value = count[A] + count[B] + ...</code></pre>
     </section>
 
     <section aria-labelledby="notes-title">
-      <h2 id="notes-title">Field notes</h2>
+      <h2 id="notes-title">Sources and implementation</h2>
       <p>
         This lesson calls Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/g_counter_kernel.gleam">G-counter kernel</a>.

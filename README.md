@@ -6,8 +6,8 @@ assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
 The first focused structure lesson uses Watershed's G-counter and JavaScript
-Sluice transport. Readers can increment any of three clients or play an
-authored race, watch automatic delivery at an adjustable speed, and resend a
+Sluice transport. Readers can queue increments from any of three clients,
+play the queue or an authored race at an adjustable speed, and resend a
 cumulative component safely. The first trail also contains seven published
 reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
