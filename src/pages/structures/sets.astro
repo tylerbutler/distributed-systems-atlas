@@ -38,10 +38,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
             union.
           </p>
           <p>
-            Soon Bob reaches Eagle Creek and finds that the old beacon has been
-            taken down. The ranger now needs a list of active beacons, not a
-            permanent record of every beacon ever seen. A GSet cannot record
-            Bob's removal.
+            Soon Alice returns to Eagle Creek and finds that the old beacon has
+            been taken down. The ranger now needs a list of active beacons, not
+            a permanent record of every beacon ever seen. A GSet cannot record
+            Alice's removal.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -55,6 +55,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <div><dt>Metadata</dt><dd>One retained entry per member</dd></div>
         </dl>
       </div>
+      <a class="structure-link" href="/structures/g-set/">
+        Open the GSet lesson
+      </a>
     </section>
 
     <section aria-labelledby="two-p-set-title">
@@ -69,15 +72,15 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="structure-body">
         <div>
           <p>
-            The hikers add a second grow-only set for retirements. Bob places
+            The hikers add a second grow-only set for retirements. Alice places
             <code>Eagle Creek</code> in it. When Carol later receives an old
             copy of Alice's report, the removal still wins. Membership now
             requires an addition without a matching retirement.
           </p>
           <p>
-            The next morning, Alice installs a replacement beacon at the same
+            The next morning, Bob installs a replacement beacon at the same
             place. Its list name is still <code>Eagle Creek</code>. The old
-            tombstone blocks her new add because a TwoPSet cannot distinguish
+            tombstone blocks his new add because a TwoPSet cannot distinguish
             the replacement from the retired installation.
           </p>
           <h3>Best for</h3>
@@ -92,6 +95,9 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <div><dt>Metadata</dt><dd>Members plus permanent tombstones</dd></div>
         </dl>
       </div>
+      <a class="structure-link" href="/structures/two-p-set/">
+        Open the TwoPSet lesson
+      </a>
     </section>
 
     <section aria-labelledby="or-set-title">
@@ -106,8 +112,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <div class="structure-body">
         <div>
           <p>
-            The final design gives every installation a unique tag. Bob's
-            removal targets the old tag he observed. Alice's replacement gets
+            The final design gives every installation a unique tag. Alice's
+            removal targets the old tag she observed. Bob's replacement gets
             a fresh tag, so it can join the list. Carol can receive those
             records in either order: the old installation stays removed, and
             the replacement remains.
@@ -129,7 +135,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
           <div><dt>Metadata</dt><dd>Live addition tags plus removal knowledge</dd></div>
         </dl>
       </div>
-      <a class="structure-link" href="/atlas/observed-remove-sets/">
+      <a class="structure-link" href="/structures/observed-remove-set/">
         Open the observed-remove set lesson
       </a>
     </section>
@@ -166,7 +172,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
     <nav class="structure-next" aria-label="Continue through structures">
       <a href="/structures/counters/">Back to counters</a>
-      <a href="/atlas/observed-remove-sets/">Open the set lesson</a>
+      <a href="/structures/g-set/">Start the set lessons</a>
       <a href="/atlas/multi-value-registers/">Continue to registers</a>
     </nav>
   </article>

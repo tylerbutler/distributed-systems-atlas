@@ -25,10 +25,22 @@ export const sharedCounterTerm: GlossaryTerm = {
   definition: "A sequenced distributed counter that applies signed delta operations to one shared integer.",
 };
 
+export const gSetTerm: GlossaryTerm = {
+  term: "GSet",
+  definition: "A grow-only replicated set whose replicas merge by taking the union of their members.",
+};
+
+export const twoPSetTerm: GlossaryTerm = {
+  term: "TwoPSet",
+  definition: "A replicated set with grow-only addition and removal sets, where a removed value cannot be added again.",
+};
+
 export const standaloneTerms = [
   eventualConsistencyTerm,
+  gSetTerm,
   pnCounterTerm,
   replicaTerm,
   sequencerTerm,
   sharedCounterTerm,
+  twoPSetTerm,
 ];

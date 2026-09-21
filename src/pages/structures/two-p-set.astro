@@ -1,0 +1,105 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import SetStructureDemo from "../../components/SetStructureDemo.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { twoPSetTerm } from "../../lib/atlas/standalone-terms";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout
+  title="TwoPSet"
+  description="Alice retires the old Eagle Creek beacon, but its permanent tombstone blocks Bob's replacement."
+  territory="Structures"
+  sheetTitle="TwoPSet"
+>
+  <article class="set-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>TwoPSet</h1>
+      <p class="structure-summary">
+        Alice has found that the old Eagle Creek beacon is gone. The ranger
+        needs its name removed even if Carol later receives a stale copy of the
+        original report.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based two-phase set"
+      updates="Add, then remove permanently"
+      merge="Union the addition set and the removal set."
+      delivery="Removal survives repeated and out-of-order delivery"
+      bestFor="Membership where retirement must be final"
+      cost="Retain additions and permanent tombstones"
+    />
+
+    <section aria-labelledby="retire-beacon-title">
+      <h2 id="retire-beacon-title">Alice retires the old beacon</h2>
+      <p>
+        The hikers keep one grow-only set of additions and another grow-only
+        set of removals. Alice puts <code>Eagle Creek</code> in the removal
+        set. Carol can receive the old addition afterward, but the removal
+        still wins.
+      </p>
+      <p>
+        A <dfn><a href="/glossary/#twopset">TwoPSet</a></dfn> considers a
+        value present only when it appears in the addition set and not in the
+        removal set.
+      </p>
+      <TermCallout {...twoPSetTerm} />
+      <figure>
+        <table aria-label="Eagle Creek TwoPSet state">
+          <thead>
+            <tr><th scope="col">Record</th><th scope="col">Members</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Additions</th><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Removals</th><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Visible set</th><td>empty</td></tr>
+          </tbody>
+        </table>
+        <figcaption>The removal record remains after the visible member disappears.</figcaption>
+      </figure>
+      <pre aria-label="TwoPSet membership rule"><code>members = additions - removals</code></pre>
+    </section>
+
+    <SetStructureDemo
+      kind="two-p-set"
+      title="Race retirement against replacement"
+      description="Alice retires Eagle Creek while Bob reports the same name again. The permanent tombstone must win at all three notebooks."
+      rule="Union additions and removals; removal wins forever."
+      raceLabel="Race Alice's retirement and Bob's report"
+    />
+
+    <section aria-labelledby="replacement-title">
+      <h2 id="replacement-title">Bob finds the replacement</h2>
+      <p>
+        The next morning, Bob finds a new beacon at Eagle Creek. Its name is
+        the same, so he tries to add <code>Eagle Creek</code> again. The old
+        removal record still excludes that value.
+      </p>
+      <p>
+        This is the cost of permanent removal. A TwoPSet cannot distinguish two
+        installations that use the same value. The next set gives every add
+        its own identity, so Alice can remove the old beacon while Bob's new
+        beacon survives.
+      </p>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Sources and implementation</h2>
+      <p>
+        Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/two_p_set_kernel.gleam">TwoPSet kernel</a>
+        {" "}stores additions and removals as two monotonic sets.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through set structures">
+      <a href="/structures/g-set/">Back to GSet</a>
+      <a href="/structures/sets/">Browse set family</a>
+      <a href="/structures/observed-remove-set/">Continue to observed-remove set</a>
+    </nav>
+  </article>
+</BaseLayout>

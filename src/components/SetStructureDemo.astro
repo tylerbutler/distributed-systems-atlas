@@ -1,0 +1,448 @@
+---
+import StationMark from "./StationMark.astro";
+import {
+  createSetDemo,
+  presentSetDemo,
+  setDemoUserName,
+  type ReplicaId,
+  type SetDemoKind,
+} from "../lib/structure-demo/set-demo";
+
+interface Props {
+  kind: SetDemoKind;
+  title: string;
+  description: string;
+  rule: string;
+  raceLabel: string;
+}
+
+const { kind, title, description, rule, raceLabel } = Astro.props;
+const initial = presentSetDemo(createSetDemo(kind));
+const replicaIds = ["A", "B", "C"] as const;
+const beaconByReplica: Record<ReplicaId, string> = {
+  A: "Eagle Creek",
+  B: "Ridge Pass",
+  C: "Marsh Loop",
+};
+const actionCopy = kind === "two-p-set"
+  ? { add: "Report again", remove: "Retire" }
+  : { add: "Install", remove: "Remove" };
+---
+
+<set-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
+  <section class="set-instrument" aria-labelledby={`${kind}-demo-title`}>
+    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+    <header class="set-heading">
+      <div>
+        <p class="instrument-kicker">Three field notebooks</p>
+        <h2 id={`${kind}-demo-title`}>{title}</h2>
+        <p>{description}</p>
+      </div>
+      <p class="merge-rule">
+        Merge rule
+        <strong>{rule}</strong>
+      </p>
+    </header>
+
+    <div class="set-network">
+      {initial.replicas.map((replica) => (
+        <section
+          class={`set-replica replica-${replica.id.toLowerCase()}`}
+          data-client={replica.id}
+          aria-label={`${setDemoUserName(replica.id)}'s set replica`}
+        >
+          <header>
+            <StationMark station={replica.id} size="lg" />
+            <div>
+              <h3>{setDemoUserName(replica.id)}</h3>
+              <p data-replica-state={replica.id}>
+                {kind === "g-set" ? "No reports yet" : "Eagle Creek is active"}
+              </p>
+            </div>
+          </header>
+          <div class="member-list" data-member-list={replica.id}>
+            {replica.values.length
+              ? replica.values.map((value) => <span>{value}</span>)
+              : <em>Empty set</em>}
+          </div>
+          <div class="replica-actions">
+            {kind === "g-set"
+              ? (
+                <button
+                  type="button"
+                  data-replica={replica.id}
+                  data-set-action="add"
+                  data-element={beaconByReplica[replica.id]}
+                  disabled
+                >
+                  Report {beaconByReplica[replica.id]}
+                </button>
+              )
+              : (
+                <>
+                  <button
+                    type="button"
+                    data-replica={replica.id}
+                    data-set-action="add"
+                    data-element="Eagle Creek"
+                    disabled
+                  >
+                    {actionCopy.add}
+                  </button>
+                  <button
+                    type="button"
+                    data-replica={replica.id}
+                    data-set-action="remove"
+                    data-element="Eagle Creek"
+                    disabled
+                  >
+                    {actionCopy.remove}
+                  </button>
+                </>
+              )}
+          </div>
+        </section>
+      ))}
+
+      <section class="message-relay" data-relay-node aria-label="Trail message relay">
+        <span>Trail relay</span>
+        <strong>No ordering decision</strong>
+        <output data-message-count>0 records shared</output>
+      </section>
+    </div>
+
+    <div class="set-evidence">
+      <p>
+        <span>Mechanism evidence</span>
+        <strong data-evidence>
+          {kind === "g-set"
+            ? "Entries can only accumulate."
+            : kind === "two-p-set"
+              ? "No retirement tombstone yet."
+              : "A:1 is the live old installation."}
+        </strong>
+      </p>
+      <ol data-deliveries aria-label="Set operation log">
+        <li>No records shared yet.</li>
+      </ol>
+    </div>
+
+    <div class="set-controls">
+      <button type="button" data-action="race" disabled>{raceLabel}</button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+      <p data-enhancement-note>
+        Enable JavaScript to run the demo. The starting state and expected
+        result remain in the lesson.
+      </p>
+    </div>
+
+    <p class="set-result" role="status" aria-live="polite" aria-atomic="true">
+      {initial.result}
+    </p>
+    <p class="set-error" role="alert" hidden></p>
+  </section>
+</set-structure-demo>
+
+<script>
+  import "../lib/structure-demo/set-demo-element";
+</script>
+
+<style>
+  set-structure-demo {
+    display: block;
+    width: min(calc(100vw - 2rem), var(--content));
+    max-width: none;
+    margin-block: var(--space-7);
+    margin-inline: 50%;
+    transform: translateX(-50%);
+  }
+
+  .set-instrument {
+    position: relative;
+    padding: clamp(1rem, 3vw, 2rem);
+    border: var(--rule-width) solid var(--instrument-deep);
+    color: var(--clear);
+    background: var(--instrument);
+    --focus-color: var(--signal);
+    --link-color: var(--clear);
+  }
+
+  .operation-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  :global(.set-operation-pulse) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--signal);
+  }
+
+  :global(.set-operation-pulse.shared) {
+    background: var(--clear);
+  }
+
+  :global(.set-operation-label) {
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: var(--instrument-deep);
+    background: inherit;
+    font-family: var(--font-data);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transform: translateX(-50%);
+  }
+
+  .set-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+    gap: var(--space-6);
+    align-items: end;
+    padding-bottom: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+  }
+
+  .set-heading :is(h2, p),
+  .set-replica :is(h3, p),
+  .message-relay :is(span, strong, output) {
+    margin: 0;
+  }
+
+  .instrument-kicker {
+    color: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .set-heading h2 {
+    margin-top: var(--space-2);
+  }
+
+  .set-heading h2 + p {
+    margin-top: var(--space-3);
+  }
+
+  .merge-rule {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 45%, transparent);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .merge-rule strong {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--signal);
+    font-size: 1rem;
+  }
+
+  .set-network {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "a relay b"
+      "c c c";
+    gap: var(--space-5);
+    align-items: start;
+    padding-block: var(--space-6);
+  }
+
+  .set-replica {
+    min-width: 0;
+    padding: var(--space-4);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+    background: color-mix(in oklch, var(--clear) 3%, var(--instrument));
+  }
+
+  .replica-a { grid-area: a; }
+  .replica-b { grid-area: b; }
+  .replica-c {
+    grid-area: c;
+    width: min(100%, 24rem);
+    justify-self: center;
+  }
+
+  .set-replica header {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .set-replica header p {
+    color: color-mix(in oklch, var(--clear) 70%, transparent);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+  }
+
+  .member-list {
+    display: flex;
+    min-height: 5rem;
+    margin-block: var(--space-4);
+    padding: var(--space-3);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 22%, transparent);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-content: flex-start;
+  }
+
+  .member-list span {
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .member-list em {
+    color: color-mix(in oklch, var(--clear) 58%, transparent);
+    font-size: 0.875rem;
+  }
+
+  .replica-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .set-instrument button {
+    min-height: 2.75rem;
+    border: var(--rule-width) solid var(--clear);
+    color: var(--clear);
+    background: transparent;
+    font: 700 0.78rem/1 var(--font-ui);
+  }
+
+  .set-instrument button:hover:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  .message-relay {
+    grid-area: relay;
+    display: grid;
+    min-height: 9rem;
+    padding: var(--space-4);
+    border: var(--rule-width) dashed var(--signal);
+    place-content: center;
+    gap: var(--space-2);
+    text-align: center;
+  }
+
+  .message-relay span,
+  .message-relay output {
+    font-family: var(--font-data);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .message-relay strong {
+    color: var(--signal);
+  }
+
+  .set-evidence {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: var(--space-5);
+    padding-block: var(--space-4);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+  }
+
+  .set-evidence p,
+  .set-evidence ol {
+    margin: 0;
+  }
+
+  .set-evidence p span {
+    display: block;
+    color: color-mix(in oklch, var(--clear) 65%, transparent);
+    font-family: var(--font-data);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+  }
+
+  .set-evidence p strong {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--signal);
+  }
+
+  .set-evidence ol {
+    max-height: 8rem;
+    padding-left: 1.25rem;
+    overflow: auto;
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+  }
+
+  .set-controls {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    padding-top: var(--space-4);
+  }
+
+  .set-controls [data-action="race"] {
+    color: var(--instrument-deep);
+    background: var(--signal);
+    border-color: var(--signal);
+  }
+
+  .set-controls p {
+    margin: 0;
+    color: color-mix(in oklch, var(--clear) 68%, transparent);
+    font: 0.75rem/1.4 var(--font-ui);
+  }
+
+  .set-result,
+  .set-error {
+    margin: var(--space-4) 0 0;
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .set-error {
+    color: var(--signal);
+  }
+
+  @media (max-width: 760px) {
+    .set-heading,
+    .set-evidence {
+      grid-template-columns: 1fr;
+    }
+
+    .set-network {
+      grid-template-columns: 1fr;
+      grid-template-areas: "a" "b" "c" "relay";
+    }
+
+    .replica-c {
+      width: auto;
+    }
+
+    .set-controls {
+      align-items: stretch;
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.set-operation-pulse) {
+      display: none;
+    }
+  }
+</style>

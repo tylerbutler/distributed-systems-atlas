@@ -36,12 +36,12 @@ seen, but it could not remove the old installation. A TwoPSet could retire it,
 but then Alice could not add its replacement under the same name. The
 observed-remove set must support the full story.
 
-Bob at station A removes the old installation while Alice at station B reports
+Alice at station A removes the old installation while Bob at station B reports
 its replacement across a partition. Carol asks what their shared list must
 show after the delayed records arrive. The ranger needs that final list but
-does not sequence their updates. The lab isolates Bob's and Alice's conflicting
-replicas: Alice eventually receives a stale copy of the original addition. You
-need to preserve Alice's replacement without restoring the installation Bob
+does not sequence their updates. The lab isolates Alice's and Bob's conflicting
+replicas: Bob eventually receives a stale copy of the original addition. You
+need to preserve Bob's replacement without restoring the installation Alice
 removed.
 
 The visible string cannot distinguish those cases. Both messages say

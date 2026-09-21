@@ -69,6 +69,10 @@ const RACE_OPERATIONS: Record<SetDemoKind, SetDemoOperation[]> = {
   ],
 };
 
+export function setDemoRaceOperations(kind: SetDemoKind): readonly SetDemoOperation[] {
+  return RACE_OPERATIONS[kind];
+}
+
 function value<T>(result: Result<T>): T {
   if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
   return result.value;

@@ -1,0 +1,123 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import SetStructureDemo from "../../components/SetStructureDemo.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import "../../styles/set-lesson.css";
+---
+
+<BaseLayout
+  title="Observed-remove set"
+  description="Alice removes an old beacon while Bob concurrently adds its replacement under a fresh identity."
+  territory="Structures"
+  sheetTitle="Observed-remove set"
+>
+  <article class="set-lesson">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>Observed-remove set</h1>
+      <p class="structure-summary">
+        Alice must remove the old Eagle Creek beacon while Bob reports its
+        replacement. Carol may receive their records in either order. The
+        ranger needs the replacement to remain without restoring the old
+        installation.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based observed-remove set"
+      updates="Add, remove, and re-add"
+      merge="Union addition tags, then subtract observed removals."
+      delivery="Safe under repeated and out-of-order delivery"
+      bestFor="Collaborative membership where values can return"
+      cost="Live addition tags plus retained removal knowledge"
+    />
+
+    <section aria-labelledby="identity-title">
+      <h2 id="identity-title">A replacement needs a new identity</h2>
+      <p>
+        Alice's original report gave the old beacon tag <code>A:1</code>.
+        After she observes that installation, her removal names
+        <code>A:1</code>. It does not remove every future beacon called Eagle
+        Creek.
+      </p>
+      <p>
+        Bob adds the replacement during the partition. His addition gets the
+        fresh tag <code>B:2</code>. An{" "}
+        <dfn><a href="/glossary/#observed-remove-set">observed-remove set</a></dfn>
+        {" "}removes only the addition identities that the removing replica
+        observed.
+      </p>
+      <TermCallout
+        term="observed-remove set"
+        definition="A replicated set whose remove operation targets only addition tags observed by the removing replica."
+      />
+      <figure>
+        <table aria-label="Eagle Creek observed-remove set outcome">
+          <thead>
+            <tr><th scope="col">Record</th><th scope="col">Meaning</th><th scope="col">Final state</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row"><code>A:1</code></th><td>Old installation</td><td>Removed</td></tr>
+            <tr><th scope="row"><code>B:2</code></th><td>Replacement</td><td>Live</td></tr>
+          </tbody>
+        </table>
+        <figcaption>Carol can receive the records in either order and still retain only the replacement.</figcaption>
+      </figure>
+    </section>
+
+    <SetStructureDemo
+      kind="or-set"
+      title="Keep the replacement, not the old beacon"
+      description="Alice removes the installation she observed while Bob concurrently installs a replacement under a fresh identity."
+      rule="Remove observed tags; keep concurrent fresh tags."
+      raceLabel="Race removal against replacement"
+    />
+
+    <section aria-labelledby="add-wins-title">
+      <h2 id="add-wins-title">The concurrent replacement wins</h2>
+      <p>
+        Alice could not name <code>B:2</code> when she removed the old beacon
+        because Bob had not sent it yet. Bob's addition is concurrent with her
+        removal, so it survives. This is the set's add-wins rule.
+      </p>
+      <p>
+        A delayed copy of <code>A:1</code> does not return. The replicas retain
+        removal knowledge for that exact tag. The visible value is still Eagle
+        Creek, but its surviving identity proves that it is the replacement.
+      </p>
+      <p>
+        The full reference lesson lets you partition Alice and Bob, preserve a
+        stale copy, exchange the conflicting deltas, and inspect the live tags
+        and tombstones.
+      </p>
+      <p class="lesson-entry">
+        <a href="/atlas/observed-remove-sets/">Open the interactive observed-remove set lesson</a>
+      </p>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Sources and implementation</h2>
+      <p>
+        The interactive lesson calls Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/or_set_kernel.gleam">OR-set kernel</a>
+        {" "}through the stable Atlas toolkit.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through set structures">
+      <a href="/structures/two-p-set/">Back to TwoPSet</a>
+      <a href="/structures/sets/">Browse set family</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .lesson-entry {
+    margin-top: var(--space-5);
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+</style>
