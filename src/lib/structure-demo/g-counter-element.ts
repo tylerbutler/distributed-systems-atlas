@@ -1,6 +1,7 @@
 import {
   createGCounterDemo,
   deliverNextOperation,
+  gCounterUserName,
   incrementReplica,
   presentGCounterDemo,
   resendUserCount,
@@ -21,6 +22,10 @@ function node<K extends keyof HTMLElementTagNameMap>(
   const element = document.createElement(tag);
   element.textContent = text;
   return element;
+}
+
+function isReplicaId(value: string): value is ReplicaId {
+  return value === "A" || value === "B" || value === "C";
 }
 
 class GCounterDemoElement extends HTMLElement {
@@ -49,7 +54,7 @@ class GCounterDemoElement extends HTMLElement {
         if (result.ok) {
           this.queueOutbound(replica, `+${amount}`);
           this.showGuidedObservation(
-            `${replica} updates its local count and queues one operation.`,
+            `${gCounterUserName(replica)} updates their local count and queues one operation.`,
             [this.querySelector<HTMLElement>(`[data-total="${replica}"]`)!],
             "circle",
           );
@@ -121,9 +126,7 @@ class GCounterDemoElement extends HTMLElement {
     const changed = presentGCounterDemo(this.state).replicas
       .filter((replica) => replica.value > 0);
     this.showGuidedObservation(
-      `${changed.map((replica) => replica.id).join(" and ")} ${
-        changed.length === 1 ? "updates its" : "update their"
-      } local count before delivery.`,
+      `${changed.map((replica) => gCounterUserName(replica.id)).join(" and ")} update their local counts before delivery.`,
       changed.map((replica) =>
         this.querySelector<HTMLElement>(`[data-total="${replica.id}"]`)!),
       "circle",
@@ -201,7 +204,7 @@ class GCounterDemoElement extends HTMLElement {
       await this.animateHop(
         this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
         this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-        `${author} resend`,
+        `${gCounterUserName(author)} resend`,
         "outbound",
       );
     }
@@ -233,7 +236,7 @@ class GCounterDemoElement extends HTMLElement {
     this.outboundArrivals.push(this.animateHop(
       this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
       this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-      `${author} ${label}`,
+      `${gCounterUserName(author)} ${label}`,
       "outbound",
       arrivalAt - now,
     ));
@@ -275,11 +278,11 @@ class GCounterDemoElement extends HTMLElement {
     }
     for (const [sequenceNumber, operationDeliveries] of operations) {
       const author = operationDeliveries[0]?.author;
-      if (author !== "A" && author !== "B" && author !== "C") continue;
+      if (!isReplicaId(author)) continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
-        `The sequencer is delivering operation ${sequenceNumber} from ${author}.`;
+        `The sequencer is delivering operation ${sequenceNumber} from ${gCounterUserName(author)}.`;
       this.showGuidedObservation(
-        `The sequencer assigns SN ${sequenceNumber} to ${author}'s report.`,
+        `The sequencer assigns SN ${sequenceNumber} to ${gCounterUserName(author)}'s report.`,
         [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
         "box",
       );
@@ -292,7 +295,7 @@ class GCounterDemoElement extends HTMLElement {
         );
         if (
           generation === this.generation &&
-          (delivery.to === "A" || delivery.to === "B" || delivery.to === "C")
+          isReplicaId(delivery.to)
         ) {
           this.renderReplica(view, delivery.to);
         }
@@ -404,8 +407,9 @@ class GCounterDemoElement extends HTMLElement {
     if (renderReplicas) {
       for (const replica of view.replicas) this.renderReplica(view, replica.id);
     }
-    const operations = new Map<number, { author: string; destinations: string[] }>();
+    const operations = new Map<number, { author: ReplicaId; destinations: ReplicaId[] }>();
     for (const delivery of view.deliveries) {
+      if (!isReplicaId(delivery.author) || !isReplicaId(delivery.to)) continue;
       const operation = operations.get(delivery.sequenceNumber) ?? {
         author: delivery.author,
         destinations: [],
@@ -418,7 +422,9 @@ class GCounterDemoElement extends HTMLElement {
       ? [...operations].reverse().map(([sequenceNumber, operation]) =>
         node(
           "li",
-          `SN ${sequenceNumber} · ${operation.author} report to ${operation.destinations.join(", ")}`,
+          `SN ${sequenceNumber} · ${gCounterUserName(operation.author)} report to ${
+            operation.destinations.map(gCounterUserName).join(", ")
+          }`,
         ))
       : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
     const sequenceCounter =
@@ -436,12 +442,12 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.button("race").disabled = false;
     this.button("race").textContent = this.autoDeliver
-      ? "Run A +7 and B +3 race"
-      : "Queue A +7 and B +3 race";
+      ? "Run Alice +7 and Bob +3 race"
+      : "Queue Alice +7 and Bob +3 race";
     this.button("resend").disabled =
       this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
-      ? `Resend ${view.latestAuthor}'s count`
+      ? `Resend ${gCounterUserName(view.latestAuthor)}'s count`
       : "Resend latest user's count";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;

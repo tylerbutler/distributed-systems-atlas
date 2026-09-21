@@ -15,6 +15,11 @@ export type ReplicaId = "A" | "B" | "C";
 export type GCounterDemoPhase = "initial" | "queued" | "delivered" | "resent";
 type Counts = Record<ReplicaId, number>;
 const MAX_RECORDED_DELIVERIES = 36;
+const USER_NAMES: Record<ReplicaId, string> = {
+  A: "Alice",
+  B: "Bob",
+  C: "Carol",
+};
 
 export type GCounterDemoState = {
   phase: GCounterDemoPhase;
@@ -54,6 +59,10 @@ export type GCounterDemoResult =
 
 const zeroCounts = (): Counts => ({ A: 0, B: 0, C: 0 });
 
+export function gCounterUserName(replica: ReplicaId): string {
+  return USER_NAMES[replica];
+}
+
 function value<T>(result: Result<T>): T {
   if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
   return result.value;
@@ -72,7 +81,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Increment a client, or run the authored race through the sequencer.",
+    result: "Add for Alice, Bob, or Carol, or run the authored race through the sequencer.",
   };
 }
 
@@ -105,7 +114,7 @@ export function incrementReplica(
         authoredCounts,
         queuedOperations,
         latestAuthor: replica,
-        result: `${replica} added ${amount}. ${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} waiting at the sequencer.`,
+        result: `${gCounterUserName(replica)} added ${amount}. ${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} waiting at the sequencer.`,
       },
     };
   } catch (error) {
@@ -131,7 +140,7 @@ export function stageRace(state: GCounterDemoState): GCounterDemoResult {
         },
         queuedOperations: state.queuedOperations + 2,
         latestAuthor: "B",
-        result: "A added 7 and B added 3. Their operations are waiting together at the sequencer.",
+        result: "Alice added 7 and Bob added 3. Their operations are waiting together at the sequencer.",
       },
     };
   } catch (error) {
@@ -212,7 +221,7 @@ export function resendUserCount(state: GCounterDemoState): GCounterDemoResult {
         ...resent,
         deliveries: [...state.deliveries, ...resent.deliveries].slice(-MAX_RECORDED_DELIVERIES),
         latestDeliveries: resent.deliveries,
-        result: `The sequencer resent ${state.latestAuthor}'s count. All three clients still read ${total}.`,
+        result: `The sequencer resent ${gCounterUserName(state.latestAuthor)}'s count. All three clients still read ${total}.`,
       },
     };
   } catch (error) {

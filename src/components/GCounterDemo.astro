@@ -1,6 +1,10 @@
 ---
 import StationMark from "./StationMark.astro";
-import { createGCounterDemo, presentGCounterDemo } from "../lib/structure-demo/g-counter";
+import {
+  createGCounterDemo,
+  gCounterUserName,
+  presentGCounterDemo,
+} from "../lib/structure-demo/g-counter";
 
 const initial = presentGCounterDemo(createGCounterDemo());
 ---
@@ -10,9 +14,9 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Increment any client</h2>
+        <h2 id="gcounter-demo-title">Let each user count</h2>
         <p>
-          Add at A, B, or C and the sequencer delivers the operation
+          Add for Alice, Bob, or Carol and the sequencer delivers the operation
           automatically. Turn off Auto-deliver when you want to build a queue.
         </p>
       </div>
@@ -38,12 +42,12 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <section
           class={`gcounter-replica replica-${replica.id.toLowerCase()}`}
           data-client={replica.id}
-          aria-label={`Replica ${replica.id}`}
+          aria-label={`${gCounterUserName(replica.id)}'s replica`}
         >
           <header>
             <StationMark station={replica.id} size="lg" />
             <div>
-              <h3>Replica {replica.id}</h3>
+              <h3>{gCounterUserName(replica.id)}</h3>
               <p data-replica-state={replica.id}>Connected to sequencer</p>
             </div>
           </header>
@@ -51,13 +55,13 @@ const initial = presentGCounterDemo(createGCounterDemo());
             {replica.value}
           </output>
           <p>Total increments observed</p>
-          <div class="replica-actions" aria-label={`Increment replica ${replica.id}`}>
+          <div class="replica-actions" aria-label={`Increment for ${gCounterUserName(replica.id)}`}>
             {[1, 3, 7].map((amount) => (
               <button
                 type="button"
                 data-replica={replica.id}
                 data-increment={amount}
-                aria-label={`Add ${amount} at replica ${replica.id}`}
+                aria-label={`Add ${amount} for ${gCounterUserName(replica.id)}`}
                 disabled
               >
                 +{amount}
@@ -100,7 +104,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <span>Auto-deliver</span>
       </label>
       <button type="button" data-action="race" disabled>
-        Run A +7 and B +3 race
+        Run Alice +7 and Bob +3 race
       </button>
       <button type="button" data-action="resend" disabled>
         Resend latest user's count
@@ -156,23 +160,23 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <summary>Explain why resending a user's count is safe</summary>
       <div>
         <p>
-          Each client stores the largest count it has observed for A, B, and
-          C. The sequencer orders and broadcasts each operation; the G-counter
-          kernel keeps the largest count reported by each user.
+          Each client stores the largest count it has observed for Alice, Bob,
+          and Carol. The sequencer orders and broadcasts each operation; the
+          G-counter kernel keeps the largest count reported by each user.
         </p>
         <table aria-label="Reported counts by user">
           <thead>
             <tr>
               <th scope="col">User</th>
-              <th scope="col">At A</th>
-              <th scope="col">At B</th>
-              <th scope="col">At C</th>
+              <th scope="col">At Alice</th>
+              <th scope="col">At Bob</th>
+              <th scope="col">At Carol</th>
             </tr>
           </thead>
           <tbody>
             {(["A", "B", "C"] as const).map((user) => (
               <tr>
-                <th scope="row">User {user}</th>
+                <th scope="row">{gCounterUserName(user)}</th>
                 {(["A", "B", "C"] as const).map((replica) => (
                   <td class="observation-data" data-user-count={`${replica}-${user}`}>0</td>
                 ))}

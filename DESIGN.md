@@ -300,7 +300,7 @@ Client controls can build a multi-operation queue by turning off
 Readers control playback speed.
 An optional `Guided observations` layer reveals the Sluice implementation and
 adds timed callouts with signal-colored circle and box marks. The counts for
-users A, B, and C appear in a ruled table after
+Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
 
