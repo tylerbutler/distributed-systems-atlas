@@ -176,6 +176,52 @@ pub fn pncounter_sluice_room_accepts_direct_signed_update_test() {
   delivered.c |> should.equal(7)
 }
 
+pub fn sharedcounter_sluice_room_sequences_signed_updates_test() {
+  let assert Ok(room) = sluice.new_sharedcounter_room()
+  let assert Ok(initial) = sluice.sharedcounter_room_snapshot(room)
+  initial.a |> should.equal(10)
+  initial.b |> should.equal(10)
+  initial.c |> should.equal(10)
+
+  let assert Ok(room) = sluice.sharedcounter_room_stage_race(room)
+  let assert Ok(staged) = sluice.sharedcounter_room_snapshot(room)
+  staged.a |> should.equal(13)
+  staged.b |> should.equal(9)
+  staged.c |> should.equal(10)
+  staged.pending |> should.be_true
+
+  let #(room, first) = sluice.sharedcounter_room_deliver_one(room)
+  let assert Ok(partial) = sluice.sharedcounter_room_snapshot(room)
+  partial.pending |> should.be_true
+  first |> list.length |> should.equal(3)
+
+  let #(room, second) = sluice.sharedcounter_room_deliver_one(room)
+  let assert Ok(delivered) = sluice.sharedcounter_room_snapshot(room)
+  delivered.a |> should.equal(12)
+  delivered.b |> should.equal(12)
+  delivered.c |> should.equal(12)
+  delivered.pending |> should.be_false
+  second |> list.length |> should.equal(3)
+
+  let #(room, repeated) = sluice.sharedcounter_room_deliver(room)
+  let assert Ok(unchanged) = sluice.sharedcounter_room_snapshot(room)
+  unchanged |> should.equal(delivered)
+  repeated |> should.equal([])
+}
+
+pub fn sharedcounter_sluice_room_accepts_all_clients_test() {
+  let assert Ok(room) = sluice.new_sharedcounter_room()
+  let assert Ok(room) = sluice.sharedcounter_room_update(room, "A", 1)
+  let assert Ok(room) = sluice.sharedcounter_room_update(room, "B", -3)
+  let assert Ok(room) = sluice.sharedcounter_room_update(room, "C", 3)
+  let #(room, deliveries) = sluice.sharedcounter_room_deliver(room)
+  let assert Ok(delivered) = sluice.sharedcounter_room_snapshot(room)
+  delivered.a |> should.equal(11)
+  delivered.b |> should.equal(11)
+  delivered.c |> should.equal(11)
+  deliveries |> list.length |> should.equal(9)
+}
+
 pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {
   let assert Ok(room) = sluice.new_gcounter_room()
   let assert Ok(room) = sluice.gcounter_room_stage_race(room)

@@ -7,8 +7,10 @@ import {
   createOrSet,
   createPNCounter,
   createPNCounterRoom,
+  createSharedCounterRoom,
   deliverGCounterRace,
   deliverPNCounterOperations,
+  deliverSharedCounterOperations,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
@@ -21,6 +23,7 @@ import {
   resendGCounterComponent,
   stageGCounterRace,
   stagePNCounterRace,
+  stageSharedCounterRace,
   updatePNCounter,
   updatePNCounterRoom,
   write,
@@ -103,6 +106,15 @@ assert.deepEqual(
 );
 assert.equal(incrementGCounterRoom(directRoom, "D", 1).ok, false);
 assert.equal(incrementGCounterRoom(directRoom, "A", 0).ok, false);
+
+const sharedRoom = unwrap(createSharedCounterRoom()).room;
+const stagedSharedRoom = unwrap(stageSharedCounterRace(sharedRoom));
+assert.deepEqual(stagedSharedRoom.view.replicas.map(({ value }) => value), [13, 9, 10]);
+assert.equal(stagedSharedRoom.view.pending, true);
+const deliveredSharedRoom = unwrap(deliverSharedCounterOperations(sharedRoom));
+assert.deepEqual(deliveredSharedRoom.view.replicas.map(({ value }) => value), [12, 12, 12]);
+assert.equal(deliveredSharedRoom.view.pending, false);
+assert.equal(deliveredSharedRoom.deliveries.length, 6);
 
 const room = unwrap(createGCounterRoom()).room;
 const staged = unwrap(stageGCounterRace(room));

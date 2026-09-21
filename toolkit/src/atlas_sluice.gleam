@@ -27,6 +27,18 @@ pub opaque type PnCounterRoom {
   )
 }
 
+pub opaque type SharedCounterRoom {
+  SharedCounterRoom(
+    sluice: sluice_js.Sluice,
+    a: watershed.SharedCounter,
+    b: watershed.SharedCounter,
+    c: watershed.SharedCounter,
+    a_client: String,
+    b_client: String,
+    c_client: String,
+  )
+}
+
 pub type GCounterRoomSnapshot {
   GCounterRoomSnapshot(
     a: Int,
@@ -39,6 +51,16 @@ pub type GCounterRoomSnapshot {
 
 pub type PnCounterRoomSnapshot {
   PnCounterRoomSnapshot(
+    a: Int,
+    b: Int,
+    c: Int,
+    pending: Bool,
+    sequence_number: Int,
+  )
+}
+
+pub type SharedCounterRoomSnapshot {
+  SharedCounterRoomSnapshot(
     a: Int,
     b: Int,
     c: Int,
@@ -116,6 +138,37 @@ pub fn new_pncounter_room() -> Result(PnCounterRoom, String) {
   ))
 }
 
+pub fn new_sharedcounter_room() -> Result(SharedCounterRoom, String) {
+  let sluice = sluice_js.start(tenant: "atlas", document: "sharedcounter-demo")
+  let document_a = sluice_js.connect(sluice, "A")
+  let document_b = sluice_js.connect(sluice, "B")
+  let document_c = sluice_js.connect(sluice, "C")
+  sluice_js.settle(sluice)
+  use counter_a <- result.try(watershed.create_counter(document_a))
+  watershed.set(
+    watershed.root(document_a),
+    "counter",
+    watershed.counter_handle_of(counter_a),
+  )
+  sluice_js.settle(sluice)
+  use counter_b <- result.try(sharedcounter_from_document(document_b))
+  use counter_c <- result.try(sharedcounter_from_document(document_c))
+  watershed.increment(counter_a, 10)
+  sluice_js.settle(sluice)
+  use a_client <- result.try(room_client_id(sluice, document_a))
+  use b_client <- result.try(room_client_id(sluice, document_b))
+  use c_client <- result.try(room_client_id(sluice, document_c))
+  Ok(SharedCounterRoom(
+    sluice,
+    counter_a,
+    counter_b,
+    counter_c,
+    a_client,
+    b_client,
+    c_client,
+  ))
+}
+
 fn gcounter_from_document(
   document: watershed.Document(a),
 ) -> Result(watershed.GCounter, String) {
@@ -131,6 +184,15 @@ fn pncounter_from_document(
   case watershed.get(watershed.root(document), "counter") {
     Error(_) -> Error("the shared PN-counter handle is missing")
     Ok(handle) -> watershed.resolve_pn_counter(document, handle)
+  }
+}
+
+fn sharedcounter_from_document(
+  document: watershed.Document(a),
+) -> Result(watershed.SharedCounter, String) {
+  case watershed.get(watershed.root(document), "counter") {
+    Error(_) -> Error("the shared counter handle is missing")
+    Ok(handle) -> watershed.resolve_counter(document, handle)
   }
 }
 
@@ -196,6 +258,32 @@ pub fn pncounter_room_update(
   Ok(room)
 }
 
+pub fn sharedcounter_room_stage_race(
+  room: SharedCounterRoom,
+) -> Result(SharedCounterRoom, String) {
+  let SharedCounterRoom(_, a, b, _, _, _, _) = room
+  watershed.increment(a, 3)
+  watershed.increment(b, -1)
+  Ok(room)
+}
+
+pub fn sharedcounter_room_update(
+  room: SharedCounterRoom,
+  replica: String,
+  amount: Int,
+) -> Result(SharedCounterRoom, String) {
+  let SharedCounterRoom(_, a, b, c, _, _, _) = room
+  let counter = case replica {
+    "A" -> Ok(a)
+    "B" -> Ok(b)
+    "C" -> Ok(c)
+    _ -> Error("the SharedCounter replica must be A, B, or C")
+  }
+  use counter <- result.try(counter)
+  watershed.increment(counter, amount)
+  Ok(room)
+}
+
 pub fn gcounter_room_deliver(
   room: GCounterRoom,
 ) -> #(GCounterRoom, List(TransportDelivery)) {
@@ -232,6 +320,31 @@ pub fn pncounter_room_deliver_one(
   room: PnCounterRoom,
 ) -> #(PnCounterRoom, List(TransportDelivery)) {
   let PnCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
+  case sluice_js.step_info(sluice) {
+    Error(_) -> #(room, [])
+    Ok(delivery) -> {
+      let sequence_number = delivery.sequence_number
+      #(
+        room,
+        drain_sequence(sluice, a_client, b_client, c_client, sequence_number, [
+          map_delivery(delivery, a_client, b_client, c_client),
+        ]),
+      )
+    }
+  }
+}
+
+pub fn sharedcounter_room_deliver(
+  room: SharedCounterRoom,
+) -> #(SharedCounterRoom, List(TransportDelivery)) {
+  let SharedCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
+  #(room, drain_deliveries(sluice, a_client, b_client, c_client, []))
+}
+
+pub fn sharedcounter_room_deliver_one(
+  room: SharedCounterRoom,
+) -> #(SharedCounterRoom, List(TransportDelivery)) {
+  let SharedCounterRoom(sluice, _, _, _, a_client, b_client, c_client) = room
   case sluice_js.step_info(sluice) {
     Error(_) -> #(room, [])
     Ok(delivery) -> {
@@ -353,6 +466,22 @@ pub fn pncounter_room_snapshot(
   ))
 }
 
+pub fn sharedcounter_room_snapshot(
+  room: SharedCounterRoom,
+) -> Result(SharedCounterRoomSnapshot, String) {
+  let SharedCounterRoom(sluice, a, b, c, _, _, _) = room
+  use a_value <- result.try(sharedcounter_value(a, "A"))
+  use b_value <- result.try(sharedcounter_value(b, "B"))
+  use c_value <- result.try(sharedcounter_value(c, "C"))
+  Ok(SharedCounterRoomSnapshot(
+    a_value,
+    b_value,
+    c_value,
+    sluice_js.pending(sluice),
+    sluice_js.sequence_number(sluice),
+  ))
+}
+
 fn counter_value(
   counter: watershed.GCounter,
   replica: String,
@@ -371,6 +500,17 @@ fn pncounter_value(
   case watershed.pn_counter_value(counter) {
     Error(_) ->
       Error("the PN-counter handle at replica " <> replica <> " is invalid")
+    Ok(value) -> Ok(value)
+  }
+}
+
+fn sharedcounter_value(
+  counter: watershed.SharedCounter,
+  replica: String,
+) -> Result(Int, String) {
+  case watershed.counter_value(counter) {
+    Error(_) ->
+      Error("the SharedCounter handle at replica " <> replica <> " is invalid")
     Ok(value) -> Ok(value)
   }
 }

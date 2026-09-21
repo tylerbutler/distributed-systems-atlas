@@ -1,8 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
-  deliverPNCounterOperations, inspect, inspectPNCounter, merge, mergePNCounter,
-  remove, stagePNCounterRace, updatePNCounter, updatePNCounterRoom, write,
+  createSharedCounterRoom, deliverOneSharedCounterOperation,
+  deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
+  inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
+  updateSharedCounterRoom, write,
   type Change, type Result, type State,
 } from "@atlas/toolkit";
 
@@ -117,6 +120,46 @@ test("PN-counter Sluice room accepts signed updates from all three clients", () 
     error: { tag: "invalid-state" },
   });
   expect(updatePNCounterRoom(room, "A", 0)).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-input" },
+  });
+});
+
+test("SharedCounter Sluice room sequences signed operations", () => {
+  const room = unwrap(createSharedCounterRoom()).room;
+  const staged = unwrap(stageSharedCounterRace(room));
+  expect(staged.view.replicas.map(({ value }) => value)).toEqual([13, 9, 10]);
+  expect(staged.view.pending).toBe(true);
+
+  const first = unwrap(deliverOneSharedCounterOperation(room));
+  expect(new Set(first.deliveries.map(({ sequenceNumber }) => sequenceNumber)).size).toBe(1);
+  expect(first.deliveries).toHaveLength(3);
+  expect(first.view.pending).toBe(true);
+
+  const second = unwrap(deliverOneSharedCounterOperation(room));
+  expect(second.view.replicas.map(({ value }) => value)).toEqual([12, 12, 12]);
+  expect(second.view.pending).toBe(false);
+  expect(second.deliveries).toHaveLength(3);
+  expect(second.deliveries[0].sequenceNumber).toBeGreaterThan(first.deliveries[0].sequenceNumber);
+
+  const repeated = unwrap(deliverSharedCounterOperations(room));
+  expect(repeated.deliveries).toEqual([]);
+  expect(repeated.view.replicas.map(({ value }) => value)).toEqual([12, 12, 12]);
+});
+
+test("SharedCounter Sluice room accepts signed updates from all three clients", () => {
+  const room = unwrap(createSharedCounterRoom()).room;
+  unwrap(updateSharedCounterRoom(room, "A", 1));
+  unwrap(updateSharedCounterRoom(room, "B", -3));
+  const staged = unwrap(updateSharedCounterRoom(room, "C", 3));
+  expect(staged.view.replicas.map(({ value }) => value)).toEqual([11, 7, 13]);
+  expect(unwrap(deliverSharedCounterOperations(room)).view.replicas.map(({ value }) => value))
+    .toEqual([11, 11, 11]);
+  expect(updateSharedCounterRoom(room, "D", 1)).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-state" },
+  });
+  expect(updateSharedCounterRoom(room, "A", 0)).toMatchObject({
     ok: false,
     error: { tag: "invalid-input" },
   });

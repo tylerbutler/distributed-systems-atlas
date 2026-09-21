@@ -58,6 +58,14 @@ export type PNCounterTransportResult = {
   view: PNCounterRoomView;
   deliveries: TransportDelivery[];
 };
+declare const sharedCounterRoomBrand: unique symbol;
+export type SharedCounterRoom = { readonly [sharedCounterRoomBrand]: true };
+export type SharedCounterRoomView = PNCounterRoomView;
+export type SharedCounterTransportResult = {
+  room: SharedCounterRoom;
+  view: SharedCounterRoomView;
+  deliveries: TransportDelivery[];
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -237,6 +245,7 @@ function kernel<T, E>(result: GleamResult<T, E>): T {
 
 const counterRooms = new WeakMap<GCounterRoom, sluiceCore.GCounterRoom$>();
 const pnCounterRooms = new WeakMap<PNCounterRoom, sluiceCore.PnCounterRoom$>();
+const sharedCounterRooms = new WeakMap<SharedCounterRoom, sluiceCore.SharedCounterRoom$>();
 
 function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
   requireInput(
@@ -266,6 +275,21 @@ function pnRoomBox(handle: sluiceCore.PnCounterRoom$): PNCounterRoom {
   return room;
 }
 
+function sharedRoomHandle(value: unknown): sluiceCore.SharedCounterRoom$ {
+  requireInput(
+    value !== null && typeof value === "object"
+      && sharedCounterRooms.has(value as SharedCounterRoom),
+    "expected a live SharedCounter Sluice room",
+  );
+  return sharedCounterRooms.get(value as SharedCounterRoom)!;
+}
+
+function sharedRoomBox(handle: sluiceCore.SharedCounterRoom$): SharedCounterRoom {
+  const room = Object.freeze({}) as SharedCounterRoom;
+  sharedCounterRooms.set(room, handle);
+  return room;
+}
+
 function roomView(handle: sluiceCore.GCounterRoom$): GCounterRoomView {
   const snapshot = kernel(sluiceCore.gcounter_room_snapshot(handle));
   return {
@@ -289,6 +313,20 @@ function pnRoomView(handle: sluiceCore.PnCounterRoom$): PNCounterRoomView {
     ],
     pending: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$pending(snapshot),
     sequenceNumber: sluiceCore.PnCounterRoomSnapshot$PnCounterRoomSnapshot$sequence_number(snapshot),
+  };
+}
+
+function sharedRoomView(handle: sluiceCore.SharedCounterRoom$): SharedCounterRoomView {
+  const snapshot = kernel(sluiceCore.sharedcounter_room_snapshot(handle));
+  return {
+    replicas: [
+      { id: "A", value: sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$a(snapshot) },
+      { id: "B", value: sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$b(snapshot) },
+      { id: "C", value: sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$c(snapshot) },
+    ],
+    pending: sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$pending(snapshot),
+    sequenceNumber:
+      sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$sequence_number(snapshot),
   };
 }
 
@@ -512,6 +550,63 @@ export function deliverOnePNCounterOperation(current: unknown): Result<PNCounter
     const room = current as PNCounterRoom;
     const [handle, deliveries] = sluiceCore.pncounter_room_deliver_one(pnRoomHandle(room));
     return { room, view: pnRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function createSharedCounterRoom(): Result<SharedCounterTransportResult> {
+  return attempt(() => {
+    const handle = kernel(sluiceCore.new_sharedcounter_room());
+    const room = sharedRoomBox(handle);
+    return { room, view: sharedRoomView(handle), deliveries: [] };
+  });
+}
+
+export function stageSharedCounterRace(current: unknown): Result<SharedCounterTransportResult> {
+  return attempt(() => {
+    const room = current as SharedCounterRoom;
+    const handle = kernel(sluiceCore.sharedcounter_room_stage_race(sharedRoomHandle(room)));
+    return { room, view: sharedRoomView(handle), deliveries: [] };
+  });
+}
+
+export function updateSharedCounterRoom(
+  current: unknown,
+  replicaId: unknown,
+  amount: unknown,
+): Result<SharedCounterTransportResult> {
+  return attempt(() => {
+    const room = current as SharedCounterRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C");
+    const update = signedInteger(amount, "invalid-input");
+    requireInput(update !== 0, "amount must be nonzero", "invalid-input");
+    const handle = kernel(
+      sluiceCore.sharedcounter_room_update(sharedRoomHandle(room), replica, update),
+    );
+    return { room, view: sharedRoomView(handle), deliveries: [] };
+  });
+}
+
+export function deliverSharedCounterOperations(
+  current: unknown,
+): Result<SharedCounterTransportResult> {
+  return attempt(() => {
+    const room = current as SharedCounterRoom;
+    const [handle, deliveries] =
+      sluiceCore.sharedcounter_room_deliver(sharedRoomHandle(room));
+    return { room, view: sharedRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function deliverOneSharedCounterOperation(
+  current: unknown,
+): Result<SharedCounterTransportResult> {
+  return attempt(() => {
+    const room = current as SharedCounterRoom;
+    const [handle, deliveries] =
+      sluiceCore.sharedcounter_room_deliver_one(sharedRoomHandle(room));
+    return { room, view: sharedRoomView(handle), deliveries: transportDeliveries(deliveries) };
   });
 }
 
