@@ -40,8 +40,9 @@ under Mechanisms, Structures, Failure modes, and Systems.
 ## Capabilities and Constraints
 
 The publication contains the landing page, a structures index, the focused
-G-counter and PN-counter lessons, atlas index, generated glossary and bibliography, and all
-seven sheets in the first concurrency trail.
+G-counter, PN-counter, and SharedCounter lessons, atlas index, generated
+glossary and bibliography, and all seven sheets in the first concurrency
+trail.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
 
@@ -59,10 +60,11 @@ Each structure family has an overview page that compares the structures in
 that family. Each implemented structure also has its own lesson page.
 
 Astro renders the content shell and useful initial lab state. Native custom
-elements use deterministic TypeScript lesson models for the focused G-counter
-and PN-counter demos and reference engines for ordering, clocks, and Dots.
-Focused structure demos use at least three clients. The G-counter, PN-counter,
-multi-value register, and observed-remove set lessons run pinned Watershed
+elements use deterministic TypeScript lesson models for the focused G-counter,
+PN-counter, and SharedCounter demos and reference engines for ordering, clocks,
+and Dots. Focused structure demos use at least three clients. The G-counter,
+PN-counter, SharedCounter, multi-value register, and observed-remove set
+lessons run pinned Watershed
 kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 
@@ -85,6 +87,15 @@ Sluice immediately. An explanation disclosure shows the two grow-only
 component tables whose difference is the visible count. Each structure has its
 own page and a quick-facts label for its family, replication model, updates,
 merge rule, delivery behavior, best fit, and metadata cost.
+
+The SharedCounter lesson replaces cumulative checkpoint notes with a ranger's
+numbered log. Alice submits `+3` while Bob submits `-1`. The ranger sequencer
+assigns consecutive sequence numbers and broadcasts each signed operation.
+The lesson distinguishes repeated network delivery from once-only application:
+a replica uses the stable sequence number to reject an operation it has
+already applied. It names durable storage and reconnect recovery as possible
+runtime roles but keeps them outside the demo. Direct controls remain active
+while earlier notes are in transit.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

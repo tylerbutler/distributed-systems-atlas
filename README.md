@@ -5,22 +5,26 @@ follow a learning trail or open a sheet to inspect one mechanism. The articles
 assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
-The first focused structure lessons use Watershed's G-counter and PN-counter.
+The first focused structure lessons use Watershed's G-counter, PN-counter, and
+SharedCounter.
 Alice, Bob, and Carol count birds on separate hikes and leave cumulative counts
 at known trail checkpoints. Each hiker keeps a notebook table with the largest
 count received from Alice, Bob, and Carol. Readers can use Auto-deliver or hold
 several G-counter notes, leave Alice's and Bob's notes together at an adjustable
 speed, and safely repeat a checkpoint note. The next story starts from an
 agreed count of 10: Alice records 3 new birds while Bob corrects 1 duplicate,
-and all three PN-counter replicas converge on 12. Each structure has its own
-page and a quick-facts label. The first trail also
+and all three PN-counter replicas converge on 12. A third lesson sends those
+signed changes through a ranger sequencer. It assigns sequence numbers and
+broadcasts each operation so every SharedCounter applies it once. Each
+structure has its own page and a quick-facts label. The first trail also
 contains seven published reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it
 does not imply that a replica has a global view. The release includes the seven
 sheets, landing page, structures index, counter-family page, dedicated
-G-counter and PN-counter lessons, atlas index, glossary, and bibliography.
+G-counter, PN-counter, and SharedCounter lessons, atlas index, glossary, and
+bibliography.
 
 ## Local development
 
@@ -88,10 +92,10 @@ pnpm exec playwright test tests/toolkit.spec.ts
 `toolkit:check` checks the TypeScript facade and its generated `.d.mts`
 dependency graph with `skipLibCheck` disabled. `toolkit:smoke` imports
 `@atlas/toolkit` through the workspace package export in Node, without a
-bundler or mocks. It checks G-counter and PN-counter convergence and duplicate
-merge,
-register siblings and observed resolution, then OR-set removal and stale
-replay with the raw Watershed metadata. The browser smoke test also rejects
+bundler or mocks. It checks G-counter and PN-counter convergence, the
+SharedCounter sequenced room, register siblings and observed resolution, then
+OR-set removal and stale replay with the raw Watershed metadata. The browser
+smoke test also rejects
 use of clocks, randomness, network, and timers.
 Build before running the declaration or package smoke command.
 
@@ -168,7 +172,7 @@ Unpublished topics remain labeled as planned without placeholder routes.
 | Engine | `src/lib/lab/engine-registry.ts` selects `dots`, `ordering`, `mv-register`, or `or-set` from the scenario's `kind`. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Atlas owns scheduling, messages, partitions, and trace history. The reference engines own their algorithm state; the register and OR-set adapters use Watershed for state and merges. Unknown kinds fail explicitly. |
 | Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
-| Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its merge rule. Structure demos use at least three clients. The G-counter and PN-counter lessons add per-client updates and animated delivery over the real `watershed/sluice_js` transport without using the broad causal console. |
+| Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its rule. Structure demos use at least three clients. The G-counter, PN-counter, and SharedCounter lessons add per-client updates and animated delivery over the real `watershed/sluice_js` transport without using the broad causal console. |
 
 **Labs render from trace frames.** Replica values, clocks, dots, causal
 context, messages, inspector records, explanations, and invariant results

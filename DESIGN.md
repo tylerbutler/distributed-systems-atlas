@@ -322,6 +322,16 @@ checkpoint. The visible value stays primary; positive and correction
 components appear only in the `Explain why` disclosure. The PN-counter does
 not add playback speed, guided observations, or a replay control.
 
+The SharedCounter demo follows the PN-counter lesson but changes the central
+mechanism. The middle station is a rectangular ranger sequencer, not a neutral
+checkpoint. Unnumbered sulfur notes travel from a hiker to the ranger. The
+ranger assigns the next `SN`, records the signed delta in a compact newest-first
+log, and sends clear numbered copies to all three replicas. Replica controls
+stay active while outbound and broadcast motion overlap. The authored race
+uses Alice `+3` and Bob `-1`, with temporary values 13, 9, and 10 before all
+three replicas read 12. The explanation disclosure states the once-only
+application rule and keeps durable storage outside the demo.
+
 Each structure page places a ruled quick-facts label after its introduction.
 The label identifies the structure family, replication model, supported
 updates, merge rule, delivery behavior, best fit, and metadata cost.
@@ -347,8 +357,9 @@ ranges from `¼×` to `2×`. Its 10px transport dots use Watershed's fixed-size
 30%-to-100% opacity motion and `ease-in-out` timing. Motion may show a signal
 traveling to a queue or destination, a route separating, or a record arriving;
 state commits at discrete frames.
-The PN-counter uses the same 1000ms Sluice hop and transport marks at a fixed
-speed.
+The PN-counter and SharedCounter use the same 1000ms Sluice hop and transport
+marks at a fixed speed. SharedCounter broadcasts show the assigned sequence
+number.
 
 With reduced motion, all animation, transition, and smooth scrolling stop. State changes render immediately with the same status text. Playback becomes `Next recorded frame` and advances once per activation instead of running the 900ms timer.
 

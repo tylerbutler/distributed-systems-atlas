@@ -98,6 +98,18 @@ test("SharedCounter content remains useful without JavaScript", async ({ browser
   }
 });
 
+test("the counter family links all three counter lessons", async ({ page }) => {
+  await page.goto("/structures/counters/");
+  await expect(page.getByRole("link", { name: "Read the G-counter lesson" }))
+    .toHaveAttribute("href", "/structures/g-counter/");
+  await expect(page.getByRole("link", { name: "Read the PN-counter lesson" }))
+    .toHaveAttribute("href", "/structures/pn-counter/");
+  await expect(page.getByRole("link", { name: "Read the SharedCounter lesson" }))
+    .toHaveAttribute("href", "/structures/shared-counter/");
+  await expect(page.getByRole("heading", { name: "SharedCounter", exact: true }))
+    .toBeVisible();
+});
+
 test("SharedCounter controls remain keyboard sized without overflow", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-counter/");
