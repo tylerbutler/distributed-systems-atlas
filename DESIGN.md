@@ -283,16 +283,18 @@ The familiar value stays larger than its metadata.
 Per-replica components, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
-The G-counter demo is the first instance: three station records show only
-their totals by default. A sequencer station sits between the clients and
-records sequence numbers. At wide widths, the three clients form a triangle
-around it. The status reports queued work, while a compact chronological log
-records authors and recipients. An unsequenced operation leaves its author as
+The G-counter demo is the first instance: three separate station records show
+only their totals by default. A compact pill-shaped sequencer sits in the open
+space between them, shows only the latest sequence number, and keeps a narrow
+newest-first log beneath it. At wide widths, generous gaps separate the three
+clients and sequencer into a triangle. An unsequenced operation leaves its author as
 soon as the reader submits it. The sequencer assigns its sequence number on
 arrival, then sends one concurrent broadcast wave to all three clients. A later
 outbound operation can overlap an earlier return wave while FIFO arrival order
 keeps sequencing deterministic. Sulfur marks operations before sequencing;
 clear, ink-like marks and labels identify sequenced broadcasts and log entries.
+Moving operations are circular and label both the operation and its unscaled
+1000ms network latency.
 Client controls can build a multi-operation queue by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
 Readers control playback speed.

@@ -29,9 +29,7 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   );
   const log = demo.getByRole("list", { name: "Operation log" });
   await expect(log.getByRole("listitem")).toHaveCount(2);
-  await expect(log.getByRole("listitem").first()).toContainText(
-    "SN 1 · A report to A, B, C",
-  );
+  await expect(log).toContainText("SN 1 · A report to A, B, C");
 
   await demo.getByText("Explain why a component resend is safe", { exact: true }).click();
   await expect(demo.getByRole("table", { name: "Per-client G-counter components" })
@@ -76,7 +74,7 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
   await expect(demo.locator('[role="status"]')).toContainText("6 operations are waiting");
   await autoDeliver.check();
   await expect(totals).toHaveText(["22", "22", "22"]);
-  await expect(demo.locator("[data-sequence-track]")).toContainText("SN 6 · C");
+  await expect(demo.getByLabel("Latest sequence number")).toHaveText("SN 6");
   await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
     .toHaveCount(6);
   await expect(demo.locator('[role="status"]')).toHaveText(
@@ -118,8 +116,14 @@ test("operations travel to the sequencer immediately and broadcast waves overlap
   await demo.getByRole("button", { name: "Add 3 at replica B" }).click();
 
   await expect(demo.locator('[data-leg="outbound"]')).toHaveCount(2);
+  await expect(demo.locator('[data-leg="outbound"]').first()).toContainText(
+    "A +1 · 1000 ms",
+  );
   await expect(demo.locator('[data-leg="sequenced"]')).toHaveCount(6);
-  await expect(demo.locator('[data-leg="sequenced"]').first()).toContainText("SN 1");
+  await expect(demo.locator('[data-leg="sequenced"]').first()).toContainText("SN 1 · 1000 ms");
+  expect(await demo.locator(".operation-pulse").first().evaluate(
+    (element) => getComputedStyle(element).borderRadius,
+  )).toBe("50%");
   await expect(demo.locator("[data-total]")).toHaveText(["1", "3", "0"]);
   await expect(demo.locator("[data-total]")).toHaveText(["4", "4", "4"]);
 });
@@ -178,14 +182,19 @@ test("G-counter controls meet the keyboard and responsive layout contract", asyn
     const a = (await replicas.nth(0).boundingBox())!;
     const b = (await replicas.nth(1).boundingBox())!;
     const c = (await demo.getByRole("region", { name: "Replica C" }).boundingBox())!;
+    const sequencer = (await demo.getByRole("region", { name: "Sequencer" }).boundingBox())!;
     if (width < 768) {
       expect(b.y).toBeGreaterThanOrEqual(a.y + a.height);
       expect(c.y).toBeGreaterThanOrEqual(b.y + b.height);
+      expect(sequencer.y).toBeGreaterThan(a.y + a.height);
+      expect(b.y).toBeGreaterThan(sequencer.y + sequencer.height);
     } else {
       expect(b.y).toBe(a.y);
       expect(c.y).toBeGreaterThanOrEqual(a.y + a.height);
       expect(c.x).toBeGreaterThan(a.x);
       expect(c.x).toBeLessThan(b.x);
+      expect(sequencer.x - (a.x + a.width)).toBeGreaterThan(20);
+      expect(b.x - (sequencer.x + sequencer.width)).toBeGreaterThan(20);
     }
   }
   expect(await demo.evaluate((element) => [element, ...element.querySelectorAll("*")].every((node) => {

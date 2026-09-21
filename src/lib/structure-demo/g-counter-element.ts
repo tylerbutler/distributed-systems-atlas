@@ -201,7 +201,7 @@ class GCounterDemoElement extends HTMLElement {
       await this.animateHop(
         this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
         this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-        "resend",
+        `${author} resend`,
         "outbound",
       );
     }
@@ -233,7 +233,7 @@ class GCounterDemoElement extends HTMLElement {
     this.outboundArrivals.push(this.animateHop(
       this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
       this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-      label,
+      `${author} ${label}`,
       "outbound",
       arrivalAt - now,
     ));
@@ -320,7 +320,7 @@ class GCounterDemoElement extends HTMLElement {
     dot.className = `operation-pulse ${leg}`;
     dot.dataset.leg = leg;
     dot.ariaHidden = "true";
-    const dotLabel = node("span", label);
+    const dotLabel = node("span", `${label} · ${HOP_LATENCY_MS} ms`);
     dotLabel.className = "operation-pulse-label";
     dot.append(dotLabel);
     layer.append(dot);
@@ -415,20 +415,21 @@ class GCounterDemoElement extends HTMLElement {
     }
     const deliveries = this.querySelector<HTMLOListElement>("[data-deliveries]")!;
     deliveries.replaceChildren(...(operations.size
-      ? [...operations].map(([sequenceNumber, operation]) =>
+      ? [...operations].reverse().map(([sequenceNumber, operation]) =>
         node(
           "li",
           `SN ${sequenceNumber} · ${operation.author} report to ${operation.destinations.join(", ")}`,
         ))
       : [node("li", view.pending ? `${view.queuedOperations} queued; no delivery yet.` : "No operation delivered yet.")]));
-    const sequenceTrack = this.querySelector<HTMLElement>("[data-sequence-track]")!;
-    sequenceTrack.replaceChildren(...(operations.size
-      ? [...operations].map(([sequenceNumber, operation]) => {
-        const chip = node("span", `SN ${sequenceNumber} · ${operation.author}`);
-        chip.className = "sequence-chip";
-        return chip;
-      })
-      : [node("span", view.pending ? "Operations awaiting order" : "No sequence numbers yet")]));
+    const sequenceCounter =
+      this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!;
+    const previousSequence = sequenceCounter.value;
+    sequenceCounter.value = `SN ${view.sequenceNumber}`;
+    if (previousSequence !== sequenceCounter.value && view.sequenceNumber > 0) {
+      sequenceCounter.classList.remove("stamped");
+      void sequenceCounter.offsetWidth;
+      sequenceCounter.classList.add("stamped");
+    }
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
       button.disabled = false;
