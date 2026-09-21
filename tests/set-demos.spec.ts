@@ -109,7 +109,7 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           "Each value can move from absent, to present, to permanently removed",
         );
         await expect(page.getByText(
-          "The name means two-phase set, not two-part set.",
+          "The name means two-phase set.",
           { exact: false },
         )).toBeVisible();
         await expect(page.getByLabel("TwoPSet composition and membership rule"))
