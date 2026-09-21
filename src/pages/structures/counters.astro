@@ -30,6 +30,12 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
         one total order, and relays them to every connected replica.
       </p>
       <p>
+        A client is an application connected to the shared document. A replica
+        is that client's local copy of a data structure. Each client in this
+        demo owns one replica, so client A and replica A refer to the same
+        participant here.
+      </p>
+      <p>
         Data structures define different operations and use the ordered stream
         in different ways. Some use the sequence number to resolve changes.
         Others, including the G-counter below, do not use it in their merge
@@ -45,23 +51,41 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       </p>
     </section>
 
-    <section aria-labelledby="value-title">
-      <h2 id="value-title">The value is familiar</h2>
+    <section aria-labelledby="one-counter-title">
+      <h2 id="one-counter-title">Start with one person counting</h2>
       <p>
-        A G-counter stores one nonnegative count for each replica. A replica
-        changes only its own count. The visible value is the sum of every
-        component it has observed.
+        Suppose one person uses client A to count arrivals. Client A keeps one
+        nonnegative total and increases it for each new arrival. With one
+        client, the shared value is just A's count.
       </p>
-      <pre aria-label="G-counter value rule"><code>value = count[A] + count[B] + ...</code></pre>
+      <pre aria-label="Single-client counter value"><code>value = count[A]</code></pre>
+    </section>
+
+    <section aria-labelledby="second-counter-title">
+      <h2 id="second-counter-title">Give the second person a separate count</h2>
+      <p>
+        When client B joins, A and B each change only their own count. The
+        shared value is the sum of both counts. If A counts 7 arrivals and B
+        counts 3, the total is 10.
+      </p>
+      <p>
+        This is a grow-only counter, or G-counter. Each replica keeps the
+        largest count it has received for every client, then adds those counts.
+        It does not add every message. A resent message carries the same
+        cumulative count, so it cannot increase the total twice.
+      </p>
+      <pre aria-label="G-counter merge and value rules"><code>count[A] = max(all reports from A)
+count[B] = max(all reports from B)
+value = count[A] + count[B] + ...</code></pre>
     </section>
 
     <section aria-labelledby="race-title">
-      <h2 id="race-title">What if A and B increment before delivery?</h2>
+      <h2 id="race-title">Now let both people count at once</h2>
       <p>
         Replica A adds 7 while replica B adds 3. Replica C makes no local
-        change. All three start from the same zero state, and Sluice holds the
-        two operations until you deliver them. Run that race, or use the
-        controls on each client to make your own.
+        change. Sluice sequences the two operations and relays them to all
+        three replicas. Use the controls on one client at a time, or play the
+        authored race to send both changes together.
       </p>
     </section>
 
