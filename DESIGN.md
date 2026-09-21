@@ -361,6 +361,13 @@ alternatives, and RegisterCollection shows atomic and latest reads over the
 same retained sequence. Each focused demo keeps Alice, Bob, and Carol visible
 and leaves write controls active while records travel.
 
+The Maps family keeps the Eagle Creek field record but changes how each named
+entry resolves conflict. SharedMap follows the ranger's sequence, LWWMap
+compares per-key timestamps, OR-map preserves Bob's unseen tally update during
+Alice's removal, and SharedDirectory resolves concurrent folder creation to
+one stable path. The focused demos keep three maps visible and leave direct
+controls active while operations travel through the relay.
+
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
 lesson with one authored race. Direct structure controls can supplement that

@@ -23,9 +23,10 @@ context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it
 does not imply that a replica has a global view. The release includes the seven
 sheets, landing page, structures index, counter-family and set-family pages,
-dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet, and
-observed-remove set lessons, plus the LWWRegister, MvRegister, and
-RegisterCollection family, atlas index, glossary, and bibliography.
+dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet,
+observed-remove set, LWWRegister, MvRegister, RegisterCollection, SharedMap,
+LWWMap, OR-map, and SharedDirectory lessons, plus the family overview pages,
+atlas index, glossary, and bibliography.
 
 ## Local development
 
@@ -46,8 +47,10 @@ Open the local URL printed by Astro. The publication includes `/`,
 `/structures/sets/`, `/structures/g-set/`, `/structures/two-p-set/`,
 `/structures/observed-remove-set/`, `/structures/registers/`,
 `/structures/lww-register/`, `/structures/multi-value-register/`,
-`/structures/register-collection/`, `/atlas/`, `/glossary/`, `/bibliography/`,
-and these sheet routes:
+`/structures/register-collection/`, `/structures/maps/`,
+`/structures/shared-map/`, `/structures/lww-map/`, `/structures/or-map/`,
+`/structures/shared-directory/`, `/atlas/`, `/glossary/`, `/bibliography/`, and
+these sheet routes:
 
 - `/atlas/local-history/`
 - `/atlas/partial-order/`

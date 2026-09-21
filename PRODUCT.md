@@ -73,14 +73,20 @@ concurrent reports, and RegisterCollection retains sequenced versions for
 atomic or latest reads. Each structure has a dedicated three-client demo. The
 MvRegister page also links to the deeper causal-context lab.
 
+The Maps overview turns the ranger's field sheet into named shared records.
+SharedMap uses server sequence numbers, LWWMap uses per-key timestamps, OR-map
+preserves an unseen concurrent tally update, and SharedDirectory gives nested
+folders stable identities. Each structure has a dedicated three-client demo
+that runs through Watershed's public channel API.
+
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
-MvRegister, and RegisterCollection demos and reference engines for ordering,
-clocks, and Dots. Focused structure demos use at least three clients. The
-counter, set, and register lessons run pinned Watershed semantics through
-Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry point, never private
-Watershed build paths.
+MvRegister, RegisterCollection, SharedMap, LWWMap, OR-map, and SharedDirectory
+demos and reference engines for ordering, clocks, and Dots. Focused structure
+demos use at least three clients. The counter, set, register, and map lessons
+run pinned Watershed semantics through Atlas's Gleam toolkit and its stable
+`@atlas/toolkit` entry point, never private Watershed build paths.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
 separate hikes and leave cumulative counts at known trail checkpoints.
