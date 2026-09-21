@@ -60,12 +60,15 @@ Each structure family has an overview page that compares the structures in
 that family. Each implemented structure also has its own lesson page.
 
 The Sets overview follows Counters and places Registers third in the structure
-path. Alice, Bob, and Carol survey the Eagle Creek trail beacon. Their story
-moves from a permanent record of every beacon observed, through an irreversible
-retirement, to a replacement beacon that needs a fresh identity. The page
-compares Watershed's GSet, TwoPSet, and observed-remove set through that
-progression. Each structure has a dedicated three-client lesson and focused
-demo. The observed-remove page also links to the deeper deterministic lab.
+path. A ranger sends Alice, Bob, and Carol along separate trails to survey
+beacons in their own field notebooks. Their story moves from a permanent record
+of every beacon observed, through an irreversible retirement, to a replacement
+beacon that needs a fresh identity. The lessons show each hiker's local members,
+addition records, and removal evidence before records merge. The ranger does
+not sequence these CRDT updates. The page compares Watershed's GSet, TwoPSet,
+and observed-remove set through that progression. Each structure has a
+dedicated three-client lesson and focused demo. The observed-remove page also
+links to the deeper deterministic lab.
 
 The Registers overview continues the Eagle Creek story with one trail-status
 field. LWWRegister selects one timestamped winner, MvRegister preserves

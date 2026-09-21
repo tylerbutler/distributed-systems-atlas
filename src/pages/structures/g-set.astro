@@ -41,6 +41,11 @@ import "../../styles/set-lesson.css";
         Bob and Carol are out of radio range. They still have empty lists.
       </p>
       <p>
+        Each notebook stores a set of names. At this moment Alice has
+        <code>{"{ Eagle Creek }"}</code>, while Bob and Carol each have
+        <code>{"{}"}</code>. No hiker has a global survey yet.
+      </p>
+      <p>
         A <dfn><a href="/glossary/#gset">GSet</a></dfn> only adds members.
         When the hikers exchange their notebooks, each replica keeps the union
         of every name it has seen.
@@ -52,9 +57,9 @@ import "../../styles/set-lesson.css";
             <tr><th scope="col">Moment</th><th scope="col">Alice</th><th scope="col">Bob</th><th scope="col">Carol</th></tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice reports</th><td>Eagle Creek</td><td>empty</td><td>empty</td></tr>
-            <tr><th scope="row">Report arrives</th><td>Eagle Creek</td><td>Eagle Creek</td><td>Eagle Creek</td></tr>
-            <tr><th scope="row">Old copy repeats</th><td>Eagle Creek</td><td>Eagle Creek</td><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Alice reports</th><td>{"{ Eagle Creek }"}</td><td>empty</td><td>empty</td></tr>
+            <tr><th scope="row">Report arrives</th><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td></tr>
+            <tr><th scope="row">Old copy repeats</th><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td><td>{"{ Eagle Creek }"}</td></tr>
           </tbody>
         </table>
         <figcaption>Union keeps one member even when Alice's report arrives more than once.</figcaption>
@@ -75,7 +80,8 @@ import "../../styles/set-lesson.css";
       <p>
         Alice returns to Eagle Creek and finds that the old beacon has been
         taken down. The ranger no longer wants a record of every beacon ever
-        observed. The ranger needs the beacons that are active now.
+        observed. The ranger needs the beacons that are active now, but Alice
+        has no valid GSet entry she can write to mean “remove Eagle Creek.”
       </p>
       <p>
         A GSet cannot express that change. Removing the name locally would not

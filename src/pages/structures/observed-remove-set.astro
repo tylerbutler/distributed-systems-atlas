@@ -18,9 +18,9 @@ import "../../styles/set-lesson.css";
       <h1>Observed-remove set</h1>
       <p class="structure-summary">
         Alice must remove the old Eagle Creek beacon while Bob reports its
-        replacement. Carol may receive their records in either order. The
-        ranger needs the replacement to remain without restoring the old
-        installation.
+        replacement from another trail. Carol still has an older notebook and
+        may receive their records in either order. The ranger needs the
+        replacement to remain without restoring the old installation.
       </p>
     </header>
 
@@ -54,17 +54,28 @@ import "../../styles/set-lesson.css";
         definition="A replicated set whose remove operation targets only addition tags observed by the removing replica."
       />
       <figure>
-        <table aria-label="Eagle Creek observed-remove set outcome">
+        <table aria-label="Observed-remove notebooks before records meet">
           <thead>
-            <tr><th scope="col">Record</th><th scope="col">Meaning</th><th scope="col">Final state</th></tr>
+            <tr>
+              <th scope="col">Notebook</th>
+              <th scope="col">Live addition tags</th>
+              <th scope="col">Removed tags known</th>
+              <th scope="col">Visible list</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><th scope="row"><code>A:1</code></th><td>Old installation</td><td>Removed</td></tr>
-            <tr><th scope="row"><code>B:2</code></th><td>Replacement</td><td>Live</td></tr>
+            <tr><th scope="row">Alice</th><td>empty</td><td><code>A:1</code></td><td>empty</td></tr>
+            <tr><th scope="row">Bob</th><td><code>A:1</code>, <code>B:2</code></td><td>empty</td><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Carol</th><td><code>A:1</code></td><td>empty</td><td>Eagle Creek</td></tr>
           </tbody>
         </table>
-        <figcaption>Carol can receive the records in either order and still retain only the replacement.</figcaption>
+        <figcaption>The visible name alone does not show which installation a notebook knows.</figcaption>
       </figure>
+      <p>
+        After all records arrive, each notebook retains <code>B:2</code> as the
+        live addition and <code>A:1</code> as removed. The visible list contains
+        Eagle Creek because the replacement tag remains.
+      </p>
     </section>
 
     <SetStructureDemo
@@ -85,7 +96,8 @@ import "../../styles/set-lesson.css";
       <p>
         A delayed copy of <code>A:1</code> does not return. The replicas retain
         removal knowledge for that exact tag. The visible value is still Eagle
-        Creek, but its surviving identity proves that it is the replacement.
+        Creek, but the notebook's surviving <code>B:2</code> identity proves
+        that it is the replacement.
       </p>
       <p>
         The full reference lesson lets you partition Alice and Bob, preserve a

@@ -361,6 +361,9 @@ test("the sets family compares its three removal rules", async ({ page }) => {
   await expect(article).toContainText("Bob");
   await expect(article).toContainText("Carol");
   await expect(article).toContainText("ranger");
+  await expect(article).toContainText(
+    "The ranger does not assign sequence numbers to these reports",
+  );
   await expect(page.getByRole("region", { name: "GSet" })).toContainText("Set union");
   await expect(page.getByRole("region", { name: "TwoPSet" }))
     .toContainText("permanent tombstones");

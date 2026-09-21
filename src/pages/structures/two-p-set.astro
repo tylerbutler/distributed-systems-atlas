@@ -19,8 +19,8 @@ import "../../styles/set-lesson.css";
       <h1>TwoPSet</h1>
       <p class="structure-summary">
         Alice has found that the old Eagle Creek beacon is gone. The ranger
-        needs its name removed even if Carol later receives a stale copy of the
-        original report.
+        needs its name removed from all three notebooks even if Carol later
+        receives a stale copy of the original report.
       </p>
     </header>
 
@@ -39,8 +39,9 @@ import "../../styles/set-lesson.css";
       <p>
         The hikers keep one grow-only set of additions and another grow-only
         set of removals. Alice puts <code>Eagle Creek</code> in the removal
-        set. Carol can receive the old addition afterward, but the removal
-        still wins.
+        set. Her additions still contain Eagle Creek, but her visible list is
+        empty. Bob and Carol still show Eagle Creek until they receive her
+        removal record.
       </p>
       <p>
         A <dfn><a href="/glossary/#twopset">TwoPSet</a></dfn> considers a
@@ -49,19 +50,29 @@ import "../../styles/set-lesson.css";
       </p>
       <TermCallout {...twoPSetTerm} />
       <figure>
-        <table aria-label="Eagle Creek TwoPSet state">
+        <table aria-label="TwoPSet notebooks before records meet">
           <thead>
-            <tr><th scope="col">Record</th><th scope="col">Members</th></tr>
+            <tr>
+              <th scope="col">Notebook</th>
+              <th scope="col">Additions</th>
+              <th scope="col">Removals</th>
+              <th scope="col">Visible list</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Additions</th><td>Eagle Creek</td></tr>
-            <tr><th scope="row">Removals</th><td>Eagle Creek</td></tr>
-            <tr><th scope="row">Visible set</th><td>empty</td></tr>
+            <tr><th scope="row">Alice</th><td>Eagle Creek</td><td>Eagle Creek</td><td>empty</td></tr>
+            <tr><th scope="row">Bob</th><td>Eagle Creek</td><td>empty</td><td>Eagle Creek</td></tr>
+            <tr><th scope="row">Carol</th><td>Eagle Creek</td><td>empty</td><td>Eagle Creek</td></tr>
           </tbody>
         </table>
-        <figcaption>The removal record remains after the visible member disappears.</figcaption>
+        <figcaption>Each hiker computes the visible list from the two sets in that notebook.</figcaption>
       </figure>
       <pre aria-label="TwoPSet membership rule"><code>members = additions - removals</code></pre>
+      <p>
+        After the hikers exchange records, every notebook contains Eagle Creek
+        in both sets. All three visible lists are empty. A delayed addition
+        cannot erase the retained removal.
+      </p>
     </section>
 
     <SetStructureDemo
@@ -76,8 +87,9 @@ import "../../styles/set-lesson.css";
       <h2 id="replacement-title">Bob finds the replacement</h2>
       <p>
         The next morning, Bob finds a new beacon at Eagle Creek. Its name is
-        the same, so he tries to add <code>Eagle Creek</code> again. The old
-        removal record still excludes that value.
+        the same, so his notebook adds <code>Eagle Creek</code> again. The name
+        was already in his additions, and Alice's removal record still excludes
+        it after merge.
       </p>
       <p>
         This is the cost of permanent removal. A TwoPSet cannot distinguish two

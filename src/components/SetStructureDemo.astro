@@ -60,6 +60,7 @@ const actionCopy = kind === "two-p-set"
               </p>
             </div>
           </header>
+          <p class="notebook-label">Visible beacon list</p>
           <div class="member-list" data-member-list={replica.id}>
             {replica.values.length
               ? replica.values.map((value) => <span>{value}</span>)
@@ -287,10 +288,18 @@ const actionCopy = kind === "two-p-set"
     font-size: 0.75rem;
   }
 
+  .notebook-label {
+    margin: var(--space-4) 0 var(--space-2);
+    color: color-mix(in oklch, var(--clear) 70%, transparent);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 650;
+  }
+
   .member-list {
     display: flex;
     min-height: 5rem;
-    margin-block: var(--space-4);
+    margin-bottom: var(--space-4);
     padding: var(--space-3);
     border: var(--rule-width) solid color-mix(in oklch, var(--clear) 22%, transparent);
     flex-wrap: wrap;

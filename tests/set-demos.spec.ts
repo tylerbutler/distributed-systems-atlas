@@ -59,15 +59,19 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    for (const [path, heading, testId] of [
-      ["/structures/g-set/", "GSet", "g-set-demo"],
-      ["/structures/two-p-set/", "TwoPSet", "two-p-set-demo"],
-      ["/structures/observed-remove-set/", "Observed-remove set", "or-set-demo"],
+    for (const [path, heading, testId, notebookTable] of [
+      ["/structures/g-set/", "GSet", "g-set-demo", "Eagle Creek GSet delivery"],
+      ["/structures/two-p-set/", "TwoPSet", "two-p-set-demo", "TwoPSet notebooks before records meet"],
+      ["/structures/observed-remove-set/", "Observed-remove set", "or-set-demo", "Observed-remove notebooks before records meet"],
     ]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+      await expect(page.getByRole("table", { name: notebookTable })).toBeVisible();
       const demo = page.getByTestId(testId);
       await expect(demo.locator("[data-client]")).toHaveCount(3);
+      await expect(demo.getByText("Visible beacon list")).toHaveCount(3);
+      await expect(demo.getByRole("region", { name: "Trail message relay" }))
+        .toContainText("No ordering decision");
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the demo");
     }
