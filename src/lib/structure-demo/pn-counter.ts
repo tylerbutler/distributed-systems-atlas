@@ -238,7 +238,6 @@ export function deliverPNOperations(state: PNCounterDemoState): PNCounterDemoRes
 }
 
 function components(
-  state: PNCounterDemoState,
   replica: ReplicaId,
   authored: Counts,
   delivered: Counts,
@@ -259,14 +258,12 @@ export function presentPNCounterDemo(state: PNCounterDemoState): PNCounterDemoVi
     replicas: state.view.replicas.map((replica) => ({
       ...replica,
       positive: components(
-        state,
         replica.id,
         state.authoredPositive,
         state.deliveredPositive,
         true,
       ),
       negative: components(
-        state,
         replica.id,
         state.authoredNegative,
         state.deliveredNegative,
