@@ -394,6 +394,20 @@ test("the structures index and landing route readers through published families"
     .toHaveAttribute("href", "/structures/maps/");
 });
 
+test("demo operation logs number newest entries from the top", async ({ page }) => {
+  for (const [path, label] of [
+    ["/structures/g-counter/", "Checkpoint note log"],
+    ["/structures/pn-counter/", "Correction note log"],
+    ["/structures/shared-counter/", "Sequenced operation log"],
+    ["/structures/g-set/", "Set operation log"],
+    ["/structures/lww-register/", "Register write log"],
+    ["/structures/shared-map/", "Map operation log"],
+  ]) {
+    await page.goto(path);
+    await expect(page.getByRole("list", { name: label })).toHaveAttribute("reversed", "");
+  }
+});
+
 test("landing page works without client JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
