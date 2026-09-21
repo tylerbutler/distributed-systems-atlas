@@ -81,7 +81,7 @@ export function createGCounterDemo(): GCounterDemoState {
     deliveredCounts: zeroCounts(),
     queuedOperations: 0,
     latestAuthor: null,
-    result: "Add for Alice, Bob, or Carol, or run the authored race through the sequencer.",
+    result: "Count birds with Alice, Bob, or Carol, or send Alice's and Bob's checkpoint reports together.",
   };
 }
 
@@ -114,11 +114,11 @@ export function incrementReplica(
         authoredCounts,
         queuedOperations,
         latestAuthor: replica,
-        result: `${gCounterUserName(replica)} added ${amount}. ${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} waiting at the sequencer.`,
+        result: `${gCounterUserName(replica)} counted ${amount} more ${amount === 1 ? "bird" : "birds"}. ${queuedOperations} checkpoint ${queuedOperations === 1 ? "report is" : "reports are"} waiting at the sequencer.`,
       },
     };
   } catch (error) {
-    return failure(state, `${replica} increment`, error);
+    return failure(state, `${gCounterUserName(replica)} bird count`, error);
   }
 }
 
@@ -140,17 +140,17 @@ export function stageRace(state: GCounterDemoState): GCounterDemoResult {
         },
         queuedOperations: state.queuedOperations + 2,
         latestAuthor: "B",
-        result: "Alice added 7 and Bob added 3. Their operations are waiting together at the sequencer.",
+        result: "Alice counted 7 birds and Bob counted 3. Their checkpoint reports are waiting together at the sequencer.",
       },
     };
   } catch (error) {
-    return failure(state, "Concurrent increments", error);
+    return failure(state, "Concurrent bird counts", error);
   }
 }
 
 export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
   if (!state.view.pending) {
-    return failure(state, "Sequencer delivery", "add an increment first");
+    return failure(state, "Sequencer delivery", "record a bird first");
   }
   try {
     const delivered = value(deliverGCounterRace(state.room));
@@ -166,7 +166,7 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
         latestDeliveries: delivered.deliveries,
         deliveredCounts: { ...state.authoredCounts },
         queuedOperations: 0,
-        result: `The sequencer delivered ${operations} ${operations === 1 ? "operation" : "operations"}. All three clients read ${total}.`,
+        result: `The sequencer delivered ${operations} checkpoint ${operations === 1 ? "report" : "reports"}. All three hikers read ${total} birds.`,
       },
     };
   } catch (error) {
@@ -176,7 +176,7 @@ export function deliverRace(state: GCounterDemoState): GCounterDemoResult {
 
 export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResult {
   if (!state.view.pending) {
-    return failure(state, "Sequencer delivery", "add an increment first");
+    return failure(state, "Sequencer delivery", "record a bird first");
   }
   try {
     const delivered = value(deliverOneGCounterOperation(state.room));
@@ -194,8 +194,8 @@ export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResu
         deliveredCounts: complete ? { ...state.authoredCounts } : state.deliveredCounts,
         queuedOperations,
         result: complete
-          ? `The sequencer delivered the final operation. All three clients read ${total}.`
-          : `The sequencer delivered 1 operation. ${queuedOperations} remain queued.`,
+          ? `The final checkpoint report arrived. All three hikers read ${total} birds.`
+          : `One checkpoint report arrived. ${queuedOperations} remain queued.`,
       },
     };
   } catch (error) {
@@ -205,10 +205,10 @@ export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResu
 
 export function resendUserCount(state: GCounterDemoState): GCounterDemoResult {
   if (state.view.pending) {
-    return failure(state, "Count resend", "deliver the queued operations first");
+    return failure(state, "Report resend", "deliver the waiting checkpoint reports first");
   }
   if (state.latestAuthor === null) {
-    return failure(state, "Count resend", "add and deliver an increment first");
+    return failure(state, "Report resend", "record and deliver a bird count first");
   }
   try {
     const resent = value(resendGCounterComponent(state.room, state.latestAuthor));
@@ -221,11 +221,11 @@ export function resendUserCount(state: GCounterDemoState): GCounterDemoResult {
         ...resent,
         deliveries: [...state.deliveries, ...resent.deliveries].slice(-MAX_RECORDED_DELIVERIES),
         latestDeliveries: resent.deliveries,
-        result: `The sequencer resent ${gCounterUserName(state.latestAuthor)}'s count. All three clients still read ${total}.`,
+        result: `The sequencer resent ${gCounterUserName(state.latestAuthor)}'s checkpoint report. All three hikers still read ${total} birds.`,
       },
     };
   } catch (error) {
-    return failure(state, "Count resend", error);
+    return failure(state, "Report resend", error);
   }
 }
 

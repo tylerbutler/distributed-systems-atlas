@@ -5,7 +5,7 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
 
 <BaseLayout
   title="Counters"
-  description="Start with a grow-only counter. Run concurrent increments through Watershed Sluice and see why resending a user's count does not count twice."
+  description="Follow three friends counting birds on separate hikes. Their checkpoint reports arrive at different times, then a G-counter brings every view to the same total."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -14,77 +14,85 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       <p class="territory-label">Structures</p>
       <h1>Counters</h1>
       <p class="structure-summary">
-        A replicated counter must preserve increments made at different
-        replicas. Start with the smallest useful form: a counter that can only
-        grow.
+        Alice, Bob, and Carol count birds on separate hikes. At each checkpoint,
+        they leave a message with their running count. Those messages arrive at
+        different times, so the three friends can temporarily see different
+        totals.
       </p>
     </header>
 
     <section aria-labelledby="one-counter-title">
-      <h2 id="one-counter-title">Start with one person counting</h2>
+      <h2 id="one-counter-title">Alice starts counting birds</h2>
       <p>
-        Suppose Alice uses a client to count arrivals. Her client keeps one
-        nonnegative total and increases it for each new arrival. With one
-        client, the shared value is just Alice's count.
+        Alice takes the ridge trail. Each time she spots a bird, her phone adds
+        one to her running count. With only Alice hiking, the shared total is
+        simply the number she has seen.
       </p>
       <p>
-        A client is an application connected to the shared data. Its local copy
-        of the counter is a replica. In this demo, Alice, Bob, and Carol each
-        use one client with one replica. The person's name identifies both.
+        Her phone is a client. Its local copy of the shared counter is a
+        replica. Bob and Carol will each carry another client with its own
+        replica.
       </p>
-      <pre aria-label="Single-client counter value"><code>value = count[Alice]</code></pre>
+      <pre aria-label="Alice's bird count"><code>birds = count[Alice]</code></pre>
     </section>
 
     <section aria-labelledby="second-counter-title">
-      <h2 id="second-counter-title">Give the second person a separate count</h2>
+      <h2 id="second-counter-title">Bob takes a different trail</h2>
       <p>
-        When Bob joins, Alice and Bob each change only their own count. The
-        shared value is the sum of both counts. If Alice counts 7 arrivals and
-        Bob counts 3, the total is 10.
+        Bob counts birds along the river trail. Alice changes only Alice's
+        count, and Bob changes only Bob's count. If Alice has seen 7 birds and
+        Bob has seen 3, their shared total is 10.
       </p>
       <p>
         This is a grow-only counter, or G-counter. Each replica keeps the
-        largest count it has received for every client, then adds those counts.
-        It does not add every message. A resent message carries the same
-        cumulative count, so it cannot increase the total twice.
+        largest report it has received from each hiker, then adds those counts.
+        It does not add every message. If Bob leaves the same checkpoint report
+        twice, both messages say that Bob has seen 3 birds. His count stays 3.
       </p>
-      <pre aria-label="G-counter merge and value rules"><code>count[Alice] = max(all reports from Alice)
+      <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all reports from Alice)
 count[Bob] = max(all reports from Bob)
-value = count[Alice] + count[Bob] + ...</code></pre>
+birds = count[Alice] + count[Bob] + ...</code></pre>
     </section>
 
     <section aria-labelledby="race-title">
-      <h2 id="race-title">Now let both people count at once</h2>
+      <h2 id="race-title">Their checkpoint reports cross</h2>
       <p>
-        Alice adds 7 while Bob adds 3. Carol makes no local change. A server
-        sequencer orders the two operations and relays them to all three
-        replicas. Use the controls for one user at a time, or play the authored
-        race to send both changes together.
+        Alice reaches a checkpoint after seeing 7 birds. Bob reaches another
+        after seeing 3. Carol is on the forest trail and has not counted a bird
+        yet. Their phones send reports through a server sequencer, which puts
+        the messages in one order and relays them to all three hikers.
+      </p>
+      <p>
+        While the reports travel, Alice can see 7, Bob can see 3, and Carol can
+        still see 0. Use the controls to send one report at a time, or send
+        Alice's and Bob's reports together.
       </p>
     </section>
 
     <GCounterDemo />
 
     <section aria-labelledby="result-title">
-      <h2 id="result-title">Both increments survive</h2>
+      <h2 id="result-title">Every trail catches up</h2>
       <p>
-        After delivery, all three replicas read 10. Alice did not overwrite
-        Bob, and Bob did not overwrite Alice. Each user has a separate count,
-        so merge can keep both facts and Carol can learn the complete value.
+        After both checkpoint reports arrive, Alice, Bob, and Carol all read
+        10. Their views were temporarily inconsistent, but the G-counter kept
+        both hikers' observations and made every replica agree.
       </p>
       <p>
-        For each replica ID, merge keeps the larger count. This rule is
+        This is eventual consistency. For each hiker, merge keeps the larger
+        reported count. The rule is
         commutative, associative, and idempotent. Arrival order does not change
-        the answer, and the same user's count can arrive more than once.
+        the answer, and the same checkpoint report can arrive more than once.
       </p>
     </section>
 
     <section aria-labelledby="limits-title">
-      <h2 id="limits-title">The simple rule has a strict limit</h2>
+      <h2 id="limits-title">The bird count can only grow</h2>
       <p>
-        Counts never decrease. A negative increment is rejected before state
-        changes. Every writer also needs a unique replica ID; if two writers
-        share one ID, pairwise maximum can discard one concurrent increment.
+        Alice, Bob, and Carol can add sightings, but they cannot subtract one.
+        A negative change is rejected before state changes. Every hiker also
+        needs a unique replica ID. If two hikers share an ID, pairwise maximum
+        can discard one concurrent count.
       </p>
       <table class="counter-family" aria-label="Counter family status">
         <thead>

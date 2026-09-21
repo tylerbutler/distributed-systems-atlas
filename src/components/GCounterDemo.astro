@@ -14,26 +14,27 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Let each user count</h2>
+        <h2 id="gcounter-demo-title">Count birds on three hikes</h2>
         <p>
-          Add for Alice, Bob, or Carol and the sequencer delivers the operation
-          automatically. Turn off Auto-deliver when you want to build a queue.
+          Record birds for Alice, Bob, or Carol. Each change sends that hiker's
+          running count through the sequencer. Turn off Auto-deliver to hold
+          several checkpoint reports.
         </p>
       </div>
       <p class="merge-rule">
         Merge rule
-        <strong>Keep the largest count reported by each client.</strong>
+        <strong>Keep the largest bird count reported by each hiker.</strong>
       </p>
     </header>
 
-    <div class="operation-key" aria-label="Operation states">
+    <div class="operation-key" aria-label="Checkpoint report states">
       <p>
         <span class="operation-key-mark outbound" aria-hidden="true"></span>
-        <span><strong>Unsequenced</strong> Client report traveling in</span>
+        <span><strong>Unsequenced</strong> Checkpoint report traveling in</span>
       </p>
       <p>
         <span class="operation-key-mark sequenced" aria-hidden="true"></span>
-        <span><strong>Sequenced</strong> Numbered broadcast traveling out</span>
+        <span><strong>Sequenced</strong> Numbered report traveling out</span>
       </p>
     </div>
 
@@ -54,14 +55,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
           <output class="gcounter-total observation-data" data-total={replica.id}>
             {replica.value}
           </output>
-          <p>Total increments observed</p>
-          <div class="replica-actions" aria-label={`Increment for ${gCounterUserName(replica.id)}`}>
+          <p>Birds in this hiker's view</p>
+          <div class="replica-actions" aria-label={`Record birds for ${gCounterUserName(replica.id)}`}>
             {[1, 3, 7].map((amount) => (
               <button
                 type="button"
                 data-replica={replica.id}
                 data-increment={amount}
-                aria-label={`Add ${amount} for ${gCounterUserName(replica.id)}`}
+                aria-label={`Record ${amount} ${amount === 1 ? "bird" : "birds"} for ${gCounterUserName(replica.id)}`}
                 disabled
               >
                 +{amount}
@@ -78,8 +79,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
             SN 0
           </output>
         </section>
-        <ol class="operation-log" data-deliveries aria-label="Operation log">
-          <li>No operation delivered yet.</li>
+        <ol class="operation-log" data-deliveries aria-label="Checkpoint report log">
+          <li>No checkpoint report delivered yet.</li>
         </ol>
       </div>
     </div>
@@ -104,10 +105,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
         <span>Auto-deliver</span>
       </label>
       <button type="button" data-action="race" disabled>
-        Run Alice +7 and Bob +3 race
+        Send Alice +7 and Bob +3 together
       </button>
       <button type="button" data-action="resend" disabled>
-        Resend latest user's count
+        Resend latest checkpoint report
       </button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <label class="guided-toggle">
@@ -139,38 +140,38 @@ const initial = presentGCounterDemo(createGCounterDemo());
       <div>
         <h3>Inside the sequencer</h3>
         <p>
-          Sluice is the in-memory server behind this demo. It accepts
-          operations from the clients, puts them in one total order, and
-          relays them to every connected replica.
+          At each checkpoint, a hiker sends their current bird count. Sluice is
+          the in-memory server behind this demo. It accepts those reports, puts
+          them in one total order, and relays them to every connected replica.
         </p>
         <p>
           Some data structures use the sequence number in their conflict rule.
           The G-counter does not, but it still needs the relay so every replica
-          receives each client's latest count. Peers could exchange operations
-          directly instead; a server sequencer provides one transport for many
-          kinds of data structure.
+          receives each hiker's latest count. The hikers' phones could exchange
+          reports directly instead; a server sequencer provides one transport
+          for many kinds of data structure.
         </p>
       </div>
       <p class="guided-callout" data-guided-callout aria-live="polite">
-        Turn off Auto-deliver to queue several operations before delivery.
+        Turn off Auto-deliver to hold several checkpoint reports.
       </p>
     </aside>
 
     <details class="gcounter-explanation">
-      <summary>Explain why resending a user's count is safe</summary>
+      <summary>Explain why repeating a checkpoint report is safe</summary>
       <div>
         <p>
-          Each client stores the largest count it has observed for Alice, Bob,
-          and Carol. The sequencer orders and broadcasts each operation; the
-          G-counter kernel keeps the largest count reported by each user.
+          Each client stores the largest bird count it has observed for Alice,
+          Bob, and Carol. The sequencer orders and broadcasts each report; the
+          G-counter kernel keeps the largest count reported by each hiker.
         </p>
-        <table aria-label="Reported counts by user">
+        <table aria-label="Bird counts reported by each hiker">
           <thead>
             <tr>
-              <th scope="col">User</th>
-              <th scope="col">At Alice</th>
-              <th scope="col">At Bob</th>
-              <th scope="col">At Carol</th>
+              <th scope="col">Hiker</th>
+              <th scope="col">Alice's view</th>
+              <th scope="col">Bob's view</th>
+              <th scope="col">Carol's view</th>
             </tr>
           </thead>
           <tbody>
@@ -185,10 +186,9 @@ const initial = presentGCounterDemo(createGCounterDemo());
           </tbody>
         </table>
         <p>
-          Resend submits the latest user's current count again as a zero
-          increment. The transport assigns a new sequence number, but every
-          kernel compares the same cumulative count with itself. The maximum
-          does not change.
+          Resend sends the latest hiker's running count again. The transport
+          assigns a new sequence number, but every replica compares the same
+          cumulative count with itself. The maximum does not change.
         </p>
       </div>
     </details>

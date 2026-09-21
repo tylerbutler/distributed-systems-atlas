@@ -62,13 +62,13 @@ multi-value register, and observed-remove set lessons run pinned Watershed
 kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
 
-The G-counter lesson uses Watershed's JavaScript Sluice transport. Readers can
-increment Alice, Bob, or Carol directly, run the authored Alice:+7/Bob:+3 race, and resend the
-latest user's cumulative count. Auto-deliver is on by default, so each client
-action enters the sequenced stream immediately. Readers can turn it off to
-build a multi-operation queue, then turn it back on to deliver the queue.
-Atlas animates operations from their authors through Sluice to all clients at
-a reader-controlled speed. Guided observations reveal the Sluice
+The G-counter lesson follows Alice, Bob, and Carol as they count birds on
+separate hikes and send cumulative reports from trail checkpoints through
+Watershed's JavaScript Sluice transport. Auto-deliver is on by default, so each
+report enters the sequenced stream immediately. Readers can turn it off to hold
+several reports, then turn it back on to deliver them. Atlas animates reports
+from their hikers through Sluice to all clients at a reader-controlled speed.
+Guided observations reveal the Sluice
 implementation and add timed callouts and signal-colored marks to the values
 and sequencer.
 

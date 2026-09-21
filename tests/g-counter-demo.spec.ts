@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-test("the sequencer delivers the G-counter race and safely resends a user's count", async ({ page }) => {
+test("the hikers' checkpoint reports converge and a repeated report is safe", async ({ page }) => {
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
-  const race = demo.getByRole("button", { name: "Run Alice +7 and Bob +3 race" });
+  const race = demo.getByRole("button", { name: "Send Alice +7 and Bob +3 together" });
   const resend = demo.locator('[data-action="resend"]');
 
   await expect(totals).toHaveText(["0", "0", "0"]);
@@ -27,22 +27,24 @@ test("the sequencer delivers the G-counter race and safely resends a user's coun
   await expect(totals.first()).toHaveAttribute("data-guided-mark", "circle");
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered the final operation. All three clients read 10.",
+    "The final checkpoint report arrived. All three hikers read 10 birds.",
   );
-  const log = demo.getByRole("list", { name: "Operation log" });
+  const log = demo.getByRole("list", { name: "Checkpoint report log" });
   await expect(log.getByRole("listitem")).toHaveCount(2);
-  await expect(log).toContainText("SN 1 · Alice report to Alice, Bob, Carol");
+  await expect(log).toContainText(
+    "SN 1 · Alice checkpoint report to Alice, Bob, Carol",
+  );
 
-  await demo.getByText("Explain why resending a user's count is safe", { exact: true }).click();
-  await expect(demo.getByRole("table", { name: "Reported counts by user" })
+  await demo.getByText("Explain why repeating a checkpoint report is safe", { exact: true }).click();
+  await expect(demo.getByRole("table", { name: "Bird counts reported by each hiker" })
     .locator("tbody td")).toHaveText(["7", "7", "7", "3", "3", "3", "0", "0", "0"]);
 
-  const resendB = demo.getByRole("button", { name: "Resend Bob's count" });
+  const resendB = demo.getByRole("button", { name: "Resend Bob's report" });
   await resendB.press("Space");
   await expect(totals).toHaveText(["10", "10", "10"]);
   await expect(resendB).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer resent Bob's count. All three clients still read 10.",
+    "The sequencer resent Bob's checkpoint report. All three hikers still read 10 birds.",
   );
   await expect(log.getByRole("listitem")).toHaveCount(3);
   await resendB.click();
@@ -53,11 +55,11 @@ test("the sequencer delivers the G-counter race and safely resends a user's coun
   await expect(totals).toHaveText(["0", "0", "0"]);
   await expect(race).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Add for Alice, Bob, or Carol, or run the authored race through the sequencer.",
+    "Count birds with Alice, Bob, or Carol, or send Alice's and Bob's checkpoint reports together.",
   );
 });
 
-test("multiple client operations can queue before sequencer delivery", async ({ page }) => {
+test("multiple checkpoint reports can wait before sequencer delivery", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
@@ -66,21 +68,23 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
 
   await expect(autoDeliver).toBeChecked();
   await autoDeliver.uncheck();
-  await demo.getByRole("button", { name: "Add 1 for Alice" }).click();
-  await demo.getByRole("button", { name: "Add 3 for Alice" }).click();
-  await demo.getByRole("button", { name: "Add 3 for Bob" }).click();
-  await demo.getByRole("button", { name: "Add 7 for Bob" }).click();
-  await demo.getByRole("button", { name: "Add 1 for Carol" }).click();
-  await demo.getByRole("button", { name: "Add 7 for Carol" }).click();
+  await demo.getByRole("button", { name: "Record 1 bird for Alice" }).click();
+  await demo.getByRole("button", { name: "Record 3 birds for Alice" }).click();
+  await demo.getByRole("button", { name: "Record 3 birds for Bob" }).click();
+  await demo.getByRole("button", { name: "Record 7 birds for Bob" }).click();
+  await demo.getByRole("button", { name: "Record 1 bird for Carol" }).click();
+  await demo.getByRole("button", { name: "Record 7 birds for Carol" }).click();
   await expect(totals).toHaveText(["4", "10", "8"]);
-  await expect(demo.locator('[role="status"]')).toContainText("6 operations are waiting");
+  await expect(demo.locator('[role="status"]')).toContainText(
+    "6 checkpoint reports are waiting",
+  );
   await autoDeliver.check();
   await expect(totals).toHaveText(["22", "22", "22"]);
   await expect(demo.getByLabel("Latest sequence number")).toHaveText("SN 6");
-  await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
+  await expect(demo.getByRole("list", { name: "Checkpoint report log" }).getByRole("listitem"))
     .toHaveCount(6);
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer delivered the final operation. All three clients read 22.",
+    "The final checkpoint report arrived. All three hikers read 22 birds.",
   );
 });
 
@@ -90,32 +94,32 @@ test("auto-deliver keeps replica controls active while operations queue", async 
   const totals = demo.locator("[data-total]");
   await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
 
-  await demo.getByRole("button", { name: "Add 1 for Alice" }).click();
-  await expect(demo.getByRole("button", { name: "Add 3 for Alice" })).toBeEnabled();
-  await demo.getByRole("button", { name: "Add 3 for Alice" }).click();
-  await demo.getByRole("button", { name: "Add 3 for Bob" }).click();
-  await demo.getByRole("button", { name: "Add 7 for Bob" }).click();
-  await demo.getByRole("button", { name: "Add 1 for Carol" }).click();
-  await demo.getByRole("button", { name: "Add 7 for Carol" }).click();
+  await demo.getByRole("button", { name: "Record 1 bird for Alice" }).click();
+  await expect(demo.getByRole("button", { name: "Record 3 birds for Alice" })).toBeEnabled();
+  await demo.getByRole("button", { name: "Record 3 birds for Alice" }).click();
+  await demo.getByRole("button", { name: "Record 3 birds for Bob" }).click();
+  await demo.getByRole("button", { name: "Record 7 birds for Bob" }).click();
+  await demo.getByRole("button", { name: "Record 1 bird for Carol" }).click();
+  await demo.getByRole("button", { name: "Record 7 birds for Carol" }).click();
 
   await expect(totals).toHaveText(["22", "22", "22"], { timeout: 15_000 });
-  await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
+  await expect(demo.getByRole("list", { name: "Checkpoint report log" }).getByRole("listitem"))
     .toHaveCount(6, { timeout: 15_000 });
 });
 
 test("operations travel to the sequencer immediately and broadcast waves overlap", async ({ page }) => {
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
-  await expect(demo.getByLabel("Operation states")).toContainText(
-    "Unsequenced Client report traveling in",
+  await expect(demo.getByLabel("Checkpoint report states")).toContainText(
+    "Unsequenced Checkpoint report traveling in",
   );
-  await expect(demo.getByLabel("Operation states")).toContainText(
-    "Sequenced Numbered broadcast traveling out",
+  await expect(demo.getByLabel("Checkpoint report states")).toContainText(
+    "Sequenced Numbered report traveling out",
   );
   await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
 
-  await demo.getByRole("button", { name: "Add 1 for Alice" }).click();
-  await demo.getByRole("button", { name: "Add 3 for Bob" }).click();
+  await demo.getByRole("button", { name: "Record 1 bird for Alice" }).click();
+  await demo.getByRole("button", { name: "Record 3 birds for Bob" }).click();
 
   await expect(demo.locator('[data-leg="outbound"]')).toHaveCount(2);
   await expect(demo.locator('[data-leg="outbound"]').first()).toContainText(
@@ -139,30 +143,30 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     const page = await context.newPage();
     await page.goto("/structures/counters/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
-    await expect(page.getByRole("heading", { name: "Start with one person counting" }))
+    await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
       .toBeVisible();
-    await expect(page.getByText("Its local copy of the counter is a replica")).toBeVisible();
+    await expect(page.getByText("Its local copy of the shared counter is a replica")).toBeVisible();
     await expect(page.getByRole("heading", {
-      name: "Give the second person a separate count",
+      name: "Bob takes a different trail",
     })).toBeVisible();
     await expect(page.getByText("It does not add every message")).toBeVisible();
-    await expect(page.getByLabel("G-counter merge and value rules")).toContainText(
+    await expect(page.getByLabel("G-counter merge and bird total rules")).toContainText(
       "count[Alice] = max(all reports from Alice)",
     );
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
-    await expect(page.getByText("After delivery, all three replicas read 10.")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Add 1 for Alice" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Run Alice +7 and Bob +3 race" })).toBeDisabled();
+    await expect(page.getByText("After both checkpoint reports arrive")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Record 1 bird for Alice" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Send Alice +7 and Bob +3 together" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toHaveAttribute("min", "0.25");
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeChecked();
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
     await expect(page.locator("[data-guided-panel]")).toBeHidden();
-    const explanation = page.getByText("Explain why resending a user's count is safe", { exact: true });
+    const explanation = page.getByText("Explain why repeating a checkpoint report is safe", { exact: true });
     await explanation.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("table", { name: "Reported counts by user" })).toBeVisible();
+    await expect(page.getByRole("table", { name: "Bird counts reported by each hiker" })).toBeVisible();
   } finally {
     await context.close();
   }

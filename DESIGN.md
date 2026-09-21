@@ -283,8 +283,11 @@ The familiar value stays larger than its metadata.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
-The G-counter demo is the first instance: three separate station records show
-only their totals by default. A compact pill-shaped sequencer sits in the open
+The G-counter demo is the first instance. Alice, Bob, and Carol count birds on
+separate hikes and send cumulative reports from trail checkpoints. Three
+separate station records show only their local totals by default, making
+temporary disagreement visible before the reports arrive. A compact
+pill-shaped sequencer sits in the open
 space between them, shows only the latest sequence number, and keeps a narrow
 newest-first log beneath it. At wide widths, generous gaps separate the three
 clients and sequencer into a triangle. An unsequenced operation leaves its author as
