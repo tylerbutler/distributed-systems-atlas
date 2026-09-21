@@ -18,11 +18,69 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
       <p class="territory-label">Structures</p>
       <h1>PN-counter</h1>
       <p class="structure-summary">
-        A G-counter can count new birds, but it cannot count down when Bob
-        finds a duplicate sighting. Alice, Bob, and Carol keep that grow-only
-        sightings counter and add a second G-counter for corrections.
+        Alice, Bob, and Carol have agreed on 10 birds. Then Alice finds 3 more
+        while Bob finds a duplicate sighting. Their G-counter notebooks cannot
+        erase a count, so each hiker adds a second grow-only table for
+        corrections.
       </p>
     </header>
+
+    <section aria-labelledby="notebook-setup-title">
+      <h2 id="notebook-setup-title">Each hiker carries the same two-page notebook</h2>
+      <p>
+        The first page is the positive counter, or <code>P</code>. It records
+        new bird sightings. The second page is the negative counter, or
+        <code>N</code>. It records sightings that must be subtracted. Each page
+        has one row that only Alice fills in, one for Bob, and one for Carol.
+      </p>
+      <figure class="notebook">
+        <table aria-label="PN-counter notebook before new notes">
+          <thead>
+            <tr>
+              <th scope="col">Notebook page</th>
+              <th scope="col">Row</th>
+              <th scope="col">Starting value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Sightings (P)</th><td>Agreed count</td><td>10</td></tr>
+            <tr><th scope="row">Sightings (P)</th><td>Alice</td><td>0</td></tr>
+            <tr><th scope="row">Sightings (P)</th><td>Bob</td><td>0</td></tr>
+            <tr><th scope="row">Sightings (P)</th><td>Carol</td><td>0</td></tr>
+            <tr><th scope="row">Corrections (N)</th><td>Alice</td><td>0</td></tr>
+            <tr><th scope="row">Corrections (N)</th><td>Bob</td><td>0</td></tr>
+            <tr><th scope="row">Corrections (N)</th><td>Carol</td><td>0</td></tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Every hiker starts with the same 10 sightings and no corrections.
+          The visible bird count is the sightings total minus the corrections
+          total.
+        </figcaption>
+      </figure>
+      <p>
+        Alice writes 3 in her row on the sightings page. Bob writes 1 in his
+        row on the corrections page. The note does not ask another hiker to
+        apply <code>+3</code> or <code>-1</code> again. It reports the page,
+        the row, and the cumulative value now written there.
+      </p>
+      <div
+        class="checkpoint-notes"
+        role="group"
+        aria-label="PN-counter checkpoint note examples"
+      >
+        <p>
+          <strong>Alice</strong>
+          <span>Sightings page · Alice row</span>
+          <output>3</output>
+        </p>
+        <p>
+          <strong>Bob</strong>
+          <span>Corrections page · Bob row</span>
+          <output>1</output>
+        </p>
+      </div>
+    </section>
 
     <StructureFacts
       family="CRDT"
@@ -38,8 +96,8 @@ import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
     <section aria-labelledby="correction-title">
       <h2 id="correction-title">Add a second G-counter</h2>
       <p>
-        The hikers agreed on 10 birds. Then Bob spots a mistake: one line
-        records the same bird twice. The shared count must fall by one.
+        Bob spots a mistake: one line records the same bird twice. The shared
+        count must fall by one.
       </p>
       <p>
         A G-counter component can only grow. Bob cannot lower his component
@@ -65,34 +123,36 @@ birds = P - N</code></pre>
     </section>
 
     <section aria-labelledby="correction-race-title">
-      <h2 id="correction-race-title">Alice and Bob send two notes at once</h2>
+      <h2 id="correction-race-title">Alice and Bob fill in different pages</h2>
       <p>
-        While Bob writes a correction for the duplicate sighting, Alice counts
-        3 more birds on the ridge trail. Neither has received the other's note.
-        Alice's view rises from 10 to 13. Bob's falls from 10 to 9. Carol still
-        reads 10.
+        Neither hiker has received the other's note. Alice's notebook has 13
+        sightings and no corrections, so she reads 13. Bob's has 10 sightings
+        and 1 correction, so he reads 9. Carol has not found either note, so
+        she still reads 10.
       </p>
-      <table aria-label="Bird count before PN-counter note delivery">
+      <table aria-label="Each PN-counter notebook before note delivery">
         <thead>
           <tr>
-            <th scope="col">Moment</th>
+            <th scope="col">Notebook entry</th>
             <th scope="col">Alice</th>
             <th scope="col">Bob</th>
             <th scope="col">Carol</th>
           </tr>
         </thead>
         <tbody>
-          <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
-          <tr><th scope="row">Notes queued</th><td>13</td><td>9</td><td>10</td></tr>
-          <tr><th scope="row">Both notes delivered</th><td>12</td><td>12</td><td>12</td></tr>
+          <tr><th scope="row">Agreed sightings</th><td>10</td><td>10</td><td>10</td></tr>
+          <tr><th scope="row">Alice sightings row</th><td>3</td><td>0</td><td>0</td></tr>
+          <tr><th scope="row">Bob corrections row</th><td>0</td><td>1</td><td>0</td></tr>
+          <tr class="notebook-total"><th scope="row">Birds seen (P - N)</th><td>13</td><td>9</td><td>10</td></tr>
         </tbody>
       </table>
       <p>
-        Alice increments the sightings G-counter by 3. Bob increments the
-        corrections G-counter by 1. The updates can arrive in either order:
+        When both notes arrive, every notebook contains 3 in Alice's sightings
+        row and 1 in Bob's corrections row. The notes can arrive in either order:
         <code>10 + 3 - 1</code> and <code>10 - 1 + 3</code> both equal
-        <code>12</code>. Each side also keeps the G-counter merge rule, so
-        repeated notes do not add the same change twice.
+        <code>12</code>. Each page keeps the G-counter merge rule, so a hiker
+        who finds the same note twice still writes the cumulative value only
+        once.
       </p>
     </section>
 
@@ -104,7 +164,7 @@ birds = P - N</code></pre>
         After both notes arrive, the positive G-counter totals 13 and the
         negative G-counter totals 1. Alice, Bob, and Carol all compute
         <code>P - N = 13 - 1 = 12</code>.
-        Delivery order does not change that result, and a repeated delta does
+        Delivery order does not change that result, and a repeated note does
         not apply the correction twice.
       </p>
       <p>
@@ -187,6 +247,60 @@ birds = P - N</code></pre>
   td {
     font-family: var(--font-data);
     font-variant-numeric: tabular-nums;
+  }
+
+  .notebook {
+    margin-block: var(--space-5);
+  }
+
+  .notebook table {
+    margin-block: 0;
+  }
+
+  .notebook figcaption {
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .notebook-total :is(th, td) {
+    border-top: calc(var(--rule-width) * 2) solid var(--line);
+    font-weight: 700;
+  }
+
+  .checkpoint-notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .checkpoint-notes p {
+    display: grid;
+    min-width: 14rem;
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+    font-family: var(--font-ui);
+  }
+
+  .checkpoint-notes strong {
+    font-size: 1.05rem;
+  }
+
+  .checkpoint-notes span {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .checkpoint-notes output {
+    margin-top: var(--space-2);
+    font-family: var(--font-data);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .structure-next {

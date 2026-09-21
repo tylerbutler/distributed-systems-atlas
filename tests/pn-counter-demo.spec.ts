@@ -20,7 +20,7 @@ test("the correction race converges through Sluice", async ({ page }) => {
   await expect(demo.getByRole("list", { name: "Correction note log" })
     .getByRole("listitem")).toHaveCount(2);
 
-  await demo.getByText("Open the two G-counter tables", {
+  await demo.getByText("Open the hikers' two notebook tables", {
     exact: true,
   }).click();
   await expect(demo.getByRole("table", {
@@ -118,6 +118,26 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     })).toBeVisible();
     await expect(page.getByTestId("g-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", {
+      name: "Each hiker carries the same two-page notebook",
+    })).toBeVisible();
+    await expect(page.getByRole("table", {
+      name: "PN-counter notebook before new notes",
+    }).locator("tbody tr")).toHaveText([
+      "Sightings (P)Agreed count10",
+      "Sightings (P)Alice0",
+      "Sightings (P)Bob0",
+      "Sightings (P)Carol0",
+      "Corrections (N)Alice0",
+      "Corrections (N)Bob0",
+      "Corrections (N)Carol0",
+    ]);
+    await expect(page.getByRole("group", {
+      name: "PN-counter checkpoint note examples",
+    }).locator("p")).toHaveText([
+      "AliceSightings page · Alice row3",
+      "BobCorrections page · Bob row1",
+    ]);
+    await expect(page.getByRole("heading", {
       name: "Add a second G-counter",
     })).toBeVisible();
     await expect(page.getByRole("region", {
@@ -127,13 +147,14 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
       name: "Add a second G-counter",
     })).toContainText("The negative counter records corrections");
     await expect(page.getByRole("heading", {
-      name: "Two new notes leave at once",
+      name: "Alice and Bob fill in different pages",
     })).toBeVisible();
-    await expect(page.getByLabel("Bird count before PN-counter notes arrive")
+    await expect(page.getByLabel("Each PN-counter notebook before note delivery")
       .locator("tbody tr")).toHaveText([
-      "Agreed count101010",
-      "Notes waiting13910",
-      "Both notes arrive121212",
+      "Agreed sightings101010",
+      "Alice sightings row300",
+      "Bob corrections row010",
+      "Birds seen (P - N)13910",
     ]);
     await expect(page.getByRole("region", {
       name: "Add a second G-counter",
