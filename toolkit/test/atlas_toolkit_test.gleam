@@ -1,6 +1,7 @@
 import atlas_sluice as sluice
 import atlas_toolkit as toolkit
 import gleam/list
+import gleam/string
 import gleeunit
 import gleeunit/should
 
@@ -220,6 +221,32 @@ pub fn sharedcounter_sluice_room_accepts_all_clients_test() {
   delivered.b |> should.equal(11)
   delivered.c |> should.equal(11)
   deliveries |> list.length |> should.equal(9)
+}
+
+pub fn set_sluice_rooms_show_each_conflict_rule_test() {
+  let assert Ok(gset) = sluice.new_set_room("g-set")
+  let assert Ok(gset) = sluice.set_room_stage_race(gset)
+  let #(gset, _) = sluice.set_room_deliver(gset)
+  let gset_view = sluice.set_room_snapshot(gset)
+  gset_view.a |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
+  gset_view.b |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
+  gset_view.c |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
+
+  let assert Ok(two_p) = sluice.new_set_room("two-p-set")
+  let assert Ok(two_p) = sluice.set_room_stage_race(two_p)
+  let #(two_p, _) = sluice.set_room_deliver(two_p)
+  let two_p_view = sluice.set_room_snapshot(two_p)
+  two_p_view.a |> should.equal([])
+  two_p_view.b |> should.equal([])
+  two_p_view.c |> should.equal([])
+
+  let assert Ok(or_set) = sluice.new_set_room("or-set")
+  let assert Ok(or_set) = sluice.set_room_stage_race(or_set)
+  let #(or_set, _) = sluice.set_room_deliver(or_set)
+  let or_set_view = sluice.set_room_snapshot(or_set)
+  or_set_view.a |> should.equal(["Eagle Creek"])
+  or_set_view.b |> should.equal(["Eagle Creek"])
+  or_set_view.c |> should.equal(["Eagle Creek"])
 }
 
 pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {

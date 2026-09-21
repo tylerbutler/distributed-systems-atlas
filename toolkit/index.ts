@@ -66,6 +66,20 @@ export type SharedCounterTransportResult = {
   view: SharedCounterRoomView;
   deliveries: TransportDelivery[];
 };
+export type SetRoomKind = "g-set" | "two-p-set" | "or-set";
+export type SetRoomAction = "add" | "remove";
+declare const setRoomBrand: unique symbol;
+export type SetRoom = { readonly [setRoomBrand]: true };
+export type SetRoomView = {
+  replicas: Array<{ id: "A" | "B" | "C"; values: string[] }>;
+  pending: boolean;
+  sequenceNumber: number;
+};
+export type SetTransportResult = {
+  room: SetRoom;
+  view: SetRoomView;
+  deliveries: TransportDelivery[];
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -246,6 +260,7 @@ function kernel<T, E>(result: GleamResult<T, E>): T {
 const counterRooms = new WeakMap<GCounterRoom, sluiceCore.GCounterRoom$>();
 const pnCounterRooms = new WeakMap<PNCounterRoom, sluiceCore.PnCounterRoom$>();
 const sharedCounterRooms = new WeakMap<SharedCounterRoom, sluiceCore.SharedCounterRoom$>();
+const setRooms = new WeakMap<SetRoom, sluiceCore.SetRoom$>();
 
 function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
   requireInput(
@@ -290,6 +305,20 @@ function sharedRoomBox(handle: sluiceCore.SharedCounterRoom$): SharedCounterRoom
   return room;
 }
 
+function setRoomHandle(value: unknown): sluiceCore.SetRoom$ {
+  requireInput(
+    value !== null && typeof value === "object" && setRooms.has(value as SetRoom),
+    "expected a live set Sluice room",
+  );
+  return setRooms.get(value as SetRoom)!;
+}
+
+function setRoomBox(handle: sluiceCore.SetRoom$): SetRoom {
+  const room = Object.freeze({}) as SetRoom;
+  setRooms.set(room, handle);
+  return room;
+}
+
 function roomView(handle: sluiceCore.GCounterRoom$): GCounterRoomView {
   const snapshot = kernel(sluiceCore.gcounter_room_snapshot(handle));
   return {
@@ -327,6 +356,34 @@ function sharedRoomView(handle: sluiceCore.SharedCounterRoom$): SharedCounterRoo
     pending: sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$pending(snapshot),
     sequenceNumber:
       sluiceCore.SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$sequence_number(snapshot),
+  };
+}
+
+function setRoomView(handle: sluiceCore.SetRoom$): SetRoomView {
+  const snapshot = sluiceCore.set_room_snapshot(handle);
+  return {
+    replicas: [
+      {
+        id: "A",
+        values: Array.from(
+          sluiceCore.SetRoomSnapshot$SetRoomSnapshot$a(snapshot),
+        ).sort(),
+      },
+      {
+        id: "B",
+        values: Array.from(
+          sluiceCore.SetRoomSnapshot$SetRoomSnapshot$b(snapshot),
+        ).sort(),
+      },
+      {
+        id: "C",
+        values: Array.from(
+          sluiceCore.SetRoomSnapshot$SetRoomSnapshot$c(snapshot),
+        ).sort(),
+      },
+    ],
+    pending: sluiceCore.SetRoomSnapshot$SetRoomSnapshot$pending(snapshot),
+    sequenceNumber: sluiceCore.SetRoomSnapshot$SetRoomSnapshot$sequence_number(snapshot),
   };
 }
 
@@ -607,6 +664,73 @@ export function deliverOneSharedCounterOperation(
     const [handle, deliveries] =
       sluiceCore.sharedcounter_room_deliver_one(sharedRoomHandle(room));
     return { room, view: sharedRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function createSetRoom(kind: unknown): Result<SetTransportResult> {
+  return attempt(() => {
+    const setKind = text(kind, "invalid-input");
+    requireInput(
+      setKind === "g-set" || setKind === "two-p-set" || setKind === "or-set",
+      "kind must be g-set, two-p-set, or or-set",
+      "invalid-input",
+    );
+    const handle = kernel(sluiceCore.new_set_room(setKind));
+    const room = setRoomBox(handle);
+    return { room, view: setRoomView(handle), deliveries: [] };
+  });
+}
+
+export function stageSetRace(current: unknown): Result<SetTransportResult> {
+  return attempt(() => {
+    const room = current as SetRoom;
+    const handle = kernel(sluiceCore.set_room_stage_race(setRoomHandle(room)));
+    return { room, view: setRoomView(handle), deliveries: [] };
+  });
+}
+
+export function updateSetRoom(
+  current: unknown,
+  replicaId: unknown,
+  action: unknown,
+  element: unknown,
+): Result<SetTransportResult> {
+  return attempt(() => {
+    const room = current as SetRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(
+      replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C",
+      "invalid-input",
+    );
+    const setAction = text(action, "invalid-input");
+    requireInput(
+      setAction === "add" || setAction === "remove",
+      "action must be add or remove",
+      "invalid-input",
+    );
+    const value = text(element, "invalid-input");
+    requireInput(value.trim().length > 0, "element must not be empty", "invalid-input");
+    const handle = kernel(
+      sluiceCore.set_room_update(setRoomHandle(room), replica, setAction, value),
+    );
+    return { room, view: setRoomView(handle), deliveries: [] };
+  });
+}
+
+export function deliverSetOperations(current: unknown): Result<SetTransportResult> {
+  return attempt(() => {
+    const room = current as SetRoom;
+    const [handle, deliveries] = sluiceCore.set_room_deliver(setRoomHandle(room));
+    return { room, view: setRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function deliverOneSetOperation(current: unknown): Result<SetTransportResult> {
+  return attempt(() => {
+    const room = current as SetRoom;
+    const [handle, deliveries] = sluiceCore.set_room_deliver_one(setRoomHandle(room));
+    return { room, view: setRoomView(handle), deliveries: transportDeliveries(deliveries) };
   });
 }
 

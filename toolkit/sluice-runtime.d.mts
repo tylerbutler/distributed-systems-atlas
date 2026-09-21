@@ -6,11 +6,14 @@ export type PnCounterRoom$ = object;
 export type PnCounterRoomSnapshot$ = object;
 export type SharedCounterRoom$ = object;
 export type SharedCounterRoomSnapshot$ = object;
+export type SetRoom$ = object;
+export type SetRoomSnapshot$ = object;
 export type TransportDelivery$ = object;
 
 export function new_gcounter_room(): Result<GCounterRoom$, string>;
 export function new_pncounter_room(): Result<PnCounterRoom$, string>;
 export function new_sharedcounter_room(): Result<SharedCounterRoom$, string>;
+export function new_set_room(kind: string): Result<SetRoom$, string>;
 export function gcounter_room_stage_race(room: GCounterRoom$): Result<GCounterRoom$, string>;
 export function gcounter_room_increment(
   room: GCounterRoom$,
@@ -64,6 +67,20 @@ export function sharedcounter_room_deliver_one(
 export function sharedcounter_room_snapshot(
   room: SharedCounterRoom$,
 ): Result<SharedCounterRoomSnapshot$, string>;
+export function set_room_stage_race(room: SetRoom$): Result<SetRoom$, string>;
+export function set_room_update(
+  room: SetRoom$,
+  replica: string,
+  action: string,
+  element: string,
+): Result<SetRoom$, string>;
+export function set_room_deliver(
+  room: SetRoom$,
+): [SetRoom$, Iterable<TransportDelivery$>];
+export function set_room_deliver_one(
+  room: SetRoom$,
+): [SetRoom$, Iterable<TransportDelivery$>];
+export function set_room_snapshot(room: SetRoom$): SetRoomSnapshot$;
 export function GCounterRoomSnapshot$GCounterRoomSnapshot$a(
   value: GCounterRoomSnapshot$,
 ): number;
@@ -108,6 +125,21 @@ export function SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$pending(
 ): boolean;
 export function SharedCounterRoomSnapshot$SharedCounterRoomSnapshot$sequence_number(
   value: SharedCounterRoomSnapshot$,
+): number;
+export function SetRoomSnapshot$SetRoomSnapshot$a(
+  value: SetRoomSnapshot$,
+): Iterable<string>;
+export function SetRoomSnapshot$SetRoomSnapshot$b(
+  value: SetRoomSnapshot$,
+): Iterable<string>;
+export function SetRoomSnapshot$SetRoomSnapshot$c(
+  value: SetRoomSnapshot$,
+): Iterable<string>;
+export function SetRoomSnapshot$SetRoomSnapshot$pending(
+  value: SetRoomSnapshot$,
+): boolean;
+export function SetRoomSnapshot$SetRoomSnapshot$sequence_number(
+  value: SetRoomSnapshot$,
 ): number;
 export function TransportDelivery$TransportDelivery$to(value: TransportDelivery$): string;
 export function TransportDelivery$TransportDelivery$event(value: TransportDelivery$): string;

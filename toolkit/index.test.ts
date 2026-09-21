@@ -1,9 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
-  createSharedCounterRoom, deliverOneSharedCounterOperation,
+  createSetRoom, createSharedCounterRoom, deliverOneSharedCounterOperation,
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
-  inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
   updateSharedCounterRoom, write,
   type Change, type Result, type State,
@@ -34,6 +35,19 @@ test("the public facade returns plain JSON data and does not mutate its inputs",
     plain(result);
     plain(unwrap(inspect(result)));
   }
+});
+
+test.each([
+  ["g-set", [["Eagle Creek", "Ridge Pass"], ["Eagle Creek", "Ridge Pass"], ["Eagle Creek", "Ridge Pass"]]],
+  ["two-p-set", [[], [], []]],
+  ["or-set", [["Eagle Creek"], ["Eagle Creek"], ["Eagle Creek"]]],
+] as const)("%s Sluice room converges with its set rule", (kind, expected) => {
+  const room = unwrap(createSetRoom(kind)).room;
+  const staged = unwrap(stageSetRace(room));
+  expect(staged.view.pending).toBe(true);
+  const delivered = unwrap(deliverSetOperations(room));
+  expect(delivered.view.replicas.map(({ values }) => values)).toEqual(expected);
+  expect(delivered.view.pending).toBe(false);
 });
 
 test("equal-string register siblings retain both identities and full authored clocks", () => {

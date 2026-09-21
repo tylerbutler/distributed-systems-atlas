@@ -8,9 +8,11 @@ import {
   createPNCounter,
   createPNCounterRoom,
   createSharedCounterRoom,
+  createSetRoom,
   deliverGCounterRace,
   deliverPNCounterOperations,
   deliverSharedCounterOperations,
+  deliverSetOperations,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
@@ -24,6 +26,7 @@ import {
   stageGCounterRace,
   stagePNCounterRace,
   stageSharedCounterRace,
+  stageSetRace,
   updatePNCounter,
   updatePNCounterRoom,
   write,
@@ -115,6 +118,19 @@ const deliveredSharedRoom = unwrap(deliverSharedCounterOperations(sharedRoom));
 assert.deepEqual(deliveredSharedRoom.view.replicas.map(({ value }) => value), [12, 12, 12]);
 assert.equal(deliveredSharedRoom.view.pending, false);
 assert.equal(deliveredSharedRoom.deliveries.length, 6);
+
+for (const [kind, expected] of [
+  ["g-set", [["Eagle Creek", "Ridge Pass"], ["Eagle Creek", "Ridge Pass"], ["Eagle Creek", "Ridge Pass"]]],
+  ["two-p-set", [[], [], []]],
+  ["or-set", [["Eagle Creek"], ["Eagle Creek"], ["Eagle Creek"]]],
+]) {
+  const setRoom = unwrap(createSetRoom(kind)).room;
+  unwrap(stageSetRace(setRoom));
+  assert.deepEqual(
+    unwrap(deliverSetOperations(setRoom)).view.replicas.map(({ values }) => values),
+    expected,
+  );
+}
 
 const room = unwrap(createGCounterRoom()).room;
 const staged = unwrap(stageGCounterRace(room));
