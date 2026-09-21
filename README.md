@@ -7,9 +7,10 @@ not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
 The first focused structure lesson uses Watershed's G-counter. Alice, Bob, and
 Carol count birds on separate hikes and leave cumulative counts at known trail
-checkpoints. Readers can use Auto-deliver or hold several notes, leave Alice's
-and Bob's notes together at an adjustable speed, and safely repeat a checkpoint
-note. The first trail also
+checkpoints. Each hiker keeps a notebook table with the largest count received
+from Alice, Bob, and Carol. Readers can use Auto-deliver or hold several notes,
+leave Alice's and Bob's notes together at an adjustable speed, and safely
+repeat a checkpoint note. The first trail also
 contains seven published reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.

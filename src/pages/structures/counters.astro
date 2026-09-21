@@ -65,9 +65,44 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
       <h2 id="race-title">Their checkpoint notes cross</h2>
       <p>
         Before splitting up, the friends agree on known checkpoints where they
-        can leave their latest count. Alice leaves a note after seeing 7 birds.
-        Bob leaves another after seeing 3. Carol is on the forest trail and has
-        not counted a bird yet.
+        can leave their latest count. Each hiker keeps a table in a notebook,
+        with one row for Alice, Bob, and Carol. A row holds the largest count
+        that hiker has reported so far. Adding the three rows gives the shared
+        bird count.
+      </p>
+      <p>
+        Alice leaves a note after seeing 7 birds. Bob leaves another after
+        seeing 3. Carol has not counted a bird yet. When Carol finds those
+        notes at different checkpoints, her notebook changes like this:
+      </p>
+      <figure class="notebook">
+        <table aria-label="Carol's notebook at each checkpoint">
+          <thead>
+            <tr>
+              <th scope="col">Checkpoint and note</th>
+              <th scope="col">Alice</th>
+              <th scope="col">Bob</th>
+              <th scope="col">Carol</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Trailhead</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">North fork: Alice 7</th><td>7</td><td>0</td><td>0</td><td>7</td></tr>
+            <tr><th scope="row">River bridge: Bob 3</th><td>7</td><td>3</td><td>0</td><td>10</td></tr>
+            <tr><th scope="row">Old lookout: Alice 4</th><td>7</td><td>3</td><td>0</td><td>10</td></tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Each row shows Carol's notebook after she reads the note at that checkpoint.
+        </figcaption>
+      </figure>
+      <p>
+        Carol might find Alice's note for 7, then Bob's note for 3, then an
+        older Alice note for 4. The last note does not lower Alice's row:
+        <code>max(7, 4) = 7</code>. If Carol finds 4 before 7, the row changes
+        from 0 to 4 to 7. Both arrival orders produce the same notebook and the
+        same total.
       </p>
       <p>
         Copies of the notes do not reach every checkpoint at once. Alice can
@@ -183,6 +218,41 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     padding: var(--space-4);
     border-block: var(--rule-width) solid var(--line);
     background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+  }
+
+  .notebook {
+    margin-block: var(--space-5);
+    padding-block: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    overflow-x: auto;
+  }
+
+  .notebook table {
+    width: 100%;
+    min-width: 36rem;
+    border-collapse: collapse;
+  }
+
+  .notebook :is(th, td) {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: var(--rule-width) solid var(--line-faint);
+    text-align: left;
+  }
+
+  .notebook td {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .notebook tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
+
+  .notebook figcaption {
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
   }
 
   .counter-family {

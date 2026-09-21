@@ -65,6 +65,9 @@ point, never private Watershed build paths.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
 separate hikes and leave cumulative counts at known trail checkpoints.
+Each hiker keeps a notebook table with one maximum count per hiker and sums
+those rows for the shared total. A worked example shows Carol receiving older
+and newer notes in different orders without changing the final result.
 Auto-deliver is on by default, so each note reaches the other hikers
 immediately. Readers can turn it off to hold several notes, then turn it back on
 to share them. Atlas animates notes between hikers and checkpoints at a

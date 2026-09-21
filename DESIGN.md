@@ -300,6 +300,9 @@ all three clients. A later outbound note can overlap an earlier return wave.
 Sulfur marks new notes; clear marks identify copies traveling to other hikers.
 Moving notes are circular and label both the hiker and their unscaled
 1000ms network latency.
+The article shows Carol's notebook as a table with one maximum count per hiker.
+An older Alice note arriving after a newer one leaves Alice's row unchanged,
+which makes order-independent merge concrete before the interactive demo.
 Client controls can hold several checkpoint notes by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
 Readers control playback speed.

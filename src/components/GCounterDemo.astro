@@ -155,14 +155,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </aside>
 
     <details class="gcounter-explanation">
-      <summary>Explain why repeating a checkpoint note is safe</summary>
+      <summary>Open the hikers' count tables</summary>
       <div>
         <p>
-          Each client stores the largest bird count it has observed for Alice,
-          Bob, and Carol. Checkpoint notes can arrive in any order; the
-          G-counter kernel keeps the largest count left by each hiker.
+          Each hiker's notebook has one row for Alice, Bob, and Carol. A row
+          stores the largest count received from that hiker. Checkpoint notes
+          can arrive in any order.
         </p>
-        <table aria-label="Bird counts left by each hiker">
+        <table aria-label="Largest counts in each hiker's notebook">
           <thead>
             <tr>
               <th scope="col">Hiker</th>
@@ -183,9 +183,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
           </tbody>
         </table>
         <p>
-          Repeat sends the latest hiker's running count again. Every replica
-          compares the same cumulative count with itself, so the maximum does
-          not change.
+          A repeated or older note cannot lower a row. Each hiker compares the
+          note with the count already in the table and keeps the larger value.
         </p>
       </div>
     </details>

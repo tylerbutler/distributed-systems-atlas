@@ -35,8 +35,8 @@ test("the hikers' checkpoint notes converge and a repeated note is safe", async 
     "Alice left a checkpoint note for Alice, Bob, Carol",
   );
 
-  await demo.getByText("Explain why repeating a checkpoint note is safe", { exact: true }).click();
-  await expect(demo.getByRole("table", { name: "Bird counts left by each hiker" })
+  await demo.getByText("Open the hikers' count tables", { exact: true }).click();
+  await expect(demo.getByRole("table", { name: "Largest counts in each hiker's notebook" })
     .locator("tbody td")).toHaveText(["7", "7", "7", "3", "3", "3", "0", "0", "0"]);
 
   const resendB = demo.getByRole("button", { name: "Repeat Bob's note" });
@@ -170,6 +170,15 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
       name: "Bob takes a different trail",
     })).toBeVisible();
     await expect(page.getByText("It does not add every message")).toBeVisible();
+    await expect(page.getByRole("table", {
+      name: "Carol's notebook at each checkpoint",
+    }).locator("tbody tr")).toHaveText([
+      "Trailhead0000",
+      "North fork: Alice 77007",
+      "River bridge: Bob 373010",
+      "Old lookout: Alice 473010",
+    ]);
+    await expect(page.getByText("max(7, 4) = 7")).toBeVisible();
     const eventualConsistencyDefinition = page.getByLabel("eventual consistency definition");
     await expect(eventualConsistencyDefinition).toContainText(
       "After every message arrives, they converge on the same value.",
@@ -190,10 +199,12 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
     await expect(page.locator("[data-guided-panel]")).toBeHidden();
-    const explanation = page.getByText("Explain why repeating a checkpoint note is safe", { exact: true });
+    const explanation = page.getByText("Open the hikers' count tables", { exact: true });
     await explanation.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("table", { name: "Bird counts left by each hiker" })).toBeVisible();
+    await expect(page.getByRole("table", {
+      name: "Largest counts in each hiker's notebook",
+    })).toBeVisible();
   } finally {
     await context.close();
   }
