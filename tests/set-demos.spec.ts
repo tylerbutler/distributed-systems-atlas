@@ -124,6 +124,21 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         )).toBeVisible();
         await expect(page.getByLabel("TwoPSet composition and membership rule"))
           .toContainText("TwoPSet = additions GSet + removals GSet");
+      } else if (testId === "or-set-demo") {
+        const notebooks = page.getByRole("table", {
+          name: "Observed-remove notebooks before records meet",
+        });
+        await expect(notebooks.getByRole("columnheader")).toHaveText([
+          "Notebook",
+          "Additions page",
+          "Removals page",
+          "Highest tag number seen",
+          "Visible list",
+        ]);
+        await expect(notebooks.getByRole("row", { name: /^Bob / }).locator("code"))
+          .toHaveText(["A:1", "B:2", "2"]);
+        await expect(notebooks.getByRole("row", { name: /^Alice / }).locator("code"))
+          .toHaveText(["A:1", "1"]);
       }
     }
   } finally {

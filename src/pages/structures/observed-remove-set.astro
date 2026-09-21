@@ -53,28 +53,60 @@ import "../../styles/set-lesson.css";
         term="observed-remove set"
         definition="A replicated set whose remove operation targets only addition tags observed by the removing replica."
       />
+      <p>
+        Each additions-page row pairs a beacon name with its tag. Each
+        removals-page row copies the same pair, so an old note cannot restore
+        that installation. The notebook also keeps the highest tag number seen.
+        Bob has seen <code>A:1</code>, so his next tag is <code>B:2</code>.
+      </p>
       <figure>
         <table aria-label="Observed-remove notebooks before records meet">
           <thead>
             <tr>
               <th scope="col">Notebook</th>
-              <th scope="col">Live addition tags</th>
-              <th scope="col">Removed tags known</th>
+              <th scope="col">Additions page</th>
+              <th scope="col">Removals page</th>
+              <th scope="col">Highest tag number seen</th>
               <th scope="col">Visible list</th>
             </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice</th><td>empty</td><td><code>A:1</code></td><td>empty</td></tr>
-            <tr><th scope="row">Bob</th><td><code>A:1</code>, <code>B:2</code></td><td>empty</td><td>Eagle Creek</td></tr>
-            <tr><th scope="row">Carol</th><td><code>A:1</code></td><td>empty</td><td>Eagle Creek</td></tr>
+            <tr>
+              <th scope="row">Alice</th>
+              <td>empty</td>
+              <td>Eagle Creek: <code>A:1</code></td>
+              <td><code>1</code></td>
+              <td>empty</td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td>
+                Eagle Creek: <code>A:1</code><br />
+                Eagle Creek: <code>B:2</code>
+              </td>
+              <td>empty</td>
+              <td><code>2</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td>Eagle Creek: <code>A:1</code></td>
+              <td>empty</td>
+              <td><code>1</code></td>
+              <td>Eagle Creek</td>
+            </tr>
           </tbody>
         </table>
-        <figcaption>The visible name alone does not show which installation a notebook knows.</figcaption>
+        <figcaption>
+          The notebook preserves the name, identity, removal knowledge, and
+          counter needed to interpret the next note.
+        </figcaption>
       </figure>
       <p>
-        After all records arrive, each notebook retains <code>B:2</code> as the
-        live addition and <code>A:1</code> as removed. The visible list contains
-        Eagle Creek because the replacement tag remains.
+        After all records arrive, each additions page retains Eagle Creek:
+        <code>B:2</code>, each removals page retains Eagle Creek:
+        <code>A:1</code>, and each highest tag number is <code>2</code>. The
+        visible list contains Eagle Creek because the replacement tag remains.
       </p>
     </section>
 
