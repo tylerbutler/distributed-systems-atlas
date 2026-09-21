@@ -5,7 +5,7 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
 
 <BaseLayout
   title="Counters"
-  description="Start with a grow-only counter. Run concurrent increments through Watershed Sluice and see why resending a component does not count twice."
+  description="Start with a grow-only counter. Run concurrent increments through Watershed Sluice and see why resending a user's count does not count twice."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -69,13 +69,13 @@ value = count[A] + count[B] + ...</code></pre>
       <h2 id="result-title">Both increments survive</h2>
       <p>
         After delivery, all three replicas read 10. A did not overwrite B, and
-        B did not overwrite A. Each writer owns a separate component, so merge
+        B did not overwrite A. Each user has a separate count, so merge
         can keep both facts and C can learn the complete value.
       </p>
       <p>
         For each replica ID, merge keeps the larger count. This rule is
         commutative, associative, and idempotent. Arrival order does not change
-        the         answer, and the same component can arrive more than once.
+        the answer, and the same user's count can arrive more than once.
       </p>
     </section>
 

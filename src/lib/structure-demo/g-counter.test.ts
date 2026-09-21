@@ -4,7 +4,7 @@ import {
   deliverRace,
   incrementReplica,
   presentGCounterDemo,
-  resendComponent,
+  resendUserCount,
   stageRace,
 } from "./g-counter";
 
@@ -14,7 +14,7 @@ const success = <T extends { ok: boolean }>(result: T): Extract<T, { ok: true }>
 };
 
 describe("G-counter sequencer lesson", () => {
-  test("lets each client increment its own local component", () => {
+  test("lets each client increment its user's local count", () => {
     let state = success(incrementReplica(createGCounterDemo(), "C", 3)).state;
     state = success(incrementReplica(state, "A", 1)).state;
     const queued = presentGCounterDemo(state);
@@ -50,11 +50,11 @@ describe("G-counter sequencer lesson", () => {
     expect(new Set(view.deliveries.map(({ to }) => to))).toEqual(new Set(["A", "B", "C"]));
   });
 
-  test("resending B's cumulative component changes no client value", () => {
+  test("resending B's cumulative count changes no client value", () => {
     const staged = success(stageRace(createGCounterDemo())).state;
     const delivered = success(deliverRace(staged)).state;
     const before = presentGCounterDemo(delivered).replicas;
-    const resent = success(resendComponent(delivered)).state;
+    const resent = success(resendUserCount(delivered)).state;
     const view = presentGCounterDemo(resent);
     expect(view.replicas).toEqual(before);
     expect(view.deliveries).toHaveLength(9);

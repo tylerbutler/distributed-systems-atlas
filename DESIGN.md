@@ -280,7 +280,7 @@ A structure lesson uses one broad instrument field with the merge question,
 at least three client values, direct controls on each client, one primary race,
 any resolution action needed by the rule, reset, and a literal result sentence.
 The familiar value stays larger than its metadata.
-Per-replica components, dots, timestamps, or other bookkeeping stay in an
+Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
 The G-counter demo is the first instance: three separate station records show
@@ -299,8 +299,8 @@ Client controls can build a multi-operation queue by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
 Readers control playback speed.
 An optional `Guided observations` layer reveals the Sluice implementation and
-adds timed callouts with signal-colored circle and box marks. The A, B, and C
-components appear in a ruled table after
+adds timed callouts with signal-colored circle and box marks. The counts for
+users A, B, and C appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
 

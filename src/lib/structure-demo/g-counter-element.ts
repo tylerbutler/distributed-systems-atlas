@@ -3,7 +3,7 @@ import {
   deliverNextOperation,
   incrementReplica,
   presentGCounterDemo,
-  resendComponent,
+  resendUserCount,
   stageRace,
   type GCounterDemoResult,
   type GCounterDemoState,
@@ -61,7 +61,7 @@ class GCounterDemoElement extends HTMLElement {
       await this.runRace();
     });
     this.button("resend").addEventListener("click", async () => {
-      await this.applyAnimated(resendComponent(this.state), this.button("resend"));
+      await this.applyAnimated(resendUserCount(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
       this.resetFlow();
@@ -392,9 +392,9 @@ class GCounterDemoElement extends HTMLElement {
       view.pending
         ? replica.value > 0 ? "Local view · delivery pending" : "Waiting for delivery"
         : view.phase === "initial" ? "Connected to sequencer" : "Synchronized";
-    for (const component of replica.counts) {
-      this.querySelector(`[data-component="${replica.id}-${component.replicaId}"]`)!.textContent =
-        String(component.count);
+    for (const userCount of replica.counts) {
+      this.querySelector(`[data-user-count="${replica.id}-${userCount.replicaId}"]`)!.textContent =
+        String(userCount.count);
     }
   }
 
@@ -441,8 +441,8 @@ class GCounterDemoElement extends HTMLElement {
     this.button("resend").disabled =
       this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
-      ? `Resend ${view.latestAuthor}'s component`
-      : "Resend latest component";
+      ? `Resend ${view.latestAuthor}'s count`
+      : "Resend latest user's count";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
     this.querySelector<HTMLInputElement>("[data-auto-deliver]")!.disabled = false;

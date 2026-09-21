@@ -8,8 +8,8 @@ not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 The first focused structure lesson uses Watershed's G-counter and JavaScript
 Sluice transport. Readers can queue increments from any of three clients,
 use Auto-deliver or build a queue, run an authored race at an adjustable
-speed, and resend a cumulative component safely. The first trail also contains seven published
-reference sheets, each with a deterministic browser lab:
+speed, and resend a user's cumulative count safely. The first trail also
+contains seven published reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it

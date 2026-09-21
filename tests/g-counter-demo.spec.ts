@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("the sequencer delivers the G-counter race and safely resends a component", async ({ page }) => {
+test("the sequencer delivers the G-counter race and safely resends a user's count", async ({ page }) => {
   await page.goto("/structures/counters/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
@@ -31,16 +31,16 @@ test("the sequencer delivers the G-counter race and safely resends a component",
   await expect(log.getByRole("listitem")).toHaveCount(2);
   await expect(log).toContainText("SN 1 · A report to A, B, C");
 
-  await demo.getByText("Explain why a component resend is safe", { exact: true }).click();
-  await expect(demo.getByRole("table", { name: "Per-client G-counter components" })
+  await demo.getByText("Explain why resending a user's count is safe", { exact: true }).click();
+  await expect(demo.getByRole("table", { name: "Reported counts by user" })
     .locator("tbody td")).toHaveText(["7", "7", "7", "3", "3", "3", "0", "0", "0"]);
 
-  const resendB = demo.getByRole("button", { name: "Resend B's component" });
+  const resendB = demo.getByRole("button", { name: "Resend B's count" });
   await resendB.press("Space");
   await expect(totals).toHaveText(["10", "10", "10"]);
   await expect(resendB).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The sequencer resent B's component. All three clients still read 10.",
+    "The sequencer resent B's count. All three clients still read 10.",
   );
   await expect(log.getByRole("listitem")).toHaveCount(3);
   await resendB.click();
@@ -157,10 +157,10 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
     await expect(page.locator("[data-guided-panel]")).toBeHidden();
-    const explanation = page.getByText("Explain why a component resend is safe", { exact: true });
+    const explanation = page.getByText("Explain why resending a user's count is safe", { exact: true });
     await explanation.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByRole("table", { name: "Per-client G-counter components" })).toBeVisible();
+    await expect(page.getByRole("table", { name: "Reported counts by user" })).toBeVisible();
   } finally {
     await context.close();
   }

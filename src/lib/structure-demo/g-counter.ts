@@ -194,12 +194,12 @@ export function deliverNextOperation(state: GCounterDemoState): GCounterDemoResu
   }
 }
 
-export function resendComponent(state: GCounterDemoState): GCounterDemoResult {
+export function resendUserCount(state: GCounterDemoState): GCounterDemoResult {
   if (state.view.pending) {
-    return failure(state, "Component resend", "deliver the queued operations first");
+    return failure(state, "Count resend", "deliver the queued operations first");
   }
   if (state.latestAuthor === null) {
-    return failure(state, "Component resend", "add and deliver an increment first");
+    return failure(state, "Count resend", "add and deliver an increment first");
   }
   try {
     const resent = value(resendGCounterComponent(state.room, state.latestAuthor));
@@ -212,15 +212,15 @@ export function resendComponent(state: GCounterDemoState): GCounterDemoResult {
         ...resent,
         deliveries: [...state.deliveries, ...resent.deliveries].slice(-MAX_RECORDED_DELIVERIES),
         latestDeliveries: resent.deliveries,
-        result: `The sequencer resent ${state.latestAuthor}'s component. All three clients still read ${total}.`,
+        result: `The sequencer resent ${state.latestAuthor}'s count. All three clients still read ${total}.`,
       },
     };
   } catch (error) {
-    return failure(state, "Component resend", error);
+    return failure(state, "Count resend", error);
   }
 }
 
-function componentCounts(
+function userCounts(
   state: GCounterDemoState,
   replica: ReplicaId,
 ): Array<{ replicaId: ReplicaId; count: number }> {
@@ -235,7 +235,7 @@ export function presentGCounterDemo(state: GCounterDemoState): GCounterDemoView 
     phase: state.phase,
     replicas: state.view.replicas.map((replica) => ({
       ...replica,
-      counts: componentCounts(state, replica.id),
+      counts: userCounts(state, replica.id),
     })),
     pending: state.view.pending,
     queuedOperations: state.queuedOperations,

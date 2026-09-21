@@ -103,7 +103,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
         Run A +7 and B +3 race
       </button>
       <button type="button" data-action="resend" disabled>
-        Resend latest component
+        Resend latest user's count
       </button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <label class="guided-toggle">
@@ -153,35 +153,35 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </aside>
 
     <details class="gcounter-explanation">
-      <summary>Explain why a component resend is safe</summary>
+      <summary>Explain why resending a user's count is safe</summary>
       <div>
         <p>
           Each client stores the largest count it has observed for A, B, and
           C. The sequencer orders and broadcasts each operation; the G-counter
-          kernel merges the cumulative components.
+          kernel keeps the largest count reported by each user.
         </p>
-        <table aria-label="Per-client G-counter components">
+        <table aria-label="Reported counts by user">
           <thead>
             <tr>
-              <th scope="col">Component</th>
+              <th scope="col">User</th>
               <th scope="col">At A</th>
               <th scope="col">At B</th>
               <th scope="col">At C</th>
             </tr>
           </thead>
           <tbody>
-            {(["A", "B", "C"] as const).map((component) => (
+            {(["A", "B", "C"] as const).map((user) => (
               <tr>
-                <th scope="row">{component}</th>
+                <th scope="row">User {user}</th>
                 {(["A", "B", "C"] as const).map((replica) => (
-                  <td class="observation-data" data-component={`${replica}-${component}`}>0</td>
+                  <td class="observation-data" data-user-count={`${replica}-${user}`}>0</td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
         <p>
-          Resend submits the latest author's current component again as a zero
+          Resend submits the latest user's current count again as a zero
           increment. The transport assigns a new sequence number, but every
           kernel compares the same cumulative count with itself. The maximum
           does not change.
