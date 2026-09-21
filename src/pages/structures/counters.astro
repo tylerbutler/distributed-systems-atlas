@@ -20,6 +20,31 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
       </p>
     </header>
 
+    <section aria-labelledby="sluice-title">
+      <h2 id="sluice-title">Sluice sequences and relays changes</h2>
+      <p>
+        Replicas in a distributed data structure need a way to exchange their
+        changes. They can send changes directly to their peers, or they can
+        send them through a server. The demos on this site use Sluice, a small
+        server sequencer. It accepts operations from the clients, puts them in
+        one total order, and relays them to every connected replica.
+      </p>
+      <p>
+        Data structures define different operations and use the ordered stream
+        in different ways. Some use the sequence number to resolve changes.
+        Others, including the G-counter below, do not use it in their merge
+        rule. They still need the relay so each replica receives the changes.
+        A server sequencer provides one transport model that can carry all of
+        these data structures.
+      </p>
+      <p>
+        Sluice is not a data structure, and it does not decide how changes
+        merge. It plays the server's role inside the demos and lets them pause
+        delivery so clients can change independently. You can then release the
+        queued operations and watch the replicas converge.
+      </p>
+    </section>
+
     <section aria-labelledby="value-title">
       <h2 id="value-title">The value is familiar</h2>
       <p>

@@ -87,6 +87,11 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     const page = await context.newPage();
     await page.goto("/structures/counters/");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
+    await expect(
+      page.getByRole("heading", { name: "Sluice sequences and relays changes" }),
+    ).toBeVisible();
+    await expect(page.getByText("puts them in one total order")).toBeVisible();
+    await expect(page.getByText("Sluice is not a data structure")).toBeVisible();
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
     await expect(page.getByText("After delivery, all three replicas read 10.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
