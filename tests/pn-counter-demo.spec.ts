@@ -65,6 +65,26 @@ test("manual sightings and corrections deliver immediately", async ({ page }) =>
   );
 });
 
+test("replica controls stay active while several notes travel", async ({ page }) => {
+  await page.goto("/structures/pn-counter/");
+  const demo = page.getByTestId("pn-counter-demo");
+  const alice = demo.getByRole("button", { name: "Record 1 more bird for Alice" });
+  const bob = demo.getByRole("button", { name: "Correct 1 duplicate sighting for Bob" });
+  const carol = demo.getByRole("button", { name: "Record 3 more birds for Carol" });
+
+  await alice.click();
+  await expect(bob).toBeEnabled();
+  await bob.click();
+  await expect(carol).toBeEnabled();
+  await carol.click();
+
+  await expect(demo.locator("[data-pn-total]")).toHaveText(["13", "13", "13"], {
+    timeout: 10_000,
+  });
+  await expect(demo.getByRole("list", { name: "Correction note log" })
+    .getByRole("listitem")).toHaveCount(3);
+});
+
 test("PN-counter notes use the same Sluice motion language", async ({ page }) => {
   await page.goto("/structures/pn-counter/");
   const demo = page.getByTestId("pn-counter-demo");

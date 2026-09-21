@@ -34,32 +34,24 @@ function signed(amount: number): string {
 
 class PNCounterDemoElement extends HTMLElement {
   private state: PNCounterDemoState = createPNCounterDemo();
-  private busy = false;
+  private delivering = false;
   private generation = 0;
+  private outboundArrivals: Promise<void>[] = [];
+  private activeBroadcasts = new Set<Promise<void>>();
   private activeAnimations = new Set<Animation>();
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-update]")) {
-      button.addEventListener("click", async () => {
+      button.addEventListener("click", () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.update);
         const result = updatePNReplica(this.state, replica, amount);
-        if (!result.ok) {
-          this.apply(result, button);
-          return;
-        }
-        this.state = result.state;
-        this.busy = true;
-        this.render();
-        await this.animateHop(
-          this.querySelector<HTMLElement>(`[data-client="${replica}"]`)!,
-          this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-          `${pnCounterUserName(replica)} ${signed(amount)}`,
-          "outbound",
-        );
-        await this.deliverQueued(button);
+        this.apply(result, button);
+        if (!result.ok) return;
+        this.queueOutbound(replica, `${pnCounterUserName(replica)} ${signed(amount)}`);
+        void this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", async () => {
@@ -90,41 +82,41 @@ class PNCounterDemoElement extends HTMLElement {
       return;
     }
     this.state = staged.state;
-    this.busy = true;
     this.render();
-    await Promise.all([
-      this.animateHop(
-        this.querySelector<HTMLElement>('[data-client="A"]')!,
-        this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-        "Alice +3",
-        "outbound",
-      ),
-      this.animateHop(
-        this.querySelector<HTMLElement>('[data-client="B"]')!,
-        this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-        "Bob -1",
-        "outbound",
-      ),
-    ]);
+    this.queueOutbound("A", "Alice +3");
+    this.queueOutbound("B", "Bob -1");
     await this.deliverQueued(this.button("race"));
   }
 
   private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
-    const result = deliverPNOperations(this.state);
-    if (!result.ok) {
-      this.setBusy(false);
-      this.apply(result, focus);
-      return;
-    }
-    this.setBusy(true);
+    if (this.delivering) return;
+    this.delivering = true;
+    this.renderControls();
     const generation = this.generation;
-    const view = presentPNCounterDemo(result.state);
-    await this.animateDeliveries(view.latestDeliveries, generation);
-    if (generation !== this.generation) return;
-    this.state = result.state;
-    this.setBusy(false);
-    this.render();
-    (focus.disabled ? this.button("reset") : focus).focus();
+    try {
+      while (presentPNCounterDemo(this.state).canDeliver) {
+        while (this.outboundArrivals.length > 0) {
+          await Promise.all(this.outboundArrivals.splice(0));
+          if (generation !== this.generation) return;
+        }
+        const result = deliverPNOperations(this.state);
+        if (!result.ok) {
+          this.apply(result, focus);
+          return;
+        }
+        this.state = result.state;
+        const view = presentPNCounterDemo(this.state);
+        this.render();
+        this.launchBroadcast(view.latestDeliveries, generation);
+      }
+    } finally {
+      if (generation !== this.generation) return;
+      this.delivering = false;
+      this.renderControls();
+      if (presentPNCounterDemo(this.state).canDeliver) {
+        void this.deliverQueued(focus);
+      }
+    }
   }
 
   private apply(result: PNCounterDemoResult, focus: HTMLElement): void {
@@ -141,9 +133,27 @@ class PNCounterDemoElement extends HTMLElement {
     (result.ok ? focus : this.button("reset")).focus();
   }
 
-  private setBusy(busy: boolean): void {
-    this.busy = busy;
-    this.renderControls();
+  private queueOutbound(author: ReplicaId, label: string): void {
+    this.outboundArrivals.push(this.animateHop(
+      this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
+      this.querySelector<HTMLElement>("[data-sequencer-node]")!,
+      label,
+      "outbound",
+    ));
+  }
+
+  private launchBroadcast(
+    deliveries: ReturnType<typeof presentPNCounterDemo>["latestDeliveries"],
+    generation: number,
+  ): void {
+    const broadcast = this.animateDeliveries(deliveries, generation);
+    this.activeBroadcasts.add(broadcast);
+    void broadcast.finally(() => {
+      this.activeBroadcasts.delete(broadcast);
+      if (generation === this.generation && this.activeBroadcasts.size === 0) {
+        this.render();
+      }
+    });
   }
 
   private async animateDeliveries(
@@ -214,7 +224,9 @@ class PNCounterDemoElement extends HTMLElement {
 
   private resetFlow(): void {
     this.generation += 1;
-    this.busy = false;
+    this.delivering = false;
+    this.outboundArrivals = [];
+    this.activeBroadcasts.clear();
     for (const animation of this.activeAnimations) animation.cancel();
     this.activeAnimations.clear();
     this.querySelector<HTMLElement>("[data-operation-layer]")!.replaceChildren();
@@ -222,10 +234,10 @@ class PNCounterDemoElement extends HTMLElement {
 
   private renderControls(): void {
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-update]")) {
-      button.disabled = this.busy;
+      button.disabled = false;
     }
-    this.button("race").disabled = this.busy;
-    this.button("reset").disabled = this.busy;
+    this.button("race").disabled = this.delivering;
+    this.button("reset").disabled = false;
   }
 
   private render(): void {

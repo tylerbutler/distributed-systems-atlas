@@ -1,3 +1,222 @@
 ---
-return Astro.redirect("/structures/g-counter/", 301);
+import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
+
+<BaseLayout
+  title="Counters"
+  description="Compare replicated counters that only grow with counters that also record corrections."
+  territory="Structures"
+  sheetTitle="Counters"
+>
+  <article class="counter-family">
+    <header class="page-intro">
+      <p class="territory-label">Structure family</p>
+      <h1>Counters</h1>
+      <p>
+        A shared number looks simple until several replicas change it at once.
+        Counter designs differ in which changes they permit and what they must
+        remember so repeated or reordered messages stay safe.
+      </p>
+    </header>
+
+    <section aria-labelledby="g-counter-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="g-counter-title">G-counter</h2>
+          <p>A grow-only counter for independent increments.</p>
+        </div>
+        <code>g_counter_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Each replica owns one component and can only raise it. Merge keeps
+            the largest value for every replica, so duplicate and reordered
+            messages do not change the result.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Distributed metrics and tallies that never decrease</li>
+            <li>At-least-once delivery where an increment may arrive again</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Increment only</dd></div>
+          <div><dt>Merge rule</dt><dd>Per-replica maximum</dd></div>
+          <div><dt>Metadata</dt><dd>One integer per replica</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/g-counter/">Read the G-counter lesson</a>
+    </section>
+
+    <section aria-labelledby="pn-counter-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="pn-counter-title">PN-counter</h2>
+          <p>A counter that preserves concurrent additions and corrections.</p>
+        </div>
+        <code>pn_counter_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            A PN-counter pairs two G-counters. One records positive changes and
+            the other records negative changes. Each half merges by
+            per-replica maximum, then the counter subtracts the negative total.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Offline counters that must increase and decrease</li>
+            <li>Corrections that may be delivered more than once</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Increment and decrement</dd></div>
+          <div><dt>Merge rule</dt><dd>Maximum on both component sets</dd></div>
+          <div><dt>Metadata</dt><dd>Two integers per replica</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/pn-counter/">Read the PN-counter lesson</a>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/">Browse all structure families</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .counter-family {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .page-intro {
+    margin-bottom: var(--space-7);
+  }
+
+  .page-intro > p:last-child {
+    font-size: 1.2rem;
+  }
+
+  .counter-family > section {
+    position: relative;
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border: var(--rule-width) solid var(--line);
+    background: var(--clear);
+  }
+
+  section > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  section h2,
+  section header p {
+    margin: 0;
+  }
+
+  section h2 {
+    margin-block: var(--space-1);
+  }
+
+  .structure-kind {
+    color: var(--instrument);
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  section header code {
+    color: var(--muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .structure-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 0.7fr);
+    gap: var(--space-6);
+    padding-block: var(--space-5);
+  }
+
+  .structure-body p,
+  .structure-body h3 {
+    margin-top: 0;
+  }
+
+  .structure-body h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+  }
+
+  .structure-body ul {
+    margin-bottom: 0;
+  }
+
+  dl {
+    margin: 0;
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  dl div {
+    padding-block: var(--space-3);
+  }
+
+  dl div + div {
+    border-top: var(--rule-width) solid var(--line-faint);
+  }
+
+  dt {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+  }
+
+  .structure-link {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  @media (width < 42rem) {
+    .counter-family > section {
+      padding: var(--space-4);
+    }
+
+    section > header,
+    .structure-body {
+      grid-template-columns: 1fr;
+    }
+
+    section > header {
+      display: grid;
+      gap: var(--space-2);
+    }
+  }
+</style>

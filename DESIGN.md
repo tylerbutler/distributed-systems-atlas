@@ -329,6 +329,10 @@ An original line-art field illustration follows the label. It uses generous
 space, a centered notebook or field object, and a small narrative detail to
 explain the merge before the interactive instrument.
 
+Each structure family has a top-level comparison page. One ruled section per
+structure summarizes its use, merge rule, metadata, and model, then links to
+the dedicated lesson page.
+
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
 lesson with one authored race. Direct structure controls can supplement that

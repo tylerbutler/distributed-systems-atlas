@@ -55,6 +55,9 @@ Published sheet metadata and standalone structure lessons supply glossary
 definitions. Sheet metadata also supplies bibliography entries; the build
 rejects conflicting entries and broken internal references.
 
+Each structure family has an overview page that compares the structures in
+that family. Each implemented structure also has its own lesson page.
+
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter
 and PN-counter demos and reference engines for ordering, clocks, and Dots.

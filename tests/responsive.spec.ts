@@ -332,11 +332,11 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     const headline = page.getByRole("heading", { level: 1 });
     const path = page.getByRole("list", { name: "Data structure learning path" });
     const pathItems = path.getByRole("listitem");
-    const primary = page.getByRole("link", { name: "Start with G-counter", exact: true });
+    const primary = page.getByRole("link", { name: "Start with counters", exact: true });
     const secondary = page.getByRole("link", { name: "Open the full atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
-    await expect(pathItems).toHaveCount(5);
+    await expect(pathItems).toHaveCount(4);
 
     const sectionBox = await sectionTwo.boundingBox();
     expect(sectionBox).not.toBeNull();
@@ -359,7 +359,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
 test("the landing structure path keeps its intended order", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("list", { name: "Data structure learning path" })
-    .getByRole("heading", { level: 2 })).toHaveText(["G-counter", "PN-counter", "Registers", "Sets", "Maps"]);
+    .getByRole("heading", { level: 2 })).toHaveText(["Counters", "Registers", "Sets", "Maps"]);
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {

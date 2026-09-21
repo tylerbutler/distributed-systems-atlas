@@ -288,21 +288,19 @@ test("the landing page leads with data structures", async ({ page }) => {
     "Start with the data you need to share",
   );
   await expect(
-    page.getByRole("link", { name: "Start with G-counter", exact: true }),
-  ).toHaveAttribute("href", "/structures/g-counter/");
+    page.getByRole("link", { name: "Start with counters", exact: true }),
+  ).toHaveAttribute("href", "/structures/counters/");
   await expect(page.getByRole("link", { name: "Open the full atlas", exact: true }))
     .toHaveAttribute("href", "/atlas/");
   const structures = page.getByRole("list", { name: "Data structure learning path" });
   await expect(structures.getByRole("listitem")).toHaveText([
-    "1G-counterWhy independent increments can merge without choosing a winner.Read now",
-    "2PN-counterHow concurrent additions and corrections both survive.Read now",
-    "3RegistersWhat one shared value should do when two replicas write at once.Read now",
-    "4SetsWhy removing an item requires evidence about the additions you saw.Read now",
-    "5MapsHow a structure composes conflict rules across named fields.Planned",
+    "1CountersHow independent additions and corrections merge without duplication.Read now",
+    "2RegistersWhat one shared value should do when two replicas write at once.Read now",
+    "3SetsWhy removing an item requires evidence about the additions you saw.Read now",
+    "4MapsHow a structure composes conflict rules across named fields.Planned",
   ]);
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
-    "G-counter",
-    "PN-counter",
+    "Counters",
     "Registers",
     "Sets",
     "Maps",
@@ -321,9 +319,25 @@ test("the landing page leads with data structures", async ({ page }) => {
     "Vector clocks Read now",
   ]);
   await expect(trail.getByRole("link")).toHaveCount(7);
-  const finalEntry = page.getByRole("link", { name: "Start with the G-counter", exact: true });
+  const finalEntry = page.getByRole("link", { name: "Open the counter family", exact: true });
   await finalEntry.click();
-  await expect(page).toHaveURL(/\/structures\/g-counter\/$/);
+  await expect(page).toHaveURL(/\/structures\/counters\/$/);
+});
+
+test("the counter family page links each counter lesson", async ({ page }) => {
+  await page.goto("/structures/counters/");
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
+  await expect(page.getByRole("region", { name: "G-counter" })).toContainText(
+    "Per-replica maximum",
+  );
+  await expect(page.getByRole("region", { name: "PN-counter" })).toContainText(
+    "Increment and decrement",
+  );
+  await expect(page.getByRole("link", { name: "Read the G-counter lesson" }))
+    .toHaveAttribute("href", "/structures/g-counter/");
+  await expect(page.getByRole("link", { name: "Read the PN-counter lesson" }))
+    .toHaveAttribute("href", "/structures/pn-counter/");
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {
@@ -335,7 +349,7 @@ test("landing page works without client JavaScript", async ({ browser }) => {
     "Start with the data you need to share",
   );
   await expect(page.getByRole("list", { name: "Data structure learning path" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Start with G-counter", exact: true }))
+  await expect(page.getByRole("link", { name: "Start with counters", exact: true }))
     .toBeVisible();
   await expect(page.getByRole("link", { name: "Open the full atlas" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
@@ -345,11 +359,11 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.keyboard.press("Tab");
-  const primary = page.getByRole("link", { name: "G-counter", exact: true });
+  const primary = page.getByRole("link", { name: "Counters", exact: true });
   await expect(primary).toBeFocused();
   await expect(primary).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/structures\/g-counter\/$/);
+  await expect(page).toHaveURL(/\/structures\/counters\/$/);
   await page.goto("/");
   await page.getByRole("link", { name: "Open the full atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();
