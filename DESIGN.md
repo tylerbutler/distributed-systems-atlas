@@ -287,10 +287,15 @@ The G-counter demo is the first instance: three station records show only
 their totals by default. A sequencer station sits between the clients and
 records sequence numbers. At wide widths, the three clients form a triangle
 around it. The status reports queued work, while a compact chronological log
-records authors and recipients. Operations animate from their author through the
-sequencer to all three clients. Client controls can build a multi-operation
-queue by turning off `Auto-deliver`, which is on by default. Turning it back on
-delivers the queue. Readers control playback speed.
+records authors and recipients. An unsequenced operation leaves its author as
+soon as the reader submits it. The sequencer assigns its sequence number on
+arrival, then sends one concurrent broadcast wave to all three clients. A later
+outbound operation can overlap an earlier return wave while FIFO arrival order
+keeps sequencing deterministic. Sulfur marks operations before sequencing;
+clear, ink-like marks and labels identify sequenced broadcasts and log entries.
+Client controls can build a multi-operation queue by turning off
+`Auto-deliver`, which is on by default. Turning it back on delivers the queue.
+Readers control playback speed.
 An optional `Guided observations` layer reveals the Sluice implementation and
 adds timed callouts with signal-colored circle and box marks. The A, B, and C
 components appear in a ruled table after
@@ -304,7 +309,12 @@ path when they match the corresponding Watershed demo.
 
 ### Motion and Reduced Motion
 
-Feedback, state, and trace motion use the shipped 120ms, 220ms, and 420ms durations with the shared accelerating exit curve. Motion may show a signal traveling to a queue or destination, a route separating, or a record arriving; state commits at discrete frames.
+Feedback, state, and trace motion use the shipped 120ms, 220ms, and 420ms
+durations with the shared accelerating exit curve. The G-counter transport uses
+a 1000ms hop at `1×` so readers can follow each operation; its speed control
+ranges from `¼×` to `2×`. Motion may show a signal traveling to a queue or
+destination, a route separating, or a record arriving; state commits at
+discrete frames.
 
 With reduced motion, all animation, transition, and smooth scrolling stop. State changes render immediately with the same status text. Playback becomes `Next recorded frame` and advances once per activation instead of running the 900ms timer.
 

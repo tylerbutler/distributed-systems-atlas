@@ -11,6 +11,8 @@ import {
 } from "./g-counter";
 
 type Action = "race" | "resend" | "reset";
+const HOP_LATENCY_MS = 1000;
+const FIFO_GAP_MS = 25;
 
 function node<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -28,6 +30,12 @@ class GCounterDemoElement extends HTMLElement {
   private delivering = false;
   private guided = false;
   private guidedTimer: number | undefined;
+  private generation = 0;
+  private lastOutboundArrival = 0;
+  private outboundArrivals: Promise<void>[] = [];
+  private activeBroadcasts = new Set<Promise<void>>();
+  private activeAnimations = new Set<Animation>();
+  private deliveryFocus: HTMLElement | null = null;
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
@@ -39,6 +47,7 @@ class GCounterDemoElement extends HTMLElement {
         const result = incrementReplica(this.state, replica, amount);
         this.apply(result, button);
         if (result.ok) {
+          this.queueOutbound(replica, `+${amount}`);
           this.showGuidedObservation(
             `${replica} updates its local count and queues one operation.`,
             [this.querySelector<HTMLElement>(`[data-total="${replica}"]`)!],
@@ -55,6 +64,7 @@ class GCounterDemoElement extends HTMLElement {
       await this.applyAnimated(resendComponent(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
+      this.resetFlow();
       this.state = createGCounterDemo();
       this.render();
       this.showGuidedObservation(
@@ -99,6 +109,7 @@ class GCounterDemoElement extends HTMLElement {
   }
 
   private async runRace(): Promise<void> {
+    this.resetFlow();
     this.state = createGCounterDemo();
     const staged = stageRace(this.state);
     if (!staged.ok) {
@@ -117,6 +128,8 @@ class GCounterDemoElement extends HTMLElement {
         this.querySelector<HTMLElement>(`[data-total="${replica.id}"]`)!),
       "circle",
     );
+    this.queueOutbound("A", "+7");
+    this.queueOutbound("B", "+3");
     if (this.autoDeliver) {
       await this.deliverQueued(this.button("resend"));
     } else {
@@ -125,39 +138,40 @@ class GCounterDemoElement extends HTMLElement {
   }
 
   private async deliverQueued(focus: HTMLElement): Promise<void> {
+    this.deliveryFocus = focus;
     if (this.delivering) return;
     this.delivering = true;
-    const activeElement = document.activeElement;
+    const generation = this.generation;
     try {
       while (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+        await (this.outboundArrivals.shift() ?? Promise.resolve());
+        if (generation !== this.generation) return;
         const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
         this.showGuidedObservation(
           `${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} ready for the sequencer.`,
           [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
           "box",
         );
-        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
-        }
         const delivered = deliverNextOperation(this.state);
         if (!delivered.ok) {
           this.apply(delivered, focus);
           return;
         }
         this.state = delivered.state;
-        const deliveries = presentGCounterDemo(this.state).latestDeliveries;
-        this.render();
-        await this.animateDeliveries(deliveries);
-        this.showGuidedObservation(
-          "Each replica keeps the largest report from every client, then adds those counts.",
-          [...this.querySelectorAll<HTMLElement>("[data-total]")],
-          "circle",
-        );
+        const view = presentGCounterDemo(this.state);
+        this.render(false);
+        this.launchBroadcast(view.latestDeliveries, view, generation);
       }
     } finally {
+      if (generation !== this.generation) return;
       this.delivering = false;
-      this.render();
-      if (document.activeElement === activeElement) focus.focus();
+      if (this.activeBroadcasts.size === 0) {
+        this.render();
+        this.deliveryFocus?.focus();
+      }
+      if (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+        void this.deliverQueued(focus);
+      }
     }
   }
 
@@ -182,7 +196,18 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.setBusy(true);
     const view = presentGCounterDemo(result.state);
-    await this.animateDeliveries(view.latestDeliveries);
+    const author = view.latestDeliveries[0]?.author;
+    if (author === "A" || author === "B" || author === "C") {
+      await this.animateHop(
+        this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
+        this.querySelector<HTMLElement>("[data-sequencer-node]")!,
+        "resend",
+        "outbound",
+      );
+    }
+    const broadcast = this.animateDeliveries(view.latestDeliveries, view);
+    this.activeBroadcasts.add(broadcast);
+    await broadcast.finally(() => this.activeBroadcasts.delete(broadcast));
     this.apply(result, focus);
     this.showGuidedObservation(
       "Each replica keeps the largest report from every client, then adds those counts.",
@@ -197,8 +222,48 @@ class GCounterDemoElement extends HTMLElement {
     }
   }
 
+  private queueOutbound(author: ReplicaId, label: string): void {
+    const now = performance.now();
+    const duration = this.motionDuration();
+    const arrivalAt = Math.max(
+      now + duration,
+      this.lastOutboundArrival + FIFO_GAP_MS / this.speed,
+    );
+    this.lastOutboundArrival = arrivalAt;
+    this.outboundArrivals.push(this.animateHop(
+      this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
+      this.querySelector<HTMLElement>("[data-sequencer-node]")!,
+      label,
+      "outbound",
+      arrivalAt - now,
+    ));
+  }
+
+  private launchBroadcast(
+    deliveries: ReturnType<typeof presentGCounterDemo>["latestDeliveries"],
+    view: ReturnType<typeof presentGCounterDemo>,
+    generation: number,
+  ): void {
+    const broadcast = this.animateDeliveries(deliveries, view, generation);
+    this.activeBroadcasts.add(broadcast);
+    void broadcast.finally(() => {
+      this.activeBroadcasts.delete(broadcast);
+      if (generation === this.generation && this.activeBroadcasts.size === 0) {
+        this.render();
+        this.deliveryFocus?.focus();
+        this.showGuidedObservation(
+          "Each replica keeps the largest report from every client, then adds those counts.",
+          [...this.querySelectorAll<HTMLElement>("[data-total]")],
+          "circle",
+        );
+      }
+    });
+  }
+
   private async animateDeliveries(
     deliveries: ReturnType<typeof presentGCounterDemo>["latestDeliveries"],
+    view = presentGCounterDemo(this.state),
+    generation = this.generation,
   ): Promise<void> {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const operations = new Map<number, typeof deliveries>();
@@ -218,37 +283,54 @@ class GCounterDemoElement extends HTMLElement {
         [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
         "box",
       );
-      await this.animateHop(
-        this.querySelector<HTMLElement>(`[data-client="${author}"]`)!,
-        this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-        sequenceNumber,
-      );
-      await Promise.all(operationDeliveries.map((delivery) =>
-        this.animateHop(
+      await Promise.all(operationDeliveries.map(async (delivery) => {
+        await this.animateHop(
           this.querySelector<HTMLElement>("[data-sequencer-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
-          sequenceNumber,
-        )));
+          `SN ${sequenceNumber}`,
+          "sequenced",
+        );
+        if (
+          generation === this.generation &&
+          (delivery.to === "A" || delivery.to === "B" || delivery.to === "C")
+        ) {
+          this.renderReplica(view, delivery.to);
+        }
+      }));
     }
   }
 
-  private async animateHop(from: HTMLElement, to: HTMLElement, sequenceNumber: number): Promise<void> {
+  private motionDuration(): number {
+    return HOP_LATENCY_MS / this.speed;
+  }
+
+  private async animateHop(
+    from: HTMLElement,
+    to: HTMLElement,
+    label: string,
+    leg: "outbound" | "sequenced",
+    duration = this.motionDuration(),
+  ): Promise<void> {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
     const root = layer.getBoundingClientRect();
     const start = from.getBoundingClientRect();
     const end = to.getBoundingClientRect();
-    const dot = node("span", String(sequenceNumber));
-    dot.className = "operation-pulse";
+    const dot = node("span", "");
+    dot.className = `operation-pulse ${leg}`;
+    dot.dataset.leg = leg;
     dot.ariaHidden = "true";
+    const dotLabel = node("span", label);
+    dotLabel.className = "operation-pulse-label";
+    dot.append(dotLabel);
     layer.append(dot);
-    const duration = Math.max(120, 420 / this.speed);
     const animation = dot.animate([
       {
-        transform: `translate(${start.left + start.width / 2 - root.left - 10}px, ${start.top + start.height / 2 - root.top - 10}px) scale(.7)`,
+        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px) scale(.7)`,
         opacity: 0.55,
       },
       {
-        transform: `translate(${end.left + end.width / 2 - root.left - 10}px, ${end.top + end.height / 2 - root.top - 10}px) scale(1)`,
+        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px) scale(1)`,
         opacity: 1,
       },
     ], {
@@ -256,8 +338,22 @@ class GCounterDemoElement extends HTMLElement {
       easing: "cubic-bezier(0.16, 1, 0.3, 1)",
       fill: "forwards",
     });
-    await animation.finished;
+    this.activeAnimations.add(animation);
+    await animation.finished.catch(() => undefined);
+    this.activeAnimations.delete(animation);
     dot.remove();
+  }
+
+  private resetFlow(): void {
+    this.generation += 1;
+    this.delivering = false;
+    this.lastOutboundArrival = 0;
+    this.outboundArrivals = [];
+    this.activeBroadcasts.clear();
+    this.deliveryFocus = null;
+    for (const animation of this.activeAnimations) animation.cancel();
+    this.activeAnimations.clear();
+    this.querySelector<HTMLElement>("[data-operation-layer]")!.replaceChildren();
   }
 
   private showGuidedObservation(
@@ -285,19 +381,28 @@ class GCounterDemoElement extends HTMLElement {
     }
   }
 
-  private render(): void {
+  private renderReplica(
+    view: ReturnType<typeof presentGCounterDemo>,
+    replicaId: ReplicaId,
+  ): void {
+    const replica = view.replicas.find(({ id }) => id === replicaId);
+    if (!replica) return;
+    this.querySelector(`[data-total="${replica.id}"]`)!.textContent = String(replica.value);
+    this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
+      view.pending
+        ? replica.value > 0 ? "Local view · delivery pending" : "Waiting for delivery"
+        : view.phase === "initial" ? "Connected to sequencer" : "Synchronized";
+    for (const component of replica.counts) {
+      this.querySelector(`[data-component="${replica.id}-${component.replicaId}"]`)!.textContent =
+        String(component.count);
+    }
+  }
+
+  private render(renderReplicas = true): void {
     const view = presentGCounterDemo(this.state);
     this.dataset.phase = view.phase;
-    for (const replica of view.replicas) {
-      this.querySelector(`[data-total="${replica.id}"]`)!.textContent = String(replica.value);
-      this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
-        view.pending
-          ? replica.value > 0 ? "Local view · delivery pending" : "Waiting for delivery"
-          : view.phase === "initial" ? "Connected to sequencer" : "Synchronized";
-      for (const component of replica.counts) {
-        this.querySelector(`[data-component="${replica.id}-${component.replicaId}"]`)!.textContent =
-          String(component.count);
-      }
+    if (renderReplicas) {
+      for (const replica of view.replicas) this.renderReplica(view, replica.id);
     }
     const operations = new Map<number, { author: string; destinations: string[] }>();
     for (const delivery of view.deliveries) {
@@ -332,7 +437,8 @@ class GCounterDemoElement extends HTMLElement {
     this.button("race").textContent = this.autoDeliver
       ? "Run A +7 and B +3 race"
       : "Queue A +7 and B +3 race";
-    this.button("resend").disabled = this.delivering || !view.canResend;
+    this.button("resend").disabled =
+      this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Resend ${view.latestAuthor}'s component`
       : "Resend latest component";

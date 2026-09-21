@@ -103,6 +103,27 @@ test("auto-deliver keeps replica controls active while operations queue", async 
     .toHaveCount(6, { timeout: 15_000 });
 });
 
+test("operations travel to the sequencer immediately and broadcast waves overlap", async ({ page }) => {
+  await page.goto("/structures/counters/");
+  const demo = page.getByTestId("g-counter-demo");
+  await expect(demo.getByLabel("Operation states")).toContainText(
+    "Unsequenced Client report traveling in",
+  );
+  await expect(demo.getByLabel("Operation states")).toContainText(
+    "Sequenced Numbered broadcast traveling out",
+  );
+  await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
+
+  await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
+  await demo.getByRole("button", { name: "Add 3 at replica B" }).click();
+
+  await expect(demo.locator('[data-leg="outbound"]')).toHaveCount(2);
+  await expect(demo.locator('[data-leg="sequenced"]')).toHaveCount(6);
+  await expect(demo.locator('[data-leg="sequenced"]').first()).toContainText("SN 1");
+  await expect(demo.locator("[data-total]")).toHaveText(["1", "3", "0"]);
+  await expect(demo.locator("[data-total]")).toHaveText(["4", "4", "4"]);
+});
+
 test("Counters remains useful without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
@@ -127,6 +148,7 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("button", { name: "Add 1 at replica A" })).toBeDisabled();
     await expect(page.getByRole("button", { name: "Run A +7 and B +3 race" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
+    await expect(page.getByRole("slider", { name: "Speed" })).toHaveAttribute("min", "0.25");
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeChecked();
     await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
