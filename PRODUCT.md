@@ -67,13 +67,20 @@ compares Watershed's GSet, TwoPSet, and observed-remove set through that
 progression. Each structure has a dedicated three-client lesson and focused
 demo. The observed-remove page also links to the deeper deterministic lab.
 
+The Registers overview continues the Eagle Creek story with one trail-status
+field. LWWRegister selects one timestamped winner, MvRegister preserves
+concurrent reports, and RegisterCollection retains sequenced versions for
+atomic or latest reads. Each structure has a dedicated three-client demo. The
+MvRegister page also links to the deeper causal-context lab.
+
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
-PN-counter, SharedCounter, GSet, TwoPSet, and observed-remove set demos and
-reference engines for ordering, clocks, and Dots. Focused structure demos use
-at least three clients. The counter and set lessons run pinned Watershed
-kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
-point, never private Watershed build paths.
+PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
+MvRegister, and RegisterCollection demos and reference engines for ordering,
+clocks, and Dots. Focused structure demos use at least three clients. The
+counter, set, and register lessons run pinned Watershed semantics through
+Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry point, never private
+Watershed build paths.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
 separate hikes and leave cumulative counts at known trail checkpoints.

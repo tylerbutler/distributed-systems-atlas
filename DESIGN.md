@@ -354,6 +354,13 @@ conflict rule: union for GSet, permanent tombstones for TwoPSet, and observed
 addition identities for the observed-remove set. The observed-remove page also
 links to the deeper causal-tag lab.
 
+The Registers family uses one Eagle Creek trail-status field to make conflict
+policy visible. The same Alice-open and Bob-closed race runs through all three
+lessons. LWWRegister shows a timestamp-and-author winner, MvRegister keeps both
+alternatives, and RegisterCollection shows atomic and latest reads over the
+same retained sequence. Each focused demo keeps Alice, Bob, and Carol visible
+and leaves write controls active while records travel.
+
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
 lesson with one authored race. Direct structure controls can supplement that
