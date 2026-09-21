@@ -1,0 +1,79 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import {
+  remainingFamilies,
+  remainingStructures,
+  structureById,
+} from "../../lib/structure-demo/remaining-structures";
+
+export function getStaticPaths() {
+  return remainingStructures.map((structure) => ({
+    params: { structure: structure.id },
+  }));
+}
+
+const structure = structureById(Astro.params.structure ?? "");
+if (!structure) throw new Error("Unknown structure");
+const family = remainingFamilies[structure.family];
+---
+
+<BaseLayout title={`${structure.name} | Distributed Systems Atlas`} description={structure.tagline}>
+  <main id="main-content" tabindex="-1">
+    <article class="structure-lesson">
+      <header class="page-intro">
+        <p class="territory-label">Structures · {family.name}</p>
+        <h1>{structure.name}</h1>
+        <p class="structure-summary">{structure.tagline}</p>
+      </header>
+
+      <section class="structure-story">
+        <h2>Set the Eagle Creek problem first</h2>
+        <p>{structure.story}</p>
+        <p>
+          An ordinary local edit names a position or value. That name can become
+          stale while another client works. Watershed's <code>{structure.module}</code>
+          uses this structure's rule to produce one shared result.
+        </p>
+      </section>
+
+      <p>
+        A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
+        applies this rule to the shared record.
+      </p>
+      <TermCallout term={structure.name} definition={structure.rule} />
+
+      <section>
+        <h2>Run the conflict</h2>
+        <p>
+          Alice and Bob act before either receives the other operation. Carol
+          stays connected as the third replica and confirms the converged view.
+        </p>
+      </section>
+
+      <RemainingStructureDemo structure={structure} />
+
+      <section>
+        <h2>Read the result</h2>
+        <p>{structure.result}</p>
+        <p>
+          The demo models the authored race from Watershed's public structure
+          examples. The lesson keeps the conflict rule visible before exposing
+          its metadata or protocol.
+        </p>
+      </section>
+
+      <nav class="structure-next" aria-label={`Continue through ${family.name}`}>
+        <a href={`/structures/${structure.family}/`}>Browse {family.name}</a>
+        {structure.next
+          ? <a href={`/structures/${structure.next}/`}>Continue to {structureById(structure.next)?.name}</a>
+          : structure.family === "sequences"
+            ? <a href="/structures/coordination/">Continue to Coordination</a>
+            : structure.family === "coordination"
+              ? <a href="/structures/transforms/">Continue to Transforms</a>
+              : <a href="/structures/">Return to structures</a>}
+      </nav>
+    </article>
+  </main>
+</BaseLayout>

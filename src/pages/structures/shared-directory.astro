@@ -15,6 +15,6 @@ import "../../styles/set-lesson.css";
     <MapStructureDemo kind="shared-directory" title="Merge two creates of the same folder" description="Alice and Bob create /eagle-creek concurrently. The sequenced directory resolves both operations to one shared path." rule="Stable folder identities survive concurrent create, delete, and recreate." raceLabel="Race the Eagle Creek folder creates" />
     <section aria-labelledby="stale-title"><h2 id="stale-title">Reusing a name does not reuse an instance</h2><p>A later folder may use the same path text, but it has a different identity. This prevents a delayed key write for a deleted folder from appearing inside its replacement.</p></section>
     <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo runs Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/directory_kernel.gleam">SharedDirectory kernel</a> through a three-client Sluice room.</p></section>
-    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/or-map/">Back to OR-map</a><a href="/structures/maps/">Browse map family</a><a href="/structures/">Return to structures</a></nav>
+    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/or-map/">Back to OR-map</a><a href="/structures/maps/">Browse map family</a><a href="/structures/sequences/">Continue to Sequences</a></nav>
   </article>
 </BaseLayout>

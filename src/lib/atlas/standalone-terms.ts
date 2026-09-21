@@ -65,12 +65,56 @@ export const sharedDirectoryTerm: GlossaryTerm = {
   definition: "A sequenced hierarchical map whose folders retain stable identities across concurrent create, delete, and recreate operations.",
 };
 
+export const sharedSequenceTerm: GlossaryTerm = {
+  term: "SharedSequence",
+  definition: "A replicated ordered list whose items keep stable identities while clients insert, move, replace, or delete by index.",
+};
+
+export const sharedTextTerm: GlossaryTerm = {
+  term: "SharedText",
+  definition: "A collaborative string whose graphemes keep stable identities across concurrent insertion, deletion, and replacement.",
+};
+
+export const claimsTerm: GlossaryTerm = {
+  term: "Claims",
+  definition: "A sequenced write-once key collection where the first accepted claim becomes the committed owner.",
+};
+
+export const orderedCollectionTerm: GlossaryTerm = {
+  term: "OrderedCollection",
+  definition: "A sequenced work queue that grants each item to one accepted acquire operation.",
+};
+
+export const taskManagerTerm: GlossaryTerm = {
+  term: "TaskManager",
+  definition: "A coordination structure that assigns one client per named task and keeps a FIFO volunteer queue for failover.",
+};
+
+export const pactMapTerm: GlossaryTerm = {
+  term: "PactMap",
+  definition: "A coordinated map whose proposed value becomes accepted only after the expected connected clients sign off.",
+};
+
+export const jsonOtTerm: GlossaryTerm = {
+  term: "JsonOt",
+  definition: "A collaborative JSON document that transforms concurrent path operations before it applies them.",
+};
+
+export const sharedRichTextTerm: GlossaryTerm = {
+  term: "SharedRichText",
+  definition: "A collaborative rich-text document that transforms concurrent retain, insert, delete, and formatting deltas.",
+};
+
 export const standaloneTerms = [
+  claimsTerm,
   eventualConsistencyTerm,
   gSetTerm,
+  jsonOtTerm,
   lwwRegisterTerm,
   lwwMapTerm,
+  orderedCollectionTerm,
   orMapTerm,
+  pactMapTerm,
   pnCounterTerm,
   replicaTerm,
   registerCollectionTerm,
@@ -78,5 +122,9 @@ export const standaloneTerms = [
   sharedDirectoryTerm,
   sharedCounterTerm,
   sharedMapTerm,
+  sharedRichTextTerm,
+  sharedSequenceTerm,
+  sharedTextTerm,
+  taskManagerTerm,
   twoPSetTerm,
 ];

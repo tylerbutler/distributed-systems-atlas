@@ -1,0 +1,89 @@
+---
+import StationMark from "./StationMark.astro";
+import type { RemainingStructure } from "../lib/structure-demo/remaining-structures";
+import "../styles/remaining-structure-demo.css";
+
+interface Props {
+  structure: RemainingStructure;
+}
+
+const { structure } = Astro.props;
+---
+
+<remaining-structure-demo
+  data-testid={`${structure.id}-demo`}
+  data-initial={JSON.stringify(structure.initial)}
+  data-final={JSON.stringify(structure.final)}
+  data-result={structure.result}
+>
+  <section class="remaining-demo" aria-labelledby={`${structure.id}-demo-title`}>
+    <header>
+      <p class="instrument-kicker">Three Eagle Creek clients</p>
+      <h2 id={`${structure.id}-demo-title`}>{structure.name} authored race</h2>
+      <p>{structure.story}</p>
+      <p class="remaining-rule"><span>Watershed rule</span><strong>{structure.rule}</strong></p>
+    </header>
+    <div class="remaining-clients">
+      {(["A", "B", "C"] as const).map((id, index) => (
+        <section data-client={id} aria-label={`Replica ${id}`}>
+          <header><StationMark station={id} size="lg" /><h3>{["Alice", "Bob", "Carol"][index]}</h3></header>
+          <p>{structure.local[id]}</p>
+          <button type="button" data-client-action disabled>Send operation</button>
+        </section>
+      ))}
+    </div>
+    <section class="remaining-state" aria-label="Converged state">
+      <span>Shared view</span>
+      <ul data-state>{structure.initial.map((item) => <li>{item}</li>)}</ul>
+    </section>
+    <div class="remaining-controls">
+      <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+      <p data-enhancement-note>Enable JavaScript to run the race. The expected result remains in the lesson.</p>
+    </div>
+    <p role="status" data-status>{`Ready: ${structure.initial.join(" · ")}`}</p>
+  </section>
+</remaining-structure-demo>
+
+<script>
+  class RemainingStructureDemo extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = "true";
+      const initial = JSON.parse(this.dataset.initial ?? "[]");
+      const final = JSON.parse(this.dataset.final ?? "[]");
+      const state = this.querySelector("[data-state]");
+      const status = this.querySelector("[data-status]");
+      const note = this.querySelector("[data-enhancement-note]");
+      const buttons = this.querySelectorAll("button");
+      if (!(state instanceof HTMLElement) || !(status instanceof HTMLElement)) return;
+      const render = (values: string[]) => {
+        state.replaceChildren(...values.map((value) => {
+          const item = document.createElement("li");
+          item.textContent = value;
+          return item;
+        }));
+      };
+      buttons.forEach((button) => button.disabled = false);
+      if (note instanceof HTMLElement) note.hidden = true;
+      this.querySelector('[data-action="race"]')?.addEventListener("click", (event) => {
+        render(final);
+        status.textContent = this.dataset.result ?? "";
+        (event.currentTarget as HTMLButtonElement).focus();
+      });
+      this.querySelector('[data-action="reset"]')?.addEventListener("click", (event) => {
+        render(initial);
+        status.textContent = `Ready: ${initial.join(" · ")}`;
+        (event.currentTarget as HTMLButtonElement).focus();
+      });
+      this.querySelectorAll("[data-client-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          status.textContent = "Operation queued. Other client controls remain available.";
+        });
+      });
+    }
+  }
+  if (!customElements.get("remaining-structure-demo")) {
+    customElements.define("remaining-structure-demo", RemainingStructureDemo);
+  }
+</script>

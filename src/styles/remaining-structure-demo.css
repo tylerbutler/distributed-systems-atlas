@@ -1,0 +1,95 @@
+remaining-structure-demo {
+  display: block;
+  margin-block: var(--space-2xl);
+}
+
+.remaining-demo {
+  padding: clamp(1rem, 3vw, 2rem);
+  color: var(--color-clear);
+  background: var(--color-instrument);
+  border: 1px solid var(--color-deep-instrument);
+}
+
+.remaining-demo > header {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 72ch;
+}
+
+.remaining-demo h2,
+.remaining-demo h3,
+.remaining-demo p {
+  margin: 0;
+}
+
+.remaining-rule {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+}
+
+.remaining-rule span,
+.remaining-state > span {
+  font: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.remaining-clients {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.remaining-clients > section,
+.remaining-state {
+  padding: 1rem;
+  color: var(--color-graphite);
+  background: var(--color-sky-sheet);
+  border: 1px solid var(--color-chart-line);
+}
+
+.remaining-clients header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.remaining-clients button,
+.remaining-controls button {
+  min-height: 44px;
+  margin-top: 1rem;
+}
+
+.remaining-state ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 0;
+}
+
+.remaining-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.remaining-controls p {
+  flex-basis: 100%;
+}
+
+.remaining-demo [role="status"] {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+}
+
+@media (max-width: 42rem) {
+  .remaining-clients {
+    grid-template-columns: 1fr;
+  }
+}

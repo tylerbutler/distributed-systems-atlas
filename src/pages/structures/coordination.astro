@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { remainingFamilies, structuresForFamily } from "../../lib/structure-demo/remaining-structures";
+const family = remainingFamilies.coordination;
+const structures = structuresForFamily("coordination");
+---
+<BaseLayout title="Coordination | Distributed Systems Atlas" description={family.tagline}>
+  <main id="main-content" tabindex="-1"><article class="structure-family">
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>{family.name}</h1><p class="structure-summary">{family.intro}</p></header>
+    {structures.map((structure) => <section aria-label={structure.name}><h2>{structure.name}</h2><p>{structure.tagline}</p><p><strong>Rule:</strong> {structure.rule}</p><a class="structure-link" href={`/structures/${structure.id}/`}>Open the {structure.name} lesson</a></section>)}
+    <nav class="structure-next" aria-label="Continue through structure families"><a href="/structures/sequences/">Back to Sequences</a><a href="/structures/claims/">Start the coordination lessons</a><a href="/structures/transforms/">Continue to Transforms</a></nav>
+  </article></main>
+</BaseLayout>

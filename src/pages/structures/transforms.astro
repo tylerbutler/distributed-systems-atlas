@@ -1,0 +1,13 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { remainingFamilies, structuresForFamily } from "../../lib/structure-demo/remaining-structures";
+const family = remainingFamilies.transforms;
+const structures = structuresForFamily("transforms");
+---
+<BaseLayout title="Transforms | Distributed Systems Atlas" description={family.tagline}>
+  <main id="main-content" tabindex="-1"><article class="structure-family">
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>{family.name}</h1><p class="structure-summary">{family.intro}</p></header>
+    {structures.map((structure) => <section aria-label={structure.name}><h2>{structure.name}</h2><p>{structure.tagline}</p><p><strong>Rule:</strong> {structure.rule}</p><a class="structure-link" href={`/structures/${structure.id}/`}>Open the {structure.name} lesson</a></section>)}
+    <nav class="structure-next" aria-label="Continue through structure families"><a href="/structures/coordination/">Back to Coordination</a><a href="/structures/json-ot/">Start the transform lessons</a><a href="/structures/">Return to structures</a></nav>
+  </article></main>
+</BaseLayout>
