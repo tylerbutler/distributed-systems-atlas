@@ -313,15 +313,18 @@ for Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
 
-The PN-counter demo is a separate instrument below the G-counter result. It
-keeps the same three hikers, checkpoint topology, transport marks, and large
-local values. The agreed starting count is 10. Its authored action sends
-Alice's `+3` sighting note and Bob's `-1` correction note through Sluice before
-all three views converge on 12. Manual controls add sightings or corrections
-for any hiker, then a separate action shares the waiting notes. The visible
-value stays primary; positive and correction components appear only in the
-`Explain why` disclosure. The PN-counter does not add auto-delivery, playback
-speed, guided observations, or a replay control.
+The PN-counter demo has its own structure page. It keeps the same three hikers,
+checkpoint topology, transport marks, and large local values. The agreed
+starting count is 10. Its authored action sends Alice's `+3` sighting note and
+Bob's `-1` correction note through Sluice before all three views converge on
+12. Manual sightings and corrections travel immediately through the
+checkpoint. The visible value stays primary; positive and correction
+components appear only in the `Explain why` disclosure. The PN-counter does
+not add playback speed, guided observations, or a replay control.
+
+Each structure page places a ruled quick-facts label after its introduction.
+The label identifies the structure family, replication model, supported
+updates, merge rule, delivery behavior, best fit, and metadata cost.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary

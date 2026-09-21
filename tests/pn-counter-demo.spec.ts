@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("the correction race converges through Sluice", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/pn-counter/");
   const demo = page.getByTestId("pn-counter-demo");
   const totals = demo.locator("[data-pn-total]");
   const race = demo.getByRole("button", {
@@ -40,27 +40,23 @@ test("the correction race converges through Sluice", async ({ page }) => {
   ]);
 });
 
-test("manual sightings and corrections wait for explicit sharing", async ({ page }) => {
+test("manual sightings and corrections deliver immediately", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/pn-counter/");
   const demo = page.getByTestId("pn-counter-demo");
   const totals = demo.locator("[data-pn-total]");
-  const share = demo.getByRole("button", { name: "Share waiting notes" });
 
-  await expect(share).toBeDisabled();
   await demo.getByRole("button", { name: "Record 1 more bird for Alice" }).click();
-  await demo.getByRole("button", { name: "Correct 3 duplicate sightings for Bob" }).click();
-  await demo.getByRole("button", { name: "Record 3 more birds for Carol" }).click();
-  await expect(totals).toHaveText(["11", "7", "13"]);
-  await expect(demo.locator('[role="status"]')).toContainText(
-    "3 checkpoint notes are waiting",
-  );
-
-  await share.press("Enter");
   await expect(totals).toHaveText(["11", "11", "11"]);
-  await expect(demo.getByRole("button", { name: "Reset", exact: true })).toBeFocused();
+  await demo.getByRole("button", { name: "Correct 3 duplicate sightings for Bob" }).click();
+  await expect(totals).toHaveText(["8", "8", "8"]);
+  await demo.getByRole("button", { name: "Record 3 more birds for Carol" }).click();
+  await expect(totals).toHaveText(["11", "11", "11"]);
   await expect(demo.getByRole("list", { name: "Correction note log" })
     .getByRole("listitem")).toHaveCount(3);
+  await expect(demo.getByRole("button", {
+    name: "Record 3 more birds for Carol",
+  })).toBeFocused();
 
   await demo.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(totals).toHaveText(["10", "10", "10"]);
@@ -70,14 +66,13 @@ test("manual sightings and corrections wait for explicit sharing", async ({ page
 });
 
 test("PN-counter notes use the same Sluice motion language", async ({ page }) => {
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/pn-counter/");
   const demo = page.getByTestId("pn-counter-demo");
 
   await demo.getByRole("button", { name: "Record 1 more bird for Alice" }).click();
   await expect(demo.locator('[data-leg="outbound"]')).toContainText(
     "Alice +1 · 1000 ms",
   );
-  await demo.getByRole("button", { name: "Share waiting notes" }).click();
   await expect(demo.locator("[data-pn-total]")).toHaveText(["11", "11", "11"], {
     timeout: 10_000,
   });
@@ -90,7 +85,13 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
   });
   try {
     const page = await context.newPage();
-    await page.goto("/structures/counters/");
+    await page.goto("/structures/pn-counter/");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("PN-counter");
+    const facts = page.getByRole("complementary", { name: "Quick facts" });
+    await expect(facts).toContainText("CRDT");
+    await expect(facts).toContainText("Increment and decrement");
+    await expect(facts).toContainText("Two integers for each replica");
+    await expect(page.getByTestId("g-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", {
       name: "Bob finds a duplicate sighting",
     })).toBeVisible();
@@ -115,7 +116,7 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     })).toBeDisabled();
     await expect(demo.getByRole("button", {
       name: "Share waiting notes",
-    })).toBeDisabled();
+    })).toHaveCount(0);
   } finally {
     await context.close();
   }
@@ -123,7 +124,7 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
 
 test("PN-counter controls remain keyboard sized without overflow", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/pn-counter/");
   const demo = page.getByTestId("pn-counter-demo");
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test("the hikers' checkpoint notes converge and a repeated note is safe", async ({ page }) => {
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
   const race = demo.getByRole("button", { name: "Leave Alice +7 and Bob +3 together" });
@@ -61,7 +61,7 @@ test("the hikers' checkpoint notes converge and a repeated note is safe", async 
 
 test("multiple checkpoint notes can wait before sharing", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
   const autoDeliver = demo.getByRole("checkbox", { name: "Auto-deliver" });
@@ -89,7 +89,7 @@ test("multiple checkpoint notes can wait before sharing", async ({ page }) => {
 });
 
 test("auto-deliver keeps replica controls active while operations queue", async ({ page }) => {
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
   await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
@@ -108,7 +108,7 @@ test("auto-deliver keeps replica controls active while operations queue", async 
 });
 
 test("notes travel to checkpoints immediately and shared copies overlap", async ({ page }) => {
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   await expect(demo.getByLabel("Checkpoint note states")).toContainText(
     "New note Traveling to a checkpoint",
@@ -150,15 +150,20 @@ test("notes travel to checkpoints immediately and shared copies overlap", async 
   await expect(demo.locator("[data-total]")).toHaveText(["4", "4", "4"]);
 });
 
-test("Counters remains useful without JavaScript", async ({ browser }) => {
+test("G-counter remains useful without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
     viewport: { width: 390, height: 844 },
   });
   try {
     const page = await context.newPage();
-    await page.goto("/structures/counters/");
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
+    await page.goto("/structures/g-counter/");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("G-counter");
+    const facts = page.getByRole("complementary", { name: "Quick facts" });
+    await expect(facts).toContainText("CRDT");
+    await expect(facts).toContainText("Increment only");
+    await expect(facts).toContainText("One integer for each replica");
+    await expect(page.getByTestId("pn-counter-demo")).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
       .toBeVisible();
     await expect(page.getByText("Alice's local copy of the shared counter is a replica")).toBeVisible();
@@ -212,7 +217,7 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
 
 test("G-counter controls meet the keyboard and responsive layout contract", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/counters/");
+  await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });

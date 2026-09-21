@@ -24,8 +24,8 @@ const componentLabels = {
       <div>
         <h2 id="pn-counter-demo-title">Correct the shared bird count</h2>
         <p>
-          The hikers agree on 10 birds. Record new sightings or corrections,
-          then share the waiting notes through the known checkpoint.
+          The hikers agree on 10 birds. Each new sighting or correction travels
+          through the known checkpoint as soon as a hiker records it.
         </p>
       </div>
       <p class="merge-rule">
@@ -106,9 +106,6 @@ const componentLabels = {
     <section class="pn-controls" aria-label="PN-counter lesson controls">
       <button type="button" data-action="race" disabled>
         Run Alice +3 and Bob -1 correction
-      </button>
-      <button type="button" data-action="deliver" disabled>
-        Share waiting notes
       </button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>
@@ -455,7 +452,7 @@ const componentLabels = {
 
   .pn-controls {
     display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-3);
     align-items: stretch;
     padding-block: var(--space-5);

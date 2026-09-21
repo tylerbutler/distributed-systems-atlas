@@ -5,21 +5,22 @@ follow a learning trail or open a sheet to inspect one mechanism. The articles
 assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
-The first focused structure lesson uses Watershed's G-counter and PN-counter.
+The first focused structure lessons use Watershed's G-counter and PN-counter.
 Alice, Bob, and Carol count birds on separate hikes and leave cumulative counts
 at known trail checkpoints. Each hiker keeps a notebook table with the largest
 count received from Alice, Bob, and Carol. Readers can use Auto-deliver or hold
 several G-counter notes, leave Alice's and Bob's notes together at an adjustable
 speed, and safely repeat a checkpoint note. The next story starts from an
 agreed count of 10: Alice records 3 new birds while Bob corrects 1 duplicate,
-and all three PN-counter replicas converge on 12. The first trail also
+and all three PN-counter replicas converge on 12. Each structure has its own
+page and a quick-facts label. The first trail also
 contains seven published reference sheets, each with a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it
-does not imply that a replica has a global view. The release builds 13 static
-pages: the seven sheets, landing page, structures index, Counters lesson,
-atlas index, glossary, and bibliography.
+does not imply that a replica has a global view. The release includes the seven
+sheets, landing page, structures index, dedicated G-counter and PN-counter
+lessons, atlas index, glossary, and bibliography.
 
 ## Local development
 
@@ -35,7 +36,7 @@ pnpm dev
 ```
 
 Open the local URL printed by Astro. The publication includes `/`,
-`/structures/`, `/structures/counters/`, `/atlas/`, `/glossary/`,
+`/structures/`, `/structures/g-counter/`, `/structures/pn-counter/`, `/atlas/`, `/glossary/`,
 `/bibliography/`, and these sheet routes:
 
 - `/atlas/local-history/`

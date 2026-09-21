@@ -158,8 +158,8 @@ export function updatePNReplica(
       state: {
         ...next,
         result: amount > 0
-          ? `${pnCounterUserName(replica)} recorded ${magnitude} more ${magnitude === 1 ? "bird" : "birds"}. ${next.queuedUpdates.length} checkpoint ${next.queuedUpdates.length === 1 ? "note is" : "notes are"} waiting.`
-          : `${pnCounterUserName(replica)} corrected ${magnitude} duplicate ${magnitude === 1 ? "sighting" : "sightings"}. ${next.queuedUpdates.length} checkpoint ${next.queuedUpdates.length === 1 ? "note is" : "notes are"} waiting.`,
+          ? `${pnCounterUserName(replica)} recorded ${magnitude} more ${magnitude === 1 ? "bird" : "birds"}. The checkpoint note is traveling.`
+          : `${pnCounterUserName(replica)} corrected ${magnitude} duplicate ${magnitude === 1 ? "sighting" : "sightings"}. The checkpoint note is traveling.`,
       },
     };
   } catch (error) {
@@ -179,7 +179,7 @@ export function stageCorrectionRace(state: PNCounterDemoState): PNCounterDemoRes
           -1,
           staged,
         ),
-        result: "Alice recorded 3 more birds while Bob corrected 1 duplicate sighting. Two checkpoint notes are waiting.",
+        result: "Alice recorded 3 more birds while Bob corrected 1 duplicate sighting. Both checkpoint notes are traveling.",
       },
     };
   } catch (error) {

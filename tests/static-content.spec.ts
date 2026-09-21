@@ -289,18 +289,20 @@ test("the landing page leads with data structures", async ({ page }) => {
   );
   await expect(
     page.getByRole("link", { name: "Start with G-counter", exact: true }),
-  ).toHaveAttribute("href", "/structures/counters/");
+  ).toHaveAttribute("href", "/structures/g-counter/");
   await expect(page.getByRole("link", { name: "Open the full atlas", exact: true }))
     .toHaveAttribute("href", "/atlas/");
   const structures = page.getByRole("list", { name: "Data structure learning path" });
   await expect(structures.getByRole("listitem")).toHaveText([
-    "1CountersWhy independent increments can merge without choosing a winner.Read now",
-    "2RegistersWhat one shared value should do when two replicas write at once.Read now",
-    "3SetsWhy removing an item requires evidence about the additions you saw.Read now",
-    "4MapsHow a structure composes conflict rules across named fields.Planned",
+    "1G-counterWhy independent increments can merge without choosing a winner.Read now",
+    "2PN-counterHow concurrent additions and corrections both survive.Read now",
+    "3RegistersWhat one shared value should do when two replicas write at once.Read now",
+    "4SetsWhy removing an item requires evidence about the additions you saw.Read now",
+    "5MapsHow a structure composes conflict rules across named fields.Planned",
   ]);
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
-    "Counters",
+    "G-counter",
+    "PN-counter",
     "Registers",
     "Sets",
     "Maps",
@@ -321,7 +323,7 @@ test("the landing page leads with data structures", async ({ page }) => {
   await expect(trail.getByRole("link")).toHaveCount(7);
   const finalEntry = page.getByRole("link", { name: "Start with the G-counter", exact: true });
   await finalEntry.click();
-  await expect(page).toHaveURL(/\/structures\/counters\/$/);
+  await expect(page).toHaveURL(/\/structures\/g-counter\/$/);
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {
@@ -343,11 +345,11 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.keyboard.press("Tab");
-  const primary = page.getByRole("link", { name: "Counters", exact: true });
+  const primary = page.getByRole("link", { name: "G-counter", exact: true });
   await expect(primary).toBeFocused();
   await expect(primary).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/structures\/counters\/$/);
+  await expect(page).toHaveURL(/\/structures\/g-counter\/$/);
   await page.goto("/");
   await page.getByRole("link", { name: "Open the full atlas" }).click();
   await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();

@@ -1,0 +1,96 @@
+---
+interface Props {
+  family: "CRDT" | "OT" | "DDS";
+  model: string;
+  updates: string;
+  merge: string;
+  delivery: string;
+  bestFor: string;
+  cost: string;
+}
+
+const { family, model, updates, merge, delivery, bestFor, cost } = Astro.props;
+---
+
+<aside class="structure-facts" aria-labelledby="structure-facts-title">
+  <header>
+    <h2 id="structure-facts-title">Quick facts</h2>
+    <strong>{family}</strong>
+  </header>
+  <dl>
+    <div><dt>Model</dt><dd>{model}</dd></div>
+    <div><dt>Updates</dt><dd>{updates}</dd></div>
+    <div><dt>Merge rule</dt><dd>{merge}</dd></div>
+    <div><dt>Delivery</dt><dd>{delivery}</dd></div>
+    <div><dt>Best for</dt><dd>{bestFor}</dd></div>
+    <div><dt>Metadata cost</dt><dd>{cost}</dd></div>
+  </dl>
+</aside>
+
+<style>
+  .structure-facts {
+    margin-block: var(--space-6) var(--space-7);
+    border-block: 0.3rem solid var(--instrument-deep);
+    color: var(--ink);
+    background: var(--clear);
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: var(--rule-width) solid var(--instrument-deep);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+  }
+
+  header strong {
+    padding: 0.2rem 0.45rem;
+    border: var(--rule-width) solid currentColor;
+    color: var(--instrument);
+    font-family: var(--font-data);
+    font-size: 0.8rem;
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+  }
+
+  dl div {
+    padding: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  dl div:nth-child(odd) {
+    border-right: var(--rule-width) solid var(--line);
+  }
+
+  dt {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+    line-height: 1.45;
+  }
+
+  @media (width < 40rem) {
+    dl {
+      grid-template-columns: 1fr;
+    }
+
+    dl div:nth-child(odd) {
+      border-right: 0;
+    }
+  }
+</style>

@@ -40,7 +40,7 @@ under Mechanisms, Structures, Failure modes, and Systems.
 ## Capabilities and Constraints
 
 The publication contains the landing page, a structures index, the focused
-Counters lesson, atlas index, generated glossary and bibliography, and all
+G-counter and PN-counter lessons, atlas index, generated glossary and bibliography, and all
 seven sheets in the first concurrency trail.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
@@ -77,9 +77,11 @@ timed callouts and signal-colored marks to the local values and checkpoint.
 The PN-counter lesson continues the same hike after the three friends agree on
 10 birds. Alice records 3 new sightings while Bob corrects 1 duplicate. Their
 local views briefly show 13, 9, and 10 before Sluice delivers both notes and all
-three converge on 12. Direct controls let each hiker add sightings or record
-corrections. An explanation disclosure shows the two grow-only component
-tables whose difference is the visible count.
+three converge on 12. Direct controls send each sighting or correction through
+Sluice immediately. An explanation disclosure shows the two grow-only
+component tables whose difference is the visible count. Each structure has its
+own page and a quick-facts label for its family, replication model, updates,
+merge rule, delivery behavior, best fit, and metadata cost.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

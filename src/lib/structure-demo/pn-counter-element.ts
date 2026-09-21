@@ -12,7 +12,7 @@ import {
   type ReplicaId,
 } from "./pn-counter";
 
-type Action = "race" | "deliver" | "reset";
+type Action = "race" | "reset";
 const HOP_LATENCY_MS = 1000;
 
 function node<K extends keyof HTMLElementTagNameMap>(
@@ -46,22 +46,24 @@ class PNCounterDemoElement extends HTMLElement {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.update);
         const result = updatePNReplica(this.state, replica, amount);
-        this.apply(result, button);
-        if (result.ok) {
-          await this.animateHop(
-            this.querySelector<HTMLElement>(`[data-client="${replica}"]`)!,
-            this.querySelector<HTMLElement>("[data-sequencer-node]")!,
-            `${pnCounterUserName(replica)} ${signed(amount)}`,
-            "outbound",
-          );
+        if (!result.ok) {
+          this.apply(result, button);
+          return;
         }
+        this.state = result.state;
+        this.busy = true;
+        this.render();
+        await this.animateHop(
+          this.querySelector<HTMLElement>(`[data-client="${replica}"]`)!,
+          this.querySelector<HTMLElement>("[data-sequencer-node]")!,
+          `${pnCounterUserName(replica)} ${signed(amount)}`,
+          "outbound",
+        );
+        await this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", async () => {
       await this.runRace();
-    });
-    this.button("deliver").addEventListener("click", async () => {
-      await this.deliverQueued(this.button("deliver"));
     });
     this.button("reset").addEventListener("click", () => {
       this.resetFlow();
@@ -88,6 +90,7 @@ class PNCounterDemoElement extends HTMLElement {
       return;
     }
     this.state = staged.state;
+    this.busy = true;
     this.render();
     await Promise.all([
       this.animateHop(
@@ -109,6 +112,7 @@ class PNCounterDemoElement extends HTMLElement {
   private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
     const result = deliverPNOperations(this.state);
     if (!result.ok) {
+      this.setBusy(false);
       this.apply(result, focus);
       return;
     }
@@ -217,12 +221,10 @@ class PNCounterDemoElement extends HTMLElement {
   }
 
   private renderControls(): void {
-    const view = presentPNCounterDemo(this.state);
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-update]")) {
       button.disabled = this.busy;
     }
     this.button("race").disabled = this.busy;
-    this.button("deliver").disabled = this.busy || !view.canDeliver;
     this.button("reset").disabled = this.busy;
   }
 
@@ -234,7 +236,7 @@ class PNCounterDemoElement extends HTMLElement {
         String(replica.value);
       this.querySelector(`[data-replica-state="${replica.id}"]`)!.textContent =
         view.canDeliver
-          ? "Local view · notes waiting"
+          ? "Local view · note in transit"
           : view.phase === "initial"
             ? "Agreed count received"
             : "All checkpoints agree";
@@ -275,7 +277,7 @@ class PNCounterDemoElement extends HTMLElement {
       : [node(
         "li",
         view.canDeliver
-          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note" : "notes"} waiting.`
+          ? `${view.queuedOperations} checkpoint ${view.queuedOperations === 1 ? "note is" : "notes are"} traveling.`
           : "No correction note shared yet.",
       )]));
     this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!.value =

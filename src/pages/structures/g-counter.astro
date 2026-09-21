@@ -1,0 +1,261 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GCounterDemo from "../../components/GCounterDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import {
+  eventualConsistencyTerm,
+  replicaTerm,
+} from "../../lib/atlas/standalone-terms";
+---
+
+<BaseLayout
+  title="G-counter"
+  description="Alice, Bob, and Carol count birds on separate trails. A G-counter preserves their independent sightings despite late, repeated, or reordered notes."
+  territory="Structures"
+  sheetTitle="G-counter"
+>
+  <article class="structure-page">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>G-counter</h1>
+      <p class="structure-summary">
+        Before Alice, Bob, and Carol split onto separate trails, they mark the
+        same checkpoints on their maps. Each hiker will count birds and leave
+        notes with a running total. The notes may reach the others late, out of
+        order, or more than once. By the end of the hike, all three need the
+        same bird count.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based convergent replicated data type"
+      updates="Increment only"
+      merge="Keep the largest count from each replica, then sum the components."
+      delivery="Safe under repeated and out-of-order delivery"
+      bestFor="Distributed tallies that never decrease"
+      cost="One integer for each replica"
+    />
+
+    <section aria-labelledby="one-counter-title">
+      <h2 id="one-counter-title">Alice starts counting birds</h2>
+      <p>
+        Alice takes the ridge trail. Each time she spots a bird, she adds one
+        to her running count. With only Alice hiking, the shared total is simply
+        the number she has seen.
+      </p>
+      <p>
+        Alice's local copy of the shared counter is a{" "}
+        <dfn><a href="/glossary/#replica">replica</a></dfn>. Bob and Carol each
+        keep their own replica. The hikers exchange cumulative messages by
+        leaving notes at known checkpoints.
+      </p>
+      <TermCallout {...replicaTerm} />
+      <pre aria-label="Alice's bird count"><code>birds = count[Alice]</code></pre>
+    </section>
+
+    <section aria-labelledby="second-counter-title">
+      <h2 id="second-counter-title">Bob takes a different trail</h2>
+      <p>
+        Bob counts birds along the river trail. Alice changes only Alice's
+        count, and Bob changes only Bob's count. If Alice has seen 7 birds and
+        Bob has seen 3, their shared total is 10.
+      </p>
+      <p>
+        This is a grow-only counter, or G-counter. Each replica keeps the
+        largest note it has received from each hiker, then adds those counts.
+        It does not add every message. If Bob leaves the same checkpoint note
+        twice, both messages say that Bob has seen 3 birds. His count stays 3.
+      </p>
+      <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all notes from Alice)
+count[Bob] = max(all notes from Bob)
+birds = count[Alice] + count[Bob] + ...</code></pre>
+    </section>
+
+    <section aria-labelledby="race-title">
+      <h2 id="race-title">Their checkpoint notes cross</h2>
+      <p>
+        Before they part at the trailhead, Alice, Bob, and Carol mark the same
+        checkpoints on their maps. Each carries a notebook with one row for
+        each hiker. When a note turns up, they copy its count into that hiker's
+        row only if it is larger than the count already there. The three rows
+        add up to the bird count.
+      </p>
+      <p>
+        On Carol's route, the first note waiting at the north fork is from
+        Alice: 7 birds. At the river bridge, she finds Bob's note for 3. Carol
+        has not seen a bird herself, so her own row stays at 0.
+      </p>
+      <figure class="notebook">
+        <table aria-label="Carol's notebook at each checkpoint">
+          <thead>
+            <tr>
+              <th scope="col">Checkpoint and note</th>
+              <th scope="col">Alice</th>
+              <th scope="col">Bob</th>
+              <th scope="col">Carol</th>
+              <th scope="col">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Trailhead</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">North fork: Alice 7</th><td>7</td><td>0</td><td>0</td><td>7</td></tr>
+            <tr><th scope="row">River bridge: Bob 3</th><td>7</td><td>3</td><td>0</td><td>10</td></tr>
+            <tr><th scope="row">Old lookout: Alice 4</th><td>7</td><td>3</td><td>0</td><td>10</td></tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Carol updates her notebook as she reaches each checkpoint.
+        </figcaption>
+      </figure>
+      <p>
+        At the old lookout, Carol finds an earlier note from Alice that says 4.
+        Her notebook already says 7, so she leaves that row alone:
+        <code>max(7, 4) = 7</code>. Had she found 4 first, the row would have
+        changed from 0 to 4, then from 4 to 7. Either path through the notes
+        leads to the same notebook and the same total.
+      </p>
+      <p>
+        Elsewhere on the trails, the three notebooks can still disagree. Alice
+        may know only her 7, Bob only his 3, and Carol neither. Walk the next
+        part with them: leave one note at a time, or let Alice and Bob leave
+        their notes together.
+      </p>
+    </section>
+
+    <GCounterDemo />
+
+    <section aria-labelledby="result-title">
+      <h2 id="result-title">Every trail catches up</h2>
+      <p>
+        After both checkpoint notes arrive, Alice, Bob, and Carol all read
+        10. Their views were temporarily inconsistent, but the G-counter kept
+        both hikers' observations and made every replica agree.
+      </p>
+      <p>
+        This is{" "}
+        <dfn><a href="/glossary/#eventual-consistency">eventual consistency</a></dfn>.
+        For each hiker, merge keeps the larger count from their checkpoint
+        notes. The rule is commutative, associative, and idempotent. Arrival
+        order does not change the answer, and the same checkpoint note can
+        arrive more than once.
+      </p>
+      <TermCallout {...eventualConsistencyTerm} />
+    </section>
+
+    <section aria-labelledby="limit-title">
+      <h2 id="limit-title">The count cannot go down</h2>
+      <p>
+        Every hiker needs a unique replica ID. If two hikers share an ID,
+        pairwise maximum can discard one concurrent update.
+      </p>
+      <p>
+        The merge rule can only keep or raise each component. If a hiker finds
+        a counting mistake, lowering a component is unsafe because an older,
+        larger note could restore the mistake. The next structure records
+        corrections without changing this merge rule.
+      </p>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Sources and implementation</h2>
+      <p>
+        This lesson calls Watershed's public{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/g_counter_kernel.gleam">G-counter kernel</a>.
+        Its interaction follows Watershed's focused{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/components/Demo.astro">counter demo</a>
+        , while Atlas owns the three-client lesson schedule and presentation.
+        The G-counter merge rule keeps the largest cumulative count for each
+        hiker.
+      </p>
+      <p>
+        The merge rule is the state-based grow-only counter described in{" "}
+        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/">Browse all structures</a>
+      <a href="/structures/pn-counter/">Continue to PN-counter</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .structure-page {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-page > section {
+    margin-top: var(--space-7);
+  }
+
+  .structure-summary {
+    font-size: 1.2rem;
+  }
+
+  .structure-page > section > p dfn {
+    color: var(--signal);
+    font-style: italic;
+    font-weight: 650;
+  }
+
+  .structure-page > section > p dfn a {
+    color: inherit;
+  }
+
+  pre {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+  }
+
+  .notebook {
+    margin-block: var(--space-5);
+    padding-block: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    overflow-x: auto;
+  }
+
+  .notebook table {
+    width: 100%;
+    min-width: 36rem;
+    border-collapse: collapse;
+  }
+
+  .notebook :is(th, td) {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: var(--rule-width) solid var(--line-faint);
+    text-align: left;
+  }
+
+  .notebook td {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .notebook tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
+
+  .notebook figcaption {
+    margin-top: var(--space-3);
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+</style>

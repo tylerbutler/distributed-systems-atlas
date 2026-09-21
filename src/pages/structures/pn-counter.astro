@@ -1,0 +1,192 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PNCounterDemo from "../../components/PNCounterDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { pnCounterTerm } from "../../lib/atlas/standalone-terms";
+---
+
+<BaseLayout
+  title="PN-counter"
+  description="Bob corrects a duplicate bird sighting while Alice records new birds. A PN-counter preserves both concurrent updates."
+  territory="Structures"
+  sheetTitle="PN-counter"
+>
+  <article class="structure-page">
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>PN-counter</h1>
+      <p class="structure-summary">
+        Alice, Bob, and Carol have agreed on 10 birds. Then Bob finds a
+        duplicate sighting while Alice counts 3 new birds on another trail.
+        Their shared counter must preserve the new sightings and the
+        correction.
+      </p>
+    </header>
+
+    <StructureFacts
+      family="CRDT"
+      model="State-based convergent replicated data type"
+      updates="Increment and decrement"
+      merge="Merge positive and negative per-replica counts by maximum, then subtract."
+      delivery="Safe under repeated and out-of-order delivery"
+      bestFor="Offline or unreliable counters that need corrections"
+      cost="Two integers for each replica"
+    />
+
+    <section aria-labelledby="correction-title">
+      <h2 id="correction-title">Bob finds a duplicate sighting</h2>
+      <p>
+        Bob spots a mistake in the agreed count: one line records the same bird
+        twice. His contribution should fall by one.
+      </p>
+      <p>
+        Bob cannot lower a G-counter component. An older note with the larger
+        value could arrive later and restore the mistake. The merge rule must
+        keep the larger value.
+      </p>
+      <p>
+        A{" "}
+        <dfn><a href="/glossary/#pn-counter">PN-counter</a></dfn> records the
+        correction instead. It keeps one grow-only counter for sightings and a
+        second grow-only counter for corrections. Both sides merge by maximum.
+        The visible count subtracts one total from the other.
+      </p>
+      <TermCallout {...pnCounterTerm} />
+      <pre aria-label="PN-counter bird total rule"><code>birds = sightings - corrections</code></pre>
+    </section>
+
+    <section aria-labelledby="correction-race-title">
+      <h2 id="correction-race-title">Two new notes leave at once</h2>
+      <p>
+        While Bob writes a correction for the duplicate sighting, Alice counts
+        3 more birds on the ridge trail. Neither has received the other's note.
+        Alice's view rises from 10 to 13. Bob's falls from 10 to 9. Carol still
+        reads 10.
+      </p>
+      <table aria-label="Bird count before PN-counter notes arrive">
+        <thead>
+          <tr>
+            <th scope="col">Moment</th>
+            <th scope="col">Alice</th>
+            <th scope="col">Bob</th>
+            <th scope="col">Carol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
+          <tr><th scope="row">Notes waiting</th><td>13</td><td>9</td><td>10</td></tr>
+          <tr><th scope="row">Both notes arrive</th><td>12</td><td>12</td><td>12</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The two notes do not cancel in transit. Alice's positive component
+        grows by 3, and Bob's correction component grows by 1. Every hiker
+        eventually computes <code>13 - 1 = 12</code>.
+      </p>
+    </section>
+
+    <PNCounterDemo />
+
+    <section aria-labelledby="result-title">
+      <h2 id="result-title">The correction survives the merge</h2>
+      <p>
+        After both notes arrive, the sightings side totals 13 and the
+        corrections side totals 1. Alice, Bob, and Carol all read 12 birds.
+        Delivery order does not change that result, and a repeated delta does
+        not apply the correction twice.
+      </p>
+      <p>
+        A PN-counter can also produce a negative value. That is correct counter
+        behavior, but it may be invalid for the thing being counted. An
+        application that must never show fewer than zero birds needs another
+        rule to prevent or coordinate those updates.
+      </p>
+    </section>
+
+    <section aria-labelledby="notes-title">
+      <h2 id="notes-title">Sources and implementation</h2>
+      <p>
+        This lesson calls Watershed's public{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/pn_counter_kernel.gleam">PN-counter kernel</a>
+        {" "}and sends the three hikers' notes through Sluice.
+      </p>
+      <p>
+        The merge rule follows the state-based positive-negative counter
+        described in{" "}
+        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
+      </p>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/g-counter/">Back to G-counter</a>
+      <a href="/structures/">Browse all structures</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .structure-page {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-page > section {
+    margin-top: var(--space-7);
+  }
+
+  .structure-summary {
+    font-size: 1.2rem;
+  }
+
+  .structure-page > section > p dfn {
+    color: var(--signal);
+    font-style: italic;
+    font-weight: 650;
+  }
+
+  .structure-page > section > p dfn a {
+    color: inherit;
+  }
+
+  pre {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+    background: color-mix(in oklch, var(--clear) 45%, var(--sky-sheet));
+  }
+
+  table {
+    width: 100%;
+    margin-block: var(--space-5);
+    border-collapse: collapse;
+  }
+
+  :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-ui);
+  }
+
+  td {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+</style>

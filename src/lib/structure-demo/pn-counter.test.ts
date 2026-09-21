@@ -27,7 +27,7 @@ describe("PN-counter correction lesson", () => {
     );
     expect(staged.replicas.map(({ value }) => value)).toEqual([13, 9, 10]);
     expect(staged.queuedOperations).toBe(2);
-    expect(staged.result).toContain("Two checkpoint notes are waiting");
+    expect(staged.result).toContain("Both checkpoint notes are traveling");
   });
 
   test("mixed-sign notes converge on 12", () => {
