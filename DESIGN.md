@@ -124,7 +124,7 @@ The emitted direction contract is:
 - **THESIS:** Compare partial observations in a daylit signal observatory, refusing the glowing network dashboard.
 - **OWN-WORLD:** Mineral-blue instruments, white-blue reading fields, sulfur signals, vermilion interference; square stations and thin ruled records.
 - **STORY:** Engineers choose a familiar data structure, observe its merge behavior, then inspect the causal evidence that makes the result possible. Motion snaps between recorded frames.
-- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing presents a numbered path through counters, registers, sets, and maps with direct entry to the first published structure. Sheets open with title, reading context, and prose; the console interrupts below.
+- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing presents a numbered path through counters, sets, registers, and maps with direct entry to the first published structure. Sheets open with title, reading context, and prose; the console interrupts below.
 - **FORM:** Signal observatory is brief-pinned, overriding roll index 3; seed key `e7ba61a7`.
 - **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -342,6 +342,14 @@ explain the merge before the interactive instrument.
 Each structure family has a top-level comparison page. One ruled section per
 structure summarizes its use, merge rule, metadata, and model, then links to
 the dedicated lesson page.
+
+The Sets family page uses the same ruled comparison format as Counters. Alice,
+Bob, and Carol survey the Eagle Creek trail beacon. The same named beacon moves
+through three policies: GSet records that it was ever observed, TwoPSet retires
+the name permanently, and the observed-remove set gives a replacement
+installation a fresh identity. The family page remains a reading surface; the
+existing observed-remove lesson continues that story and owns the interactive
+lab.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary

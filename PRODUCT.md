@@ -46,7 +46,7 @@ trail.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
 
-The site leads with familiar data structures: counters, registers, sets, maps,
+The site leads with familiar data structures: counters, sets, registers, maps,
 and later structure families. The first complete trail starts with Multi-value
 registers and Observed-remove sets, then introduces Dots and causal context,
 Local history, Partial order, Lamport clocks, and Vector clocks as the
@@ -58,6 +58,14 @@ rejects conflicting entries and broken internal references.
 
 Each structure family has an overview page that compares the structures in
 that family. Each implemented structure also has its own lesson page.
+
+The Sets overview follows Counters and places Registers third in the structure
+path. Alice, Bob, and Carol survey the Eagle Creek trail beacon. Their story
+moves from a permanent record of every beacon observed, through an irreversible
+retirement, to a replacement beacon that needs a fresh identity. The page
+compares Watershed's GSet, TwoPSet, and observed-remove set through that
+progression. The observed-remove section links to the existing detailed lesson
+and deterministic lab.
 
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,

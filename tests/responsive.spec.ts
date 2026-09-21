@@ -8,7 +8,7 @@ for (const viewport of [
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/structures/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/atlas/", "/glossary/", "/bibliography/",
+    for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
       expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
@@ -359,7 +359,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
 test("the landing structure path keeps its intended order", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("list", { name: "Data structure learning path" })
-    .getByRole("heading", { level: 2 })).toHaveText(["Counters", "Registers", "Sets", "Maps"]);
+    .getByRole("heading", { level: 2 })).toHaveText(["Counters", "Sets", "Registers", "Maps"]);
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {

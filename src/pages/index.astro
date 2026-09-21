@@ -18,7 +18,7 @@ const trail = buildTrail(sheets);
     <section aria-labelledby="structure-title">
       <h2 id="structure-title">Learn the behavior before the bookkeeping</h2>
       <p>
-        A counter, register, set, and map each makes a different promise when
+        A counter, set, register, and map each makes a different promise when
         updates arrive late or in a different order. Start with that promise.
         Then open the metadata that makes it possible.
       </p>
@@ -28,12 +28,12 @@ const trail = buildTrail(sheets);
           <dd>Independent increments can combine because addition does not need a winner.</dd>
         </div>
         <div>
-          <dt>Registers</dt>
-          <dd>Concurrent writes force a choice: select one value or preserve every sibling.</dd>
-        </div>
-        <div>
           <dt>Sets</dt>
           <dd>Removal needs a rule for additions that were observed, concurrent, or replayed later.</dd>
+        </div>
+        <div>
+          <dt>Registers</dt>
+          <dd>Concurrent writes force a choice: select one value or preserve every sibling.</dd>
         </div>
         <div>
           <dt>Maps</dt>

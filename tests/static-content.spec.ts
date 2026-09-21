@@ -301,14 +301,14 @@ test("the landing page leads with data structures", async ({ page }) => {
   const structures = page.getByRole("list", { name: "Data structure learning path" });
   await expect(structures.getByRole("listitem")).toHaveText([
     "1CountersHow independent additions and corrections merge without duplication.Read now",
-    "2RegistersWhat one shared value should do when two replicas write at once.Read now",
-    "3SetsWhy removing an item requires evidence about the additions you saw.Read now",
+    "2SetsWhy removing an item requires evidence about the additions you saw.Read now",
+    "3RegistersWhat one shared value should do when two replicas write at once.Read now",
     "4MapsHow a structure composes conflict rules across named fields.Planned",
   ]);
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "Counters",
-    "Registers",
     "Sets",
+    "Registers",
     "Maps",
     "Learn the behavior before the bookkeeping",
     "From merge behavior to causal evidence",
@@ -344,6 +344,31 @@ test("the counter family page links each counter lesson", async ({ page }) => {
     .toHaveAttribute("href", "/structures/g-counter/");
   await expect(page.getByRole("link", { name: "Read the PN-counter lesson" }))
     .toHaveAttribute("href", "/structures/pn-counter/");
+});
+
+test("the sets family compares its three removal rules", async ({ page }) => {
+  await page.goto("/structures/sets/");
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sets");
+  const article = page.locator(".set-family");
+  await expect(article).toContainText("Alice");
+  await expect(article).toContainText("Bob");
+  await expect(article).toContainText("Carol");
+  await expect(article).toContainText("ranger");
+  await expect(page.getByRole("region", { name: "GSet" })).toContainText("Set union");
+  await expect(page.getByRole("region", { name: "TwoPSet" }))
+    .toContainText("permanent tombstones");
+  await expect(page.getByRole("region", { name: "Observed-remove set" }))
+    .toContainText("subtract observed removals");
+  await expect(page.getByRole("table", { name: "Replicated set comparison" })
+    .locator("tbody tr")).toHaveText([
+    "Items never leaveGSetRetain each member",
+    "Removal is permanentTwoPSetRetain every removed value",
+    "Items can returnObserved-remove setRetain identities and removal knowledge",
+  ]);
+  await expect(page.getByRole("link", {
+    name: "Open the observed-remove set lesson",
+  })).toHaveAttribute("href", "/atlas/observed-remove-sets/");
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {

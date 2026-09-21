@@ -1,0 +1,331 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Sets"
+  description="Compare grow-only, two-phase, and observed-remove replicated sets."
+  territory="Structures"
+  sheetTitle="Sets"
+>
+  <article class="set-family">
+    <header class="page-intro">
+      <p class="territory-label">Structure family</p>
+      <h1>Sets</h1>
+      <p>
+        A ranger asks Alice, Bob, and Carol to survey trail beacons before the
+        next hiking season. They begin with the simplest possible shared set
+        and strengthen its rules only when the field work demands it.
+      </p>
+    </header>
+
+    <section aria-labelledby="g-set-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="g-set-title">GSet</h2>
+          <p>An add-only set that merges by union.</p>
+        </div>
+        <code>g_set_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            The survey starts when Alice finds the Eagle Creek beacon and adds
+            its name. Bob and Carol are on other trails, so her report may
+            reach them late or more than once. A GSet handles that uncertainty
+            with one rule: each hiker can add a name, and merge takes the
+            union.
+          </p>
+          <p>
+            Soon Bob reaches Eagle Creek and finds that the old beacon has been
+            taken down. The ranger now needs a list of active beacons, not a
+            permanent record of every beacon ever seen. A GSet cannot record
+            Bob's removal.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Recorded event IDs, observed devices, and permanent labels</li>
+            <li>Membership that must only grow</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Add only</dd></div>
+          <div><dt>Merge rule</dt><dd>Set union</dd></div>
+          <div><dt>Metadata</dt><dd>One retained entry per member</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section aria-labelledby="two-p-set-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="two-p-set-title">TwoPSet</h2>
+          <p>A removable set where retirement is permanent.</p>
+        </div>
+        <code>two_p_set_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            The hikers add a second grow-only set for retirements. Bob places
+            <code>Eagle Creek</code> in it. When Carol later receives an old
+            copy of Alice's report, the removal still wins. Membership now
+            requires an addition without a matching retirement.
+          </p>
+          <p>
+            The next morning, Alice installs a replacement beacon at the same
+            place. Its list name is still <code>Eagle Creek</code>. The old
+            tombstone blocks her new add because a TwoPSet cannot distinguish
+            the replacement from the retired installation.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Revoked credentials and decommissioned equipment</li>
+            <li>Membership where removal must win permanently</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Add once, remove once</dd></div>
+          <div><dt>Merge rule</dt><dd>Union additions and removals</dd></div>
+          <div><dt>Metadata</dt><dd>Members plus permanent tombstones</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section aria-labelledby="or-set-title">
+      <header>
+        <div>
+          <p class="structure-kind">CRDT</p>
+          <h2 id="or-set-title">Observed-remove set</h2>
+          <p>A removable set that permits a later or concurrent re-add.</p>
+        </div>
+        <code>or_set_kernel</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            The final design gives every installation a unique tag. Bob's
+            removal targets the old tag he observed. Alice's replacement gets
+            a fresh tag, so it can join the list. Carol can receive those
+            records in either order: the old installation stays removed, and
+            the replacement remains.
+          </p>
+          <p>
+            The ranger receives the same converged list without assigning an
+            order to the hikers' updates. The tags carry the evidence needed
+            for merge.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Collaborative selections, tags, rosters, and carts</li>
+            <li>Membership that must support remove and re-add</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Updates</dt><dd>Add, remove, and re-add</dd></div>
+          <div><dt>Merge rule</dt><dd>Union tags, then subtract observed removals</dd></div>
+          <div><dt>Metadata</dt><dd>Live addition tags plus removal knowledge</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/atlas/observed-remove-sets/">
+        Open the observed-remove set lesson
+      </a>
+    </section>
+
+    <section class="family-comparison" aria-labelledby="set-choice-title">
+      <h2 id="set-choice-title">Removal determines the set</h2>
+      <table aria-label="Replicated set comparison">
+        <thead>
+          <tr>
+            <th scope="col">Need</th>
+            <th scope="col">Choose</th>
+            <th scope="col">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Items never leave</th>
+            <td>GSet</td>
+            <td>Retain each member</td>
+          </tr>
+          <tr>
+            <th scope="row">Removal is permanent</th>
+            <td>TwoPSet</td>
+            <td>Retain every removed value</td>
+          </tr>
+          <tr>
+            <th scope="row">Items can return</th>
+            <td>Observed-remove set</td>
+            <td>Retain identities and removal knowledge</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/counters/">Back to counters</a>
+      <a href="/atlas/observed-remove-sets/">Open the set lesson</a>
+      <a href="/atlas/multi-value-registers/">Continue to registers</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .set-family {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .page-intro {
+    margin-bottom: var(--space-7);
+  }
+
+  .page-intro > p:last-child {
+    font-size: 1.2rem;
+  }
+
+  .set-family > section:not(.family-comparison) {
+    position: relative;
+    margin-top: var(--space-7);
+    padding: var(--space-5);
+    border: var(--rule-width) solid var(--line);
+    background: var(--clear);
+  }
+
+  section > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  section h2,
+  section header p {
+    margin: 0;
+  }
+
+  section h2 {
+    margin-block: var(--space-1);
+  }
+
+  .structure-kind {
+    color: var(--instrument);
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  section header code {
+    color: var(--muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .structure-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 0.7fr);
+    gap: var(--space-6);
+    padding-block: var(--space-5);
+  }
+
+  .structure-body p,
+  .structure-body h3 {
+    margin-top: 0;
+  }
+
+  .structure-body h3 {
+    margin-bottom: var(--space-2);
+    font-size: 1rem;
+  }
+
+  .structure-body ul {
+    margin-bottom: 0;
+  }
+
+  dl {
+    margin: 0;
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  dl div {
+    padding-block: var(--space-3);
+  }
+
+  dl div + div {
+    border-top: var(--rule-width) solid var(--line-faint);
+  }
+
+  dt {
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  dd {
+    margin: var(--space-1) 0 0;
+  }
+
+  .structure-link {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .family-comparison {
+    margin-top: var(--space-7);
+  }
+
+  table {
+    width: 100%;
+    margin-block: var(--space-4);
+    border-collapse: collapse;
+  }
+
+  :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--font-ui);
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  @media (width < 42rem) {
+    .set-family > section:not(.family-comparison) {
+      padding: var(--space-4);
+    }
+
+    section > header,
+    .structure-body {
+      grid-template-columns: 1fr;
+    }
+
+    section > header {
+      display: grid;
+      gap: var(--space-2);
+    }
+
+    .family-comparison {
+      overflow-x: auto;
+    }
+  }
+</style>
