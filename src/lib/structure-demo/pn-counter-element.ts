@@ -106,7 +106,7 @@ class PNCounterDemoElement extends HTMLElement {
     await this.deliverQueued(this.button("race"));
   }
 
-  private async deliverQueued(focus: HTMLElement): Promise<void> {
+  private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
     const result = deliverPNOperations(this.state);
     if (!result.ok) {
       this.apply(result, focus);
