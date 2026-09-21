@@ -304,12 +304,18 @@ test("the landing page leads with data structures", async ({ page }) => {
     "2SetsWhy removing an item requires evidence about the additions you saw.Read now",
     "3RegistersChoose one winner, preserve alternatives, or select a read policy.Read now",
     "4MapsChoose how named fields, removals, and nested folders reconcile.Read now",
+    "5SequencesKeep order stable while several clients edit the same region.Read now",
+    "6CoordinationUse a shared protocol when the result must have one owner.Read now",
+    "7TransformsRewrite concurrent document edits so both can apply.Read now",
   ]);
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "Counters",
     "Sets",
     "Registers",
     "Maps",
+    "Sequences",
+    "Coordination",
+    "Transforms",
     "Learn the behavior before the bookkeeping",
     "From merge behavior to causal evidence",
     "Open the machinery when you need it",

@@ -9,7 +9,7 @@ for (const viewport of [
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     test.setTimeout(45_000);
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/structures/registers/", "/structures/lww-register/", "/structures/multi-value-register/", "/structures/register-collection/", "/structures/maps/", "/structures/shared-map/", "/structures/lww-map/", "/structures/or-map/", "/structures/shared-directory/", "/atlas/", "/glossary/", "/bibliography/",
+    for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/structures/registers/", "/structures/lww-register/", "/structures/multi-value-register/", "/structures/register-collection/", "/structures/maps/", "/structures/shared-map/", "/structures/lww-map/", "/structures/or-map/", "/structures/shared-directory/", "/structures/sequences/", "/structures/shared-sequence/", "/structures/shared-text/", "/structures/coordination/", "/structures/claims/", "/structures/ordered-collection/", "/structures/task-manager/", "/structures/pact-map/", "/structures/transforms/", "/structures/json-ot/", "/structures/shared-rich-text/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
       expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
@@ -337,7 +337,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     const secondary = page.getByRole("link", { name: "Open the full atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
-    await expect(pathItems).toHaveCount(4);
+    await expect(pathItems).toHaveCount(7);
 
     const sectionBox = await sectionTwo.boundingBox();
     expect(sectionBox).not.toBeNull();
@@ -360,7 +360,9 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
 test("the landing structure path keeps its intended order", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("list", { name: "Data structure learning path" })
-    .getByRole("heading", { level: 2 })).toHaveText(["Counters", "Sets", "Registers", "Maps"]);
+    .getByRole("heading", { level: 2 })).toHaveText([
+      "Counters", "Sets", "Registers", "Maps", "Sequences", "Coordination", "Transforms",
+    ]);
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {
