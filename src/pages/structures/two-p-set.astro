@@ -5,11 +5,16 @@ import SetStructureDemo from "../../components/SetStructureDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { twoPSetTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
+
+const tombstoneTerm = {
+  term: "tombstone",
+  definition: "Retained removal metadata that prevents an old addition from becoming live again.",
+};
 ---
 
 <BaseLayout
   title="TwoPSet"
-  description="Alice retires the old Eagle Creek beacon, but its permanent tombstone blocks Bob's replacement."
+  description="Alice retires the old Eagle Creek beacon, but its permanent removal record blocks Bob's replacement."
   territory="Structures"
   sheetTitle="TwoPSet"
 >
@@ -31,7 +36,7 @@ import "../../styles/set-lesson.css";
       merge="Union the addition set and the removal set."
       delivery="Removal survives repeated and out-of-order delivery"
       bestFor="Membership where retirement must be final"
-      cost="Retain additions and permanent tombstones"
+      cost="Retain additions and permanent removal records"
     />
 
     <section aria-labelledby="retire-beacon-title">
@@ -48,6 +53,13 @@ import "../../styles/set-lesson.css";
         contains the name, but her visible list is empty. Bob and Carol still
         show Eagle Creek until they receive her removal record.
       </p>
+      <p>
+        That retained removal record is a{" "}
+        <dfn><a href="/glossary/#tombstone">tombstone</a></dfn>. It prevents a
+        delayed or repeated addition record from making the retired beacon
+        visible again.
+      </p>
+      <TermCallout {...tombstoneTerm} />
       <p>
         A <dfn><a href="/glossary/#twopset">TwoPSet</a></dfn> is composed of
         those two GSets. A value is visible only when it appears in additions

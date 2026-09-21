@@ -146,6 +146,9 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#twopset")).toContainText(
     "A two-phase replicated set composed of two GSets",
   );
+  await expect(page.locator("#tombstone")).toContainText(
+    "Retained removal metadata",
+  );
   await expect(page.locator("#sequencer")).toContainText(
     "assigns ordered sequence numbers",
   );

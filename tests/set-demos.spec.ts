@@ -105,6 +105,12 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
       if (testId === "two-p-set-demo") {
         await expect(page.getByRole("heading", { name: "Add a second GSet" }))
           .toBeVisible();
+        await expect(page.getByLabel("tombstone definition")).toContainText(
+          "prevents an old addition from becoming live again",
+        );
+        await expect(page.getByLabel("tombstone definition")
+          .getByRole("link", { name: "tombstone" }))
+          .toHaveAttribute("href", "/glossary/#tombstone");
         await expect(page.getByLabel("TwoPSet definition")).toContainText(
           "Each value can move from absent, to present, to permanently removed",
         );
