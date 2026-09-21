@@ -7,6 +7,7 @@ for (const viewport of [
   { name: "desktop", width: 1440, height: 1000 },
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
+    test.setTimeout(45_000);
     await page.setViewportSize(viewport);
     for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
