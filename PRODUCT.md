@@ -57,8 +57,8 @@ rejects conflicting entries and broken internal references.
 
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter
-demo and reference engines for ordering, clocks, and Dots. Focused structure
-demos use at least three clients. The G-counter,
+and PN-counter demos and reference engines for ordering, clocks, and Dots.
+Focused structure demos use at least three clients. The G-counter, PN-counter,
 multi-value register, and observed-remove set lessons run pinned Watershed
 kernels through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
 point, never private Watershed build paths.
@@ -73,6 +73,13 @@ immediately. Readers can turn it off to hold several notes, then turn it back on
 to share them. Atlas animates notes between hikers and checkpoints at a
 reader-controlled speed. Guided observations explain pairwise maximum and add
 timed callouts and signal-colored marks to the local values and checkpoint.
+
+The PN-counter lesson continues the same hike after the three friends agree on
+10 birds. Alice records 3 new sightings while Bob corrects 1 duplicate. Their
+local views briefly show 13, 9, and 10 before Sluice delivers both notes and all
+three converge on 12. Direct controls let each hiker add sightings or record
+corrections. An explanation disclosure shows the two grow-only component
+tables whose difference is the visible count.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. Atlas owns schedules, queues, partitions, and

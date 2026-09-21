@@ -137,6 +137,9 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#eventual-consistency")).toContainText(
     "Replicas can disagree while messages are in transit",
   );
+  await expect(page.locator("#pn-counter")).toContainText(
+    "stores increases and decreases in separate grow-only components",
+  );
 
   await page.goto("/bibliography/");
   await expect(page).toHaveTitle("Bibliography | Distributed Systems Atlas");

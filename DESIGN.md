@@ -313,6 +313,16 @@ for Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
 
+The PN-counter demo is a separate instrument below the G-counter result. It
+keeps the same three hikers, checkpoint topology, transport marks, and large
+local values. The agreed starting count is 10. Its authored action sends
+Alice's `+3` sighting note and Bob's `-1` correction note through Sluice before
+all three views converge on 12. Manual controls add sightings or corrections
+for any hiker, then a separate action shares the waiting notes. The visible
+value stays primary; positive and correction components appear only in the
+`Explain why` disclosure. The PN-counter does not add auto-delivery, playback
+speed, guided observations, or a replay control.
+
 **The Structure-First Demo Rule.** A reader must be able to state the merge
 result before opening metadata. One authored action must complete the primary
 lesson with one authored race. Direct structure controls can supplement that
@@ -327,6 +337,8 @@ ranges from `¼×` to `2×`. Its 10px transport dots use Watershed's fixed-size
 30%-to-100% opacity motion and `ease-in-out` timing. Motion may show a signal
 traveling to a queue or destination, a route separating, or a record arriving;
 state commits at discrete frames.
+The PN-counter uses the same 1000ms Sluice hop and transport marks at a fixed
+speed.
 
 With reduced motion, all animation, transition, and smooth scrolling stop. State changes render immediately with the same status text. Playback becomes `Next recorded frame` and advances once per activation instead of running the 900ms timer.
 

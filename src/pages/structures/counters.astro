@@ -1,16 +1,18 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GCounterDemo from "../../components/GCounterDemo.astro";
+import PNCounterDemo from "../../components/PNCounterDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   eventualConsistencyTerm,
+  pnCounterTerm,
   replicaTerm,
 } from "../../lib/atlas/standalone-terms";
 ---
 
 <BaseLayout
   title="Counters"
-  description="Alice, Bob, and Carol split onto separate trails to count birds. Their checkpoint notes can arrive late or out of order, but all three need the same total."
+  description="Alice, Bob, and Carol count birds on separate trails. A G-counter preserves their sightings, then a PN-counter lets them record corrections."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -133,13 +135,82 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
       <TermCallout {...eventualConsistencyTerm} />
     </section>
 
-    <section aria-labelledby="limits-title">
-      <h2 id="limits-title">The bird count can only grow</h2>
+    <section aria-labelledby="correction-title">
+      <h2 id="correction-title">Bob finds a duplicate sighting</h2>
       <p>
-        Alice, Bob, and Carol can add sightings, but they cannot subtract one.
-        A negative change is rejected before state changes. Every hiker also
-        needs a unique replica ID. If two hikers share an ID, pairwise maximum
-        can discard one concurrent count.
+        At the next checkpoint, Alice, Bob, and Carol compare their notebooks
+        and agree on 10 birds. Then Bob spots a mistake: one line records the
+        same bird twice. His contribution should fall by one.
+      </p>
+      <p>
+        Bob cannot replace his count of 3 with 2. An older note that still says
+        3 could arrive later and restore the mistake. The G-counter merge rule
+        must keep 3 because it always keeps the larger value.
+      </p>
+      <p>
+        A{" "}
+        <dfn><a href="/glossary/#pn-counter">PN-counter</a></dfn> records the
+        correction instead. It keeps one grow-only counter for sightings and a
+        second grow-only counter for corrections. Both sides still merge by
+        maximum. The visible count subtracts one total from the other.
+      </p>
+      <TermCallout {...pnCounterTerm} />
+      <pre aria-label="PN-counter bird total rule"><code>birds = sightings - corrections</code></pre>
+    </section>
+
+    <section aria-labelledby="correction-race-title">
+      <h2 id="correction-race-title">Two new notes leave at once</h2>
+      <p>
+        While Bob writes a correction for the duplicate sighting, Alice counts
+        3 more birds on the ridge trail. Neither has received the other's note.
+        Alice's view rises from 10 to 13. Bob's falls from 10 to 9. Carol still
+        reads 10.
+      </p>
+      <table aria-label="Bird count before PN-counter notes arrive">
+        <thead>
+          <tr>
+            <th scope="col">Moment</th>
+            <th scope="col">Alice</th>
+            <th scope="col">Bob</th>
+            <th scope="col">Carol</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Agreed count</th><td>10</td><td>10</td><td>10</td></tr>
+          <tr><th scope="row">Notes waiting</th><td>13</td><td>9</td><td>10</td></tr>
+          <tr><th scope="row">Both notes arrive</th><td>12</td><td>12</td><td>12</td></tr>
+        </tbody>
+      </table>
+      <p>
+        The two notes do not cancel in transit. Alice's positive component
+        grows by 3, and Bob's correction component grows by 1. Every hiker
+        eventually computes <code>13 - 1 = 12</code>.
+      </p>
+    </section>
+
+    <PNCounterDemo />
+
+    <section aria-labelledby="pn-result-title">
+      <h2 id="pn-result-title">The correction survives the merge</h2>
+      <p>
+        After both notes arrive, the sightings side totals 13 and the
+        corrections side totals 1. Alice, Bob, and Carol all read 12 birds.
+        Delivery order does not change that result, and a repeated delta does
+        not apply the correction twice.
+      </p>
+      <p>
+        A PN-counter can also produce a negative value. That is correct counter
+        behavior, but it may be invalid for the thing being counted. An
+        application that must never show fewer than zero birds needs another
+        rule to prevent or coordinate those updates.
+      </p>
+    </section>
+
+    <section aria-labelledby="family-title">
+      <h2 id="family-title">The counter family</h2>
+      <p>
+        Every hiker needs a unique replica ID. If two hikers share an ID,
+        pairwise maximum can discard one concurrent update.
       </p>
       <table class="counter-family" aria-label="Counter family status">
         <thead>
@@ -163,7 +234,7 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
           <tr>
             <th scope="row">PN-counter</th>
             <td>Increment and decrement</td>
-            <td>Planned</td>
+            <td>Read now</td>
           </tr>
         </tbody>
       </table>
@@ -177,7 +248,10 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
         Its interaction follows Watershed's focused{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/website/src/components/Demo.astro">counter demo</a>
         , while Atlas owns the three-client lesson schedule and presentation.
-        The merge rule keeps the largest cumulative count for each hiker.
+        The G-counter merge rule keeps the largest cumulative count for each
+        hiker. The correction lesson uses Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/pn_counter_kernel.gleam">PN-counter kernel</a>
+        {" "}and Sluice transport.
       </p>
       <p>
         The merge rule is the state-based grow-only counter described in{" "}

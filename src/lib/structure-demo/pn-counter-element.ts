@@ -120,7 +120,7 @@ class PNCounterDemoElement extends HTMLElement {
     this.state = result.state;
     this.setBusy(false);
     this.render();
-    focus.focus();
+    (focus.disabled ? this.button("reset") : focus).focus();
   }
 
   private apply(result: PNCounterDemoResult, focus: HTMLElement): void {
