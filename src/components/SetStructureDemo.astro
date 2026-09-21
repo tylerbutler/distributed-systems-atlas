@@ -27,6 +27,26 @@ const beaconByReplica: Record<ReplicaId, string> = {
 const actionCopy = kind === "two-p-set"
   ? { add: "Report again", remove: "Retire" }
   : { add: "Install", remove: "Remove" };
+
+function raceNote(replica: ReplicaId): string {
+  if (kind === "g-set") {
+    return replica === "C"
+      ? "No note in this race"
+      : `Additions page: ${beaconByReplica[replica]}`;
+  }
+  if (kind === "two-p-set") {
+    return replica === "A"
+      ? "Removals page: Eagle Creek"
+      : replica === "B"
+        ? "Additions page: Eagle Creek"
+        : "No note in this race";
+  }
+  return replica === "A"
+    ? "Remove observed tag A:1"
+    : replica === "B"
+      ? "Add Eagle Creek as B:2"
+      : "No note in this race";
+}
 ---
 
 <set-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
@@ -66,6 +86,10 @@ const actionCopy = kind === "two-p-set"
               ? replica.values.map((value) => <span>{value}</span>)
               : <em>Empty set</em>}
           </div>
+          <p class="paper-note">
+            <span>Checkpoint note</span>
+            <strong>{raceNote(replica.id)}</strong>
+          </p>
           <div class="replica-actions">
             {kind === "g-set"
               ? (
@@ -328,6 +352,26 @@ const actionCopy = kind === "two-p-set"
   .member-list em {
     color: color-mix(in oklch, var(--clear) 58%, transparent);
     font-size: 0.875rem;
+  }
+
+  .paper-note {
+    display: grid;
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+    gap: var(--space-1);
+    font-family: var(--font-ui);
+  }
+
+  .paper-note span {
+    color: color-mix(in oklch, var(--clear) 68%, transparent);
+    font-size: 0.75rem;
+  }
+
+  .paper-note strong {
+    color: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.8rem;
   }
 
   .replica-actions {

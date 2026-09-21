@@ -22,6 +22,23 @@ const valueByReplica: Record<ReplicaId, string> = {
   B: "Trail closed",
   C: "Inspect bridge",
 };
+
+function raceNote(replica: ReplicaId): { body: string; evidence: string } {
+  if (replica === "C") {
+    return { body: "No note in this race", evidence: "Carol observes delivery" };
+  }
+  const body = `trail-status: ${valueByReplica[replica]}`;
+  if (kind === "lww-register") {
+    return { body, evidence: `time T10 · writer ${replica}` };
+  }
+  if (kind === "mv-register") {
+    return {
+      body,
+      evidence: `write identity ${replica}:1 · no other note received`,
+    };
+  }
+  return { body, evidence: "sequence number assigned at ranger station" };
+}
 ---
 
 <register-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
@@ -56,6 +73,11 @@ const valueByReplica: Record<ReplicaId, string> = {
           <div class="register-values" data-register-values={replica.id}>
             <em>No status</em>
           </div>
+          <p class="paper-note">
+            <span>Field note</span>
+            <strong>{raceNote(replica.id).body}</strong>
+            <small>{raceNote(replica.id).evidence}</small>
+          </p>
           <button
             type="button"
             data-replica={replica.id}
@@ -252,6 +274,27 @@ const valueByReplica: Record<ReplicaId, string> = {
     border: var(--rule-width) solid color-mix(in oklch, var(--clear) 22%, transparent);
     align-content: start;
     gap: var(--space-2);
+  }
+
+  .paper-note {
+    display: grid;
+    margin: 0 0 var(--space-4);
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+    gap: var(--space-1);
+    font-family: var(--font-ui);
+  }
+
+  .paper-note span,
+  .paper-note small {
+    color: color-mix(in oklch, var(--clear) 68%, transparent);
+    font-size: 0.75rem;
+  }
+
+  .paper-note strong {
+    color: var(--signal);
+    font-family: var(--font-data);
+    font-size: 0.8rem;
   }
 
   .register-values span {

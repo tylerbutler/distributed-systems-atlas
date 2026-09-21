@@ -41,6 +41,10 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
+    await expect(demo.getByText("Map-edit slip", { exact: true })).toHaveCount(3);
+    await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
+      "No slip in this race",
+    );
     await race.click();
     for (const entries of await demo.locator("[data-map-entries]").all()) {
       await expect(entries.locator("div")).toHaveText(example.entries);

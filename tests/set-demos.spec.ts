@@ -30,6 +30,10 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
+    await expect(demo.getByText("Checkpoint note", { exact: true })).toHaveCount(3);
+    await expect(demo.locator(".paper-note").first()).not.toContainText(
+      "No note in this race",
+    );
     await race.click();
     for (const [index, values] of example.values.entries()) {
       const members = demo.locator("[data-member-list]").nth(index).locator("span");

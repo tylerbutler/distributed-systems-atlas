@@ -63,6 +63,27 @@ function buttonLabel(operation: MapOperation): string {
   if (operation.action === "mkdir") return `Create ${operation.key}`;
   return `Write ${operation.value}`;
 }
+
+function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
+  if (replica === "C") {
+    return { body: "No slip in this race", evidence: "Carol observes delivery" };
+  }
+  if (kind === "or-map") {
+    return replica === "A"
+      ? { body: "Remove Eagle Creek", evidence: "remove the observed key identity" }
+      : { body: "Eagle Creek tally: +3", evidence: "nested counter update" };
+  }
+  if (kind === "shared-directory") {
+    return {
+      body: "Create /eagle-creek",
+      evidence: `stable folder identity ${replica}:eagle-creek`,
+    };
+  }
+  const body = `gate-status: ${statusByReplica[replica]}`;
+  return kind === "lww-map"
+    ? { body, evidence: `timestamp from writer ${replica}` }
+    : { body, evidence: "sequence number assigned at ranger station" };
+}
 ---
 
 <map-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
@@ -102,6 +123,11 @@ function buttonLabel(operation: MapOperation): string {
                   ))
                 : <div class="empty-entry"><dd>No entries</dd></div>}
             </dl>
+            <p class="map-edit-slip">
+              <span>Map-edit slip</span>
+              <strong>{raceSlip(replica.id).body}</strong>
+              <small>{raceSlip(replica.id).evidence}</small>
+            </p>
             <button
               type="button"
               data-replica={replica.id}

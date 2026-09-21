@@ -151,6 +151,27 @@ map-structure-demo {
   font-style: italic;
 }
 
+.map-edit-slip {
+  display: grid;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-3);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+  gap: var(--space-1);
+  font-family: var(--font-ui);
+}
+
+.map-edit-slip span,
+.map-edit-slip small {
+  color: color-mix(in oklch, var(--clear) 68%, transparent);
+  font-size: 0.75rem;
+}
+
+.map-edit-slip strong {
+  color: var(--signal);
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+}
+
 .map-instrument button {
   min-height: 2.75rem;
   border: var(--rule-width) solid var(--clear);

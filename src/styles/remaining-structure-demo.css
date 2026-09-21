@@ -57,6 +57,30 @@ remaining-structure-demo {
   gap: 0.75rem;
 }
 
+.remaining-local-record,
+.remaining-paper-note {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 1rem !important;
+  padding: 0.75rem;
+  border-block: 1px solid color-mix(in oklch, var(--graphite) 30%, transparent);
+}
+
+.remaining-local-record span,
+.remaining-paper-note span,
+.remaining-paper-note small {
+  font: var(--font-label);
+}
+
+.remaining-local-record strong,
+.remaining-paper-note strong {
+  font-family: var(--font-data);
+}
+
+.remaining-paper-note strong {
+  color: var(--instrument);
+}
+
 .remaining-clients button,
 .remaining-controls button {
   min-height: 44px;

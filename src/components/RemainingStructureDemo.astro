@@ -13,6 +13,7 @@ const { structure } = Astro.props;
 <remaining-structure-demo
   data-testid={`${structure.id}-demo`}
   data-initial={JSON.stringify(structure.initial)}
+  data-initial-records={JSON.stringify(structure.initialRecord)}
   data-final={JSON.stringify(structure.final)}
   data-result={structure.result}
 >
@@ -27,8 +28,16 @@ const { structure } = Astro.props;
       {(["A", "B", "C"] as const).map((id, index) => (
         <section data-client={id} aria-label={`Replica ${id}`}>
           <header><StationMark station={id} size="lg" /><h3>{["Alice", "Bob", "Carol"][index]}</h3></header>
-          <p>{structure.local[id]}</p>
-          <button type="button" data-client-action disabled>Send operation</button>
+          <p class="remaining-local-record">
+            <span>{structure.recordLabel}</span>
+            <strong data-local-record>{structure.initialRecord[id]}</strong>
+          </p>
+          <p class="remaining-paper-note">
+            <span>{structure.messageLabel}</span>
+            <strong>{structure.local[id]}</strong>
+            <small>{structure.evidence[id]}</small>
+          </p>
+          <button type="button" data-client-action disabled>Send note</button>
         </section>
       ))}
     </div>
@@ -51,9 +60,11 @@ const { structure } = Astro.props;
       if (this.dataset.ready) return;
       this.dataset.ready = "true";
       const initial = JSON.parse(this.dataset.initial ?? "[]");
+      const initialRecords = JSON.parse(this.dataset.initialRecords ?? "{}");
       const final = JSON.parse(this.dataset.final ?? "[]");
       const state = this.querySelector("[data-state]");
       const status = this.querySelector("[data-status]");
+      const localRecords = this.querySelectorAll("[data-local-record]");
       const note = this.querySelector("[data-enhancement-note]");
       const buttons = this.querySelectorAll("button");
       if (!(state instanceof HTMLElement) || !(status instanceof HTMLElement)) return;
@@ -64,21 +75,30 @@ const { structure } = Astro.props;
           return item;
         }));
       };
+      const renderLocalRecords = (value: string) => {
+        localRecords.forEach((record) => {
+          record.textContent = value;
+        });
+      };
       buttons.forEach((button) => button.disabled = false);
       if (note instanceof HTMLElement) note.hidden = true;
       this.querySelector('[data-action="race"]')?.addEventListener("click", (event) => {
         render(final);
+        renderLocalRecords(final.join(" · "));
         status.textContent = this.dataset.result ?? "";
         (event.currentTarget as HTMLButtonElement).focus();
       });
       this.querySelector('[data-action="reset"]')?.addEventListener("click", (event) => {
         render(initial);
+        localRecords.forEach((record, index) => {
+          record.textContent = initialRecords[["A", "B", "C"][index]] ?? "";
+        });
         status.textContent = `Ready: ${initial.join(" · ")}`;
         (event.currentTarget as HTMLButtonElement).focus();
       });
       this.querySelectorAll("[data-client-action]").forEach((button) => {
         button.addEventListener("click", () => {
-          status.textContent = "Operation queued. Other client controls remain available.";
+          status.textContent = "Note queued. Other client controls remain available.";
         });
       });
     }

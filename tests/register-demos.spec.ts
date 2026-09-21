@@ -30,6 +30,10 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
+    await expect(demo.getByText("Field note", { exact: true })).toHaveCount(3);
+    await expect(demo.locator(".paper-note").first()).toContainText(
+      "trail-status: Trail open",
+    );
     await race.click();
     for (const [index, values] of example.values.entries()) {
       await expect(demo.locator("[data-register-values]").nth(index).locator("span"))

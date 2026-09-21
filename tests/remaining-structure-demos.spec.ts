@@ -16,8 +16,15 @@ for (const [slug, name, race, final] of examples) {
     await page.goto(`/structures/${slug}/`);
     const demo = page.getByTestId(`${slug}-demo`);
     await expect(demo.locator("[data-client]")).toHaveCount(3);
+    await expect(demo.locator(".remaining-local-record")).toHaveCount(3);
+    await expect(demo.locator(".remaining-paper-note")).toHaveCount(3);
     await demo.getByRole("button", { name: race }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(final);
+    await expect(demo.locator("[data-local-record]")).toHaveText([
+      final.join(" · "),
+      final.join(" · "),
+      final.join(" · "),
+    ]);
   });
 }
 
@@ -43,6 +50,8 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(name);
       const demo = page.getByTestId(`${slug}-demo`);
       await expect(demo.locator("[data-client]")).toHaveCount(3);
+      await expect(demo.locator(".remaining-local-record")).toHaveCount(3);
+      await expect(demo.locator(".remaining-paper-note")).toHaveCount(3);
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the race");
     }
