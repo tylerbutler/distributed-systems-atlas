@@ -37,9 +37,9 @@ but then Alice could not add its replacement under the same name. The
 observed-remove set must support the full story.
 
 Alice at station A removes the old installation while Bob at station B reports
-its replacement across a partition. Carol asks what their shared list must
-show after delivery of the delayed records. The ranger needs that final list but
-does not sequence their updates. The lab isolates Alice's and Bob's conflicting
+its replacement when their stations cannot exchange notes. Carol asks what
+their shared list must show after delivery of the delayed records. The ranger
+needs that final list but does not sequence their updates. The lab isolates Alice's and Bob's conflicting
 replicas: Bob eventually receives a stale copy of the original addition. You
 need to preserve Bob's replacement without restoring the installation Alice
 removed.
@@ -96,7 +96,7 @@ until the final step.
 1. **Reference step 1: add** adds beacon at A as `A:1`.
 2. **Reference step 2: duplicate** saves a copy of `m1`.
 3. **Reference step 3: deliver** delivers the original `m1` to B.
-4. **Reference step 4: partition** blocks delivery between A and B.
+4. **Reference step 4: block delivery** stops notes between A and B.
 5. **Reference step 5: remove** removes beacon at A, targeting `A:1`.
 6. **Reference step 6: add** adds beacon at B as `B:2`.
 7. **Reference step 7: heal** opens the link without delivering anything.
@@ -130,7 +130,7 @@ After delivery of the original `m1`, both stations retain live `A:1`. The saved
 copy has the same payload and tag. Duplicating a message does not allocate
 another addition.
 
-During the partition, A moves `A:1` from live membership to removal
+While delivery is blocked, A moves `A:1` from live membership to removal
 knowledge. B has not received that removal and still has live `A:1`.
 Its local add allocates `B:2`, so B now retains two live tags for the same
 visible value.
