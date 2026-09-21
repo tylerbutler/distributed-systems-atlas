@@ -303,7 +303,7 @@ test("the landing page leads with data structures", async ({ page }) => {
     "1CountersHow independent additions and corrections merge without duplication.Read now",
     "2SetsWhy removing an item requires evidence about the additions you saw.Read now",
     "3RegistersChoose one winner, preserve alternatives, or select a read policy.Read now",
-    "4MapsHow a structure composes conflict rules across named fields.Planned",
+    "4MapsChoose how named fields, removals, and nested folders reconcile.Read now",
   ]);
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "Counters",
@@ -375,13 +375,17 @@ test("the sets family compares its three removal rules", async ({ page }) => {
     .toHaveAttribute("href", "/structures/two-p-set/");
 });
 
-test("the structures index routes readers through the register family", async ({ page }) => {
+test("the structures index and landing route readers through published families", async ({ page }) => {
   await page.goto("/structures/");
   await expect(page.getByRole("link", { name: "Registers", exact: true }))
     .toHaveAttribute("href", "/structures/registers/");
+  await expect(page.getByRole("link", { name: "Maps", exact: true }))
+    .toHaveAttribute("href", "/structures/maps/");
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Registers", exact: true }))
     .toHaveAttribute("href", "/structures/registers/");
+  await expect(page.getByRole("link", { name: "Maps", exact: true }))
+    .toHaveAttribute("href", "/structures/maps/");
 });
 
 test("landing page works without client JavaScript", async ({ browser }) => {

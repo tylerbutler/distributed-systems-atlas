@@ -9,7 +9,7 @@ for (const viewport of [
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
     test.setTimeout(45_000);
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/structures/registers/", "/structures/lww-register/", "/structures/multi-value-register/", "/structures/register-collection/", "/atlas/", "/glossary/", "/bibliography/",
+    for (const path of ["/", "/structures/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/structures/registers/", "/structures/lww-register/", "/structures/multi-value-register/", "/structures/register-collection/", "/structures/maps/", "/structures/shared-map/", "/structures/lww-map/", "/structures/or-map/", "/structures/shared-directory/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
       expect((await page.goto(path))?.status(), path).toBe(200);
       await page.evaluate(() => document.fonts.ready);
