@@ -230,17 +230,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
     left: 0;
     width: 10px;
     height: 10px;
-    border: var(--rule-width) solid var(--instrument-deep);
     border-radius: 50%;
   }
 
   :global(.operation-pulse.outbound) {
-    border-color: var(--signal);
     background: var(--signal);
   }
 
   :global(.operation-pulse.sequenced) {
-    border-color: var(--clear);
     color: var(--instrument-deep);
     background: var(--clear);
   }
@@ -249,12 +246,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
     position: absolute;
     bottom: calc(100% + var(--space-1));
     left: 50%;
-    padding: 0.15rem 0.3rem;
+    padding: 2px 5px;
+    border-radius: 4px;
     color: var(--instrument-deep);
     background: var(--signal);
     font-family: var(--font-data);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
     line-height: 1;
     white-space: nowrap;
     transform: translateX(-50%);

@@ -22,6 +22,7 @@ references:
 ---
 
 import CausalLab from "../../components/CausalLab.astro";
+import TermCallout from "../../components/TermCallout.astro";
 import VectorComparison from "../../components/VectorComparison.astro";
 
 <div class="sheet-opening">
@@ -45,13 +46,16 @@ the time shown on an operator's clock.
 
 ## Keep a version beside each value
 
-Call each surviving version a **sibling**. In this experiment, red starts
-with version `[A:1, B:0]`, while blue starts with `[A:0, B:1]`. Each version
-records a write that lacks the other writer's progress.
+Call each surviving version a <dfn><a href="/glossary/#sibling">sibling</a></dfn>.
+In this experiment, red starts with version `[A:1, B:0]`, while blue starts
+with `[A:0, B:1]`. Each version records a write that lacks the other writer's
+progress.
 
-<aside class="sheet-term-note" aria-label="Term: sibling">
-  <dl><dt>sibling</dt><dd>A surviving version of a register value with its own write identity and causal history.</dd></dl>
-</aside>
+<TermCallout
+  term="sibling"
+  definition="A surviving version of a register value with its own write identity and causal history."
+  inlineOnly
+/>
 
 <VectorComparison left={{ A: 1, B: 0 }} right={{ A: 0, B: 1 }} />
 

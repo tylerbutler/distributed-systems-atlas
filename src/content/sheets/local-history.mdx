@@ -20,6 +20,7 @@ references:
 
 import CausalLab from "../../components/CausalLab.astro";
 import StationMark from "../../components/StationMark.astro";
+import TermCallout from "../../components/TermCallout.astro";
 
 <div class="sheet-opening">
 
@@ -45,14 +46,17 @@ Neither station can read the other panel.
 
 ## Keep execution and observation separate
 
-A **local history** lists events executed at one replica. In this experiment,
+A <dfn><a href="/glossary/#local-history">local history</a></dfn> lists events
+executed at one replica. In this experiment,
 `a1` is A's draft event and `a2` is A's publish event. A executes them in that
 order. B's receive event is `b1`; B does not execute `a1` when it receives
 information about it.
 
-<aside class="sheet-term-note" aria-label="Term: local history">
-  <dl><dt>local history</dt><dd>The ordered events executed at one replica.</dd></dl>
-</aside>
+<TermCallout
+  term="local history"
+  definition="The ordered events executed at one replica."
+  inlineOnly
+/>
 
 An **observation** includes information learned from messages as well as local
 events. After delivery, B's local history contains `b1`, while its observed

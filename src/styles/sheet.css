@@ -71,7 +71,6 @@
 .sheet-trail,
 .sheet-local,
 .sheet-terms,
-.sheet-term-note,
 .sheet-data,
 .sheet-table-scroll,
 .sheet-references {
@@ -184,31 +183,33 @@
   margin-bottom: var(--space-5);
 }
 
+.sheet-body dfn {
+  font-style: italic;
+  font-weight: 650;
+}
+
+.sheet-body dfn a {
+  color: var(--instrument);
+}
+
 .sheet :is(.sheet-opening, .sheet-continuation) li + li {
   margin-top: var(--space-3);
 }
 
-.sheet-term-note {
-  margin-block: var(--space-3) var(--space-6);
-  padding-block: var(--space-3);
-  border-block: var(--rule-width) solid var(--line);
-  font-size: 0.9375rem;
-}
-
-.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dl,
+.sheet :is(.sheet-terms, .sheet-data) dl,
 .sheet dl.sheet-data {
   margin: 0;
 }
 
-.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dt {
+.sheet :is(.sheet-terms, .sheet-data) dt {
   font-weight: 650;
 }
 
-.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dd {
+.sheet :is(.sheet-terms, .sheet-data) dd {
   margin: var(--space-1) 0 var(--space-4);
 }
 
-.sheet :is(.sheet-terms, .sheet-term-note, .sheet-data) dd:last-child {
+.sheet :is(.sheet-terms, .sheet-data) dd:last-child {
   margin-bottom: 0;
 }
 

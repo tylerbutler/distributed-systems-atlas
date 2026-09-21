@@ -331,17 +331,16 @@ class GCounterDemoElement extends HTMLElement {
     layer.append(dot);
     const animation = dot.animate([
       {
-        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px) scale(.7)`,
-        opacity: 0.55,
+        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
+        opacity: 0.3,
       },
       {
-        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px) scale(1)`,
+        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
         opacity: 1,
       },
     ], {
-      duration,
-      easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-      fill: "forwards",
+      duration: Math.max(1, duration),
+      easing: "ease-in-out",
     });
     this.activeAnimations.add(animation);
     await animation.finished.catch(() => undefined);

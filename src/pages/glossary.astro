@@ -2,11 +2,13 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { buildGlossary, entryAnchor, type SheetMeta } from "../lib/atlas/graph";
+import { standaloneTerms } from "../lib/atlas/standalone-terms";
 
 const sheets: SheetMeta[] = (await getCollection("sheet")).map(
   (entry) => ({ id: entry.id, ...entry.data }),
 );
-const terms = buildGlossary(sheets);
+const terms = [...buildGlossary(sheets), ...standaloneTerms]
+  .sort((a, b) => a.term.localeCompare(b.term));
 ---
 
 <BaseLayout title="Glossary" description="Definitions for terms used in the published Distributed Systems Atlas sheets.">

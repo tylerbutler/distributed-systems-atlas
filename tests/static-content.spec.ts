@@ -133,6 +133,10 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Glossary");
   await expect(page.locator("#dot")).toContainText("A unique event identifier");
   await expect(page.locator("#causal-context")).toContainText("A compact record");
+  await expect(page.locator("#replica")).toContainText("A local copy of shared data");
+  await expect(page.locator("#eventual-consistency")).toContainText(
+    "Replicas can disagree while messages are in transit",
+  );
 
   await page.goto("/bibliography/");
   await expect(page).toHaveTitle("Bibliography | Distributed Systems Atlas");
@@ -166,6 +170,8 @@ test("sheet terms and references link to generated entries", async ({ page }) =>
   await page.goto("/atlas/dots-and-causal-context/");
   await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
     .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
+  await expect(page.locator(".sheet-term-note").first().locator("a"))
+    .toHaveAttribute("href", "/glossary/#dot");
   await expect(page.getByRole("region", { name: "References", exact: true })
     .getByRole("link", { name: "Dotted Version Vectors", exact: true }))
     .toHaveAttribute("href", "/bibliography/#riak-dotted-version-vectors");

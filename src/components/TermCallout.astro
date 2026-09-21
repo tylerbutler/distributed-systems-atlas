@@ -1,0 +1,68 @@
+---
+import { entryAnchor } from "../lib/atlas/graph";
+
+interface Props {
+  term: string;
+  definition: string;
+  inlineOnly?: boolean;
+}
+
+const { term, definition, inlineOnly = false } = Astro.props;
+---
+
+<aside
+  class:list={["term-callout", inlineOnly && "term-callout-inline", inlineOnly && "sheet-term-note"]}
+  aria-label={`${term} definition`}
+>
+  <p class="term-callout-name">
+    <dfn><a href={`/glossary/#${entryAnchor(term)}`}>{term}</a></dfn>
+  </p>
+  <p>{definition}</p>
+</aside>
+
+<style>
+  .term-callout {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 1fr);
+    gap: var(--space-4) var(--space-6);
+    align-items: baseline;
+    margin-block: var(--space-5);
+    padding-block: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+  }
+
+  .term-callout p {
+    margin: 0;
+  }
+
+  .term-callout-name {
+    color: var(--instrument);
+    font-size: clamp(1.8rem, 2.5vw, 2.25rem);
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .term-callout-name dfn {
+    font-weight: inherit;
+  }
+
+  .term-callout-name a {
+    color: inherit;
+    text-decoration-thickness: var(--rule-width);
+    text-underline-offset: 0.16em;
+  }
+
+  @media (max-width: 34rem) {
+    .term-callout {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+  }
+
+  @media (min-width: 72.001rem) {
+    .term-callout-inline {
+      display: none;
+    }
+  }
+</style>

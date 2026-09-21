@@ -1,6 +1,11 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GCounterDemo from "../../components/GCounterDemo.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import {
+  eventualConsistencyTerm,
+  replicaTerm,
+} from "../../lib/atlas/standalone-terms";
 ---
 
 <BaseLayout
@@ -29,10 +34,12 @@ import GCounterDemo from "../../components/GCounterDemo.astro";
         the number she has seen.
       </p>
       <p>
-        Alice's local copy of the shared counter is a replica. Bob and Carol
-        each keep their own replica. The hikers exchange cumulative messages
-        by leaving notes at known checkpoints.
+        Alice's local copy of the shared counter is a{" "}
+        <dfn><a href="/glossary/#replica">replica</a></dfn>. Bob and Carol each
+        keep their own replica. The hikers exchange cumulative messages by
+        leaving notes at known checkpoints.
       </p>
+      <TermCallout {...replicaTerm} />
       <pre aria-label="Alice's bird count"><code>birds = count[Alice]</code></pre>
     </section>
 
@@ -79,11 +86,14 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
         both hikers' observations and made every replica agree.
       </p>
       <p>
-        This is eventual consistency. For each hiker, merge keeps the larger
-        count from their checkpoint notes. The rule is commutative,
-        associative, and idempotent. Arrival order does not change the answer,
-        and the same checkpoint note can arrive more than once.
+        This is{" "}
+        <dfn><a href="/glossary/#eventual-consistency">eventual consistency</a></dfn>.
+        For each hiker, merge keeps the larger count from their checkpoint
+        notes. The rule is commutative, associative, and idempotent. Arrival
+        order does not change the answer, and the same checkpoint note can
+        arrive more than once.
       </p>
+      <TermCallout {...eventualConsistencyTerm} />
     </section>
 
     <section aria-labelledby="limits-title">
@@ -159,6 +169,16 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     font-size: 1.2rem;
   }
 
+  .structure-page > section > p dfn {
+    color: var(--signal);
+    font-style: italic;
+    font-weight: 650;
+  }
+
+  .structure-page > section > p dfn a {
+    color: inherit;
+  }
+
   pre {
     padding: var(--space-4);
     border-block: var(--rule-width) solid var(--line);
@@ -177,6 +197,7 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     text-align: left;
     vertical-align: top;
   }
+
 
   .counter-family th {
     font-family: var(--font-ui);

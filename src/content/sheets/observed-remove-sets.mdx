@@ -25,6 +25,7 @@ references:
 
 import CausalLab from "../../components/CausalLab.astro";
 import DotDiagram from "../../components/DotDiagram.astro";
+import TermCallout from "../../components/TermCallout.astro";
 
 <div class="sheet-opening">
 
@@ -62,14 +63,16 @@ Keep that literal tag in the records. Renaming it to `B:1` would hide which
 implementation you are inspecting. A's remove targets `A:1`. It cannot
 target `B:2` because no message about that addition has reached A.
 
-<aside class="sheet-term-note" aria-label="Term: tombstone">
-  <dl><dt>tombstone</dt><dd>Retained removal metadata that prevents an old addition from becoming live again.</dd></dl>
-</aside>
+A <dfn><a href="/glossary/#tombstone">tombstone</a></dfn> preserves the removed
+tag. Membership asks whether a value has any live tags; replay protection asks
+whether an incoming tag has already been removed. The same visible set can
+conceal different answers to the second question.
 
-A **tombstone** preserves the removed tag. Membership asks whether a value
-has any live tags; replay protection asks whether an incoming tag has
-already been removed. The same visible set can conceal different answers
-to the second question.
+<TermCallout
+  term="tombstone"
+  definition="Retained removal metadata that prevents an old addition from becoming live again."
+  inlineOnly
+/>
 
 Unlike the Dots lesson's full causal-state snapshots, this lab sends sparse
 deltas. An add delta contains its new tag, while a remove delta contains

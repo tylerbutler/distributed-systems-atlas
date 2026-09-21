@@ -23,6 +23,7 @@ references:
 
 import CausalLab from "../../components/CausalLab.astro";
 import DotDiagram from "../../components/DotDiagram.astro";
+import TermCallout from "../../components/TermCallout.astro";
 import VectorComparison from "../../components/VectorComparison.astro";
 
 <div class="sheet-opening">
@@ -52,14 +53,17 @@ follow those three pieces through the same two-station experiment.
 
 ## A dot is identity, not a timestamp
 
-A **dot** is a pair: `(replica, counter)`. We'll write `(A, 1)` as `A:1`.
-Replica A allocates its next dot by incrementing its own counter. Replica B
-does the same with B's counter. The two stations can allocate `A:1` and `B:1`
-without talking to each other because their replica IDs differ.
+A <dfn><a href="/glossary/#dot">dot</a></dfn> is a pair:
+`(replica, counter)`. We'll write `(A, 1)` as `A:1`. Replica A allocates its
+next dot by incrementing its own counter. Replica B does the same with B's
+counter. The two stations can allocate `A:1` and `B:1` without talking to each
+other because their replica IDs differ.
 
-<aside class="sheet-term-note" aria-label="Term: dot">
-  <dl><dt>dot</dt><dd>A unique event identifier made from a replica ID and a local counter.</dd></dl>
-</aside>
+<TermCallout
+  term="dot"
+  definition="A unique event identifier made from a replica ID and a local counter."
+  inlineOnly
+/>
 
 <DotDiagram />
 
@@ -87,14 +91,17 @@ even when its visible string is identical.
 
 ## Context records what a replica has observed
 
-One dot names one event. A **causal context** records accumulated knowledge of
-events. After A creates its first addition, A knows about `A:1`. B learns about
-that addition when its message arrives. Removing it changes membership without
-making A forget that the addition happened.
+One dot names one event. A <dfn><a href="/glossary/#causal-context">causal
+context</a></dfn> records accumulated knowledge of events. After A creates its
+first addition, A knows about `A:1`. B learns about that addition when its
+message arrives. Removing it changes membership without making A forget that
+the addition happened.
 
-<aside class="sheet-term-note" aria-label="Term: causal context">
-  <dl><dt>causal context</dt><dd>A compact record of the dots a replica has observed.</dd></dl>
-</aside>
+<TermCallout
+  term="causal context"
+  definition="A compact record of the dots a replica has observed."
+  inlineOnly
+/>
 
 For a gap-free history from one allocator, a counter can summarize many dots.
 An entry `A:4` in a version vector represents A's first four allocations, rather

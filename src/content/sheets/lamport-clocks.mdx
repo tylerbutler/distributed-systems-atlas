@@ -20,6 +20,7 @@ references:
 
 import CausalLab from "../../components/CausalLab.astro";
 import StationMark from "../../components/StationMark.astro";
+import TermCallout from "../../components/TermCallout.astro";
 
 <div class="sheet-opening">
 
@@ -30,10 +31,10 @@ their records so that a message receive never appears before its send.
 Copying every predecessor into each record would work as evidence, but you
 want a smaller timestamp for ordering.
 
-A **Lamport clock** gives each station one counter. Local events increase
-it. Messages include the sender's counter, and a receive moves the receiver
-past that value. The rule preserves the direction of causal paths:
-if `x` happens before `y`, then `L(x) < L(y)`.
+A <dfn><a href="/glossary/#lamport-clock">Lamport clock</a></dfn> gives each
+station one counter. Local events increase it. Messages include the sender's
+counter, and a receive moves the receiver past that value. The rule preserves
+the direction of causal paths: if `x` happens before `y`, then `L(x) < L(y)`.
 
 The reverse statement does not hold. A smaller timestamp can belong to an
 independent event. We'll keep the predecessor graph next to the scalar
@@ -49,9 +50,11 @@ At a receive, take the maximum of the local counter and the message timestamp,
 then add one. Taking the maximum alone would permit the receive to have the
 same timestamp as its send. The extra increment makes the ordering strict.
 
-<aside class="sheet-term-note" aria-label="Term: Lamport clock">
-  <dl><dt>Lamport clock</dt><dd>A scalar logical clock that assigns a lower timestamp to every causal predecessor.</dd></dl>
-</aside>
+<TermCallout
+  term="Lamport clock"
+  definition="A scalar logical clock that assigns a lower timestamp to every causal predecessor."
+  inlineOnly
+/>
 
 <figure aria-label="Scalar clocks and message evidence">
   <dl class="sheet-data">

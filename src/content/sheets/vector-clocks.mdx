@@ -19,6 +19,7 @@ references:
 ---
 
 import CausalLab from "../../components/CausalLab.astro";
+import TermCallout from "../../components/TermCallout.astro";
 import VectorComparison from "../../components/VectorComparison.astro";
 
 <div class="sheet-opening">
@@ -34,10 +35,10 @@ maximum would hide one of those facts. A **vector clock** keeps a separate
 counter for each process so you can compare the histories without first
 forcing them into a total sequence.
 
-Write the component order explicitly. In this sheet, `[2, 0]` means
-`[A:2, B:0]`, and `[1, 1]` means `[A:1, B:1]`. The first vector has a
-greater A component; the second has a greater B component. Neither
-dominates the other.
+Write the <dfn><a href="/glossary/#component-wise-order">component-wise
+order</a></dfn> explicitly. In this sheet, `[2, 0]` means `[A:2, B:0]`, and
+`[1, 1]` means `[A:1, B:1]`. The first vector has a greater A component; the
+second has a greater B component. Neither dominates the other.
 
 ## Compare down the component columns
 
@@ -50,9 +51,11 @@ is smaller. Reverse those conditions for **after**. Matching components give
 **equal**. If each vector has a component greater than the corresponding
 component of the other, they are **concurrent**.
 
-<aside class="sheet-term-note" aria-label="Term: component-wise order">
-  <dl><dt>component-wise order</dt><dd>An order in which one vector is no greater than another in every component.</dd></dl>
-</aside>
+<TermCallout
+  term="component-wise order"
+  definition="An order in which one vector is no greater than another in every component."
+  inlineOnly
+/>
 
 <VectorComparison left={{ A: 2, B: 0 }} right={{ A: 1, B: 1 }} />
 

@@ -129,9 +129,23 @@ test("notes travel to checkpoints immediately and shared copies overlap", async 
   await expect(demo.locator('[data-leg="sequenced"]').first()).toContainText(
     "Alice note · 1000 ms",
   );
-  expect(await demo.locator(".operation-pulse").first().evaluate(
-    (element) => getComputedStyle(element).borderRadius,
-  )).toBe("50%");
+  const dotMotion = await demo.locator(".operation-pulse").first().evaluate((element) => {
+    const animation = element.getAnimations()[0];
+    const effect = animation?.effect as KeyframeEffect | null;
+    return {
+      borderRadius: getComputedStyle(element).borderRadius,
+      easing: effect?.getTiming().easing,
+      frames: effect?.getKeyframes().map(({ transform, opacity }) => ({ transform, opacity })),
+    };
+  });
+  expect(dotMotion).toEqual({
+    borderRadius: "50%",
+    easing: "ease-in-out",
+    frames: [
+      { transform: expect.not.stringContaining("scale"), opacity: "0.3" },
+      { transform: expect.not.stringContaining("scale"), opacity: "1" },
+    ],
+  });
   await expect(demo.locator("[data-total]")).toHaveText(["1", "3", "0"]);
   await expect(demo.locator("[data-total]")).toHaveText(["4", "4", "4"]);
 });
@@ -148,10 +162,21 @@ test("Counters remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("heading", { name: "Alice starts counting birds" }))
       .toBeVisible();
     await expect(page.getByText("Alice's local copy of the shared counter is a replica")).toBeVisible();
+    const replicaDefinition = page.getByLabel("replica definition");
+    await expect(replicaDefinition).toContainText("can change independently");
+    await expect(replicaDefinition.getByRole("link", { name: "replica" }))
+      .toHaveAttribute("href", "/glossary/#replica");
     await expect(page.getByRole("heading", {
       name: "Bob takes a different trail",
     })).toBeVisible();
     await expect(page.getByText("It does not add every message")).toBeVisible();
+    const eventualConsistencyDefinition = page.getByLabel("eventual consistency definition");
+    await expect(eventualConsistencyDefinition).toContainText(
+      "After every message arrives, they converge on the same value.",
+    );
+    await expect(eventualConsistencyDefinition.getByRole("link", {
+      name: "eventual consistency",
+    })).toHaveAttribute("href", "/glossary/#eventual-consistency");
     await expect(page.getByLabel("G-counter merge and bird total rules")).toContainText(
       "count[Alice] = max(all notes from Alice)",
     );

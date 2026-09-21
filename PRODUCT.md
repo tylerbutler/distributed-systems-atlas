@@ -51,8 +51,9 @@ registers and Observed-remove sets, then introduces Dots and causal context,
 Local history, Partial order, Lamport clocks, and Vector clocks as the
 bookkeeping that explains those structures. Supporting-idea, related-sheet, and
 next-step links support both structure-first learning and direct reference.
-Published sheet metadata supplies glossary definitions and bibliography
-entries; the build rejects conflicting entries and broken internal references.
+Published sheet metadata and standalone structure lessons supply glossary
+definitions. Sheet metadata also supplies bibliography entries; the build
+rejects conflicting entries and broken internal references.
 
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter

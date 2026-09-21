@@ -140,11 +140,13 @@ starting the development server.
 
 ## Generated reference pages
 
-Sheet frontmatter supplies `terms` and `references`. The graph helpers collect
-published entries, deduplicate them, and sort them for `/glossary/` and
-`/bibliography/`. Sheet sidebars and citations use the same `entryAnchor`
-function as those pages. Change the sheet metadata to change a definition or
-source; there is no separate reference-page catalogue.
+Sheet frontmatter supplies `terms` and `references`; standalone structure
+lessons can supply shared terms directly. The graph helpers collect, deduplicate,
+and sort published sheet entries. The glossary page combines those terms with
+the standalone terms, while the bibliography page uses sheet references.
+Sheet sidebars, term callouts, and citations use the same `entryAnchor`
+function as those pages. Change the source metadata to change a definition or
+reference; there is no separate reference-page catalogue.
 
 The content loader rejects conflicting definitions, conflicting reference
 keys, duplicate anchors, missing scenarios, invalid sheet links, and

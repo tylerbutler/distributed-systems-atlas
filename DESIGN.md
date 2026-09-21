@@ -196,6 +196,11 @@ The palette separates reading stock, instrument structure, signal activity, inte
 
 **The Quiet Label Rule.** Use weight and condensed width for hierarchy. Do not default to tracked all-caps labels.
 
+**The Defined Term Rule.** Mark a technical term's first use with an italic
+`dfn` link to its glossary entry. Follow it with a term callout that sets the
+term in large italic type beside a short definition. On wide reference sheets,
+the terms rail replaces duplicate inline callouts.
+
 ## Layout
 
 The root content field is 72rem wide with fluid horizontal padding. The landing signal is a numbered data-structure path inside one composed instrument field, the atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
@@ -284,10 +289,10 @@ Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
 The G-counter demo is the first instance. Alice, Bob, and Carol count birds on
-separate hikes and send cumulative reports from trail checkpoints. Three
+separate hikes and leave cumulative notes at known trail checkpoints. Three
 separate station records show only their local totals by default, making
 temporary disagreement visible before the notes arrive. A compact pill-shaped
-known checkpoint sits in the open space between them, shows how many reports
+known checkpoint sits in the open space between them, shows how many notes
 have been left, and keeps a narrow newest-first log beneath it. At wide widths,
 generous gaps separate the three clients and checkpoint into a triangle. A new
 note leaves its hiker as soon as the reader submits it, then copies fan out to
@@ -315,9 +320,10 @@ path when they match the corresponding Watershed demo.
 Feedback, state, and trace motion use the shipped 120ms, 220ms, and 420ms
 durations with the shared accelerating exit curve. The G-counter transport uses
 a 1000ms hop at `1×` so readers can follow each checkpoint note; its speed control
-ranges from `¼×` to `2×`. Motion may show a signal traveling to a queue or
-destination, a route separating, or a record arriving; state commits at
-discrete frames.
+ranges from `¼×` to `2×`. Its 10px transport dots use Watershed's fixed-size
+30%-to-100% opacity motion and `ease-in-out` timing. Motion may show a signal
+traveling to a queue or destination, a route separating, or a record arriving;
+state commits at discrete frames.
 
 With reduced motion, all animation, transition, and smooth scrolling stop. State changes render immediately with the same status text. Playback becomes `Next recorded frame` and advances once per activation instead of running the 900ms timer.
 
