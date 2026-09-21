@@ -398,6 +398,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-total {
     display: block;
+    width: fit-content;
     margin-top: var(--space-4);
     color: var(--signal);
     font-size: clamp(3rem, 7vw, 6rem);
@@ -655,17 +656,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
     color: var(--signal);
     font-family: var(--font-ui);
     font-weight: 650;
-  }
-
-  :global(.guided-circle) {
-    outline: var(--rule-signal) solid var(--signal);
-    outline-offset: var(--space-2);
-    border-radius: 50%;
-  }
-
-  :global(.guided-box) {
-    outline: var(--rule-signal) solid var(--signal);
-    outline-offset: var(--space-2);
   }
 
   [hidden] {

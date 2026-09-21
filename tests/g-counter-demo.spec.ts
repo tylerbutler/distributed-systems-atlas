@@ -20,9 +20,11 @@ test("the sequencer delivers the G-counter race and safely resends a user's coun
   await race.focus();
   await race.press("Enter");
   await expect(demo.locator(".operation-pulse").first()).toBeVisible();
-  await expect(demo.getByRole("region", { name: "Sequencer" })).toHaveClass(/guided-box/);
+  await expect(demo.getByRole("region", { name: "Sequencer" }))
+    .toHaveAttribute("data-guided-mark", "box");
+  await expect(demo.locator("svg.rough-annotation")).toBeVisible();
   await expect(totals).toHaveText(["10", "10", "10"]);
-  await expect(totals.first()).toHaveClass(/guided-circle/);
+  await expect(totals.first()).toHaveAttribute("data-guided-mark", "circle");
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
     "The sequencer delivered the final operation. All three clients read 10.",

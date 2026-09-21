@@ -22,7 +22,8 @@
     "@fontsource-variable/encode-sans": "^5.3.0",
     "@fontsource-variable/roboto-serif": "^5.3.0",
     "astro": "^7.3.3",
-    "phoenix": "^1.8.14"
+    "phoenix": "^1.8.14",
+    "rough-notation": "^0.5.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

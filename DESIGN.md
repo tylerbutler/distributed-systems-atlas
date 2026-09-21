@@ -299,8 +299,9 @@ Client controls can build a multi-operation queue by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
 Readers control playback speed.
 An optional `Guided observations` layer reveals the Sluice implementation and
-adds timed callouts with signal-colored circle and box marks. The counts for
-Alice, Bob, and Carol appear in a ruled table after
+adds timed callouts with signal-colored `rough-notation` circle and box marks,
+using the same annotation library and flash lifecycle as Watershed. The counts
+for Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
 

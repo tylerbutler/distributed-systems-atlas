@@ -10,6 +10,7 @@ import {
   type GCounterDemoState,
   type ReplicaId,
 } from "./g-counter";
+import { annotate } from "rough-notation";
 
 type Action = "race" | "resend" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -35,6 +36,7 @@ class GCounterDemoElement extends HTMLElement {
   private delivering = false;
   private guided = false;
   private guidedTimer: number | undefined;
+  private guidedAnnotations: Array<ReturnType<typeof annotate>> = [];
   private generation = 0;
   private lastOutboundArrival = 0;
   private outboundArrivals: Promise<void>[] = [];
@@ -367,8 +369,23 @@ class GCounterDemoElement extends HTMLElement {
     if (!this.guided) return;
     this.clearGuidedMarks();
     this.querySelector<HTMLElement>("[data-guided-callout]")!.textContent = text;
-    const className = shape === "circle" ? "guided-circle" : "guided-box";
-    for (const element of elements) element.classList.add(className);
+    const color = getComputedStyle(document.documentElement)
+      .getPropertyValue("--signal")
+      .trim();
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    for (const element of elements) {
+      element.dataset.guidedMark = shape;
+      const annotation = annotate(element, {
+        type: shape,
+        color,
+        strokeWidth: 2,
+        padding: shape === "circle" ? 6 : 3,
+        animate: !reducedMotion,
+        animationDuration: 450,
+      });
+      this.guidedAnnotations.push(annotation);
+      annotation.show();
+    }
     if (elements.length === 0) return;
     this.guidedTimer = window.setTimeout(
       () => this.clearGuidedMarks(),
@@ -379,8 +396,10 @@ class GCounterDemoElement extends HTMLElement {
   private clearGuidedMarks(): void {
     if (this.guidedTimer !== undefined) window.clearTimeout(this.guidedTimer);
     this.guidedTimer = undefined;
-    for (const element of this.querySelectorAll<HTMLElement>(".guided-circle, .guided-box")) {
-      element.classList.remove("guided-circle", "guided-box");
+    for (const annotation of this.guidedAnnotations) annotation.remove();
+    this.guidedAnnotations = [];
+    for (const element of this.querySelectorAll<HTMLElement>("[data-guided-mark]")) {
+      delete element.dataset.guidedMark;
     }
   }
 
