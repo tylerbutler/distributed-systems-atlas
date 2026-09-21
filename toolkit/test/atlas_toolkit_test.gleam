@@ -249,6 +249,37 @@ pub fn set_sluice_rooms_show_each_conflict_rule_test() {
   or_set_view.c |> should.equal(["Eagle Creek"])
 }
 
+pub fn register_demo_rooms_show_each_read_rule_test() {
+  let assert Ok(lww) = toolkit.new_register_demo("lww-register")
+  let assert Ok(lww) = toolkit.register_demo_stage_race(lww)
+  let lww = toolkit.register_demo_deliver(lww)
+  let lww_view = toolkit.register_demo_snapshot(lww)
+  lww_view.a |> should.equal(["Trail closed"])
+  lww_view.b |> should.equal(["Trail closed"])
+  lww_view.c |> should.equal(["Trail closed"])
+  lww_view.winner_author |> should.equal("B")
+  lww_view.timestamp |> should.equal(10)
+
+  let assert Ok(mv) = toolkit.new_register_demo("mv-register")
+  let assert Ok(mv) = toolkit.register_demo_stage_race(mv)
+  let mv = toolkit.register_demo_deliver(mv)
+  let mv_view = toolkit.register_demo_snapshot(mv)
+  mv_view.a |> should.equal(["Trail closed", "Trail open"])
+  mv_view.b |> should.equal(["Trail closed", "Trail open"])
+  mv_view.c |> should.equal(["Trail closed", "Trail open"])
+
+  let assert Ok(collection) =
+    toolkit.new_register_demo("register-collection")
+  let assert Ok(collection) = toolkit.register_demo_stage_race(collection)
+  let queued = toolkit.register_demo_snapshot(collection)
+  queued.a |> should.equal([])
+  let collection = toolkit.register_demo_deliver(collection)
+  let collection_view = toolkit.register_demo_snapshot(collection)
+  collection_view.atomic_value |> should.equal("Trail open")
+  collection_view.latest_value |> should.equal("Trail closed")
+  collection_view.versions |> should.equal(["Trail open", "Trail closed"])
+}
+
 pub fn gcounter_sluice_room_delivers_one_operation_at_a_time_test() {
   let assert Ok(room) = sluice.new_gcounter_room()
   let assert Ok(room) = sluice.gcounter_room_stage_race(room)

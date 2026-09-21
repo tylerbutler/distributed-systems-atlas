@@ -80,6 +80,23 @@ export type SetTransportResult = {
   view: SetRoomView;
   deliveries: TransportDelivery[];
 };
+export type RegisterDemoKind = "lww-register" | "mv-register" | "register-collection";
+declare const registerDemoRoomBrand: unique symbol;
+export type RegisterDemoRoom = { readonly [registerDemoRoomBrand]: true };
+export type RegisterDemoView = {
+  replicas: Array<{ id: "A" | "B" | "C"; values: string[] }>;
+  pending: number;
+  sequenceNumber: number;
+  winnerAuthor: string;
+  timestamp: number;
+  atomicValue: string;
+  latestValue: string;
+  versions: string[];
+};
+export type RegisterDemoResult = {
+  room: RegisterDemoRoom;
+  view: RegisterDemoView;
+};
 export type ErrorTag = "invalid-input" | "invalid-state" | "unsupported-version" | "kind-mismatch"
   | "conflicting-tag" | "counter-exhausted";
 export type Result<T> = { ok: true; value: T } | { ok: false; error: { tag: ErrorTag; message: string } };
@@ -261,6 +278,7 @@ const counterRooms = new WeakMap<GCounterRoom, sluiceCore.GCounterRoom$>();
 const pnCounterRooms = new WeakMap<PNCounterRoom, sluiceCore.PnCounterRoom$>();
 const sharedCounterRooms = new WeakMap<SharedCounterRoom, sluiceCore.SharedCounterRoom$>();
 const setRooms = new WeakMap<SetRoom, sluiceCore.SetRoom$>();
+const registerDemoRooms = new WeakMap<RegisterDemoRoom, core.RegisterDemoRoom$>();
 
 function roomHandle(value: unknown): sluiceCore.GCounterRoom$ {
   requireInput(
@@ -316,6 +334,21 @@ function setRoomHandle(value: unknown): sluiceCore.SetRoom$ {
 function setRoomBox(handle: sluiceCore.SetRoom$): SetRoom {
   const room = Object.freeze({}) as SetRoom;
   setRooms.set(room, handle);
+  return room;
+}
+
+function registerDemoHandle(value: unknown): core.RegisterDemoRoom$ {
+  requireInput(
+    value !== null && typeof value === "object"
+      && registerDemoRooms.has(value as RegisterDemoRoom),
+    "expected a live register demo room",
+  );
+  return registerDemoRooms.get(value as RegisterDemoRoom)!;
+}
+
+function registerDemoBox(handle: core.RegisterDemoRoom$): RegisterDemoRoom {
+  const room = Object.freeze({}) as RegisterDemoRoom;
+  registerDemoRooms.set(room, handle);
   return room;
 }
 
@@ -384,6 +417,45 @@ function setRoomView(handle: sluiceCore.SetRoom$): SetRoomView {
     ],
     pending: sluiceCore.SetRoomSnapshot$SetRoomSnapshot$pending(snapshot),
     sequenceNumber: sluiceCore.SetRoomSnapshot$SetRoomSnapshot$sequence_number(snapshot),
+  };
+}
+
+function registerDemoView(handle: core.RegisterDemoRoom$): RegisterDemoView {
+  const snapshot = core.register_demo_snapshot(handle);
+  return {
+    replicas: [
+      {
+        id: "A",
+        values: Array.from(
+          core.RegisterDemoSnapshot$RegisterDemoSnapshot$a(snapshot),
+        ).filter(Boolean),
+      },
+      {
+        id: "B",
+        values: Array.from(
+          core.RegisterDemoSnapshot$RegisterDemoSnapshot$b(snapshot),
+        ).filter(Boolean),
+      },
+      {
+        id: "C",
+        values: Array.from(
+          core.RegisterDemoSnapshot$RegisterDemoSnapshot$c(snapshot),
+        ).filter(Boolean),
+      },
+    ],
+    pending: core.RegisterDemoSnapshot$RegisterDemoSnapshot$pending(snapshot),
+    sequenceNumber:
+      core.RegisterDemoSnapshot$RegisterDemoSnapshot$sequence_number(snapshot),
+    winnerAuthor:
+      core.RegisterDemoSnapshot$RegisterDemoSnapshot$winner_author(snapshot),
+    timestamp: core.RegisterDemoSnapshot$RegisterDemoSnapshot$timestamp(snapshot),
+    atomicValue:
+      core.RegisterDemoSnapshot$RegisterDemoSnapshot$atomic_value(snapshot),
+    latestValue:
+      core.RegisterDemoSnapshot$RegisterDemoSnapshot$latest_value(snapshot),
+    versions: Array.from(
+      core.RegisterDemoSnapshot$RegisterDemoSnapshot$versions(snapshot),
+    ),
   };
 }
 
@@ -731,6 +803,62 @@ export function deliverOneSetOperation(current: unknown): Result<SetTransportRes
     const room = current as SetRoom;
     const [handle, deliveries] = sluiceCore.set_room_deliver_one(setRoomHandle(room));
     return { room, view: setRoomView(handle), deliveries: transportDeliveries(deliveries) };
+  });
+}
+
+export function createRegisterDemoRoom(kind: unknown): Result<RegisterDemoResult> {
+  return attempt(() => {
+    const registerKind = text(kind, "invalid-input");
+    requireInput(
+      registerKind === "lww-register"
+        || registerKind === "mv-register"
+        || registerKind === "register-collection",
+      "kind must be lww-register, mv-register, or register-collection",
+      "invalid-input",
+    );
+    const handle = kernel(core.new_register_demo(registerKind));
+    const room = registerDemoBox(handle);
+    return { room, view: registerDemoView(handle) };
+  });
+}
+
+export function stageRegisterDemoRace(current: unknown): Result<RegisterDemoResult> {
+  return attempt(() => {
+    const room = current as RegisterDemoRoom;
+    const handle = kernel(core.register_demo_stage_race(registerDemoHandle(room)));
+    registerDemoRooms.set(room, handle);
+    return { room, view: registerDemoView(handle) };
+  });
+}
+
+export function writeRegisterDemo(
+  current: unknown,
+  replicaId: unknown,
+  value: unknown,
+): Result<RegisterDemoResult> {
+  return attempt(() => {
+    const room = current as RegisterDemoRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(
+      replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C",
+      "invalid-input",
+    );
+    const content = text(value, "invalid-input");
+    const handle = kernel(
+      core.register_demo_write(registerDemoHandle(room), replica, content),
+    );
+    registerDemoRooms.set(room, handle);
+    return { room, view: registerDemoView(handle) };
+  });
+}
+
+export function deliverRegisterDemo(current: unknown): Result<RegisterDemoResult> {
+  return attempt(() => {
+    const room = current as RegisterDemoRoom;
+    const handle = core.register_demo_deliver(registerDemoHandle(room));
+    registerDemoRooms.set(room, handle);
+    return { room, view: registerDemoView(handle) };
   });
 }
 

@@ -1,9 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
+  createRegisterDemoRoom,
   createSetRoom, createSharedCounterRoom, deliverOneSharedCounterOperation,
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
-  deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  stageRegisterDemoRace,
   stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
   updateSharedCounterRoom, write,
@@ -48,6 +50,27 @@ test.each([
   const delivered = unwrap(deliverSetOperations(room));
   expect(delivered.view.replicas.map(({ values }) => values)).toEqual(expected);
   expect(delivered.view.pending).toBe(false);
+});
+
+test.each([
+  ["lww-register", [["Trail closed"], ["Trail closed"], ["Trail closed"]]],
+  ["mv-register", [["Trail closed", "Trail open"], ["Trail closed", "Trail open"], ["Trail closed", "Trail open"]]],
+] as const)("%s demo converges on its register rule", (kind, expected) => {
+  const room = unwrap(createRegisterDemoRoom(kind)).room;
+  unwrap(stageRegisterDemoRace(room));
+  const delivered = unwrap(deliverRegisterDemo(room));
+  expect(delivered.view.replicas.map(({ values }) => values)).toEqual(expected);
+});
+
+test("RegisterCollection retains both reads after concurrent writes", () => {
+  const room = unwrap(createRegisterDemoRoom("register-collection")).room;
+  expect(unwrap(stageRegisterDemoRace(room)).view.replicas.map(({ values }) => values))
+    .toEqual([[], [], []]);
+  expect(unwrap(deliverRegisterDemo(room)).view).toMatchObject({
+    atomicValue: "Trail open",
+    latestValue: "Trail closed",
+    versions: ["Trail open", "Trail closed"],
+  });
 });
 
 test("equal-string register siblings retain both identities and full authored clocks", () => {

@@ -9,10 +9,12 @@ import {
   createPNCounterRoom,
   createSharedCounterRoom,
   createSetRoom,
+  createRegisterDemoRoom,
   deliverGCounterRace,
   deliverPNCounterOperations,
   deliverSharedCounterOperations,
   deliverSetOperations,
+  deliverRegisterDemo,
   incrementGCounter,
   incrementGCounterRoom,
   inspect,
@@ -27,6 +29,7 @@ import {
   stagePNCounterRace,
   stageSharedCounterRace,
   stageSetRace,
+  stageRegisterDemoRace,
   updatePNCounter,
   updatePNCounterRoom,
   write,
@@ -131,6 +134,24 @@ for (const [kind, expected] of [
     expected,
   );
 }
+
+for (const [kind, expected] of [
+  ["lww-register", [["Trail closed"], ["Trail closed"], ["Trail closed"]]],
+  ["mv-register", [["Trail closed", "Trail open"], ["Trail closed", "Trail open"], ["Trail closed", "Trail open"]]],
+]) {
+  const registerRoom = unwrap(createRegisterDemoRoom(kind)).room;
+  unwrap(stageRegisterDemoRace(registerRoom));
+  assert.deepEqual(
+    unwrap(deliverRegisterDemo(registerRoom)).view.replicas.map(({ values }) => values),
+    expected,
+  );
+}
+const collectionRoom = unwrap(createRegisterDemoRoom("register-collection")).room;
+unwrap(stageRegisterDemoRace(collectionRoom));
+assert.deepEqual(unwrap(deliverRegisterDemo(collectionRoom)).view.versions, [
+  "Trail open",
+  "Trail closed",
+]);
 
 const room = unwrap(createGCounterRoom()).room;
 const staged = unwrap(stageGCounterRace(room));
