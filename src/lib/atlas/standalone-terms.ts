@@ -7,7 +7,7 @@ export const replicaTerm: GlossaryTerm = {
 
 export const eventualConsistencyTerm: GlossaryTerm = {
   term: "eventual consistency",
-  definition: "Replicas can disagree while messages are in transit. After delivery of every message, they converge on the same value.",
+  definition: "Each replica sees only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
 };
 
 export const pnCounterTerm: GlossaryTerm = {

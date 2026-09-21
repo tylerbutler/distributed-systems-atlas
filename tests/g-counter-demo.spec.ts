@@ -207,7 +207,7 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByText("max(7, 4) = 7")).toBeVisible();
     const eventualConsistencyDefinition = page.getByLabel("eventual consistency definition");
     await expect(eventualConsistencyDefinition).toContainText(
-      "After every message arrives, they converge on the same value.",
+      "Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
     );
     await expect(eventualConsistencyDefinition.getByRole("link", {
       name: "eventual consistency",
