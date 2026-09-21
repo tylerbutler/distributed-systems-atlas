@@ -122,11 +122,12 @@ test("observatory foundation primitives provide field-aware focus and type roles
   await page.goto("/");
   await page.locator("main").evaluate((main) => {
     const field = document.createElement("section");
+    field.id = "foundation-test-panel";
     field.className = "instrument-panel";
     field.innerHTML = '<button>Inspect station</button><div class="chart-field"><button>Read record</button><span class="observation-label">Replica A</span><code>A:1</code></div><div class="signal-rule"></div>';
     main.append(field);
   });
-  const panel = page.locator("main section.instrument-panel");
+  const panel = page.locator("#foundation-test-panel");
   await expect(panel).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
   const inspect = page.getByRole("button", { name: "Inspect station" });
   await inspect.focus();
