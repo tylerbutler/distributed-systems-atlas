@@ -25,6 +25,7 @@ class GCounterDemoElement extends HTMLElement {
   private state: GCounterDemoState = createGCounterDemo();
   private speed = 1;
   private autoDeliver = true;
+  private delivering = false;
   private guided = false;
   private guidedTimer: number | undefined;
 
@@ -124,17 +125,40 @@ class GCounterDemoElement extends HTMLElement {
   }
 
   private async deliverQueued(focus: HTMLElement): Promise<void> {
-    const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
-    this.showGuidedObservation(
-      `${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} ready for the sequencer.`,
-      [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
-      "box",
-    );
-    this.setBusy(true);
-    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
+    if (this.delivering) return;
+    this.delivering = true;
+    const activeElement = document.activeElement;
+    try {
+      while (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+        const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
+        this.showGuidedObservation(
+          `${queuedOperations} ${queuedOperations === 1 ? "operation is" : "operations are"} ready for the sequencer.`,
+          [this.querySelector<HTMLElement>("[data-sequencer-node]")!],
+          "box",
+        );
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          await new Promise((resolve) => setTimeout(resolve, 500 / this.speed));
+        }
+        const delivered = deliverRace(this.state);
+        if (!delivered.ok) {
+          this.apply(delivered, focus);
+          return;
+        }
+        this.state = delivered.state;
+        const deliveries = presentGCounterDemo(this.state).latestDeliveries;
+        this.render();
+        await this.animateDeliveries(deliveries);
+        this.showGuidedObservation(
+          "Each replica keeps the largest report from every client, then adds those counts.",
+          [...this.querySelectorAll<HTMLElement>("[data-total]")],
+          "circle",
+        );
+      }
+    } finally {
+      this.delivering = false;
+      this.render();
+      if (document.activeElement === activeElement) focus.focus();
     }
-    await this.applyAnimated(deliverRace(this.state), focus);
   }
 
   private apply(result: GCounterDemoResult, focus: HTMLElement): void {
@@ -308,7 +332,7 @@ class GCounterDemoElement extends HTMLElement {
     this.button("race").textContent = this.autoDeliver
       ? "Run A +7 and B +3 race"
       : "Queue A +7 and B +3 race";
-    this.button("resend").disabled = !view.canResend;
+    this.button("resend").disabled = this.delivering || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Resend ${view.latestAuthor}'s component`
       : "Resend latest component";

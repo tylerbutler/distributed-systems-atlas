@@ -84,6 +84,25 @@ test("multiple client operations can queue before sequencer delivery", async ({ 
   );
 });
 
+test("auto-deliver keeps replica controls active while operations queue", async ({ page }) => {
+  await page.goto("/structures/counters/");
+  const demo = page.getByTestId("g-counter-demo");
+  const totals = demo.locator("[data-total]");
+  await demo.getByRole("slider", { name: "Speed" }).fill("0.5");
+
+  await demo.getByRole("button", { name: "Add 1 at replica A" }).click();
+  await expect(demo.getByRole("button", { name: "Add 3 at replica A" })).toBeEnabled();
+  await demo.getByRole("button", { name: "Add 3 at replica A" }).click();
+  await demo.getByRole("button", { name: "Add 3 at replica B" }).click();
+  await demo.getByRole("button", { name: "Add 7 at replica B" }).click();
+  await demo.getByRole("button", { name: "Add 1 at replica C" }).click();
+  await demo.getByRole("button", { name: "Add 7 at replica C" }).click();
+
+  await expect(totals).toHaveText(["22", "22", "22"]);
+  await expect(demo.getByRole("list", { name: "Operation log" }).getByRole("listitem"))
+    .toHaveCount(6);
+});
+
 test("Counters remains useful without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({
     javaScriptEnabled: false,
