@@ -17,39 +17,53 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   <ol class="structure-index" aria-label="Structure lessons">
     <li>
-      <h2><a href="/structures/counters/">Counters</a></h2>
-      <p>Compare grow-only, correcting, and sequenced counters.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/counters/">
+        <h2>Counters</h2>
+        <p>Compare grow-only, correcting, and sequenced counters.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/sets/">Sets</a></h2>
-      <p>Compare add-only, permanent-removal, and observed-removal rules.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/sets/">
+        <h2>Sets</h2>
+        <p>Compare add-only, permanent-removal, and observed-removal rules.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/registers/">Registers</a></h2>
-      <p>Compare clock-selected, conflict-preserving, and sequenced registers.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/registers/">
+        <h2>Registers</h2>
+        <p>Compare clock-selected, conflict-preserving, and sequenced registers.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/maps/">Maps</a></h2>
-      <p>Compare sequenced, timestamped, observed-remove, and hierarchical maps.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/maps/">
+        <h2>Maps</h2>
+        <p>Compare sequenced, timestamped, observed-remove, and hierarchical maps.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/sequences/">Sequences</a></h2>
-      <p>Keep ordered items and graphemes stable through concurrent edits.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/sequences/">
+        <h2>Sequences</h2>
+        <p>Keep ordered items and graphemes stable through concurrent edits.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/coordination/">Coordination</a></h2>
-      <p>Choose one owner, worker, assignee, or accepted value.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/coordination/">
+        <h2>Coordination</h2>
+        <p>Choose one owner, worker, assignee, or accepted value.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
     <li>
-      <h2><a href="/structures/transforms/">Transforms</a></h2>
-      <p>Transform concurrent JSON and rich-text operations.</p>
-      <span class="status">Read now</span>
+      <a href="/structures/transforms/">
+        <h2>Transforms</h2>
+        <p>Transform concurrent JSON and rich-text operations.</p>
+        <span class="status">Read now</span>
+      </a>
     </li>
   </ol>
 </BaseLayout>
@@ -68,13 +82,19 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   }
 
   .structure-index li {
+    border-top: var(--rule-width) solid var(--line);
+    counter-increment: structures;
+  }
+
+  .structure-index li > a {
     display: grid;
     grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr) auto;
     gap: var(--space-4);
+    min-height: 44px;
     align-items: baseline;
     padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    counter-increment: structures;
+    color: inherit;
+    text-decoration-color: var(--line);
   }
 
   .structure-index h2,
@@ -90,7 +110,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   }
 
   @media (width < 48rem) {
-    .structure-index li {
+    .structure-index li > a {
       grid-template-columns: 1fr;
       gap: var(--space-2);
     }

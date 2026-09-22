@@ -21,7 +21,6 @@ const path = Astro.url.pathname.replace(/\/$/, "");
         <li>
           <a href="/atlas/" aria-current={path === "/atlas" ? "page" : path.startsWith("/atlas/") ? "location" : undefined}>Atlas</a>
         </li>
-        <li><span>Trails</span> <span class="status">Planned</span></li>
         <li><a href="/glossary/" aria-current={path === "/glossary" ? "page" : undefined}>Glossary</a></li>
         <li><a href="/bibliography/" aria-current={path === "/bibliography" ? "page" : undefined}>Bibliography</a></li>
       </ul>

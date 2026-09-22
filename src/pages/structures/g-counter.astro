@@ -30,6 +30,12 @@ import {
       </p>
     </header>
 
+    <nav class="lesson-map" aria-label="G-counter lesson map">
+      <a href="#notebook-setup-title">Understand the notebooks</a>
+      <a href="#race-title">See crossing notes</a>
+      <a href="#gcounter-demo-title">Try the sandbox</a>
+    </nav>
+
     <section aria-labelledby="notebook-setup-title">
       <h2 id="notebook-setup-title">Three hikers copy the same notebook</h2>
       <p>
@@ -168,9 +174,9 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
       </p>
       <p>
         Elsewhere on the trails, the three notebooks can still disagree. Alice
-        may know only her 7, Bob only his 3, and Carol neither. Walk the next
-        part with them: leave one note at a time, or let Alice and Bob leave
-        their notes together.
+        may know only her 7, Bob only his 3, and Carol neither. In the sandbox,
+        record sightings for any hiker and control when notes arrive. The
+        worked example leaves Alice's and Bob's notes together.
       </p>
     </section>
 
@@ -237,6 +243,26 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
 
   .structure-page > section {
     margin-top: var(--space-7);
+  }
+
+  .lesson-map {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-block: var(--space-5) var(--space-7);
+    border-block: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .lesson-map a {
+    display: flex;
+    min-height: 44px;
+    padding: var(--space-3);
+    align-items: center;
+  }
+
+  .lesson-map a + a {
+    border-inline-start: var(--rule-width) solid var(--line);
   }
 
   .structure-summary {
@@ -343,5 +369,22 @@ birds = count[Alice] + count[Bob] + ...</code></pre>
     border-top: var(--rule-width) solid var(--line);
     font-family: var(--font-ui);
     font-weight: 650;
+  }
+
+  .structure-next a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  @media (width < 40rem) {
+    .lesson-map {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-map a + a {
+      border-top: var(--rule-width) solid var(--line);
+      border-inline-start: 0;
+    }
   }
 </style>

@@ -124,7 +124,7 @@ The emitted direction contract is:
 - **THESIS:** Compare partial observations in a daylit signal observatory, refusing the glowing network dashboard.
 - **OWN-WORLD:** Mineral-blue instruments, white-blue reading fields, sulfur signals, vermilion interference; square stations and thin ruled records.
 - **STORY:** Engineers choose a familiar data structure, observe its merge behavior, then inspect the causal evidence that makes the result possible. Motion snaps between recorded frames.
-- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing presents a numbered path through counters, sets, registers, and maps with direct entry to the first published structure. Sheets open with title, reading context, and prose; the console interrupts below.
+- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing recommends counters as the first lesson and keeps the full structure index secondary. Sheets open with title, reading context, and prose; the console interrupts below.
 - **FORM:** Signal observatory is brief-pinned, overriding roll index 3; seed key `e7ba61a7`.
 - **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -203,9 +203,9 @@ the terms rail replaces duplicate inline callouts.
 
 ## Layout
 
-The root content field is 72rem wide with fluid horizontal padding. The landing signal is a numbered data-structure path inside one composed instrument field, the atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
+The root content field is 72rem wide with fluid horizontal padding. The landing signal gives one direct entry to Counters and one secondary route to the full structure index. The atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
 
-The observation rail persists below primary navigation. It presents Atlas, territory, sheet, and trail position as ordinary text, followed by a thin trace and a sulfur current point. Below 48rem, its text wraps and the trace moves to its own row; the primary navigation also wraps into two visible rows rather than hiding behind a menu.
+The observation rail persists below primary navigation. It presents Atlas, territory, sheet, and trail position as ordinary text, followed by a thin trace and a sulfur current point. Below 48rem, its text and trace share a compact band; the primary navigation wraps into two visible rows rather than hiding behind a menu.
 
 The territory chart uses a fixed 14rem index column beside connected sheet stops. At 64rem and below, the territory summary moves above the chart field. Below 40rem, connectors simplify into a vertical station list; order and status remain explicit.
 
@@ -282,7 +282,7 @@ The console anatomy is fixed: lesson controls, replica stations, message lane, v
 ### Focused Structure Demo
 
 A structure lesson uses one broad instrument field with the merge question,
-at least three client values, direct controls on each client, one primary race,
+at least three client values, direct controls on each client, one authored race,
 any resolution action needed by the rule, reset, and a literal result sentence.
 The familiar value stays larger than its metadata.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
@@ -305,7 +305,9 @@ An older Alice note arriving after a newer one leaves Alice's row unchanged,
 which makes order-independent merge concrete before the interactive demo.
 Client controls can hold several checkpoint notes by turning off
 `Auto-deliver`, which is on by default. Turning it back on delivers the queue.
-Readers control playback speed.
+Readers control playback speed. The direct notebook controls are the primary
+sandbox path. The authored race is a secondary worked example beneath the
+network, and reset returns focus to the first direct notebook control.
 An optional `Guided observations` layer explains pairwise maximum and repeated
 checkpoint notes with signal-colored `rough-notation` circle and box marks,
 using the same annotation library and flash lifecycle as Watershed. The counts
@@ -378,9 +380,9 @@ eight nearly identical instruments while each page retains its own story,
 rule, operations, and result.
 
 **The Structure-First Demo Rule.** A reader must be able to state the merge
-result before opening metadata. One authored action must complete the primary
-lesson with one authored race. Direct structure controls can supplement that
-path when they match the corresponding Watershed demo.
+result before opening metadata. Direct structure controls lead when they make
+the merge rule understandable through safe exploration. One authored action
+must remain available as a worked example that completes the lesson.
 
 ### Motion and Reduced Motion
 

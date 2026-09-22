@@ -73,7 +73,7 @@ test("reading context disclosure and references work without JavaScript", async 
   }
 });
 
-test("the shell distinguishes working and planned navigation", async ({ page }) => {
+test("the shell exposes only working navigation", async ({ page }) => {
   await page.goto("/");
 
   const nav = page.getByRole("navigation", { name: "Primary", exact: true });
@@ -88,9 +88,7 @@ test("the shell distinguishes working and planned navigation", async ({ page }) 
   );
   await expect(nav.getByRole("link", { name: "Glossary", exact: true })).toHaveAttribute("href", "/glossary/");
   await expect(nav.getByRole("link", { name: "Bibliography", exact: true })).toHaveAttribute("href", "/bibliography/");
-  const trails = nav.getByText("Trails", { exact: true }).locator("..");
-  await expect(trails).toContainText("Planned");
-  await expect(trails.locator("a, button, [tabindex]")).toHaveCount(0);
+  await expect(nav.getByText("Trails", { exact: true })).toHaveCount(0);
   await page.goto("/atlas/dots-and-causal-context/");
   await expect(nav.getByRole("link", { name: "Atlas", exact: true }))
     .toHaveAttribute("aria-current", "location");
@@ -308,26 +306,13 @@ test("the landing page leads with data structures", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "Start with counters", exact: true }),
   ).toHaveAttribute("href", "/structures/counters/");
-  await expect(page.getByRole("link", { name: "Open the full atlas", exact: true }))
-    .toHaveAttribute("href", "/atlas/");
-  const structures = page.getByRole("list", { name: "Data structure learning path" });
-  await expect(structures.getByRole("listitem")).toHaveText([
-    "1CountersHow independent additions and corrections merge without duplication.Read now",
-    "2SetsWhy removing an item requires evidence about the additions you saw.Read now",
-    "3RegistersChoose one winner, preserve alternatives, or select a read policy.Read now",
-    "4MapsChoose how named fields, removals, and nested folders reconcile.Read now",
-    "5SequencesKeep order stable while several clients edit the same region.Read now",
-    "6CoordinationUse a shared protocol when the result must have one owner.Read now",
-    "7TransformsRewrite concurrent document edits so both can apply.Read now",
-  ]);
+  await expect(page.getByRole("link", {
+    name: "Browse all structure families",
+    exact: true,
+  })).toHaveAttribute("href", "/structures/");
+  await expect(page.getByText(/This is the recommended first lesson/)).toBeVisible();
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
     "Counters",
-    "Sets",
-    "Registers",
-    "Maps",
-    "Sequences",
-    "Coordination",
-    "Transforms",
     "Learn the behavior before the bookkeeping",
     "From merge behavior to causal evidence",
     "Open the machinery when you need it",
@@ -398,15 +383,32 @@ test("the sets family compares its three removal rules", async ({ page }) => {
 
 test("the structures index and landing route readers through published families", async ({ page }) => {
   await page.goto("/structures/");
-  await expect(page.getByRole("link", { name: "Registers", exact: true }))
+  const familyLinks = page.getByRole("list", { name: "Structure lessons" }).getByRole("link");
+  await expect(familyLinks).toHaveCount(7);
+  await expect(page.getByRole("link", { name: /^Registers/ }))
     .toHaveAttribute("href", "/structures/registers/");
-  await expect(page.getByRole("link", { name: "Maps", exact: true }))
+  await expect(page.getByRole("link", { name: /^Maps/ }))
     .toHaveAttribute("href", "/structures/maps/");
+  for (const link of await familyLinks.all()) {
+    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Registers", exact: true }))
-    .toHaveAttribute("href", "/structures/registers/");
-  await expect(page.getByRole("link", { name: "Maps", exact: true }))
-    .toHaveAttribute("href", "/structures/maps/");
+  await expect(page.getByRole("link", { name: "Browse all structure families" }))
+    .toHaveAttribute("href", "/structures/");
+});
+
+test("the G-counter lesson exposes a direct reading path", async ({ page }) => {
+  await page.goto("/structures/g-counter/");
+  const lessonMap = page.getByRole("navigation", { name: "G-counter lesson map" });
+  await expect(lessonMap.getByRole("link")).toHaveText([
+    "Understand the notebooks",
+    "See crossing notes",
+    "Try the sandbox",
+  ]);
+  await expect(lessonMap.getByRole("link", { name: "Try the sandbox" }))
+    .toHaveAttribute("href", "#gcounter-demo-title");
+  await expect(page.getByRole("heading", { name: "Record sightings on three hikes" }))
+    .toBeVisible();
 });
 
 test("demo operation logs number newest entries from the top", async ({ page }) => {
@@ -431,10 +433,9 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Start with the data you need to share",
   );
-  await expect(page.getByRole("list", { name: "Data structure learning path" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Start with counters", exact: true }))
     .toBeVisible();
-  await expect(page.getByRole("link", { name: "Open the full atlas" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Browse all structure families" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
   await expect(page.getByRole("contentinfo")).toBeVisible();
   await page.keyboard.press("Tab");
@@ -448,8 +449,8 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/structures\/counters\/$/);
   await page.goto("/");
-  await page.getByRole("link", { name: "Open the full atlas" }).click();
-  await expect(page.getByRole("heading", { name: "Atlas", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Browse all structure families" }).click();
+  await expect(page.getByRole("heading", { name: "Structures", exact: true })).toBeVisible();
   await context.close();
 });
 
@@ -468,7 +469,7 @@ test("atlas exposes four territories and seven published sheets without dead lin
     "/structures/",
   );
   await expect(nav.getByRole("link", { name: "Atlas", exact: true })).toHaveAttribute("aria-current", "page");
-  await expect(nav.getByText("Trails", { exact: true }).locator("..")).toContainText("Planned");
+  await expect(nav.getByText("Trails", { exact: true })).toHaveCount(0);
   expect((await request.get("/trails/")).status()).toBe(404);
   expect((await request.get("/glossary/")).status()).toBe(200);
   expect((await request.get("/bibliography/")).status()).toBe(200);
@@ -498,13 +499,12 @@ test("the atlas presents territories as one connected chart without JavaScript",
       const station = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: title, exact: true }) });
       await expect(station.getByRole("link", { name: title, exact: true })).toBeVisible();
     }
-    const trail = page.getByRole("list", { name: "Structure-first trail", exact: true });
-    await expect(trail.getByRole("listitem")).toHaveText([
-      "Multi-value registers Read now", "Observed-remove sets Read now",
-      "Dots and causal context Read now", "Local history Read now",
-      "Partial order Read now", "Lamport clocks Read now", "Vector clocks Read now",
-    ]);
-    await expect(trail.getByRole("link")).toHaveCount(7);
+    const trail = page.getByRole("navigation", { name: "Structure-first trail", exact: true });
+    await expect(trail).toContainText("Seven sheets connect merge behavior to causal evidence.");
+    await expect(trail.getByRole("link", { name: "Start with Multi-value registers" }))
+      .toHaveAttribute("href", "/atlas/multi-value-registers/");
+    await expect(trail.getByRole("link", { name: "View all trail stops" }))
+      .toHaveAttribute("href", "#territories");
     await expect(chart.getByRole("link")).toHaveCount(7);
     const published = chart.getByRole("link", { name: "Dots and causal context", exact: true });
     await expect(published).toHaveAttribute("href", "/atlas/dots-and-causal-context/");

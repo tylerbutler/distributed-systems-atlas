@@ -323,7 +323,7 @@ test("the connected chart reflows to vertical stations below 40rem", async ({ pa
 });
 
 for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
-  test(`landing structure path fits at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
+  test(`landing entry fits at ${viewport.width} × ${viewport.height}`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
@@ -331,17 +331,15 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
 
     const hero = page.getByRole("region", { name: "Start with the data you need to share" });
     const headline = page.getByRole("heading", { level: 1 });
-    const path = page.getByRole("list", { name: "Data structure learning path" });
-    const pathItems = path.getByRole("listitem");
+    const recommended = page.getByText(/This is the recommended first lesson/);
     const primary = page.getByRole("link", { name: "Start with counters", exact: true });
-    const secondary = page.getByRole("link", { name: "Open the full atlas", exact: true });
+    const secondary = page.getByRole("link", { name: "Browse all structure families", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
-    await expect(pathItems).toHaveCount(7);
 
     const sectionBox = await sectionTwo.boundingBox();
     expect(sectionBox).not.toBeNull();
-    for (const element of [headline, ...await pathItems.all(), primary, secondary]) {
+    for (const element of [headline, recommended, primary, secondary]) {
       await expect(element).toBeVisible();
       const box = await element.boundingBox();
       expect(box).not.toBeNull();
@@ -357,12 +355,11 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
   });
 }
 
-test("the landing structure path keeps its intended order", async ({ page }) => {
+test("the landing page makes counters the single recommended start", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("list", { name: "Data structure learning path" })
-    .getByRole("heading", { level: 2 })).toHaveText([
-      "Counters", "Sets", "Registers", "Maps", "Sequences", "Coordination", "Transforms",
-    ]);
+  const hero = page.getByRole("region", { name: "Start with the data you need to share" });
+  await expect(hero.getByRole("heading", { level: 2 })).toHaveText("Counters");
+  await expect(hero.getByRole("link")).toHaveCount(3);
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {
@@ -382,17 +379,11 @@ test("the observation rail wraps without horizontal overflow", async ({ page }) 
     const trace = rail.locator(".observation-trace");
     await expect(trace).toBeVisible();
     await expect(trace).toHaveAttribute("aria-hidden", "true");
-    if (width < 768) {
-      const textBox = await rail.getByRole("list").boundingBox();
-      const traceBox = await trace.boundingBox();
-      expect(textBox).not.toBeNull();
-      expect(traceBox).not.toBeNull();
-      expect(traceBox!.y).toBeGreaterThanOrEqual(textBox!.y + textBox!.height);
-    }
+    expect((await rail.boundingBox())!.height).toBeLessThan(160);
   }
 });
 
-test("working and planned navigation stays visible in a broad publication band", async ({ page }) => {
+test("working navigation stays visible in a broad publication band", async ({ page }) => {
   await page.goto("/");
   for (const width of [320, 390, 767, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 844 });
@@ -406,7 +397,7 @@ test("working and planned navigation stays visible in a broad publication band",
     const atlas = nav.getByRole("link", { name: "Atlas", exact: true });
     await expect(atlas).toBeInViewport();
     await expect(nav.getByRole("button")).toHaveCount(0);
-    for (const label of ["Structures", "Trails", "Glossary", "Bibliography"]) {
+    for (const label of ["Structures", "Atlas", "Glossary", "Bibliography"]) {
       await expect(nav.getByText(label, { exact: true })).toBeInViewport();
     }
     if (width < 768) {
@@ -416,7 +407,6 @@ test("working and planned navigation stays visible in a broad publication band",
       expect(rows[0]).toBe(rows[1]);
       expect(rows[2]).toBe(rows[3]);
       expect(rows[2]).toBeGreaterThan(rows[0]);
-      expect(rows[4]).toBeGreaterThan(rows[2]);
     }
     await atlas.focus();
     await expect(atlas).toHaveCSS("outline-style", "solid");

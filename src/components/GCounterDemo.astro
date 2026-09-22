@@ -14,11 +14,11 @@ const initial = presentGCounterDemo(createGCounterDemo());
     <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Count birds on three hikes</h2>
+        <h2 id="gcounter-demo-title">Record sightings on three hikes</h2>
         <p>
-          Record birds for Alice, Bob, or Carol. Each hiker leaves their running
-          count at a known checkpoint. Turn off Auto-deliver to hold several
-          notes before delivery to the other checkpoints.
+          Use the controls in each notebook to explore the counter. Each hiker
+          leaves their running count at a known checkpoint. Turn off
+          Auto-deliver to hold several notes before delivery.
         </p>
       </div>
       <p class="merge-rule">
@@ -39,53 +39,66 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </div>
 
     <div class="gcounter-network">
-      {initial.replicas.map((replica) => (
-        <section
-          class={`gcounter-replica replica-${replica.id.toLowerCase()}`}
-          data-client={replica.id}
-          aria-label={`${gCounterUserName(replica.id)}'s replica`}
-        >
-          <header>
-            <StationMark station={replica.id} size="lg" />
-            <div>
-              <h3>{gCounterUserName(replica.id)}</h3>
-              <p data-replica-state={replica.id}>Connected to checkpoint network</p>
+      {initial.replicas.map((replica, index) => (
+        <Fragment>
+          <section
+            class={`gcounter-replica replica-${replica.id.toLowerCase()}`}
+            data-client={replica.id}
+            aria-label={`${gCounterUserName(replica.id)}'s replica`}
+          >
+            <header>
+              <StationMark station={replica.id} size="lg" />
+              <div>
+                <h3>{gCounterUserName(replica.id)}</h3>
+                <p data-replica-state={replica.id}>Connected to checkpoint network</p>
+              </div>
+            </header>
+            <output class="gcounter-total observation-data" data-total={replica.id}>
+              {replica.value}
+            </output>
+            <p>Birds in this hiker's view</p>
+            <div class="replica-actions" aria-label={`Record birds for ${gCounterUserName(replica.id)}`}>
+              {[1, 3, 7].map((amount) => (
+                <button
+                  type="button"
+                  data-replica={replica.id}
+                  data-increment={amount}
+                  aria-label={`Record ${amount} ${amount === 1 ? "bird" : "birds"} for ${gCounterUserName(replica.id)}`}
+                  disabled
+                >
+                  +{amount}
+                </button>
+              ))}
             </div>
-          </header>
-          <output class="gcounter-total observation-data" data-total={replica.id}>
-            {replica.value}
-          </output>
-          <p>Birds in this hiker's view</p>
-          <div class="replica-actions" aria-label={`Record birds for ${gCounterUserName(replica.id)}`}>
-            {[1, 3, 7].map((amount) => (
-              <button
-                type="button"
-                data-replica={replica.id}
-                data-increment={amount}
-                aria-label={`Record ${amount} ${amount === 1 ? "bird" : "birds"} for ${gCounterUserName(replica.id)}`}
-                disabled
-              >
-                +{amount}
-              </button>
-            ))}
-          </div>
-        </section>
+          </section>
+          {index === 0 && (
+            <div class="sequencer-channel">
+              <section class="sequencer-station" data-sequencer-node aria-label="Known checkpoint">
+                <span class="sequencer-label">Known checkpoint</span>
+                <output class="sequencer-counter" data-sequence-counter aria-label="Notes left at checkpoint">
+                  0 notes
+                </output>
+              </section>
+              <ol class="operation-log" data-deliveries aria-label="Checkpoint note log" reversed>
+                <li>No checkpoint note shared yet.</li>
+              </ol>
+            </div>
+          )}
+        </Fragment>
       ))}
-
-      <div class="sequencer-channel">
-        <section class="sequencer-station" data-sequencer-node aria-label="Known checkpoint">
-          <span class="sequencer-label">Known checkpoint</span>
-          <output class="sequencer-counter" data-sequence-counter aria-label="Notes left at checkpoint">
-            0 notes
-          </output>
-        </section>
-        <ol class="operation-log" data-deliveries aria-label="Checkpoint note log" reversed>
-          <li>No checkpoint note shared yet.</li>
-        </ol>
-      </div>
     </div>
 
-    <section class="gcounter-controls" aria-label="Lesson controls">
+    <p class="gcounter-result" role="status" aria-live="polite" aria-atomic="true">
+      {initial.result}
+    </p>
+    <p class="gcounter-error" role="alert" hidden></p>
+
+    <section class="gcounter-controls" aria-label="Worked example controls">
+      <h3>Run the worked example</h3>
+      <p>
+        Reset the sandbox and leave Alice's and Bob's notes together, or adjust
+        how the notes travel.
+      </p>
       <label class="playback-speed">
         <span>Speed</span>
         <input
@@ -125,11 +138,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
         result remain available in the article.
       </p>
     </section>
-
-    <p class="gcounter-result" role="status" aria-live="polite" aria-atomic="true">
-      {initial.result}
-    </p>
-    <p class="gcounter-error" role="alert" hidden></p>
 
     <aside
       class="guided-observations"
@@ -246,7 +254,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     bottom: calc(100% + var(--space-1));
     left: 50%;
     padding: 2px 5px;
-    border-radius: 4px;
+    border-radius: 0;
     color: var(--instrument-deep);
     background: var(--signal);
     font-family: var(--font-data);
@@ -412,11 +420,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
     margin-top: var(--space-4);
   }
 
-  .replica-actions button {
-    padding-inline: var(--space-2);
-    white-space: nowrap;
-  }
-
   .sequencer-channel {
     grid-area: sequencer;
     display: flex;
@@ -477,7 +480,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     flex-direction: column;
     gap: var(--space-2);
     list-style: none;
-    mask-image: linear-gradient(black 58%, transparent 100%);
+    scrollbar-color: var(--signal) var(--instrument);
   }
 
   .operation-log :global(li) {
@@ -515,11 +518,25 @@ const initial = presentGCounterDemo(createGCounterDemo());
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
+      "heading heading heading"
+      "intro intro intro"
       "speed auto guided"
       "race resend reset";
     gap: var(--space-3);
     align-items: end;
     padding-block: var(--space-5);
+  }
+
+  .gcounter-controls > h3 {
+    grid-area: heading;
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  .gcounter-controls > p:not([data-enhancement-note]) {
+    grid-area: intro;
+    margin: 0;
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
   }
 
   .guided-toggle {
@@ -568,10 +585,15 @@ const initial = presentGCounterDemo(createGCounterDemo());
     cursor: pointer;
   }
 
+  .replica-actions button {
+    padding-inline: var(--space-2);
+    color: var(--signal);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
   .gcounter-controls [data-action="race"] {
     grid-area: race;
-    color: var(--instrument-deep);
-    background: var(--signal);
     font-weight: 650;
   }
 
@@ -677,10 +699,12 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-explanation > div {
     padding-bottom: var(--space-5);
+    overflow-x: auto;
   }
 
   .gcounter-explanation table {
     width: 100%;
+    min-width: 36rem;
     margin-block: var(--space-4);
     border-collapse: collapse;
   }
@@ -695,6 +719,13 @@ const initial = presentGCounterDemo(createGCounterDemo());
     font-family: var(--font-ui);
   }
 
+  @media (width < 64rem) {
+    .gcounter-heading {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+
   @media (width < 48rem) {
     .gcounter-heading,
     .gcounter-controls,
@@ -705,6 +736,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
     .gcounter-controls {
       grid-template-areas:
+        "heading"
+        "intro"
         "speed"
         "auto"
         "race"

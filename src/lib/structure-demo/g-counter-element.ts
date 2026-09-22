@@ -78,7 +78,7 @@ class GCounterDemoElement extends HTMLElement {
         "Turn off Auto-deliver to hold several checkpoint notes.",
         [],
       );
-      this.button("race").focus();
+      this.querySelector<HTMLButtonElement>("[data-increment]")!.focus();
     });
     const pace = this.querySelector<HTMLInputElement>("[data-pace]")!;
     pace.addEventListener("input", () => {

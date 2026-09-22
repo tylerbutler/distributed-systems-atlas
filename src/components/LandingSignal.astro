@@ -7,68 +7,18 @@
     </p>
   </header>
 
-  <ol class="structure-path" aria-label="Data structure learning path">
-    <li>
-      <span class="path-number">1</span>
-      <div>
-        <h2><a href="/structures/counters/">Counters</a></h2>
-        <p>How independent additions and corrections merge without duplication.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">2</span>
-      <div>
-        <h2><a href="/structures/sets/">Sets</a></h2>
-        <p>Why removing an item requires evidence about the additions you saw.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">3</span>
-      <div>
-        <h2><a href="/structures/registers/">Registers</a></h2>
-        <p>Choose one winner, preserve alternatives, or select a read policy.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">4</span>
-      <div>
-        <h2><a href="/structures/maps/">Maps</a></h2>
-        <p>Choose how named fields, removals, and nested folders reconcile.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">5</span>
-      <div>
-        <h2><a href="/structures/sequences/">Sequences</a></h2>
-        <p>Keep order stable while several clients edit the same region.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">6</span>
-      <div>
-        <h2><a href="/structures/coordination/">Coordination</a></h2>
-        <p>Use a shared protocol when the result must have one owner.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-    <li>
-      <span class="path-number">7</span>
-      <div>
-        <h2><a href="/structures/transforms/">Transforms</a></h2>
-        <p>Rewrite concurrent document edits so both can apply.</p>
-        <span class="status">Read now</span>
-      </div>
-    </li>
-  </ol>
+  <div class="starting-path">
+    <h2><a href="/structures/counters/">Counters</a></h2>
+    <p>
+      This is the recommended first lesson. Begin with additions that merge
+      without a winner. Then add corrections and sequencing when the problem
+      requires them.
+    </p>
+  </div>
 
   <div class="landing-actions">
     <a class="trail-entry" href="/structures/counters/">Start with counters</a>
-    <a class="atlas-entry" href="/atlas/">Open the full atlas</a>
+    <a class="atlas-entry" href="/structures/">Browse all structure families</a>
   </div>
 </section>
 
@@ -100,63 +50,25 @@
     color: var(--clear);
   }
 
-  .structure-path {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .structure-path li {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: var(--space-3);
-    min-width: 0;
-    padding: var(--space-5) var(--space-4);
+  .starting-path {
+    max-width: 44rem;
+    padding-block: var(--space-6);
     border-bottom: var(--rule-width) solid var(--clear);
   }
 
-  .structure-path li + li {
-    border-left: var(--rule-width) solid var(--clear);
-  }
-
-  .path-number,
-  .status {
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
-  }
-
-  .path-number {
-    display: grid;
-    place-items: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    border: var(--rule-signal) solid var(--signal);
-    border-radius: 50%;
-    color: var(--signal);
-    font-variant-numeric: tabular-nums;
-  }
-
-  h2 {
+  .starting-path h2 {
     margin: 0;
     color: var(--clear);
-    font-size: 1.35rem;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
   }
 
-  h2 a {
+  .starting-path h2 a {
     color: inherit;
   }
 
-  .structure-path p {
-    margin: var(--space-2) 0 var(--space-4);
+  .starting-path > p:last-child {
+    margin: var(--space-3) 0 0;
     color: var(--clear);
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-
-  .structure-path .status {
-    color: var(--signal);
   }
 
   .landing-actions {
@@ -188,13 +100,6 @@
       align-items: start;
     }
 
-    .structure-path {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .structure-path li:nth-child(odd) {
-      border-left: 0;
-    }
   }
 
   @media (width < 40rem) {
@@ -204,14 +109,6 @@
 
     h1 {
       font-size: clamp(2rem, 9vw, 3rem);
-    }
-
-    .structure-path {
-      grid-template-columns: 1fr;
-    }
-
-    .structure-path li + li {
-      border-left: 0;
     }
 
     .landing-actions {

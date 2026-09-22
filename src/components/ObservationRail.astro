@@ -9,12 +9,17 @@ interface Props {
 }
 
 const { territory, sheetTitle, trailStep } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, "");
 ---
 
 <nav class="observation-rail instrument-panel" aria-label="Sheet position">
   <div class="observation-rail-inner">
     <ol class="observation-context">
-      <li>Atlas</li>
+      <li>
+        {path === "/atlas"
+          ? <span aria-current="page">Atlas</span>
+          : <a href="/atlas/">Atlas</a>}
+      </li>
       {territory && <li>{territory}</li>}
       {sheetTitle && <li aria-current="page">{sheetTitle}</li>}
       {trailStep && (
@@ -56,6 +61,12 @@ const { territory, sheetTitle, trailStep } = Astro.props;
     padding-inline-start: var(--space-4);
   }
 
+  .observation-context a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
   [aria-current="page"] {
     font-weight: 650;
   }
@@ -81,13 +92,21 @@ const { territory, sheetTitle, trailStep } = Astro.props;
 
   @media (width < 48rem) {
     .observation-rail-inner {
-      flex-direction: column;
-      align-items: stretch;
+      gap: var(--space-3);
+      padding-block: 0;
     }
 
     .observation-trace {
-      flex: none;
-      margin-block: var(--space-1);
+      flex-basis: 2rem;
+      min-width: 2rem;
+    }
+
+    .observation-context {
+      gap: var(--space-1) var(--space-3);
+    }
+
+    .observation-context li + li {
+      padding-inline-start: var(--space-3);
     }
   }
 </style>

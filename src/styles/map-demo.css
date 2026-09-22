@@ -42,7 +42,7 @@ map-structure-demo {
   bottom: calc(100% + 5px);
   left: 50%;
   padding: 2px 5px;
-  border-radius: 3px;
+  border-radius: 0;
   color: var(--instrument-deep);
   background: inherit;
   font: 700 0.6875rem/1 var(--font-data);

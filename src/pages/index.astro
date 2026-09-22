@@ -53,9 +53,14 @@ const trail = buildTrail(sheets);
         {trail.map((sheet) => (
           <li>
             {sheet.status === "published"
-              ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
-              : <span>{sheet.title}</span>}
-            {" "}<span class="status">{sheet.status === "published" ? "Read now" : "Planned"}</span>
+              ? <a href={`/atlas/${sheet.id}/`}>
+                  <span>{sheet.title}</span>
+                  <span class="status">Read now</span>
+                </a>
+              : <>
+                  <span>{sheet.title}</span>
+                  <span class="status">Planned</span>
+                </>}
           </li>
         ))}
       </ol>
@@ -125,8 +130,16 @@ const trail = buildTrail(sheets);
   }
 
   .learning-trail li {
-    padding: var(--space-3) 0 var(--space-3) var(--space-3);
     border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  .learning-trail a {
+    display: flex;
+    min-height: 44px;
+    padding: var(--space-3);
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
   }
 
   .learning-trail li::marker {
@@ -136,7 +149,7 @@ const trail = buildTrail(sheets);
 
   .learning-trail .status {
     display: inline-block;
-    margin-left: var(--space-4);
+    flex: 0 0 auto;
   }
 
   .final-entry {

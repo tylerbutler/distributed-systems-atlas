@@ -53,7 +53,7 @@ test("the hikers' checkpoint notes converge and a repeated note is safe", async 
   const reset = demo.getByRole("button", { name: "Reset", exact: true });
   await reset.click();
   await expect(totals).toHaveText(["0", "0", "0"]);
-  await expect(race).toBeFocused();
+  await expect(demo.getByRole("button", { name: "Record 1 bird for Alice" })).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
     "Count birds with Alice, Bob, or Carol, or leave Alice's and Bob's checkpoint notes together.",
   );

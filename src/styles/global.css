@@ -256,6 +256,12 @@ p {
   margin-bottom: 0;
 }
 
+.footer-links a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+
 .reference-list {
   max-width: var(--measure-reading);
   padding: 0;
@@ -281,14 +287,34 @@ p {
 }
 
 @media (width < 48rem) {
+  .site-main {
+    padding-block-start: var(--space-6);
+  }
+
   .publication-header {
-    flex-direction: column;
-    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+
+  .site-name {
+    gap: var(--space-3);
   }
 
   .site-nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--space-4);
+  }
+
+  .site-nav li {
+    border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 25%, var(--instrument));
+  }
+
+  .site-nav a {
+    width: 100%;
+    min-height: 44px;
   }
 }
 

@@ -189,7 +189,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     bottom: calc(100% + 5px);
     left: 50%;
     padding: 2px 5px;
-    border-radius: 3px;
+    border-radius: 0;
     color: var(--instrument-deep);
     background: inherit;
     font: 700 0.6875rem/1 var(--font-data);
@@ -307,7 +307,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
 
   .register-values span {
     padding: 0.35rem 0.55rem;
-    border-left: 4px solid var(--signal);
+    border-left: var(--rule-signal) solid var(--signal);
     color: var(--clear);
     background: color-mix(in oklch, var(--clear) 7%, transparent);
     font: 700 0.78rem/1.3 var(--font-data);

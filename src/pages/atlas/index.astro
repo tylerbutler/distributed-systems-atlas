@@ -24,6 +24,7 @@ if (issues.length > 0) {
 
 const entries = buildAtlasEntries(metadata);
 const trail = buildTrail(metadata);
+const firstTrailSheet = trail[0];
 const territories = [
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
   ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
@@ -40,18 +41,15 @@ const territories = [
   </header>
   <nav class="first-trail" aria-labelledby="first-trail-title">
     <h2 id="first-trail-title">Structure-first trail</h2>
-    <ol aria-label="Structure-first trail">
-      {trail.map((sheet) => (
-        <li>
-          {sheet.status === "published"
-            ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
-            : <span>{sheet.title}</span>}
-          {" "}<span class="status">{sheet.status === "published" ? "Read now" : "Planned"}</span>
-        </li>
-      ))}
-    </ol>
+    <p>
+      Seven sheets connect merge behavior to causal evidence.
+      {firstTrailSheet?.status === "published" && (
+        <> <a href={`/atlas/${firstTrailSheet.id}/`}>Start with {firstTrailSheet.title}</a>.</>
+      )}
+    </p>
+    <a class="trail-overview" href="#territories">View all trail stops</a>
   </nav>
-  <div class="territory-chart" data-testid="territory-chart">
+  <div class="territory-chart" id="territories" data-testid="territory-chart">
     {territories.map(([id, title, summary]) => (
       <AtlasTerritory
         {id}
@@ -81,33 +79,19 @@ const territories = [
     font-size: 1.25rem;
   }
 
-  .first-trail ol {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4) var(--space-6);
-    margin: 0;
-    padding-left: 1.5rem;
-    font-size: 1rem;
-  }
-
-  .first-trail li {
-    flex: 0 1 10rem;
-    padding-right: var(--space-3);
-  }
-
-  .first-trail li::marker {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .first-trail .status {
-    display: block;
+  .first-trail p {
+    margin-bottom: var(--space-3);
   }
 
   .first-trail a {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
+  }
+
+  .trail-overview {
+    font-family: var(--font-ui);
+    font-weight: 650;
   }
 
   .territory-chart {
@@ -136,19 +120,6 @@ const territories = [
   }
 
   @media (width < 40rem) {
-    .first-trail ol {
-      display: block;
-    }
-
-    .first-trail li + li {
-      margin-top: var(--space-3);
-    }
-
-    .first-trail .status {
-      display: inline;
-      margin-left: var(--space-2);
-    }
-
     .territory-chart::before {
       display: none;
     }
