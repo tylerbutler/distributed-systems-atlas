@@ -31,6 +31,22 @@ const tombstoneTerm = {
       <LessonIllustration id="structures-two-p-set" />
     </header>
 
+    <section aria-labelledby="notebook-setup-title">
+      <h2 id="notebook-setup-title">Each hiker carries the same two-page notebook</h2>
+      <p>
+        Each page is a separate GSet. The additions page records every beacon
+        name a hiker has received. The removals page records every name that a
+        hiker knows is permanently retired. Both pages only grow, and the
+        hikers merge each page by union.
+      </p>
+      <p>
+        Before the ranger sends them out again, Alice's Eagle Creek report has
+        reached all three hikers. Alice, Bob, and Carol each have{" "}
+        <code>Eagle Creek</code> on the additions page and an empty removals
+        page, so all three still show the beacon on their visible lists.
+      </p>
+    </section>
+
     <StructureFacts
       structure="TwoPSet"
       family="CRDT"
@@ -43,18 +59,13 @@ const tombstoneTerm = {
     />
 
     <section aria-labelledby="retire-beacon-title">
-      <h2 id="retire-beacon-title">Add a second GSet</h2>
-      <p>
-        Each notebook has an additions GSet and a removals GSet. The additions
-        GSet records every beacon name a hiker has received. The removals GSet
-        records every name that a hiker knows is permanently retired. Both
-        pages only grow, and the hikers merge each page by union.
-      </p>
+      <h2 id="retire-beacon-title">Alice and Bob write on different pages</h2>
       <p>
         Alice finds that the old Eagle Creek beacon is gone, so she writes
-        <code>Eagle Creek</code> in the removals GSet. Her additions GSet still
-        contains the name, but her visible list is empty. Bob and Carol still
-        show Eagle Creek until they receive her removal record.
+        <code>Eagle Creek</code> on her removals page. Bob has not received
+        Alice's record. He finds a replacement with the same name and writes
+        <code>Eagle Creek</code> on his additions page, where the name is
+        already present. Carol makes no change.
       </p>
       <p>
         That retained removal record is a{" "}
@@ -68,35 +79,94 @@ const tombstoneTerm = {
         those two GSets. A value is visible only when it appears in additions
         and does not appear in removals.
       </p>
-      <p>
-        The name means <strong>two-phase set</strong>. Each beacon name can
-        move from never added, to present, to permanently removed. Eagle Creek
-        cannot return after the second phase, but the hikers can still add
-        other beacon names to their notebooks.
-      </p>
       <TermCallout {...twoPSetTerm} />
-      <figure>
-        <table aria-label="TwoPSet notebooks before records meet">
+      <figure class="notebook">
+        <table aria-label="TwoPSet notebook contents at three checkpoints">
           <thead>
             <tr>
+              <th scope="col">Checkpoint</th>
               <th scope="col">Notebook</th>
-              <th scope="col">Additions</th>
-              <th scope="col">Removals</th>
+              <th scope="col">Additions page</th>
+              <th scope="col">Removals page</th>
               <th scope="col">Visible list</th>
             </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice</th><td>Eagle Creek</td><td>Eagle Creek</td><td>empty</td></tr>
-            <tr><th scope="row">Bob</th><td>Eagle Creek</td><td>empty</td><td>Eagle Creek</td></tr>
-            <tr><th scope="row">Carol</th><td>Eagle Creek</td><td>empty</td><td>Eagle Creek</td></tr>
+            <tr>
+              <th scope="rowgroup" rowspan="3">Before retirement</th>
+              <th scope="row">Alice</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{}"}</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{}"}</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{}"}</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr>
+              <th scope="rowgroup" rowspan="3">Records apart</th>
+              <th scope="row">Alice</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td>empty</td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{}"}</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{}"}</code></td>
+              <td>Eagle Creek</td>
+            </tr>
+          </tbody>
+          <tbody>
+            <tr>
+              <th scope="rowgroup" rowspan="3">After exchange</th>
+              <th scope="row">Alice</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td>empty</td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td>empty</td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td><code>{"{ Eagle Creek }"}</code></td>
+              <td>empty</td>
+            </tr>
           </tbody>
         </table>
-        <figcaption>Each hiker computes the visible list from the two sets in that notebook.</figcaption>
+        <figcaption>
+          Each hiker computes the visible list from the two pages in that
+          notebook. Bob's replacement does not create a new set member because
+          the same name is already on the additions page.
+        </figcaption>
       </figure>
       <p>
-        After the hikers exchange records, every notebook contains Eagle Creek
-        in both sets. All three visible lists are empty. A delayed addition
-        cannot erase the retained removal.
+        When the hikers exchange records, each notebook takes the union of the
+        additions pages and the union of the removals pages. Every notebook
+        ends with Eagle Creek on both pages, so all three visible lists are
+        empty. A delayed or repeated additions page cannot erase the retained
+        removal.
       </p>
     </section>
 
@@ -109,18 +179,13 @@ const tombstoneTerm = {
     />
 
     <section aria-labelledby="replacement-title">
-      <h2 id="replacement-title">Bob finds the replacement</h2>
+      <h2 id="replacement-title">The replacement cannot return</h2>
       <p>
-        The next morning, Bob finds a new beacon at Eagle Creek. Its name is
-        the same, so his notebook adds <code>Eagle Creek</code> again. The name
-        was already in his additions, and Alice's removal record still excludes
-        it after merge.
-      </p>
-      <p>
-        This is the cost of permanent removal. A TwoPSet cannot distinguish two
-        installations that use the same value. The next set gives every add
-        its own identity, so Alice can remove the old beacon while Bob's new
-        beacon survives.
+        The name means <strong>two-phase set</strong>. Each beacon name can
+        move from never added, to present, to permanently removed. A TwoPSet
+        cannot distinguish two installations that use the same name. The next
+        set gives every addition its own identity, so Alice can remove the old
+        beacon while Bob's replacement survives.
       </p>
     </section>
 
