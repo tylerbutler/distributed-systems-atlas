@@ -241,10 +241,10 @@ class RegisterStructureDemoElement extends HTMLElement {
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;
     if (this.kind === "lww-register") {
       evidence.textContent = this.state.view.winnerAuthor
-        ? `T${this.state.view.timestamp} · ${registerUserName(
+        ? `Sequence ${this.state.view.timestamp} · ${registerUserName(
           this.state.view.winnerAuthor as ReplicaId,
-        )}'s timestamp wins.`
-        : "No timestamped write yet.";
+        )}'s write wins.`
+        : "No sequenced write yet.";
     } else if (this.kind === "mv-register") {
       const count = this.state.view.replicas[0]?.values.length ?? 0;
       evidence.textContent = count

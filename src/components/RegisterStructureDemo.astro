@@ -31,7 +31,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
   if (kind === "lww-register") {
     return {
       body,
-      evidence: `time ${replica === "A" ? "T10" : "T12"} · writer ${replica}`,
+      evidence: `sequence ${replica === "A" ? "1" : "2"} · writer ${replica}`,
     };
   }
   if (kind === "mv-register") {
@@ -93,11 +93,11 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
       ))}
 
       <section class="register-relay" data-relay-node aria-label="Register message relay">
-        <span>{kind === "register-collection" ? "Ranger sequencer" : "Trail exchange"}</span>
+        <span>{kind === "mv-register" ? "Trail exchange" : "Ranger sequencer"}</span>
         <strong>
-          {kind === "register-collection"
-            ? "Assigns sequence numbers"
-            : "Does not choose by arrival order"}
+          {kind === "mv-register"
+            ? "Does not choose by arrival order"
+            : "Assigns sequence numbers"}
         </strong>
         <output data-message-count>0 writes shared</output>
       </section>
@@ -108,7 +108,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
         <span>Decision evidence</span>
         <strong data-evidence>
           {kind === "lww-register"
-            ? "No timestamped write yet."
+            ? "No sequenced write yet."
             : kind === "mv-register"
               ? "No alternatives yet."
               : "No sequenced versions yet."}

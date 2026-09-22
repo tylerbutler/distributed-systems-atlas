@@ -228,9 +228,15 @@ pub fn set_sluice_rooms_show_each_conflict_rule_test() {
   let assert Ok(gset) = sluice.set_room_stage_race(gset)
   let #(gset, _) = sluice.set_room_deliver(gset)
   let gset_view = sluice.set_room_snapshot(gset)
-  gset_view.a |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
-  gset_view.b |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
-  gset_view.c |> list.sort(string.compare) |> should.equal(["Eagle Creek", "Ridge Pass"])
+  gset_view.a
+  |> list.sort(string.compare)
+  |> should.equal(["Eagle Creek", "Ridge Pass"])
+  gset_view.b
+  |> list.sort(string.compare)
+  |> should.equal(["Eagle Creek", "Ridge Pass"])
+  gset_view.c
+  |> list.sort(string.compare)
+  |> should.equal(["Eagle Creek", "Ridge Pass"])
 
   let assert Ok(two_p) = sluice.new_set_room("two-p-set")
   let assert Ok(two_p) = sluice.set_room_stage_race(two_p)
@@ -258,7 +264,7 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   lww_view.b |> should.equal(["Trail closed"])
   lww_view.c |> should.equal(["Trail closed"])
   lww_view.winner_author |> should.equal("B")
-  lww_view.timestamp |> should.equal(12)
+  lww_view.timestamp |> should.equal(2)
 
   let assert Ok(mv) = toolkit.new_register_demo("mv-register")
   let assert Ok(mv) = toolkit.register_demo_stage_race(mv)
@@ -268,8 +274,7 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   mv_view.b |> should.equal(["Trail closed", "Trail open"])
   mv_view.c |> should.equal(["Trail closed", "Trail open"])
 
-  let assert Ok(collection) =
-    toolkit.new_register_demo("register-collection")
+  let assert Ok(collection) = toolkit.new_register_demo("register-collection")
   let assert Ok(collection) = toolkit.register_demo_stage_race(collection)
   let queued = toolkit.register_demo_snapshot(collection)
   queued.a |> should.equal([])
@@ -280,12 +285,26 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   collection_view.versions |> should.equal(["Trail open", "Trail closed"])
 }
 
+pub fn lww_register_demo_assigns_global_sequence_numbers_test() {
+  let assert Ok(room) = toolkit.new_register_demo("lww-register")
+  let assert Ok(room) = toolkit.register_demo_write(room, "A", "Trail open")
+  let assert Ok(room) = toolkit.register_demo_write(room, "C", "Inspect bridge")
+  let view =
+    room |> toolkit.register_demo_deliver |> toolkit.register_demo_snapshot
+  view.a |> should.equal(["Inspect bridge"])
+  view.b |> should.equal(["Inspect bridge"])
+  view.c |> should.equal(["Inspect bridge"])
+  view.winner_author |> should.equal("C")
+  view.timestamp |> should.equal(2)
+}
+
 pub fn map_sluice_rooms_show_each_conflict_rule_test() {
   let assert Ok(shared) = sluice.new_map_room("shared-map")
   let assert Ok(shared) = sluice.map_room_stage_race(shared)
   let #(shared, _) = sluice.map_room_deliver(shared)
   let shared_view = sluice.map_room_snapshot(shared)
-  shared_view.a |> should.equal([sluice.MapEntry("gate-status", "Trail closed")])
+  shared_view.a
+  |> should.equal([sluice.MapEntry("gate-status", "Trail closed")])
   shared_view.b |> should.equal(shared_view.a)
   shared_view.c |> should.equal(shared_view.a)
 

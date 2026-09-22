@@ -4,9 +4,9 @@ for (const example of [
   {
     path: "/structures/lww-register/",
     testId: "lww-register-demo",
-    race: "Race the timestamped reports",
+    race: "Sequence and share the reports",
     values: [["Trail closed"], ["Trail closed"], ["Trail closed"]],
-    evidence: "T12 · Bob's timestamp wins.",
+    evidence: "Sequence 2 · Bob's write wins.",
   },
   {
     path: "/structures/multi-value-register/",
@@ -111,10 +111,10 @@ test("reset restores an empty register room", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/lww-register/");
   const demo = page.getByTestId("lww-register-demo");
-  await demo.getByRole("button", { name: "Race the timestamped reports" }).click();
+  await demo.getByRole("button", { name: "Sequence and share the reports" }).click();
   await demo.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(demo.locator("[data-register-values] span")).toHaveCount(0);
   await expect(demo.locator("[data-evidence]")).toHaveText(
-    "No timestamped write yet.",
+    "No sequenced write yet.",
   );
 });

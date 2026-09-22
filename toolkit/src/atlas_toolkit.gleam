@@ -3,6 +3,7 @@
 
 import gleam/dict
 import gleam/dynamic/decode
+import gleam/int
 import gleam/json
 import gleam/list
 import gleam/order
@@ -281,8 +282,8 @@ pub fn register_demo_stage_race(
 ) -> Result(RegisterDemoRoom, String) {
   case room {
     LwwRegisterRoom(a, b, c, _) -> {
-      let a_operation = DemoLwwRegister("Trail open", 10, "A")
-      let b_operation = DemoLwwRegister("Trail closed", 12, "B")
+      let a_operation = DemoLwwRegister("Trail open", 1, "A")
+      let b_operation = DemoLwwRegister("Trail closed", 2, "B")
       let a = demo_lww_merge(a, a_operation)
       let b = demo_lww_merge(b, b_operation)
       Ok(LwwRegisterRoom(a, b, c, [a_operation, b_operation]))
@@ -325,19 +326,20 @@ pub fn register_demo_write(
       let DemoLwwRegister(_, a_time, _) = a
       let DemoLwwRegister(_, b_time, _) = b
       let DemoLwwRegister(_, c_time, _) = c
+      let sequence_number = int.max(a_time, int.max(b_time, c_time)) + 1
       case replica {
         "A" -> {
-          let operation = DemoLwwRegister(value, a_time + 1, "A")
+          let operation = DemoLwwRegister(value, sequence_number, "A")
           let a = demo_lww_merge(a, operation)
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
         "B" -> {
-          let operation = DemoLwwRegister(value, b_time + 1, "B")
+          let operation = DemoLwwRegister(value, sequence_number, "B")
           let b = demo_lww_merge(b, operation)
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
         "C" -> {
-          let operation = DemoLwwRegister(value, c_time + 1, "C")
+          let operation = DemoLwwRegister(value, sequence_number, "C")
           let c = demo_lww_merge(c, operation)
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
@@ -377,12 +379,13 @@ pub fn register_demo_write(
         _ -> Error("the register replica must be A, B, or C")
       }
       use state <- result.try(state)
-      let operation = register_collection_kernel.write(
-        state,
-        "trail-status",
-        json.string(value),
-        sequence_number,
-      )
+      let operation =
+        register_collection_kernel.write(
+          state,
+          "trail-status",
+          json.string(value),
+          sequence_number,
+        )
       Ok(RegisterCollectionRoom(
         a,
         b,
@@ -397,23 +400,25 @@ pub fn register_demo_write(
 pub fn register_demo_deliver(room: RegisterDemoRoom) -> RegisterDemoRoom {
   case room {
     LwwRegisterRoom(a, b, c, pending) -> {
-      let #(a, b, c) = list.fold(pending, #(a, b, c), fn(states, operation) {
-        #(
-          demo_lww_merge(states.0, operation),
-          demo_lww_merge(states.1, operation),
-          demo_lww_merge(states.2, operation),
-        )
-      })
+      let #(a, b, c) =
+        list.fold(pending, #(a, b, c), fn(states, operation) {
+          #(
+            demo_lww_merge(states.0, operation),
+            demo_lww_merge(states.1, operation),
+            demo_lww_merge(states.2, operation),
+          )
+        })
       LwwRegisterRoom(a, b, c, [])
     }
     MvRegisterRoom(a, b, c, pending) -> {
-      let #(a, b, c) = list.fold(pending, #(a, b, c), fn(states, delta) {
-        #(
-          mv_register_kernel.p2p_merge(states.0, delta.sequenced).0,
-          mv_register_kernel.p2p_merge(states.1, delta.sequenced).0,
-          mv_register_kernel.p2p_merge(states.2, delta.sequenced).0,
-        )
-      })
+      let #(a, b, c) =
+        list.fold(pending, #(a, b, c), fn(states, delta) {
+          #(
+            mv_register_kernel.p2p_merge(states.0, delta.sequenced).0,
+            mv_register_kernel.p2p_merge(states.1, delta.sequenced).0,
+            mv_register_kernel.p2p_merge(states.2, delta.sequenced).0,
+          )
+        })
       MvRegisterRoom(a, b, c, [])
     }
     RegisterCollectionRoom(a, b, c, pending, sequence_number) -> {
@@ -450,11 +455,13 @@ fn demo_lww_merge(
 ) -> DemoLwwRegister {
   let DemoLwwRegister(_, left_time, left_author) = left
   let DemoLwwRegister(_, right_time, right_author) = right
-  case right_time > left_time
+  case
+    right_time > left_time
     || {
       right_time == left_time
       && string.compare(right_author, left_author) == order.Gt
-    } {
+    }
+  {
     True -> right
     False -> left
   }
