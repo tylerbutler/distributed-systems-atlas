@@ -19,8 +19,15 @@ export type SetDemoOperation = {
   author: ReplicaId;
   action: SetRoomAction;
   element: string;
+  tag?: string;
+  observedTags?: string[];
 };
 export type SetDemoDelivery = TransportDelivery & SetDemoOperation;
+export type OrSetNotebook = {
+  additions: Array<{ element: string; tag: string }>;
+  removals: Array<{ element: string; tag: string }>;
+  highestTagNumber: number;
+};
 
 export type SetDemoState = {
   kind: SetDemoKind;
@@ -30,6 +37,7 @@ export type SetDemoState = {
   queuedOperations: SetDemoOperation[];
   deliveries: SetDemoDelivery[];
   latestDeliveries: SetDemoDelivery[];
+  orSetNotebooks?: Record<ReplicaId, OrSetNotebook>;
   result: string;
 };
 
@@ -40,6 +48,7 @@ export type SetDemoView = {
   queuedOperations: number;
   deliveries: SetDemoDelivery[];
   latestDeliveries: SetDemoDelivery[];
+  orSetNotebooks?: Record<ReplicaId, OrSetNotebook>;
   canDeliver: boolean;
   result: string;
 };
@@ -69,10 +78,6 @@ const RACE_OPERATIONS: Record<SetDemoKind, SetDemoOperation[]> = {
   ],
 };
 
-export function setDemoRaceOperations(kind: SetDemoKind): readonly SetDemoOperation[] {
-  return RACE_OPERATIONS[kind];
-}
-
 function value<T>(result: Result<T>): T {
   if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
   return result.value;
@@ -93,6 +98,11 @@ export function setDemoUserName(replica: ReplicaId): string {
 
 export function createSetDemo(kind: SetDemoKind): SetDemoState {
   const created = value(createSetRoom(kind));
+  const initialNotebook = (): OrSetNotebook => ({
+    additions: [{ element: "Eagle Creek", tag: "A:1" }],
+    removals: [],
+    highestTagNumber: 1,
+  });
   return {
     kind,
     phase: "initial",
@@ -101,7 +111,58 @@ export function createSetDemo(kind: SetDemoKind): SetDemoState {
     queuedOperations: [],
     deliveries: [],
     latestDeliveries: [],
+    orSetNotebooks: kind === "or-set"
+      ? { A: initialNotebook(), B: initialNotebook(), C: initialNotebook() }
+      : undefined,
     result: initialResult(kind),
+  };
+}
+
+function prepareOperation(
+  state: SetDemoState,
+  operation: SetDemoOperation,
+): SetDemoOperation {
+  if (state.kind !== "or-set" || !state.orSetNotebooks) return operation;
+  const notebook = state.orSetNotebooks[operation.author];
+  if (operation.action === "add") {
+    const number = notebook.highestTagNumber + 1;
+    return { ...operation, tag: `${operation.author}:${number}` };
+  }
+  return {
+    ...operation,
+    observedTags: notebook.additions
+      .filter(({ element }) => element === operation.element)
+      .map(({ tag }) => tag),
+  };
+}
+
+function applyLocalNotebook(
+  notebooks: Record<ReplicaId, OrSetNotebook>,
+  operation: SetDemoOperation,
+): Record<ReplicaId, OrSetNotebook> {
+  const notebook = notebooks[operation.author];
+  const additions = operation.action === "add"
+    ? [...notebook.additions, {
+      element: operation.element,
+      tag: operation.tag ?? "",
+    }]
+    : notebook.additions.filter(({ tag }) =>
+      !operation.observedTags?.includes(tag));
+  const removed = operation.action === "remove"
+    ? notebook.additions.filter(({ tag }) => operation.observedTags?.includes(tag))
+    : [];
+  return {
+    ...notebooks,
+    [operation.author]: {
+      additions,
+      removals: [...notebook.removals, ...removed],
+      highestTagNumber: operation.tag
+        ? Math.max(
+          notebook.highestTagNumber,
+          Number(operation.tag.split(":")[1]),
+        )
+        : notebook.highestTagNumber,
+    },
   };
 }
 
@@ -134,6 +195,7 @@ export function updateSetReplica(
   operation: SetDemoOperation,
 ): SetDemoResult {
   try {
+    operation = prepareOperation(state, operation);
     const updated = value(updateSetRoom(
       state.room,
       operation.author,
@@ -144,9 +206,14 @@ export function updateSetReplica(
       ok: true,
       state: {
         ...record(state, operation, updated),
+        orSetNotebooks: state.orSetNotebooks
+          ? applyLocalNotebook(state.orSetNotebooks, operation)
+          : undefined,
         result: `${setDemoUserName(operation.author)} ${
           operation.action === "add" ? "reported" : "retired"
-        } ${operation.element}. The record is in transit.`,
+        } ${operation.element}${
+          operation.tag ? ` as ${operation.tag}` : ""
+        }. The record is in transit.`,
       },
     };
   } catch (error) {
@@ -157,6 +224,14 @@ export function updateSetReplica(
 export function stageSetDemoRace(state: SetDemoState): SetDemoResult {
   try {
     const staged = value(stageSetRace(state.room));
+    let orSetNotebooks = state.orSetNotebooks;
+    const operations = RACE_OPERATIONS[state.kind].map((operation) => {
+      const prepared = prepareOperation({ ...state, orSetNotebooks }, operation);
+      if (orSetNotebooks) {
+        orSetNotebooks = applyLocalNotebook(orSetNotebooks, prepared);
+      }
+      return prepared;
+    });
     return {
       ok: true,
       state: {
@@ -165,7 +240,8 @@ export function stageSetDemoRace(state: SetDemoState): SetDemoResult {
         ...staged,
         deliveries: state.deliveries,
         latestDeliveries: [],
-        queuedOperations: RACE_OPERATIONS[state.kind],
+        queuedOperations: operations,
+        orSetNotebooks,
         result: state.kind === "g-set"
           ? "Alice and Bob reported different beacons. Both records are in transit."
           : state.kind === "two-p-set"
@@ -195,6 +271,30 @@ function labelDeliveries(
   });
 }
 
+function mergeOrSetNotebooks(
+  notebooks: Record<ReplicaId, OrSetNotebook>,
+): Record<ReplicaId, OrSetNotebook> {
+  const additions = new Map<string, { element: string; tag: string }>();
+  const removals = new Map<string, { element: string; tag: string }>();
+  let highestTagNumber = 0;
+  for (const notebook of Object.values(notebooks)) {
+    for (const entry of notebook.additions) additions.set(entry.tag, entry);
+    for (const entry of notebook.removals) removals.set(entry.tag, entry);
+    highestTagNumber = Math.max(highestTagNumber, notebook.highestTagNumber);
+  }
+  for (const tag of removals.keys()) additions.delete(tag);
+  const merged = {
+    additions: [...additions.values()],
+    removals: [...removals.values()],
+    highestTagNumber,
+  };
+  return {
+    A: structuredClone(merged),
+    B: structuredClone(merged),
+    C: structuredClone(merged),
+  };
+}
+
 export function deliverSetDemoOperations(state: SetDemoState): SetDemoResult {
   if (!state.view.pending) {
     return failure(state, "Record delivery", "record a change first");
@@ -203,11 +303,19 @@ export function deliverSetDemoOperations(state: SetDemoState): SetDemoResult {
     const delivered = value(deliverSetOperations(state.room));
     const latestDeliveries = labelDeliveries(state.queuedOperations, delivered.deliveries);
     const values = delivered.view.replicas[0]?.values ?? [];
+    const deliveredRemoval = state.queuedOperations.some(
+      ({ action }) => action === "remove",
+    );
+    const deliveredAddition = state.queuedOperations.some(
+      ({ action }) => action === "add",
+    );
     const result = state.kind === "g-set"
       ? `The reports were delivered to every hiker. The union contains ${values.join(", ")}.`
       : state.kind === "two-p-set"
         ? "The retirement tombstone was delivered to every hiker. Eagle Creek stays absent."
-        : "Both records were delivered to every hiker. Bob's fresh Eagle Creek installation remains.";
+        : deliveredRemoval && deliveredAddition
+          ? "Both tagged records were delivered to every hiker. The fresh Eagle Creek installation remains."
+          : "The tagged record was delivered to every hiker. Their notebook pages now match.";
     return {
       ok: true,
       state: {
@@ -217,6 +325,9 @@ export function deliverSetDemoOperations(state: SetDemoState): SetDemoResult {
         deliveries: [...state.deliveries, ...latestDeliveries].slice(-36),
         latestDeliveries,
         queuedOperations: [],
+        orSetNotebooks: state.orSetNotebooks
+          ? mergeOrSetNotebooks(state.orSetNotebooks)
+          : undefined,
         result,
       },
     };
@@ -233,6 +344,7 @@ export function presentSetDemo(state: SetDemoState): SetDemoView {
     queuedOperations: state.queuedOperations.length,
     deliveries: state.deliveries,
     latestDeliveries: state.latestDeliveries,
+    orSetNotebooks: state.orSetNotebooks,
     canDeliver: state.view.pending,
     result: state.result,
   };

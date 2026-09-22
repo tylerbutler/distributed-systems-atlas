@@ -52,3 +52,52 @@ test("reset creates a fresh two-phase set", () => {
   expect(retired.view.replicas[0]?.values).toEqual([]);
   expect(createSetDemo("two-p-set").view.replicas[0]?.values).toEqual(["Eagle Creek"]);
 });
+
+test("OR-set additions receive the next local tag", () => {
+  const bob = state(updateSetReplica(createSetDemo("or-set"), {
+    author: "B",
+    action: "add",
+    element: "Eagle Creek",
+  }));
+  expect(bob.queuedOperations).toEqual([{
+    author: "B",
+    action: "add",
+    element: "Eagle Creek",
+    tag: "B:2",
+  }]);
+  expect(bob.orSetNotebooks?.B).toEqual({
+    additions: [
+      { element: "Eagle Creek", tag: "A:1" },
+      { element: "Eagle Creek", tag: "B:2" },
+    ],
+    removals: [],
+    highestTagNumber: 2,
+  });
+});
+
+test("the OR-set race records complete notebook pages", () => {
+  const staged = state(stageSetDemoRace(createSetDemo("or-set")));
+  expect(staged.queuedOperations).toEqual([
+    {
+      author: "A",
+      action: "remove",
+      element: "Eagle Creek",
+      observedTags: ["A:1"],
+    },
+    {
+      author: "B",
+      action: "add",
+      element: "Eagle Creek",
+      tag: "B:2",
+    },
+  ]);
+
+  const delivered = state(deliverSetDemoOperations(staged));
+  for (const notebook of Object.values(delivered.orSetNotebooks ?? {})) {
+    expect(notebook).toEqual({
+      additions: [{ element: "Eagle Creek", tag: "B:2" }],
+      removals: [{ element: "Eagle Creek", tag: "A:1" }],
+      highestTagNumber: 2,
+    });
+  }
+});

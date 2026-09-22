@@ -80,6 +80,24 @@ function raceNote(replica: ReplicaId): string {
               </p>
             </div>
           </header>
+          {kind === "or-set" && (
+            <div class="or-set-pages" aria-label={`${setDemoUserName(replica.id)}'s OR-set notebook pages`}>
+              <section>
+                <span>Additions page</span>
+                <div data-additions-page={replica.id}>
+                  <span>Eagle Creek: A:1</span>
+                </div>
+              </section>
+              <section>
+                <span>Removals page</span>
+                <div data-removals-page={replica.id}><em>Empty</em></div>
+              </section>
+              <p>
+                <span>Highest tag number seen</span>
+                <strong data-highest-tag={replica.id}>1</strong>
+              </p>
+            </div>
+          )}
           <p class="notebook-label">Visible beacon list</p>
           <div class="member-list" data-member-list={replica.id}>
             {replica.values.length
@@ -88,7 +106,12 @@ function raceNote(replica: ReplicaId): string {
           </div>
           <p class="paper-note">
             <span>Checkpoint note</span>
-            <strong>{raceNote(replica.id)}</strong>
+            <strong
+              data-paper-note-text={replica.id}
+              data-initial-note={raceNote(replica.id)}
+            >
+              {raceNote(replica.id)}
+            </strong>
           </p>
           <div class="replica-actions">
             {kind === "g-set"
@@ -318,6 +341,43 @@ function raceNote(replica: ReplicaId): string {
     font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 650;
+  }
+
+  .or-set-pages {
+    display: grid;
+    margin-top: var(--space-4);
+    gap: var(--space-2);
+    font-family: var(--font-ui);
+  }
+
+  .or-set-pages section,
+  .or-set-pages > p {
+    display: grid;
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 22%, transparent);
+    gap: var(--space-1);
+  }
+
+  .or-set-pages section > span,
+  .or-set-pages > p span {
+    color: color-mix(in oklch, var(--clear) 68%, transparent);
+    font-size: 0.7rem;
+  }
+
+  .or-set-pages section div {
+    display: grid;
+    gap: var(--space-1);
+    font: 700 0.72rem/1.4 var(--font-data);
+  }
+
+  .or-set-pages section div span,
+  .or-set-pages > p strong {
+    color: var(--signal);
+  }
+
+  .or-set-pages section div em {
+    color: color-mix(in oklch, var(--clear) 58%, transparent);
   }
 
   .member-list {

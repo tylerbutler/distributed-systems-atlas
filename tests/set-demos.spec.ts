@@ -52,6 +52,22 @@ for (const example of [
       );
     }
     await expect(demo.locator("[data-evidence]")).toContainText(example.evidence);
+    if (example.testId === "or-set-demo") {
+      await expect(demo.locator("[data-additions-page] span")).toHaveText([
+        "Eagle Creek: B:2",
+        "Eagle Creek: B:2",
+        "Eagle Creek: B:2",
+      ]);
+      await expect(demo.locator("[data-removals-page] span")).toHaveText([
+        "Eagle Creek: A:1",
+        "Eagle Creek: A:1",
+        "Eagle Creek: A:1",
+      ]);
+      await expect(demo.locator("[data-highest-tag]")).toHaveText(["2", "2", "2"]);
+      await expect(demo.locator("[data-deliveries]")).toContainText(
+        "Bob reported Eagle Creek as B:2",
+      );
+    }
     await expect(race).toBeFocused();
   });
 }
@@ -84,6 +100,28 @@ test("set notebooks update after the shared record arrives", async ({ page }) =>
 
   await expect(demo.locator("[data-member-list] span")).toHaveCount(3, {
     timeout: 10_000,
+  });
+
+  test("OR-set additions receive tags automatically", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/structures/observed-remove-set/");
+    const demo = page.getByTestId("or-set-demo");
+
+    await expect(demo.locator("[data-additions-page]").first()).toContainText(
+      "Eagle Creek: A:1",
+    );
+    await demo.getByRole("button", { name: "Install" }).nth(1).click();
+    await expect(demo.locator("[data-deliveries]")).toContainText(
+      "Bob reported Eagle Creek as B:2",
+    );
+    await expect(demo.locator("[data-additions-page] span")).toHaveText([
+      "Eagle Creek: A:1",
+      "Eagle Creek: B:2",
+      "Eagle Creek: A:1",
+      "Eagle Creek: B:2",
+      "Eagle Creek: A:1",
+      "Eagle Creek: B:2",
+    ]);
   });
 });
 

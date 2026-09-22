@@ -2,7 +2,6 @@ import {
   createSetDemo,
   deliverSetDemoOperations,
   presentSetDemo,
-  setDemoRaceOperations,
   setDemoUserName,
   stageSetDemoRace,
   updateSetReplica,
@@ -29,7 +28,27 @@ function isReplicaId(value: string): value is ReplicaId {
 }
 
 function operationLabel(operation: SetDemoOperation): string {
-  return `${operation.action === "add" ? "+" : "-"} ${operation.element}`;
+  if (operation.action === "add") {
+    return `+ ${operation.element}${operation.tag ? ` · ${operation.tag}` : ""}`;
+  }
+  return `- ${operation.element}${
+    operation.observedTags?.length
+      ? ` · ${operation.observedTags.join(", ")}`
+      : ""
+  }`;
+}
+
+function noteLabel(operation: SetDemoOperation): string {
+  if (operation.action === "add") {
+    return `Additions page: ${operation.element}${
+      operation.tag ? ` as ${operation.tag}` : ""
+    }`;
+  }
+  return `Removals page: ${operation.element}${
+    operation.observedTags?.length
+      ? ` (${operation.observedTags.join(", ")})`
+      : ""
+  }`;
 }
 
 class SetStructureDemoElement extends HTMLElement {
@@ -53,8 +72,7 @@ class SetStructureDemoElement extends HTMLElement {
         const result = updateSetReplica(this.state, operation);
         this.apply(result, button);
         if (!result.ok) return;
-        this.renderReplica(presentSetDemo(this.state), operation.author);
-        this.queueOutbound(operation);
+        this.queueOutbound(result.state.queuedOperations.at(-1)!);
         void this.deliverQueued(button);
       });
     }
@@ -87,7 +105,7 @@ class SetStructureDemoElement extends HTMLElement {
     const staged = stageSetDemoRace(this.state);
     this.apply(staged, this.button("race"));
     if (!staged.ok) return;
-    for (const operation of setDemoRaceOperations(this.kind)) {
+    for (const operation of this.state.queuedOperations) {
       this.queueOutbound(operation);
     }
     await this.deliverQueued(this.button("race"));
@@ -230,6 +248,31 @@ class SetStructureDemoElement extends HTMLElement {
     list.replaceChildren(...(replica.values.length
       ? replica.values.map((value) => node("span", value))
       : [node("em", "Empty set")]));
+    const notebook = view.orSetNotebooks?.[replica.id];
+    if (notebook) {
+      this.renderNotebookEntries(
+        replica.id,
+        "additions",
+        notebook.additions.map(({ element, tag }) => `${element}: ${tag}`),
+      );
+      this.renderNotebookEntries(
+        replica.id,
+        "removals",
+        notebook.removals.map(({ element, tag }) => `${element}: ${tag}`),
+      );
+      this.querySelector<HTMLElement>(
+        `[data-highest-tag="${replica.id}"]`,
+      )!.textContent = String(notebook.highestTagNumber);
+    }
+    const latestNote = [...view.deliveries, ...this.state.queuedOperations]
+      .filter(({ author }) => author === replica.id)
+      .at(-1);
+    const note = this.querySelector<HTMLElement>(
+      `[data-paper-note-text="${replica.id}"]`,
+    )!;
+    note.textContent = latestNote
+      ? noteLabel(latestNote)
+      : note.dataset.initialNote ?? "";
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       view.canDeliver
         ? "Local view · record in transit"
@@ -261,7 +304,13 @@ class SetStructureDemoElement extends HTMLElement {
           .join(", ");
         return node(
           "li",
-          `${setDemoUserName(operation.author)} ${operation.action === "add" ? "reported" : "retired"} ${operation.element}; delivered to ${recipients}`,
+          `${setDemoUserName(operation.author)} ${
+            operation.action === "add" ? "reported" : "retired"
+          } ${operation.element}${
+            operation.tag ? ` as ${operation.tag}` : operation.observedTags?.length
+              ? ` by tag ${operation.observedTags.join(", ")}`
+              : ""
+          }; delivered to ${recipients}`,
         );
       })
       : [node("li", view.canDeliver
@@ -278,11 +327,16 @@ class SetStructureDemoElement extends HTMLElement {
         ? "Eagle Creek has a permanent removal tombstone."
         : "No retirement tombstone yet.";
     } else {
-      const replacementRace = view.deliveries.some(({ author, action }) =>
-        author === "B" && action === "add");
-      evidence.textContent = replacementRace
+      const notebook = view.orSetNotebooks?.A;
+      const liveTags = notebook?.additions.map(({ tag }) => tag) ?? [];
+      const removedTags = notebook?.removals.map(({ tag }) => tag) ?? [];
+      evidence.textContent = removedTags.includes("A:1") && liveTags.includes("B:2")
         ? "A:1 is removed. B:2 is live."
-        : "A:1 is the live old installation.";
+        : view.phase === "initial"
+          ? "A:1 is the live old installation."
+          : `Live tags: ${liveTags.join(", ") || "none"}. Removed tags: ${
+            removedTags.join(", ") || "none"
+          }.`;
     }
 
     const operationCount = new Set(view.deliveries.map(({ sequenceNumber }) => sequenceNumber)).size;
@@ -290,6 +344,20 @@ class SetStructureDemoElement extends HTMLElement {
       `${operationCount} ${operationCount === 1 ? "record" : "records"} shared`;
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     this.renderControls();
+  }
+
+  private renderNotebookEntries(
+    replicaId: ReplicaId,
+    page: "additions" | "removals",
+    entries: string[],
+  ): void {
+    const container = this.querySelector<HTMLElement>(
+      `[data-${page}-page="${replicaId}"]`,
+    );
+    if (!container) return;
+    container.replaceChildren(...(entries.length
+      ? entries.map((entry) => node("span", entry))
+      : [node("em", "Empty")]));
   }
 }
 
