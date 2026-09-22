@@ -73,6 +73,15 @@ a:hover {
   text-decoration-thickness: 2px;
 }
 
+dfn {
+  font-style: italic;
+  font-weight: 650;
+}
+
+dfn a {
+  color: var(--instrument);
+}
+
 :focus-visible {
   outline: 3px solid var(--focus-color);
   outline-offset: 4px;

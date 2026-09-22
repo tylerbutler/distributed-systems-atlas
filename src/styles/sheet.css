@@ -183,15 +183,6 @@
   margin-bottom: var(--space-5);
 }
 
-.sheet-body dfn {
-  font-style: italic;
-  font-weight: 650;
-}
-
-.sheet-body dfn a {
-  color: var(--instrument);
-}
-
 .sheet :is(.sheet-opening, .sheet-continuation) li + li {
   margin-top: var(--space-3);
 }

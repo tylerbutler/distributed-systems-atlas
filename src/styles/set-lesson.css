@@ -12,16 +12,6 @@
   font-size: 1.2rem;
 }
 
-:is(.set-lesson, .register-lesson) > section > p dfn {
-  color: var(--signal);
-  font-style: italic;
-  font-weight: 650;
-}
-
-:is(.set-lesson, .register-lesson) > section > p dfn a {
-  color: inherit;
-}
-
 :is(.set-lesson, .register-lesson) pre {
   padding: var(--space-4);
   overflow-x: auto;

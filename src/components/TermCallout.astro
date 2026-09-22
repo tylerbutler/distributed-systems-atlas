@@ -14,18 +14,20 @@ const { term, definition, inlineOnly = false } = Astro.props;
   class:list={["term-callout", inlineOnly && "term-callout-inline", inlineOnly && "sheet-term-note"]}
   aria-label={`${term} definition`}
 >
-  <p class="term-callout-name">
+  <p class="term-callout-label">Definition</p>
+  <p class="term-callout-copy">
     <dfn><a href={`/glossary/#${entryAnchor(term)}`}>{term}</a></dfn>
+    {" — "}
+    {definition}
   </p>
-  <p>{definition}</p>
 </aside>
 
 <style>
   .term-callout {
     display: grid;
-    grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 1fr);
-    gap: var(--space-4) var(--space-6);
-    align-items: baseline;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
     margin-block: var(--space-5);
     padding-block: var(--space-4);
     border-block: var(--rule-width) solid var(--line);
@@ -36,18 +38,22 @@ const { term, definition, inlineOnly = false } = Astro.props;
     margin: 0;
   }
 
-  .term-callout-name {
-    color: var(--instrument);
-    font-size: clamp(1.8rem, 2.5vw, 2.25rem);
-    font-weight: 650;
-    line-height: 1;
+  .term-callout-label {
+    padding: var(--space-1) var(--space-2);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
   }
 
-  .term-callout-name dfn {
-    font-weight: inherit;
+  .term-callout-copy dfn {
+    color: var(--instrument-deep);
+    font-style: normal;
+    font-weight: 700;
   }
 
-  .term-callout-name a {
+  .term-callout-copy a {
     color: inherit;
     text-decoration-thickness: var(--rule-width);
     text-underline-offset: 0.16em;
@@ -56,7 +62,10 @@ const { term, definition, inlineOnly = false } = Astro.props;
   @media (max-width: 34rem) {
     .term-callout {
       grid-template-columns: 1fr;
-      gap: var(--space-3);
+    }
+
+    .term-callout-label {
+      justify-self: start;
     }
   }
 
