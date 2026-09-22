@@ -143,22 +143,25 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
         );
       })}
 
-      <section class="map-relay" data-relay-node aria-label="Map message relay">
-        <span>{kind === "shared-map" ? "Ranger sequencer" : "Trail exchange"}</span>
-        <strong>
-          {kind === "shared-map"
-            ? "Server order selects writes"
-            : kind === "lww-map"
-              ? "Per-key timestamps select writes"
-              : "Identity metadata retained after merge"}
-        </strong>
-        <output data-message-count>0 operations shared</output>
-      </section>
-    </div>
-
-    <div class="map-evidence">
-      <p><span>Mechanism evidence</span><strong data-evidence>No race delivered yet.</strong></p>
-      <ol data-history aria-label="Map operation log" reversed><li>No operations shared yet.</li></ol>
+      <div class="relay-channel">
+        <section class="map-relay" data-relay-node aria-label="Map message relay">
+          <span>{kind === "shared-map" ? "Ranger sequencer" : "Trail exchange"}</span>
+          <strong>
+            {kind === "shared-map"
+              ? "Server order selects writes"
+              : kind === "lww-map"
+                ? "Per-key timestamps select writes"
+                : "Identity metadata retained after merge"}
+          </strong>
+          <output data-message-count>0 operations shared</output>
+        </section>
+        <div class="map-evidence">
+          <p><span>Mechanism evidence</span><strong data-evidence>No race delivered yet.</strong></p>
+          <ol data-history aria-label="Map operation log, newest first" reversed>
+            <li>No operations shared yet.</li>
+          </ol>
+        </div>
+      </div>
     </div>
 
     <DemoTransportControls />

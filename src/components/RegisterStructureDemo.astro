@@ -98,31 +98,32 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
         </section>
       ))}
 
-      <section class="register-relay" data-relay-node aria-label="Register message relay">
-        <span>{kind === "mv-register" ? "Trail exchange" : "Ranger sequencer"}</span>
-        <strong>
-          {kind === "mv-register"
-            ? "Does not choose by arrival order"
-            : "Assigns sequence numbers"}
-        </strong>
-        <output data-message-count>0 writes shared</output>
-      </section>
-    </div>
-
-    <div class="register-evidence">
-      <p>
-        <span>Decision evidence</span>
-        <strong data-evidence>
-          {kind === "lww-register"
-            ? "No sequenced write yet."
-            : kind === "mv-register"
-              ? "No alternatives yet."
-              : "No sequenced versions yet."}
-        </strong>
-      </p>
-      <ol data-history aria-label="Register write log" reversed>
-        <li>No writes shared yet.</li>
-      </ol>
+      <div class="relay-channel">
+        <section class="register-relay" data-relay-node aria-label="Register message relay">
+          <span>{kind === "mv-register" ? "Trail exchange" : "Ranger sequencer"}</span>
+          <strong>
+            {kind === "mv-register"
+              ? "Does not choose by arrival order"
+              : "Assigns sequence numbers"}
+          </strong>
+          <output data-message-count>0 writes shared</output>
+        </section>
+        <div class="register-evidence">
+          <p>
+            <span>Decision evidence</span>
+            <strong data-evidence>
+              {kind === "lww-register"
+                ? "No sequenced write yet."
+                : kind === "mv-register"
+                  ? "No alternatives yet."
+                  : "No sequenced versions yet."}
+            </strong>
+          </p>
+          <ol data-history aria-label="Register write log, newest first" reversed>
+            <li>No writes shared yet.</li>
+          </ol>
+        </div>
+      </div>
     </div>
 
     <DemoTransportControls />
@@ -363,9 +364,18 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     background: var(--signal);
   }
 
-  .register-relay {
+  .relay-channel {
     grid-area: relay;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .register-relay {
     display: grid;
+    width: 100%;
     min-height: 9rem;
     padding: var(--space-4);
     border: var(--rule-width) dashed var(--signal);
@@ -386,10 +396,9 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
 
   .register-evidence {
     display: grid;
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-    gap: var(--space-5);
-    padding-block: var(--space-4);
-    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+    width: 100%;
+    gap: var(--space-3);
+    text-align: center;
   }
 
   .register-evidence :is(p, ol) {
@@ -410,10 +419,21 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
   }
 
   .register-evidence ol {
-    max-height: 8rem;
-    padding-left: 1.25rem;
-    overflow: auto;
+    display: flex;
+    width: 100%;
+    min-height: 10rem;
+    max-height: 12.5rem;
+    padding: 0;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
     font: 0.75rem/1.45 var(--font-data);
+    mask-image: linear-gradient(black 58%, transparent 100%);
+  }
+
+  .register-evidence ol :global(li) {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
   }
 
   .register-controls {
@@ -447,18 +467,22 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
   }
 
   @media (max-width: 760px) {
-    .register-heading,
-    .register-evidence {
+    .register-heading {
       grid-template-columns: 1fr;
     }
 
     .register-network {
       grid-template-columns: 1fr;
-      grid-template-areas: "a" "b" "c" "relay";
+      grid-template-areas: "a" "relay" "b" "c";
     }
 
     .replica-c {
       width: auto;
+    }
+
+    .register-evidence ol {
+      min-height: 6rem;
+      max-height: 8rem;
     }
 
     .register-controls {

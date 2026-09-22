@@ -185,9 +185,18 @@ map-structure-demo {
   background: var(--signal);
 }
 
-.map-relay {
+.relay-channel {
   grid-area: relay;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.map-relay {
   display: grid;
+  width: 100%;
   min-height: 9rem;
   padding: var(--space-4);
   border: var(--rule-width) dashed var(--signal);
@@ -206,10 +215,9 @@ map-structure-demo {
 
 .map-evidence {
   display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: var(--space-5);
-  padding-block: var(--space-4);
-  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, transparent);
+  width: 100%;
+  gap: var(--space-3);
+  text-align: center;
 }
 
 .map-evidence :is(p, ol) { margin: 0; }
@@ -225,10 +233,21 @@ map-structure-demo {
   color: var(--signal);
 }
 .map-evidence ol {
-  max-height: 8rem;
-  padding-left: 1.25rem;
-  overflow: auto;
+  display: flex;
+  width: 100%;
+  min-height: 10rem;
+  max-height: 12.5rem;
+  padding: 0;
+  overflow-y: auto;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
   font: 0.75rem/1.45 var(--font-data);
+  mask-image: linear-gradient(black 58%, transparent 100%);
+}
+
+.map-evidence ol li {
+  color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
 }
 
 .map-controls {
@@ -256,13 +275,16 @@ map-structure-demo {
 .map-error { color: var(--signal); }
 
 @media (max-width: 760px) {
-  .map-heading,
-  .map-evidence { grid-template-columns: 1fr; }
+  .map-heading { grid-template-columns: 1fr; }
   .map-network {
     grid-template-columns: 1fr;
-    grid-template-areas: "a" "b" "c" "relay";
+    grid-template-areas: "a" "relay" "b" "c";
   }
   .replica-c { width: auto; }
+  .map-evidence ol {
+    min-height: 6rem;
+    max-height: 8rem;
+  }
   .map-controls {
     align-items: stretch;
     flex-direction: column;
