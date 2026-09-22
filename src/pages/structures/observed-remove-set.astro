@@ -152,10 +152,12 @@ const notebookCheckpoints: Array<{
         definition="A unique event identifier made from a replica ID and a local counter."
       />
       <p>
-        Before the stations lose contact, Bob receives Alice's
-        <code>A:1</code> note. He copies it into his additions page and records
-        <code>1</code> as the highest dot counter seen. Losing contact stops new
-        notes; it does not erase what Bob already wrote.
+        Before the stations lose contact, both Bob and Carol receive Alice's
+        <code>A:1</code> note. They copy it into their additions pages and
+        record <code>1</code> as the highest dot counter seen. Carol makes no
+        later change, so her notebook remains a stale copy of that original
+        state. Losing contact stops new notes; it does not erase what anyone
+        already wrote.
       </p>
       <p>
         Bob then adds the replacement while his station and Alice's station

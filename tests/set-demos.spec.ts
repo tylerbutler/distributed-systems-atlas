@@ -184,7 +184,7 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           .getByRole("link", { name: "dot" }))
           .toHaveAttribute("href", "/glossary/#dot");
         await expect(page.getByText(
-          "Losing contact stops new notes; it does not erase what Bob already wrote.",
+          "Carol makes no later change, so her notebook remains a stale copy of that original state.",
           { exact: true },
         )).toBeVisible();
         await expect(page.getByText(

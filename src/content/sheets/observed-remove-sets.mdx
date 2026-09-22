@@ -38,16 +38,17 @@ seen, but it could not remove the old installation. A TwoPSet could retire it,
 but then Alice could not add its replacement under the same name. The
 observed-remove set must support the full story.
 
-Alice first sends the old installation's `A:1` note to Bob. Bob copies it into
-his notebook and records `1` as the highest dot counter seen. Alice then
-removes the old installation while Bob reports its replacement after their
-stations lose contact. Losing contact blocks new notes; it does not erase
-`A:1` from Bob's notebook. Carol asks what their shared list must show after
-delivery of the delayed records. The ranger needs that final list but does not
-sequence their updates. The lab isolates Alice's and Bob's conflicting
-replicas: Bob eventually receives a stale copy of the original addition. You
-need to preserve Bob's replacement without restoring the installation Alice
-removed.
+Alice first sends the old installation's `A:1` note to Bob and Carol. Both
+copy it into their notebooks and record `1` as the highest dot counter seen.
+Alice then removes the old installation while Bob reports its replacement
+after their stations lose contact. Carol makes no later change, so her
+notebook remains a stale copy containing `A:1`. Losing contact blocks new
+notes; it does not erase what anyone already wrote. Carol asks what their
+shared list must show after delivery of the delayed records. The ranger needs
+that final list but does not sequence their updates. The lab isolates Alice's
+and Bob's conflicting replicas: Bob eventually receives a stale copy of the
+original addition. You need to preserve Bob's replacement without restoring
+the installation Alice removed.
 
 The visible string cannot distinguish those cases. Both messages contain
 `beacon`. Give each addition a unique <dfn><a href="/glossary/#dot">dot</a></dfn>,
