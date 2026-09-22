@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import LessonIllustration from "../../components/LessonIllustration.astro";
 ---
 
 <BaseLayout
@@ -17,6 +18,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         rules preserve enough evidence to remain safe when updates are delayed,
         repeated, or reordered.
       </p>
+      <LessonIllustration id="structures-sets" />
     </header>
 
     <section aria-labelledby="g-set-title">
@@ -165,7 +167,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     margin-bottom: var(--space-7);
   }
 
-  .page-intro > p:last-child {
+  .page-intro > p:last-of-type {
     font-size: 1.2rem;
   }
 

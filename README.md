@@ -29,6 +29,29 @@ LWWMap, OR-map, SharedDirectory, SharedSequence, SharedText, Claims,
 OrderedCollection, TaskManager, PactMap, JsonOt, and SharedRichText lessons,
 plus the seven family overview pages, atlas index, glossary, and bibliography.
 
+## Lesson illustrations
+
+[`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the
+pen-and-ink art direction and 35 scene prompts: one for each individual
+structure lesson, family overview, and published reference sheet.
+
+Eight authored SVGs appear in the introductions to the counters and sets
+overviews and their six individual lessons. Open
+[`art/counters-and-sets.html`](art/counters-and-sets.html)
+in a browser to see the collection. Each image is self-contained and editable,
+with no image-generation service, scripts, fonts, or external assets required.
+
+The SVGs live in `public/illustrations/lessons/<id>.svg`. Completed catalog
+entries have an `asset` path and `alt` text describing the drawing. The other
+27 entries remain scene briefs. `artDirection.svgAdaptation` describes how
+the original scenes become simpler, prop-led drawings; precise numerical
+examples stay in the lesson text and diagrams.
+
+`src/components/LessonIllustration.astro` reads each asset and its alt text
+from the catalog. Explicit image dimensions reserve space before loading, and
+the artwork scales to the reading column without client JavaScript. Existing
+instructional diagrams and interactive labs remain unchanged.
+
 ## Local development
 
 Use a Node.js version supported by Astro 7 and the pnpm version in

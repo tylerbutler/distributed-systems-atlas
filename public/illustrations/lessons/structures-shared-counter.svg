@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="shared-counter-title shared-counter-desc">
+  <title id="shared-counter-title">SharedCounter: the ranger's ordered log</title>
+  <desc id="shared-counter-desc">Incoming envelopes sit beside a mechanical stamp. A continuous paper log keeps signed operations in separate rows with identity marks, and a clipped stack holds outgoing copies.</desc>
+  <defs>
+    <pattern id="shared-counter-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M108 443L575 497L795 446M126 463L431 499"/>
+  <g transform="rotate(-12 198 370)">
+    <path class="light" d="M124 324L280 338L277 427L121 413Z"/>
+    <path class="paper" d="M119 307L275 321L272 410L116 396Z"/>
+    <path class="ink" d="M119 307L196 365L275 321M116 396L171 347M272 410L220 349"/>
+    <circle class="paper" cx="196" cy="365" r="13"/>
+    <circle cx="196" cy="365" r="5" fill="#ebcd42"/>
+  </g>
+  <g transform="rotate(8 274 243)">
+    <path class="light" d="M208 263L312 251L349 271L245 286Z"/>
+    <path d="M208 263L245 286L349 271V286L245 301L208 277Z" fill="url(#shared-counter-hatch)" stroke="#264653" stroke-width="2.3"/>
+    <path class="paper" d="M247 252L244 212Q223 210 225 195L228 158Q230 141 256 140Q282 140 287 156L291 191Q293 207 272 211L274 249Z"/>
+    <path class="fine" d="M237 157Q250 151 273 157M236 190Q249 198 280 191M254 216V242"/>
+    <path class="paper" d="M197 290L248 317L347 301L350 323L249 339L198 312Z"/>
+    <path class="ink" d="M198 300L249 328L348 312"/>
+    <path class="fine" d="M263 147Q285 122 316 134"/>
+  </g>
+  <g>
+    <path class="light" d="M409 159Q406 129 434 123L568 131Q600 135 594 166L581 217L422 205Z"/>
+    <path d="M428 145L579 153L577 185L424 176Z" fill="url(#shared-counter-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M425 166L578 175L568 432Q566 450 585 452L622 451Q634 479 607 489L429 479Q410 476 413 451Z"/>
+    <path class="ink" d="M568 432Q563 465 584 469L625 466"/>
+    <path class="fine" d="M428 193L568 202M426 263L565 273M423 333L562 343M420 403L559 413"/>
+    <path class="ink" d="M442 215L458 216L457 244L441 243ZM439 287L455 288L454 315L438 314ZM436 357L452 358L451 385L435 384Z"/>
+    <path class="ink" d="M489 218V242M477 230L501 232M475 302L499 304M485 360V384M473 372L497 374"/>
+    <path class="fine" d="M516 229L550 232M512 301L546 304M509 371L543 374M437 437L537 445"/>
+    <path d="M549 177L565 178L563 213L556 205L548 211Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+  </g>
+  <g transform="rotate(9 704 365)">
+    <path class="light" d="M641 293H763V449H641Z"/>
+    <path class="paper" d="M633 280H755V436H633Z"/>
+    <path class="paper" d="M625 268H747V424H625Z"/>
+    <path class="ink" d="M659 268V255Q659 242 674 242H701Q714 242 714 255V273"/>
+    <path class="fine" d="M642 305H729M642 337H729M642 369H729M642 401H710"/>
+    <path class="ink" d="M652 288H662M652 320H662M652 352H662"/>
+  </g>
+  <path class="fine" d="M713 190L744 172L779 191M713 190V231L779 232V191L746 213Z"/>
+</svg>

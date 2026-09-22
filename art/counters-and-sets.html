@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Counters and sets - Atlas illustration sheet</title>
+    <style>
+      :root { color-scheme: light; color: #264653; background: #f0f5f6; font-family: system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { max-width: 1320px; margin: 0 auto; padding: 48px 32px 64px; }
+      header { max-width: 720px; margin-bottom: 48px; }
+      h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; letter-spacing: -.035em; }
+      h2 { margin: 0 0 24px; font-size: 1.5rem; }
+      p { margin: 0; line-height: 1.65; }
+      header p { color: #45616c; }
+      section + section { margin-top: 56px; }
+      .sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+      figure { margin: 0; min-width: 0; }
+      img { display: block; width: 100%; height: auto; background: white; }
+      figcaption { padding-top: 14px; border-top: 1px solid #a7bac1; }
+      figcaption a { display: inline-block; margin-bottom: 4px; color: #264653; font-size: 1.125rem; font-weight: 650; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+      figcaption a:hover { text-decoration-thickness: 2px; }
+      figcaption p { max-width: 58ch; color: #45616c; font-size: .925rem; }
+      a:focus-visible { outline: 3px solid #264653; outline-offset: 5px; background: #ebcd42; }
+      ::selection { color: #264653; background: #ebcd42; }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid #a7bac1; color: #45616c; font-size: .875rem; }
+      @media (max-width: 640px) {
+        body { padding: 32px 20px 48px; }
+        header { margin-bottom: 36px; }
+        .sheet { grid-template-columns: 1fr; gap: 28px; }
+      }
+      @media print {
+        body { padding: 0; }
+        figure { break-inside: avoid; }
+        section + section { break-before: page; }
+        a { text-decoration: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Counters &amp; sets</h1>
+      <p>Line-art illustrations for Distributed Systems Atlas. Open a title to inspect the standalone SVG. These are lesson-opening vignettes, not diagrams of a particular simulation frame.</p>
+    </header>
+    <main>
+      <section aria-labelledby="counters">
+        <h2 id="counters">Counters</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-counters.svg" width="900" height="600" alt="Three kinds of field record sit beside binoculars: an open notebook, a paired-page ledger, and a curled sequence log.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-counters.svg">Counter family</a>
+              <p>Three ways to record a count, with a different rule behind each.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-g-counter.svg" width="900" height="600" alt="An open birdwatching notebook and binoculars beside a trail checkpoint box holding a folded message.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-g-counter.svg">G-counter</a>
+              <p>Independent records travel as checkpoint notes. A repeated note is not another sighting.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-pn-counter.svg" width="900" height="600" alt="A two-page notebook preserves sightings and corrections beside two matching bird-report slips.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-pn-counter.svg">PN-counter</a>
+              <p>Keep the sightings. Record the correction on a separate page.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-counter.svg" width="900" height="600" alt="Envelopes, a mechanical stamp, an ordered paper log, and a stack of outgoing copies on a station desk.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-shared-counter.svg">SharedCounter</a>
+              <p>The ranger's log gives each signed operation a stable place in the sequence.</p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="sets">
+        <h2 id="sets">Sets</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-sets.svg" width="900" height="600" alt="A survey notebook beside a dismantled beacon and an upright replacement with a different identity tag.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-sets.svg">Set family</a>
+              <p>Observations, retirements, and replacements need different membership rules.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-g-set.svg" width="900" height="600" alt="A beacon beside a notebook with distinct beacon sketches and a loose copy of one existing report.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-g-set.svg">GSet</a>
+              <p>Keep every distinct member, not every copy of its report.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-two-p-set.svg" width="900" height="600" alt="An open folio keeps a beacon sketch and retirement tag beside a dismantled beacon and empty mount.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-two-p-set.svg">TwoPSet</a>
+              <p>The beacon is gone. Its retirement record stays.</p>
+            </figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-observed-remove-set.svg" width="900" height="600" alt="A retired beacon has a rounded tag, while an upright replacement has a diamond tag; the notebook retains separate records.">
+            <figcaption>
+              <a href="../public/illustrations/lessons/structures-observed-remove-set.svg">Observed-remove set</a>
+              <p>Retire the identity you observed without erasing an unseen replacement.</p>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p>Eight self-contained SVGs. Shared 900 &times; 600 viewBox, mineral-blue ink, sparse hatching, and sulfur-yellow record marks. No fonts, scripts, or external image dependencies. The matching lesson introductions use these assets; instructional diagrams and labs remain unchanged.</p>
+    </footer>
+  </body>
+</html>

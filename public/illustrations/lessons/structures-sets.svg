@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="sets-title sets-desc">
+  <title id="sets-title">Sets: what stays in the survey</title>
+  <desc id="sets-desc">A notebook preserves beacon observations beside a dismantled beacon and an upright replacement. The two beacons carry different identity tags.</desc>
+  <defs>
+    <pattern id="sets-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="sets-beacon" stroke="#264653" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M-32 150L-44 158V170Q0 185 44 170V158L32 150Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <ellipse cx="0" cy="156" rx="39" ry="11" fill="white" stroke-width="2.6"/>
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#sets-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M102 448L606 501L798 454M126 469L411 500"/>
+  <use href="#sets-beacon" transform="translate(670 128) scale(1.3)"/>
+  <path class="ink" d="M704 255Q754 258 748 290"/>
+  <path d="M748 282L773 307L748 341L724 309Z" fill="#fff" stroke="#264653" stroke-width="2.4"/>
+  <path d="M748 293L764 309L748 330L733 310Z" fill="#ebcd42"/>
+  <circle class="ink" cx="748" cy="297" r="3"/>
+  <g transform="rotate(-9 385 355)">
+    <path class="light" d="M264 234L385 254L521 231L525 450L386 482L257 454Z"/>
+    <path d="M259 443L386 469L525 438V450L386 482L257 454Z" fill="url(#sets-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M270 216Q329 217 385 246Q454 216 522 218L525 438Q452 443 386 469Q324 439 259 443Z"/>
+    <path class="ink" d="M385 246L386 469"/>
+    <use href="#sets-beacon" transform="translate(320 263) scale(.48)"/>
+    <path class="fine" d="M282 371L363 387M281 389L363 405M280 407L347 420"/>
+    <path class="light" d="M404 345L504 327V421L405 445Z"/>
+    <path class="ink" d="M404 345L452 367L504 327"/>
+    <path class="paper" d="M428 355L422 290Q422 277 437 272L463 268Q479 267 481 280L485 345L452 360Z"/>
+    <circle class="ink" cx="449" cy="287" r="6"/>
+    <path class="fine" d="M440 314L469 308M442 326L470 321"/>
+  </g>
+  <use href="#sets-beacon" transform="translate(127 327) rotate(-66) scale(.87)"/>
+  <path class="ink" d="M216 335Q236 357 215 376"/>
+  <path class="paper" d="M212 371Q224 370 230 379L241 417Q228 431 212 423L201 386Q199 378 212 371Z"/>
+  <circle class="ink" cx="215" cy="384" r="5"/>
+  <path class="fine" d="M214 401L229 398"/>
+  <path class="fine" d="M145 246L160 207M155 221L142 210M154 225L175 215M749 431L757 405M753 419L769 413"/>
+</svg>

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="or-set-title or-set-desc">
+  <title id="or-set-title">Observed-remove set: a replacement has its own identity</title>
+  <desc id="or-set-desc">A retired beacon lies beside its retained rounded identity tag. An upright replacement carries a diamond-shaped tag. The notebook keeps the old retirement evidence and a separate new report.</desc>
+  <defs>
+    <pattern id="or-set-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="or-set-beacon" stroke="#264653" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-32 150L-44 158V170Q0 185 44 170V158L32 150Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <ellipse cx="0" cy="156" rx="39" ry="11" fill="white" stroke-width="2.6"/>
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#or-set-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M110 468Q242 455 371 479M393 503Q572 465 783 482"/>
+  <path class="fine" d="M749 461L758 435M755 445L770 438M758 457L776 447M141 449L130 431M141 442L152 430"/>
+  <use href="#or-set-beacon" transform="translate(145 338) rotate(-67) scale(.96)"/>
+  <path class="ink" d="M239 345Q281 344 280 378"/>
+  <path class="paper" d="M264 377Q280 368 292 380L302 423Q286 436 271 428L259 390Q257 382 264 377Z"/>
+  <circle class="ink" cx="276" cy="389" r="5"/>
+  <path class="fine" d="M273 412L291 407"/>
+  <g transform="rotate(-4 447 374)">
+    <path class="light" d="M321 258L447 277L575 251L578 469L447 502L315 477Z"/>
+    <path d="M318 464L447 489L578 456V469L447 502L315 477Z" fill="url(#or-set-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M329 243Q389 243 447 268Q511 238 574 239L578 456Q511 460 447 489Q384 463 318 464Z"/>
+    <path class="ink" d="M447 268V489"/>
+    <path class="light" d="M338 354L427 369V451L334 434Z"/>
+    <path class="ink" d="M338 354L381 392L427 369"/>
+    <path class="paper" d="M358 374L357 307Q357 292 371 291L391 294Q406 296 405 311L405 377L381 385Z"/>
+    <circle class="ink" cx="381" cy="311" r="6"/>
+    <path class="fine" d="M369 337L394 341M369 350L394 354M351 418L410 429"/>
+    <path class="paper" d="M468 297L547 279L552 424L472 446Z"/>
+    <use href="#or-set-beacon" transform="translate(510 309) scale(.42)"/>
+    <path class="fine" d="M484 404L538 390M484 420L532 408"/>
+    <path d="M534 284L543 294L535 306L526 297Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+  </g>
+  <use href="#or-set-beacon" transform="translate(675 143) scale(1.72)"/>
+  <path class="ink" d="M717 317Q760 302 771 341"/>
+  <path class="paper" d="M768 331L798 364L770 413L737 374Z"/>
+  <path d="M768 345L788 366L770 399L747 374Z" fill="#ebcd42"/>
+  <circle class="ink" cx="768" cy="350" r="5"/>
+  <path class="fine" d="M758 376L775 369M762 387L778 380"/>
+  <path class="fine" d="M595 144L582 134M607 126L602 112M729 145L741 135"/>
+</svg>

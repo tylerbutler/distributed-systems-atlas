@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import LessonIllustration from "../../components/LessonIllustration.astro";
 ---
 
 <BaseLayout
@@ -17,6 +18,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         Counter designs differ in which changes they permit and what they must
         remember so repeated or reordered messages stay safe.
       </p>
+      <LessonIllustration id="structures-counters" />
     </header>
 
     <section aria-labelledby="g-counter-title">
@@ -129,7 +131,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     margin-bottom: var(--space-7);
   }
 
-  .page-intro > p:last-child {
+  .page-intro > p:last-of-type {
     font-size: 1.2rem;
   }
 

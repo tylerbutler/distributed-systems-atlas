@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="two-p-set-title two-p-set-desc">
+  <title id="two-p-set-title">TwoPSet: retirement leaves a record</title>
+  <desc id="two-p-set-desc">An open folio retains the original beacon sketch and its retirement tag in separate sections. The beacon lies dismantled beside an empty mounting base.</desc>
+  <defs>
+    <pattern id="two-p-set-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="two-p-set-beacon" stroke="#264653" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#two-p-set-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M105 476L497 503M534 495Q672 461 793 473M650 287Q709 275 769 286"/>
+  <g transform="translate(686 252)">
+    <path class="light" d="M-43 0L-51 16V28Q0 47 51 28V16L43 0Z"/>
+    <ellipse class="paper" cx="0" cy="13" rx="49" ry="16"/>
+    <ellipse class="ink" cx="0" cy="11" rx="24" ry="8"/>
+    <path class="ink" d="M-34 9V-8M34 9V-8"/>
+    <path class="fine" d="M-39-8H-29M29-8H39M-41 31L-28 36M-24 38L-13 41"/>
+  </g>
+  <g transform="rotate(-7 342 355)">
+    <path class="light" d="M134 215L340 243L551 217L551 470L342 505L128 475Z"/>
+    <path d="M130 461L342 491L551 457V470L342 505L128 475Z" fill="url(#two-p-set-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M144 198Q244 201 340 234Q441 200 550 203L551 457Q442 458 342 491Q237 456 130 461Z"/>
+    <path class="ink" d="M340 234L342 491"/>
+    <use href="#two-p-set-beacon" transform="translate(237 259) scale(.66)"/>
+    <circle class="ink" cx="187" cy="246" r="8"/>
+    <path class="fine" d="M164 395Q240 392 318 417M163 416Q240 413 318 438M162 437L282 458"/>
+    <path class="light" d="M366 349L526 320V430L367 465Z"/>
+    <path class="ink" d="M366 349L446 380L526 320"/>
+    <path class="paper" d="M404 362L397 269Q395 250 416 242L454 236Q476 234 480 254L487 349L446 373Z"/>
+    <circle class="ink" cx="437" cy="258" r="10"/>
+    <path class="ink" d="M426 284L449 280M427 300L462 294"/>
+    <path class="fine" d="M429 318L462 312M429 333L464 327"/>
+    <path d="M502 338L518 335V385L510 378L502 389Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+    <path class="fine" d="M379 419L399 414M486 401L511 394M383 441L512 412"/>
+  </g>
+  <use href="#two-p-set-beacon" transform="translate(599 425) rotate(-72) scale(1.13)"/>
+  <path class="fine" d="M582 467L616 471M689 450L767 438"/>
+  <path class="ink" d="M675 146C655 141 647 160 657 171C667 185 688 173 691 159C699 143 723 152 718 169"/>
+  <path class="paper" d="M703 174L727 169L749 207L723 224L700 190Z"/>
+  <circle class="ink" cx="716" cy="183" r="4"/>
+  <path class="fine" d="M716 202L731 193"/>
+</svg>

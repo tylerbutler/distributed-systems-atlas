@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="counters-title counters-desc">
+  <title id="counters-title">Counters: three ways to keep a field record</title>
+  <desc id="counters-desc">An open notebook, a paired-page ledger, and a curled sequence log sit on a field table with binoculars. These are alternative ways to record bird counts.</desc>
+  <defs>
+    <pattern id="counters-hatch" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V9" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="counters-bird" fill="white" stroke="#264653" stroke-width="2.4" stroke-linejoin="round">
+      <path d="M0 23C17 20 24 6 38 0L29 24C46 13 58 16 74 24C56 24 47 32 36 33L20 44L25 32C13 31 8 27 0 23Z"/>
+      <path d="M29 24L36 33" fill="none"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M100 455L741 490L812 440M125 476L645 505"/>
+  <use href="#counters-bird" transform="translate(182 112) rotate(-13) scale(.68)"/>
+  <use href="#counters-bird" transform="translate(282 91) rotate(10) scale(.45)"/>
+  <use href="#counters-bird" transform="translate(350 132) rotate(-4) scale(.38)"/>
+  <g transform="translate(106 181) rotate(-20)">
+    <path class="light" d="M8 14L0 91Q20 104 42 91L34 14ZM68 14L60 91Q82 104 103 91L94 14Z"/>
+    <path class="paper" d="M8 14Q20 6 34 14V36Q20 43 7 36ZM68 14Q80 6 94 14V36Q81 43 67 36Z"/>
+    <path class="ink" d="M34 40Q50 33 65 40M38 59H63"/>
+    <ellipse class="paper" cx="21" cy="91" rx="21" ry="11"/>
+    <ellipse class="paper" cx="81" cy="91" rx="21" ry="11"/>
+    <ellipse class="fine" cx="21" cy="91" rx="13" ry="6"/>
+    <ellipse class="fine" cx="81" cy="91" rx="13" ry="6"/>
+    <path class="fine" d="M94 19C150-5 170 46 130 80"/>
+  </g>
+  <g transform="rotate(-8 274 376)">
+    <path class="light" d="M150 293L271 306L375 284L369 457L267 480L149 461Z"/>
+    <path d="M149 449L267 466L369 444V457L267 480L149 461Z" fill="url(#counters-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M156 286Q216 276 271 306Q319 281 378 278L369 444Q316 443 267 466Q211 441 149 449Z"/>
+    <path class="ink" d="M271 306L267 466"/>
+    <path class="fine" d="M174 323Q215 318 247 334M172 345Q215 340 247 356M171 367Q213 362 245 377M170 389Q212 384 244 399M169 411Q211 406 243 421M290 331L351 315M290 356L351 340M288 381L349 365M287 406L348 390M285 431L346 415"/>
+    <circle cx="186" cy="301" r="7" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+    <path class="fine" d="M156 455L257 471"/>
+  </g>
+  <g transform="rotate(6 490 338)">
+    <path class="light" d="M399 212L477 225L578 208L581 441L481 459L398 445Z"/>
+    <path d="M398 433L481 446L581 428V441L481 459L398 445Z" fill="url(#counters-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M401 202Q442 199 477 217Q527 197 576 199L581 428Q527 429 481 446Q441 429 398 433Z"/>
+    <path class="ink" d="M477 217L481 446"/>
+    <path class="fine" d="M418 270L458 278M418 295L458 303M418 320L458 328M418 345L458 353M418 370L458 378M418 395L458 403M500 271L557 258M500 296L557 283M500 321L557 308M500 346L557 333M500 371L557 358M500 396L557 383"/>
+    <path class="ink" d="M433 228V246M424 237H442M516 229H537"/>
+  </g>
+  <g>
+    <path class="light" d="M633 191Q623 163 644 156L744 164Q765 169 758 191L746 228L640 219Z"/>
+    <path d="M645 169L748 178L746 203L640 196Z" fill="url(#counters-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M640 189L738 197L729 410Q726 436 748 434L772 432Q782 462 757 470L639 461Q618 458 622 438Z"/>
+    <path class="ink" d="M729 410Q724 444 742 449L769 448M644 219L732 226M641 276L730 283M637 333L727 340M634 390L724 397"/>
+    <path class="fine" d="M665 244L715 248M662 303L712 307M659 362L709 366M655 417L702 421"/>
+    <circle class="ink" cx="650" cy="244" r="5"/>
+    <circle class="ink" cx="647" cy="302" r="5"/>
+    <circle class="ink" cx="644" cy="360" r="5"/>
+    <path d="M684 184L704 186L702 232L693 223L681 230Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+  </g>
+</svg>

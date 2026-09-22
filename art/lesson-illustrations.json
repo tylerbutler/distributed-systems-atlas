@@ -1,0 +1,406 @@
+{
+  "collection": "Distributed Systems Atlas lesson illustrations",
+  "status": "partially-illustrated",
+  "scope": "21 individual structure lessons, seven structure-family overviews, and seven published reference sheets. Navigation indexes, glossary, and bibliography are excluded.",
+  "artDirection": {
+    "name": "Field observations in ink",
+    "purpose": "Opening illustrations that give each lesson a memorable physical scene. These accompany the precise diagrams and labs; they do not replace them or claim to display live simulation state.",
+    "sharedPrompt": "Create one original pen-and-ink editorial illustration for an educational publication about distributed systems. Draw a concrete moment from a field expedition or a daylit signal observation room. Use confident fine graphite and dark mineral-blue outlines, selective cross-hatching on the undersides of objects, and generous untouched white space. Give objects convincing construction and restrained perspective; keep small details sparse enough to survive at a 360-pixel display width. The finish resembles a carefully drawn natural-history or equipment-manual illustration, not a flowchart or a vector icon. Use a pure white background with no paper texture. At least a quarter of the frame should remain empty. Compose a single landscape vignette with a clear silhouette and a foreground action, not a collage of unrelated symbols. Cool dark ink does nearly all the work. A tiny flat sulfur-yellow mark may identify an active message or selected record, never decorative scenery. Do not use red unless the scene explicitly depicts a fault. No gradients, glow, heavy black backgrounds, beige, watercolor, distressed printing, ornamental borders, map registration crosses, decorative graph grids, fantasy imagery, logos, speech bubbles, captions, letters, numbers, equations, or legible writing. Leave all labels and numerical readouts blank for later typesetting. People are understated adult fieldworkers, never mascots. Draw hands naturally and avoid extra fingers. The illustration is a conceptual vignette, not a literal algorithm or a screenshot. Follow the scene and its semantic constraints below.",
+    "continuity": "Across the field stories, Alice wears a broad-brimmed hat and carries a round-patched notebook; Bob wears a knitted cap and carries a diamond-patched notebook; Carol wears a short-brimmed cap and carries a hexagon-patched notebook. Patches identify notebooks by shape, not color. Reuse those silhouettes and the same compact metal trail-beacon design. The ranger is a separate fieldworker at a plain station desk. Include the ranger as an ordering authority only when the lesson explicitly uses a sequencer. Mechanism sheets use the same notebooks, envelopes, desks, and ink treatment in a sparse observation room.",
+    "composition": "1536 by 1024 pixels, landscape 3:2. Keep the main subject inside the central 80 percent with at least 8 percent clear space on every edge. No full-page scene or baked-in heading. Vary the viewpoint and action between lessons while holding line weight and object design constant.",
+    "referenceUse": "Once a pilot is approved, provide it as a visual reference for subsequent images. Inherit linework, character silhouettes, and prop design, not the pilot's composition or subject.",
+    "svgAdaptation": "The counter and set collection uses directly authored SVGs, not generated rasters or automatic tracing. Adapt the scene briefs into prop-led vignettes without figures: notebooks, binoculars, bird sketches, checkpoint boxes, a mechanical stamp, and consistently drawn beacons. Preserve the mechanism and distinguish identity with tag shape. Use a transparent 900 by 600 canvas intended for a white backing, white paper and equipment fills, mineral-blue outlines (#264653), fine hatch lines (#78909a), pale blue-gray surfaces (#f0f5f6), and small sulfur-yellow record marks (#ebcd42). Exact numerical examples remain in the lessons."
+  },
+  "production": {
+    "promptAssembly": "Join artDirection.sharedPrompt, artDirection.continuity, artDirection.composition, the entry's scenePrompt, and its semanticGuardrails with blank lines. Give the renderer that complete text. Titles, routes, and source paths are catalog metadata, not text to draw.",
+    "pilots": [
+      "structures-g-counter",
+      "structures-observed-remove-set",
+      "atlas-local-history"
+    ],
+    "sequence": "The first eight assets cover counters and sets. Review art/counters-and-sets.html before extending the SVG treatment to other families. The remaining scene prompts are briefs, not completed images.",
+    "preview": "art/counters-and-sets.html",
+    "intendedOutputDirectory": "public/illustrations/lessons",
+    "filenameRule": "<id>.svg for authored vectors; <id>.webp for any future raster assets",
+    "masters": "Authored SVG files are their own editable masters and include a title and description. If raster generation is used later, retain the full-resolution PNG and exact generation prompt together outside the public delivery directory.",
+    "delivery": "SVGs must be self-contained: no scripts, external references, embedded raster images, or font dependencies. Keep source geometry editable and never auto-trace a raster. If raster art is added, convert reviewed masters to lossless WebP. Keep exact technical labels outside the artwork.",
+    "accessibility": "Entries with an asset have alt text describing the actual SVG. altDraft remains the proposed description for the original scene brief. SVG titles and descriptions support standalone viewing; an HTML img still needs its own alt attribute. Use empty alt text if the eventual placement is purely decorative and adjacent prose provides the meaning.",
+    "acceptance": [
+      "Every catalog entry has one reviewed image with the matching id; no placeholder is represented as finished art.",
+      "All images share the same line weight, white background, character designs, and restrained accent use.",
+      "Each scene remains recognizable at 360 pixels wide and has no clipped people, props, or linework.",
+      "Generated lettering, numerical claims, malformed hands, and unintended extra objects are absent.",
+      "The image respects its semanticGuardrails and does not imply instantaneous shared knowledge, a global clock, or an unmentioned central coordinator.",
+      "Reference-sheet images are distinct from their introductory structure-lesson counterparts.",
+      "The site is not wired to a file until that image exists and has been reviewed."
+    ]
+  },
+  "illustrations": [
+    {
+      "id": "structures-counters",
+      "kind": "family",
+      "route": "/structures/counters/",
+      "title": "Counters",
+      "source": "src/pages/structures/counters.astro",
+      "asset": "/illustrations/lessons/structures-counters.svg",
+      "alt": "Three kinds of field record sit beside binoculars: an open notebook, a paired-page ledger, and a curled sequence log.",
+      "scenePrompt": "At a trailhead table, arrange an open birdwatching notebook, a two-page sightings-and-corrections notebook, and the ranger's narrow sequential receipt roll as three clearly different recording tools. A pair of binoculars and a small flock beyond the table establish the shared bird-counting problem. Use a close three-quarter view; the different records are the subject.",
+      "semanticGuardrails": "These are alternative ways to record the same kind of count, not three processing stages or one combined protocol. The receipt roll belongs to the sequenced alternative only. Do not use an abacus that suggests all counters share one mutable total.",
+      "altDraft": "Birdwatching equipment beside three kinds of count records."
+    },
+    {
+      "id": "structures-g-counter",
+      "kind": "structure",
+      "route": "/structures/g-counter/",
+      "title": "G-counter",
+      "source": "src/pages/structures/g-counter.astro",
+      "asset": "/illustrations/lessons/structures-g-counter.svg",
+      "alt": "An open birdwatching notebook and binoculars beside a trail checkpoint box holding a folded message.",
+      "scenePrompt": "Alice pauses beside a wooden trail checkpoint to leave a folded bird-count note in a small weatherproof box. Her open notebook and binoculars are prominent in the foreground. Bob and Carol are smaller figures on separate paths, each carrying a notebook and watching different birds. Show separation with whitespace and a few contour-free ground strokes, not a detailed landscape.",
+      "semanticGuardrails": "The hikers keep independent cumulative counts; they do not increment a shared device. Notes contain snapshots, not extra birds to add every time they arrive. No ranger, central counter, or magical link between notebooks. Do not draw an exact bird count as a numerical proof.",
+      "altDraft": "A hiker leaves a notebook message at a checkpoint while two others watch birds on separate trails."
+    },
+    {
+      "id": "structures-pn-counter",
+      "kind": "structure",
+      "route": "/structures/pn-counter/",
+      "title": "PN-counter",
+      "source": "src/pages/structures/pn-counter.astro",
+      "asset": "/illustrations/lessons/structures-pn-counter.svg",
+      "alt": "A two-page notebook preserves sightings and corrections beside two matching bird-report slips.",
+      "scenePrompt": "A close view of an open field notebook with two clearly separate facing records. Beside one page lie binoculars aimed at birds overhead; beside the other, Bob compares two small sketches of the same recognizable bird and makes a correction on a fresh slip. Keep both records intact. Alice, farther away, is still observing birds. The paired pages dominate the composition.",
+      "semanticGuardrails": "A correction is recorded as new information in a separate growing tally. Do not erase sightings, tear out pages, cross out a real bird, or imply that birds are removed from the world. The signed result is the difference between the two counters, not a decrease inside either component.",
+      "altDraft": "A two-page field notebook beside birdwatching equipment and a separate correction slip."
+    },
+    {
+      "id": "structures-shared-counter",
+      "kind": "structure",
+      "route": "/structures/shared-counter/",
+      "title": "SharedCounter",
+      "source": "src/pages/structures/shared-counter.astro",
+      "asset": "/illustrations/lessons/structures-shared-counter.svg",
+      "alt": "Envelopes, a mechanical stamp, an ordered paper log, and a stack of outgoing copies on a station desk.",
+      "scenePrompt": "The ranger sits at a compact station desk, pressing a mechanical numbering stamp onto one incoming field slip. A narrow ordered roll of accepted slips feeds across the desk. Two hikers hand in separate notes from opposite sides; a third waits with a notebook to receive a copy. Emphasize the physical stamp, roll, and outgoing copies rather than scenery.",
+      "semanticGuardrails": "The ranger sequences signed operations. Stable sequence identities allow replicas to reject repeated delivery; the illustration must not promise exactly-once network delivery or show pairwise maximum as the rule. Keep the stamp's numerical face blank for typesetting.",
+      "altDraft": "A ranger stamps incoming field notes and arranges copies in a single ordered log."
+    },
+    {
+      "id": "structures-sets",
+      "kind": "family",
+      "route": "/structures/sets/",
+      "title": "Sets",
+      "source": "src/pages/structures/sets.astro",
+      "asset": "/illustrations/lessons/structures-sets.svg",
+      "alt": "A survey notebook beside a dismantled beacon and an upright replacement with a different identity tag.",
+      "scenePrompt": "At a trail workbench, show three successive concerns of a beacon survey: a notebook preserving a sketch of a discovered beacon, an old removed beacon with its identity tag retained, and a replacement beacon with a visibly different tag. Alice inspects the notebook while Bob carries the replacement. Keep the objects in one believable scene, with no arrows or panel borders.",
+      "semanticGuardrails": "The family compares permanent observation, irreversible removal, and observed removal with a fresh addition identity. An old removed beacon and a replacement must not look like the same tagged object. The ranger does not order CRDT merges.",
+      "altDraft": "Fieldworkers compare a beacon record, a retired beacon, and its separately tagged replacement."
+    },
+    {
+      "id": "structures-g-set",
+      "kind": "structure",
+      "route": "/structures/g-set/",
+      "title": "GSet",
+      "source": "src/pages/structures/g-set.astro",
+      "asset": "/illustrations/lessons/structures-g-set.svg",
+      "alt": "A beacon beside a notebook with distinct beacon sketches and a loose copy of one existing report.",
+      "scenePrompt": "Alice crouches beside a compact trail beacon and adds its simple outline to a field notebook. On the open page are a few existing, distinct beacon sketches that remain untouched. A spare copy of the same report lies beside the notebook, visibly repeating the same sketch rather than adding another physical beacon. Crop close around the observation and record.",
+      "semanticGuardrails": "This is a permanent record of distinct observed members, not a count of reports and not necessarily an active-beacon inventory. No erasing, retirement mark, ranger approval, or duplicated member caused by the spare report.",
+      "altDraft": "A hiker adds a beacon sketch to a notebook that retains earlier observations."
+    },
+    {
+      "id": "structures-two-p-set",
+      "kind": "structure",
+      "route": "/structures/two-p-set/",
+      "title": "TwoPSet",
+      "source": "src/pages/structures/two-p-set.astro",
+      "asset": "/illustrations/lessons/structures-two-p-set.svg",
+      "alt": "An open folio keeps a beacon sketch and retirement tag beside a dismantled beacon and empty mount.",
+      "scenePrompt": "An old beacon rests on its side beside its empty mounting base. Alice places its identity tag into a clearly separate retained-record pocket in her notebook; the original observation page remains visible. Bob arrives with another report showing the same beacon outline and tag shape. Focus on the durable tag and the two retained records, not a graveyard or a dramatic demolition.",
+      "semanticGuardrails": "Retirement permanently excludes that member identity, even when an old or repeated addition returns. Do not depict the same named member being successfully restored. Keep removal evidence rather than shredding or erasing it. This is a data-retirement metaphor, not a physical safety incident.",
+      "altDraft": "A retired beacon's tag is kept in a notebook while another hiker brings a report of that beacon."
+    },
+    {
+      "id": "structures-observed-remove-set",
+      "kind": "structure",
+      "route": "/structures/observed-remove-set/",
+      "title": "Observed-remove set",
+      "source": "src/pages/structures/observed-remove-set.astro",
+      "asset": "/illustrations/lessons/structures-observed-remove-set.svg",
+      "alt": "A retired beacon has a rounded tag, while an upright replacement has a diamond tag; the notebook retains separate records.",
+      "scenePrompt": "Alice removes the old compact beacon from a trail mounting base while Bob, separated by a bend in the path, carries a replacement. Both beacons have the same housing shape but unmistakably different identity-tag silhouettes. In the foreground, an open notebook keeps the old tag in a folded record pocket. The replacement stands upright in the final visual focus, without a numbered timeline.",
+      "semanticGuardrails": "Removal applies only to observed addition identities; an unseen concurrent replacement survives. The old identity stays retired. Do not use arrival order as the explanation, erase all history, or show the ranger approving the replacement.",
+      "altDraft": "An old beacon is removed while a replacement with a different identity tag is brought to the trail."
+    },
+    {
+      "id": "structures-registers",
+      "kind": "family",
+      "route": "/structures/registers/",
+      "title": "Registers",
+      "source": "src/pages/structures/registers.astro",
+      "scenePrompt": "A trail-status notice board is being considered by three fieldworkers. On the desk below it are three alternative report holders: a single selected slip, a clip holding two equally visible competing slips, and a shallow archive of retained versions with separate reading tabs. Use small open-gate and closed-gate drawings on slips instead of writing. The board has no final status yet.",
+      "semanticGuardrails": "The holders represent different conflict policies, not stages every register performs. Keeping concurrent reports is not averaging their values. The archived sequenced versions are distinct from causal siblings.",
+      "altDraft": "A trail-status board above three different ways of keeping field reports."
+    },
+    {
+      "id": "structures-lww-register",
+      "kind": "structure",
+      "route": "/structures/lww-register/",
+      "title": "LWWRegister",
+      "source": "src/pages/structures/lww-register.astro",
+      "scenePrompt": "Carol examines two trail-status slips on a station desk, one with an open-gate sketch and one with a closed-gate sketch. Both carry a small blank mechanical sequence-stamp box. She places one slip in the single display clip and leaves the other aside. A ranger's stamp sits nearby. Draw no wall clock or implied race to reach the desk.",
+      "semanticGuardrails": "This lesson uses ranger-issued sequence numbers as timestamp metadata and writer identity for equal-time ties. Do not imply that last network arrival or the latest human action wins. There is one retained winning value, not two siblings. Numerical comparison remains in the article.",
+      "altDraft": "A fieldworker selects one of two stamped trail-status reports for a display clip."
+    },
+    {
+      "id": "structures-multi-value-register",
+      "kind": "structure",
+      "route": "/structures/multi-value-register/",
+      "title": "MvRegister",
+      "source": "src/pages/structures/multi-value-register.astro",
+      "scenePrompt": "Carol holds a field notebook open to two equally prominent report slips. Alice's slip depicts an open trail gate; Bob's depicts the same gate closed. Both are attached side by side under a single clip. Carol has a pencil and a fresh blank slip ready, but has not yet written a resolution. Use an intimate over-the-shoulder viewpoint.",
+      "semanticGuardrails": "Both concurrent values remain valid siblings until a later write observes and replaces them. Do not silently choose a winner, mix open and closed into a new value, or show a ranger voting. The new blank slip is a possible resolution, not an automatic merge.",
+      "altDraft": "Two conflicting trail-status reports remain side by side in a notebook awaiting review."
+    },
+    {
+      "id": "structures-register-collection",
+      "kind": "structure",
+      "route": "/structures/register-collection/",
+      "title": "RegisterCollection",
+      "source": "src/pages/structures/register-collection.astro",
+      "scenePrompt": "On the ranger's desk, one indexed status-file drawer holds an ordered pair of stamped reports. Two thin bookmarks select different positions in the retained stack; neither removes a report. An open-gate sketch appears on one report and a closed-gate sketch on the other. Show the drawer from a low three-quarter angle so both retained layers can be seen.",
+      "semanticGuardrails": "Atomic and latest are alternative reads of retained sequenced versions. Do not represent them as causal siblings, average the reports, or show unsequenced pending writes already visible in the accepted drawer.",
+      "altDraft": "Two bookmarks select different reports from the same retained sequence of trail-status records."
+    },
+    {
+      "id": "structures-maps",
+      "kind": "family",
+      "route": "/structures/maps/",
+      "title": "Maps",
+      "source": "src/pages/structures/maps.astro",
+      "scenePrompt": "The ranger unfolds a structured field-record sheet across a desk. Separate record pockets contain a gate-status sketch, a small stockpile sketch, and nested trail folders. Alice and Bob bring updates to different pockets. Draw the record as a working index of named things, not a geographic map. Vary folder depths and prop silhouettes to keep the scene legible without writing.",
+      "semanticGuardrails": "Each key has its own record and conflict policy. A shared map is not one undifferentiated value, and a directory is not just a flat list of path strings. The family includes both sequenced and CRDT structures, so do not make one ranger stamp the universal merge rule.",
+      "altDraft": "Fieldworkers bring updates to separate records and folders on a shared field sheet."
+    },
+    {
+      "id": "structures-shared-map",
+      "kind": "structure",
+      "route": "/structures/shared-map/",
+      "title": "SharedMap",
+      "source": "src/pages/structures/shared-map.astro",
+      "scenePrompt": "A ranger's ordered incoming log sits beside a field sheet with several record pockets. The ranger places a newly stamped closed-gate report into the gate pocket, replacing an open-gate report set aside nearby. Other record pockets remain untouched. Make the physical connection between the ordered log and this one updated pocket clear through hand placement.",
+      "semanticGuardrails": "The greatest server sequence number wins for the edited key. Do not show a physical clock choosing the value, concurrent values both remaining current, or unrelated keys being overwritten.",
+      "altDraft": "A ranger updates one gate-status record from an ordered log while leaving other records unchanged."
+    },
+    {
+      "id": "structures-lww-map",
+      "kind": "structure",
+      "route": "/structures/lww-map/",
+      "title": "LWWMap",
+      "source": "src/pages/structures/lww-map.astro",
+      "scenePrompt": "Two fieldworkers compare a compact board of individual gate-setting records. Each record has its own small clock face and writer-shaped tag beside it. A loose incoming slip lies on the desk, but the worker checks the selected record's metadata before replacing anything. Keep the clocks plainly unsynchronized and their faces free of numerals.",
+      "semanticGuardrails": "Comparison is per key, not one clock for the whole map or last delivery wins. Clocks provide a deterministic policy, not proof of real-time recency. At equal time removal precedes a value, then writer identity breaks set/set ties; leave that detailed ordering to typeset explanation.",
+      "altDraft": "Fieldworkers compare separate clock and writer markers beside individual map records."
+    },
+    {
+      "id": "structures-or-map",
+      "kind": "structure",
+      "route": "/structures/or-map/",
+      "title": "OR-map",
+      "source": "src/pages/structures/or-map.astro",
+      "scenePrompt": "At a small trail stockpile, Alice folds away the old identity slip for a crate record while Bob arrives from another path carrying a new delivery slip beside a handcart of crates. Keep the stockpile record open and its accumulated tally page intact. The new slip has a distinct tag from the one Alice has observed. Use the cart and notebook as the main silhouettes.",
+      "semanticGuardrails": "An unseen concurrent tally update keeps the key present and preserves the accumulated count. Do not reset the tally when the row survives, remove physical crates as a consequence of deleting the record, or portray the result as last-arrival wins. Exact crate arithmetic belongs in the page, not the illustration.",
+      "altDraft": "A stockpile record remains open while one hiker retires an old record and another brings a delivery."
+    },
+    {
+      "id": "structures-shared-directory",
+      "kind": "structure",
+      "route": "/structures/shared-directory/",
+      "title": "SharedDirectory",
+      "source": "src/pages/structures/shared-directory.astro",
+      "scenePrompt": "A close view into a ranger's nested trail-file cabinet. A fresh folder occupies a slot once used by a retired folder lying beside the cabinet. Their tab silhouettes match, but their attached identity seals visibly differ. A delayed note still attached to the retired folder's seal rests outside the fresh folder. Show real paper folds, hinges, and shallow cross-hatched cabinet depth.",
+      "semanticGuardrails": "Reusing a path name does not reuse a folder instance. A stale operation for the deleted identity must not attach to the replacement. Do not imply that concurrent creates at the same path leave two live folders.",
+      "altDraft": "A replacement folder has a different identity seal, while an old note remains with the retired folder."
+    },
+    {
+      "id": "structures-sequences",
+      "kind": "family",
+      "route": "/structures/sequences/",
+      "title": "Sequences",
+      "source": "src/pages/structures/sequences.astro",
+      "scenePrompt": "A route-planning desk holds a long strip of waypoint cards beside a narrow strip of field-note tiles. Two fieldworkers lift separate new pieces toward an existing gap. Each piece has a small persistent tab so it remains recognizable when neighboring pieces shift. Compose the two ordered strips as practical working materials rather than computer panels.",
+      "semanticGuardrails": "Identity persists while position changes. The route and text are two applications of ordered editing, not two stages of one algorithm. Do not use fixed slot numbers as the identity or imply that one insertion must delete another.",
+      "altDraft": "Fieldworkers add pieces to ordered route and note strips with individually tagged items."
+    },
+    {
+      "id": "structures-shared-sequence",
+      "kind": "structure",
+      "route": "/structures/shared-sequence/",
+      "title": "SharedSequence",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "Alice and Bob revise a long inspection-route card laid across a table. Existing waypoint cards show a bridge, a weir, and a gate. Alice brings a waterfall card and Bob a marsh card to the same gap before the weir. Both new cards fit in the expanded strip, and every card retains its own small identity tab. No map grid or numbered positions.",
+      "semanticGuardrails": "Both concurrent insertions survive before the same stable anchor in deterministic identity order. The visual should not imply that arrival speed or the workers' physical positions choose the result. Keep the weir anchor visibly the same object.",
+      "altDraft": "Two new waypoint cards are inserted before the same weir card in an inspection route."
+    },
+    {
+      "id": "structures-shared-text",
+      "kind": "structure",
+      "route": "/structures/shared-text/",
+      "title": "SharedText",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "An extreme close view of a field-note strip under two pencils. Alice and Bob each add a small intact run of character-sized paper tiles at the same writing gap, shifting the following strip without cutting its pieces. Tiny identity tabs remain attached underneath each tile. Keep tile faces blank; the eventual article, not the renderer, supplies actual text.",
+      "semanticGuardrails": "This metaphor stands for stable grapheme identities, not byte positions or text stored as physical tiles. Both concurrent insertions survive; no grapheme is split. Do not suggest that whole words are the implementation's atomic unit.",
+      "altDraft": "Two pencils add intact groups of small tiles into one field-note strip."
+    },
+    {
+      "id": "structures-coordination",
+      "kind": "family",
+      "route": "/structures/coordination/",
+      "title": "Coordination",
+      "source": "src/pages/structures/coordination.astro",
+      "scenePrompt": "A ranger station's duty desk holds a single gate key, a stack of inspection job cards, a dispatch headset with a waiting roster, and one signoff sheet. Three fieldworkers wait on the public side of the desk. Keep the key and one active duty place dominant; the remaining objects are secondary context. No duplicated key or crowded control dashboard.",
+      "semanticGuardrails": "Some tasks require one agreed holder rather than several merged answers. These objects represent distinct coordination policies. Do not imply that first claimant, FIFO work acquisition, failover, and unanimous signoff are interchangeable rules.",
+      "altDraft": "Three fieldworkers wait at a duty desk with a gate key, job cards, a headset, and a signoff sheet."
+    },
+    {
+      "id": "structures-claims",
+      "kind": "structure",
+      "route": "/structures/claims/",
+      "title": "Claims",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "The ranger hands the station's only gate key to Alice across a narrow desk after stamping her claim slip. Bob and Carol hold their still-unaccepted slips on the other side. A single hook behind the ranger is now empty. Center the key handover and keep the claim ledger visible but unlettered.",
+      "semanticGuardrails": "The first sequenced claim becomes a write-once assignment. Do not give out duplicate keys, show a temporary lease, suggest automatic failover, or present a locally submitted claim as already successful.",
+      "altDraft": "A ranger gives one gate key to a single claimant while two other applicants wait."
+    },
+    {
+      "id": "structures-ordered-collection",
+      "kind": "structure",
+      "route": "/structures/ordered-collection/",
+      "title": "OrderedCollection",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "A bridge-inspection job card, identifiable by a small bridge sketch, is being lifted from the front of a narrow work tray and handed to Alice. Bob and Carol wait with empty hands. Show the tray now empty and the acquired card remaining with one worker. Use a side-on view of the tray and hands rather than another broad ranger portrait.",
+      "semanticGuardrails": "One queued item is granted to one accepted acquire, not copied to every requester. This is an acquired work item, not a permanent claim to a named role. Do not imply that queue removal means the bridge inspection is already complete.",
+      "altDraft": "One worker receives the only bridge-inspection card from an otherwise empty work tray."
+    },
+    {
+      "id": "structures-task-manager",
+      "kind": "structure",
+      "route": "/structures/task-manager/",
+      "title": "TaskManager",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "Alice sits at the station's single dispatch radio wearing its headset. Immediately behind her, Bob then Carol wait on a plain bench with volunteer slips clipped in that same order to a narrow roster. Leave a clear physical path between the first waiting worker and the chair. The radio is practical field equipment with no glowing displays.",
+      "semanticGuardrails": "There is one assigned dispatcher and an ordered queue of replacements. Do not show several simultaneous dispatchers, a permanent write-once owner, or an election by vote. Failover requires the current assignee to leave or disconnect; waiting alone does not replace Alice.",
+      "altDraft": "One dispatcher works at a radio while two volunteers wait in a defined order."
+    },
+    {
+      "id": "structures-pact-map",
+      "kind": "structure",
+      "route": "/structures/pact-map/",
+      "title": "PactMap",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "Three fieldworkers stand around a shared closure proposal on a narrow table. The page has three distinct seal positions: two contain simple shape stamps and the third is still empty while Carol holds the final stamp just above it. A folded trail-closure notice waits beside the proposal rather than being posted. Give the not-yet-complete signature area the clearest linework.",
+      "semanticGuardrails": "The proposal remains pending until every expected participant accepts. Two out of three is not enough, and dispatch or majority vote is not acceptance. Do not show the closure already published while the final signoff is missing.",
+      "altDraft": "A closure proposal has two completed seals and awaits the third before its notice is posted."
+    },
+    {
+      "id": "structures-transforms",
+      "kind": "family",
+      "route": "/structures/transforms/",
+      "title": "Transforms",
+      "source": "src/pages/structures/transforms.astro",
+      "scenePrompt": "On an observation-room editing desk, two fieldworkers align narrow correction strips over one report. One strip targets a small structured form; another carries an insertion and a heavier underline for formatting. The report remains readable as a physical object beneath the separate edits. Use precise paper edges and pencils instead of cogs, conveyor belts, or magical merging effects.",
+      "semanticGuardrails": "Operations adapt to concurrent edits so they can be applied to a shared document. This is not averaging snapshots or guaranteeing that arbitrary conflicting changes all survive. Keep form editing and rich-text formatting as distinct examples.",
+      "altDraft": "Two fieldworkers align separate corrections with a structured report and a formatted page."
+    },
+    {
+      "id": "structures-json-ot",
+      "kind": "structure",
+      "route": "/structures/json-ot/",
+      "title": "JsonOt",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "An overhead view of a clean field-report form with two clearly separate empty locations: a broad title slot and a small revision slot. Alice's hand aligns a wide edit slip to the title location while Bob's aligns a short slip to the revision location. Both slips can fit without covering each other. Leave every field and slip unlettered.",
+      "semanticGuardrails": "The authored example edits disjoint JSON paths and both changes survive transformation. Do not make a blanket claim about same-path conflicts, turn JSON into a geographic map, or portray the outcome as last-write-wins.",
+      "altDraft": "Two edit slips target separate title and revision fields on the same report form."
+    },
+    {
+      "id": "structures-shared-rich-text",
+      "kind": "structure",
+      "route": "/structures/shared-rich-text/",
+      "title": "SharedRichText",
+      "source": "src/lib/structure-demo/remaining-structures.ts",
+      "scenePrompt": "A report lies on an editing desk. One hand uses a broad pen to strengthen the heading's abstract horizontal strokes while another appends a small triangular trail marker at the end of the page's final writing strip. Retain the rest of the page intact. Draw the heading as blank typographic guides, not generated words, and distinguish the two actions clearly.",
+      "semanticGuardrails": "Formatting and insertion survive together after operation transformation. Bold is a retained attribute, not a replacement string. Do not delete existing content, imply arbitrary overlapping edits never conflict, or substitute a font-style comparison for the actual editing scene.",
+      "altDraft": "One editor emphasizes a report heading while another adds a triangular marker to the end."
+    },
+    {
+      "id": "atlas-local-history",
+      "kind": "reference",
+      "route": "/atlas/local-history/",
+      "title": "Local history",
+      "source": "src/content/sheets/local-history.mdx",
+      "scenePrompt": "Two separate observation desks face the same open white space. At the near desk, a fieldworker adds a fresh page to an existing notebook. Between the desks, a messenger carries a closed envelope containing an earlier copied page, visible as a fixed folded insert protruding slightly from the envelope. The receiving desk has not acquired the fresh page. Emphasize the distance and the old copy in transit.",
+      "semanticGuardrails": "The message payload is fixed when sent; it cannot gain later sender events while traveling. Local execution and learned history differ. The overview is for the reader, not evidence that either observer can inspect the other's current notebook.",
+      "altDraft": "An earlier copied report travels between desks while its sender adds a new notebook entry."
+    },
+    {
+      "id": "atlas-partial-order",
+      "kind": "reference",
+      "route": "/atlas/partial-order/",
+      "title": "Partial order",
+      "source": "src/content/sheets/partial-order.mdx",
+      "scenePrompt": "Three small observation desks arranged as a loose triangle with ample white between them. One worker hands a closed report envelope to a second, who has a matching open receiving notebook. The third worker records an independent observation at a separate desk with no connecting message. Use the handoff as the foreground action; avoid paths, arrows, rails, or a unifying ribbon.",
+      "semanticGuardrails": "The handoff establishes one causal relationship. The separate observer has no causal path to that event in the depicted execution. Spatial layout is not a total time order; unrelated events need not be physically simultaneous. Do not join all three records into one authoritative log.",
+      "altDraft": "A report passes between two observation desks while a third observer records an independent event."
+    },
+    {
+      "id": "atlas-lamport-clocks",
+      "kind": "reference",
+      "route": "/atlas/lamport-clocks/",
+      "title": "Lamport clocks",
+      "source": "src/content/sheets/lamport-clocks.mdx",
+      "scenePrompt": "Two observation desks each hold a compact mechanical event counter with a single blank readout. A worker receiving an envelope adjusts the local counter; the envelope carries the outline of a matching counter stamp. The sender's desk retains its own counter. Use close, precise equipment drawing and keep physical clock faces entirely absent.",
+      "semanticGuardrails": "These are logical event counters, not synchronized wall clocks. Reception advances beyond both the local count and the received count. A smaller scalar does not establish causality, and concurrent events may have equal or unequal counts. Do not fabricate counter values in the image.",
+      "altDraft": "An observer adjusts a local event counter after receiving a report with a counter stamp."
+    },
+    {
+      "id": "atlas-vector-clocks",
+      "kind": "reference",
+      "route": "/atlas/vector-clocks/",
+      "title": "Vector clocks",
+      "source": "src/content/sheets/vector-clocks.mdx",
+      "scenePrompt": "A close comparison of two portable observation instruments, each with two parallel mechanical indicator columns. The first instrument's left indicator is advanced farther; the second instrument's right indicator is advanced farther. Match the columns using a circle marker above the left column and a diamond above the right. A fieldworker compares the same column across both instruments with a straightedge. No digits or larger-is-better trophy.",
+      "semanticGuardrails": "Both instruments retain both source components. Opposing component differences indicate concurrency, not one overall winner. The straightedge compares matching components, not just the highest indicator or the sum. These are knowledge records, not physical synchronized clocks.",
+      "altDraft": "Two observation records have opposing advances in their matching circle and diamond columns."
+    },
+    {
+      "id": "atlas-dots-and-causal-context",
+      "kind": "reference",
+      "route": "/atlas/dots-and-causal-context/",
+      "title": "Dots and causal context",
+      "source": "src/content/sheets/dots-and-causal-context.mdx",
+      "scenePrompt": "On an observation bench, a single beacon report has an attached two-part identity seal: a writer-shape emblem and a small blank sequence slot. Beside it, an open notebook has a pocket of previously received identity slips, including a retained old seal whose physical beacon has been removed. A fresh differently sealed beacon report remains separate and intact. Draw paper fibers only through edges, not background texture.",
+      "semanticGuardrails": "A dot identifies one writer event; it is not a timestamp or just a decorative point. Causal context records observed identities even when values disappear. Do not let the notebook claim knowledge of a fresh unseen identity, or erase the old evidence needed to reject stale replay.",
+      "altDraft": "A beacon report has an individual identity seal beside a notebook retaining earlier observed identities."
+    },
+    {
+      "id": "atlas-multi-value-registers",
+      "kind": "reference",
+      "route": "/atlas/multi-value-registers/",
+      "title": "Multi-value registers",
+      "source": "src/content/sheets/multi-value-registers.mdx",
+      "scenePrompt": "Inside a signal observation room, two report slips for one signal sit in the same transparent-front holder. Each carries a distinct writer-shaped seal and a small lamp-lens drawing with different hatching. An observer has placed a fresh blank decision slip below them after looking at both. Unlike the trail-status illustration, make this an equipment-and-record still life without a gate or outdoor scene.",
+      "semanticGuardrails": "The lesson's red and blue choices remain separate concurrent versions; do not blend them into a third lens. Hatching distinguishes the records without violating the collection's limited palette. A later resolving write must observe the siblings it replaces. Do not depict the resolution as automatic or as last-arrival selection.",
+      "altDraft": "Two separately sealed signal reports remain in one holder above a blank resolution slip."
+    },
+    {
+      "id": "atlas-observed-remove-sets",
+      "kind": "reference",
+      "route": "/atlas/observed-remove-sets/",
+      "title": "Observed-remove sets",
+      "source": "src/content/sheets/observed-remove-sets.mdx",
+      "scenePrompt": "A close tabletop scene: an observer opens a creased delayed envelope containing a report of an old beacon. Beside it, a retained retirement record carries the same old identity-tag silhouette, while a fresh report with a different tag depicts the replacement beacon still upright. The observer compares the old seal with the retained evidence rather than discarding the whole beacon name. No landscape; the late envelope is the main subject.",
+      "semanticGuardrails": "Reject the retired old addition on stale replay while preserving the unseen concurrent replacement. Removal evidence outlives visible membership. The ranger may read the survey but does not sequence these CRDT updates. Reconnecting alone does not deliver messages or immediately synchronize records.",
+      "altDraft": "An old beacon report is checked against retained retirement evidence beside a separately tagged replacement report."
+    }
+  ]
+}

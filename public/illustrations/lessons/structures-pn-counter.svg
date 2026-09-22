@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="pn-counter-title pn-counter-desc">
+  <title id="pn-counter-title">PN-counter: keep the sightings and the corrections</title>
+  <desc id="pn-counter-desc">A large open notebook keeps sightings on one page and corrections on the other. Two matching bird sketches on separate slips identify a repeated observation; neither notebook page is erased.</desc>
+  <defs>
+    <pattern id="pn-counter-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="pn-counter-bird" fill="white" stroke="#264653" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 42C17 36 12 23 27 19C33 5 50 8 52 21L66 25L52 29C50 45 40 53 26 47L8 60L17 43Z"/>
+      <path d="M20 32Q38 24 41 35Q35 44 24 42M28 49L25 60M38 48L41 59M20 60H30M37 60H46" fill="none"/>
+      <circle cx="43" cy="20" r="1.8" fill="#264653" stroke="none"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M121 468Q357 495 556 480M602 480L790 454"/>
+  <g transform="rotate(-5 420 353)">
+    <path class="light" d="M157 224L421 251L678 222L676 471L423 508L151 469Z"/>
+    <path d="M154 455L423 494L676 457V471L423 508L151 469Z" fill="url(#pn-counter-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M167 205Q295 204 421 242Q545 201 678 207L676 457Q544 457 423 494Q291 453 154 455Z"/>
+    <path class="ink" d="M421 242L423 494"/>
+    <path class="fine" d="M179 440Q300 440 406 474M441 474Q548 440 656 442"/>
+    <path class="ink" d="M209 241V263M198 252H220M470 251H491"/>
+    <path class="fine" d="M196 279Q293 281 395 310M456 305Q551 277 650 274"/>
+    <use href="#pn-counter-bird" transform="translate(249 298) scale(1.1)"/>
+    <path class="fine" d="M193 395Q280 393 389 423M191 413Q285 413 390 443"/>
+    <circle class="ink" cx="205" cy="369" r="6"/>
+    <path class="ink" d="M230 370L270 374M290 378L350 391"/>
+    <circle class="ink" cx="469" cy="369" r="6"/>
+    <path class="ink" d="M493 364L532 355"/>
+    <path class="fine" d="M548 352L629 335M457 396Q559 366 649 370M457 418Q559 388 649 392M457 440Q559 410 649 414"/>
+    <path d="M404 240L416 244L417 304L410 296L402 299Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+  </g>
+  <g transform="translate(507 120) rotate(9)">
+    <path class="light" d="M11 11H125V150H11Z"/>
+    <path class="paper" d="M0 0H114V139H0Z"/>
+    <use href="#pn-counter-bird" transform="translate(22 37) scale(.9)"/>
+    <path class="fine" d="M17 111H93M17 121H74"/>
+    <path class="ink" d="M42 10V-7Q42-20 54-20Q67-20 67-7V21Q67 30 60 30Q52 30 52 21V-5"/>
+  </g>
+  <g transform="translate(673 158) rotate(19)">
+    <path class="paper" d="M0 0H111V143H0Z"/>
+    <use href="#pn-counter-bird" transform="translate(21 39) scale(.9)"/>
+    <path class="fine" d="M16 115H94M16 126H74"/>
+    <circle class="ink" cx="24" cy="20" r="6"/>
+  </g>
+  <g transform="translate(690 381) rotate(29)">
+    <path class="paper" d="M0 0H13V107L6 128L0 107Z"/>
+    <path d="M0 0H13V24H0Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+    <path class="fine" d="M4 26V104M0 107H13"/>
+    <path class="ink" d="M4 121L6 128L8 121"/>
+  </g>
+  <path class="fine" d="M145 174C123 143 150 120 180 134M164 146Q183 130 197 148"/>
+</svg>

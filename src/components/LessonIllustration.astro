@@ -1,0 +1,32 @@
+---
+import { illustrations } from "../../art/lesson-illustrations.json";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+const illustration = illustrations.find((entry) => entry.id === id);
+if (!illustration?.asset || !illustration.alt) {
+  throw new Error(`Missing lesson illustration asset or alt text: ${id}`);
+}
+---
+
+<img
+  class="lesson-illustration"
+  src={illustration.asset}
+  alt={illustration.alt}
+  width="900"
+  height="600"
+  decoding="async"
+/>
+
+<style>
+  .lesson-illustration {
+    display: block;
+    width: min(100%, 32rem);
+    height: auto;
+    margin: var(--space-5) auto 0;
+    mix-blend-mode: multiply;
+  }
+</style>

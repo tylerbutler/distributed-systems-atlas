@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="g-set-title g-set-desc">
+  <title id="g-set-title">GSet: keep every distinct observation</title>
+  <desc id="g-set-desc">A trail beacon stands beside an open survey notebook containing three different beacon sketches. A loose report repeats an existing sketch without adding a second copy to the notebook.</desc>
+  <defs>
+    <pattern id="g-set-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+    <g id="g-set-beacon" stroke="#264653" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-32 150L-44 158V170Q0 185 44 170V158L32 150Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <ellipse cx="0" cy="156" rx="39" ry="11" fill="white" stroke-width="2.6"/>
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#g-set-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M120 476Q271 453 401 482M448 500Q612 475 782 488M146 458L154 433M151 446L166 435M161 468L178 451"/>
+  <use href="#g-set-beacon" transform="translate(260 148) scale(1.68)"/>
+  <path class="ink" d="M292 329Q354 318 351 358"/>
+  <path class="paper" d="M334 352Q349 343 362 355L376 410Q359 425 344 415L329 367Q327 358 334 352Z"/>
+  <circle class="ink" cx="345" cy="364" r="5"/>
+  <path class="fine" d="M342 389L363 384M344 400L365 394"/>
+  <g transform="rotate(8 576 377)">
+    <path class="light" d="M414 269L572 289L746 262L746 474L574 500L411 477Z"/>
+    <path d="M412 464L574 487L746 461V474L574 500L411 477Z" fill="url(#g-set-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M421 252Q500 249 572 280Q654 245 745 249L746 461Q655 461 574 487Q496 460 412 464Z"/>
+    <path class="ink" d="M572 280L574 487"/>
+    <use href="#g-set-beacon" transform="translate(492 284) scale(.51)"/>
+    <path class="fine" d="M436 398Q489 394 552 417M435 416Q489 412 552 435M434 435L525 452"/>
+    <path class="ink" d="M601 334L620 314L639 334V362H601ZM610 362V390M631 362V390M597 390H644"/>
+    <path class="fine" d="M609 341H631M609 350H631"/>
+    <path class="ink" d="M677 331H716V377H677ZM681 331L687 320H708L714 331M685 377V392M708 377V392M678 392H715"/>
+    <path class="fine" d="M685 340V367M696 340V367M707 340V367M600 419L718 397M601 438L716 417M601 458L678 444"/>
+    <path d="M558 280L569 284V336L562 328L556 331Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+  </g>
+  <g transform="translate(621 111) rotate(12)">
+    <path class="paper" d="M0 0H114V145H0Z"/>
+    <use href="#g-set-beacon" transform="translate(56 19) scale(.48)"/>
+    <path class="fine" d="M18 118H95M18 130H76"/>
+    <path class="ink" d="M83 10V-6Q83-16 92-16Q101-16 101-6V21Q101 27 96 27Q91 27 91 21V-4"/>
+  </g>
+</svg>
