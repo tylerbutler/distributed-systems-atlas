@@ -26,6 +26,9 @@ importers:
       astro:
         specifier: ^7.3.3
         version: 7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)
+      astro-tinylytics:
+        specifier: ^0.1.0
+        version: 0.1.0(astro@7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1))
       phoenix:
         specifier: ^1.8.14
         version: 1.8.14
@@ -904,6 +907,12 @@ packages:
     peerDependenciesMeta:
       '@astrojs/markdown-remark':
         optional: true
+
+  astro-tinylytics@0.1.0:
+    resolution: {integrity: sha1-fzkcO1QUr5EX9b6bKW7vxb6MSuk=, tarball: https://ms-feed-25.pkgs.visualstudio.com/1es-public/_packaging/npm-public/npm/registry/astro-tinylytics/-/astro-tinylytics-0.1.0.tgz}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      astro: '>=4.0.0'
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -2683,6 +2692,10 @@ snapshots:
       - tsx
       - uploadthing
       - yaml
+
+  astro-tinylytics@0.1.0(astro@7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)):
+    dependencies:
+      astro: 7.3.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@types/node@26.6.2)(yaml@2.9.1)
 
   axobject-query@4.1.0: {}
 

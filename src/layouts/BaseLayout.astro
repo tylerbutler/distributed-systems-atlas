@@ -1,4 +1,5 @@
 ---
+import { Script } from "astro-tinylytics";
 import SiteHeader from "../components/SiteHeader.astro";
 import ObservationRail from "../components/ObservationRail.astro";
 import "../styles/global.css";
@@ -27,6 +28,7 @@ const siteTitle = "Distributed Systems Atlas";
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
+    <Script embedCode="7VDc_FkPKaJq2r-togns" min hits />
   </head>
   <body>
     <!--
