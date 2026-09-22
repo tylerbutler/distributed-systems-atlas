@@ -107,9 +107,6 @@ import {
         gap. The replica must ask the runtime to replay the missing operation
         or send a snapshot.
       </p>
-      <pre aria-label="Sequenced operation application rule"><code>new SN → apply signed delta
-seen SN → ignore duplicate
-missing SN → wait or recover the gap</code></pre>
     </section>
 
     <section aria-labelledby="shared-race-title">

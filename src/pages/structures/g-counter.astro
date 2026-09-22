@@ -109,7 +109,6 @@ import {
         leaving notes at known checkpoints.
       </p>
       <TermCallout {...replicaTerm} />
-      <pre aria-label="Alice's bird count"><code>birds = count[Alice]</code></pre>
     </section>
 
     <section aria-labelledby="second-counter-title">
@@ -128,9 +127,6 @@ import {
         birds. His count stays 3.
       </p>
       <TermCallout {...gCounterTerm} />
-      <pre aria-label="G-counter merge and bird total rules"><code>count[Alice] = max(all notes from Alice)
-count[Bob] = max(all notes from Bob)
-birds = count[Alice] + count[Bob] + ...</code></pre>
     </section>
 
     <section aria-labelledby="race-title">
