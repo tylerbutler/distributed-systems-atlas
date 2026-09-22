@@ -251,6 +251,19 @@ test("G-counter controls meet the keyboard and responsive layout contract", asyn
     expect(await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )).toBe(0);
+    const speed = (await demo.locator(".speed-control").boundingBox())!;
+    const jitter = (await demo.locator("[data-transport-jitter]").boundingBox())!;
+    const autoDeliver = (await demo.locator(".auto-deliver-control").boundingBox())!;
+    expect(speed.width).toBeLessThanOrEqual(256);
+    if (width < 768) {
+      expect(jitter.y).toBeGreaterThanOrEqual(speed.y + speed.height);
+      expect(autoDeliver.y).toBeGreaterThanOrEqual(jitter.y + jitter.height);
+    } else {
+      expect(jitter.x).toBeGreaterThanOrEqual(speed.x + speed.width);
+      expect(jitter.x - (speed.x + speed.width)).toBeLessThanOrEqual(16);
+      expect(autoDeliver.x).toBeGreaterThanOrEqual(jitter.x + jitter.width);
+      expect(autoDeliver.x - (jitter.x + jitter.width)).toBeLessThanOrEqual(16);
+    }
     for (const control of await demo.locator("button, summary").all()) {
       expect((await control.boundingBox())!.height).toBeGreaterThanOrEqual(44);
     }
