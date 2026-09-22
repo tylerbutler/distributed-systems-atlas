@@ -5,7 +5,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
 <BaseLayout
   title="Sets"
-  description="Compare grow-only, two-phase, and observed-remove replicated sets."
+  description="Compare sets where items stay forever, leave forever, or can return."
   territory="Structures"
   sheetTitle="Sets"
 >
@@ -14,9 +14,9 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
       <p class="territory-label">Structure family</p>
       <h1>Sets</h1>
       <p>
-        Replicated sets differ mainly in how they handle removal. Their merge
-        rules preserve enough evidence to remain safe when updates are delayed,
-        repeated, or reordered.
+        A set is a collection of unique items. The main question is what should
+        happen after someone removes an item. Can it return later, or is the
+        removal permanent?
       </p>
       <LessonIllustration id="structures-sets" />
     </header>
@@ -24,17 +24,17 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="g-set-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="g-set-title">GSet</h2>
-          <p>An add-only set that merges by union.</p>
+          <p>A set where added items stay forever.</p>
         </div>
         <code>g_set_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            A GSet can add members but cannot remove them. Merge takes the
-            union, so repeated or reordered state does not change the result.
+            A GSet can add items but cannot remove them. When people share
+            their lists, the set keeps every item that appears on any list.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -44,8 +44,8 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
         </div>
         <dl>
           <div><dt>Updates</dt><dd>Add only</dd></div>
-          <div><dt>Merge rule</dt><dd>Set union</dd></div>
-          <div><dt>Metadata</dt><dd>One retained entry per member</dd></div>
+          <div><dt>How copies combine</dt><dd>Keep every listed item</dd></div>
+          <div><dt>What it remembers</dt><dd>Every item ever added</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/g-set/">
@@ -56,18 +56,18 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="two-p-set-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="two-p-set-title">TwoPSet</h2>
-          <p>A removable set where retirement is permanent.</p>
+          <p>A set where removed items cannot return.</p>
         </div>
         <code>two_p_set_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            A TwoPSet keeps separate grow-only sets for additions and
-            removals. Removal wins permanently: after a value enters the
-            removal set, the same value cannot be added again.
+            A TwoPSet keeps one list of added items and another list of removed
+            items. Once an item appears on the removed list, nobody can add the
+            same item again.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -77,8 +77,8 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
         </div>
         <dl>
           <div><dt>Updates</dt><dd>Add once, remove once</dd></div>
-          <div><dt>Merge rule</dt><dd>Union additions and removals</dd></div>
-          <div><dt>Metadata</dt><dd>Members plus permanent tombstones</dd></div>
+          <div><dt>How copies combine</dt><dd>Keep every addition and removal</dd></div>
+          <div><dt>What it remembers</dt><dd>Items and permanent removals</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/two-p-set/">
@@ -89,18 +89,18 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="or-set-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="or-set-title">Observed-remove set</h2>
-          <p>A removable set that permits a later or concurrent re-add.</p>
+          <p>A set where an item can be removed and added again.</p>
         </div>
         <code>or_set_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            An observed-remove set assigns a unique tag to each addition.
-            Removal targets only observed tags, so a later or concurrent add
-            of the same value can remain in the set.
+            This set gives each addition its own identity. A removal affects
+            only the additions that person has already seen. An addition made
+            at the same time, or later, can stay in the set.
           </p>
           <h3>Best for</h3>
           <ul>
@@ -110,8 +110,8 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
         </div>
         <dl>
           <div><dt>Updates</dt><dd>Add, remove, and re-add</dd></div>
-          <div><dt>Merge rule</dt><dd>Union tags, then subtract observed removals</dd></div>
-          <div><dt>Metadata</dt><dd>Live addition tags plus removal knowledge</dd></div>
+          <div><dt>How copies combine</dt><dd>Keep additions that were not removed</dd></div>
+          <div><dt>What it remembers</dt><dd>Each addition and known removals</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/observed-remove-set/">
@@ -120,8 +120,8 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     </section>
 
     <section class="family-comparison" aria-labelledby="set-choice-title">
-      <h2 id="set-choice-title">Removal determines the set</h2>
-      <table aria-label="Replicated set comparison">
+      <h2 id="set-choice-title">Choose what removal means</h2>
+      <table aria-label="Set comparison">
         <thead>
           <tr>
             <th scope="col">Need</th>
@@ -133,17 +133,17 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
           <tr>
             <th scope="row">No item removal</th>
             <td>GSet</td>
-            <td>Retain each member</td>
+            <td>Remember each item</td>
           </tr>
           <tr>
             <th scope="row">Removal is permanent</th>
             <td>TwoPSet</td>
-            <td>Retain every removed value</td>
+            <td>Remember every removed item</td>
           </tr>
           <tr>
             <th scope="row">Items can return</th>
             <td>Observed-remove set</td>
-            <td>Retain identities and removal knowledge</td>
+            <td>Remember each addition and removal</td>
           </tr>
         </tbody>
       </table>

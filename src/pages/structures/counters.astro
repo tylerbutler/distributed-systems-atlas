@@ -5,7 +5,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
 <BaseLayout
   title="Counters"
-  description="Compare grow-only, positive-negative, and sequenced distributed counters."
+  description="Compare counters that count up, count both ways, or use one shared order."
   territory="Structures"
   sheetTitle="Counters"
 >
@@ -14,9 +14,9 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
       <p class="territory-label">Structure family</p>
       <h1>Counters</h1>
       <p>
-        A shared number looks simple until several replicas change it at once.
-        Counter designs differ in which changes they permit and what they must
-        remember so repeated or reordered messages stay safe.
+        A shared number gets tricky when several people change it at the same
+        time. Some counters only go up, some also go down, and some use one
+        shared order for every change.
       </p>
       <LessonIllustration id="structures-counters" />
     </header>
@@ -24,29 +24,30 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="g-counter-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="g-counter-title">G-counter</h2>
-          <p>A grow-only counter for independent increments.</p>
+          <p>A counter that can only go up.</p>
         </div>
         <code>g_counter_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            Each replica owns one component and can only raise it. Merge keeps
-            the largest value for every replica, so duplicate and reordered
-            messages do not change the result.
+            Each person keeps their own count. When people share their counts,
+            the counter keeps the highest number reported by each person and
+            adds them together. A repeated or late message cannot add the same
+            work twice.
           </p>
           <h3>Best for</h3>
           <ul>
-            <li>Distributed metrics and tallies that never decrease</li>
-            <li>At-least-once delivery where an increment may be delivered again</li>
+            <li>Totals that never need to decrease</li>
+            <li>Messages that may arrive late or more than once</li>
           </ul>
         </div>
         <dl>
           <div><dt>Updates</dt><dd>Increment only</dd></div>
-          <div><dt>Merge rule</dt><dd>Per-replica maximum</dd></div>
-          <div><dt>Metadata</dt><dd>One integer per replica</dd></div>
+          <div><dt>How copies combine</dt><dd>Keep each person's highest count</dd></div>
+          <div><dt>What it remembers</dt><dd>One number per person</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/g-counter/">Read the G-counter lesson</a>
@@ -55,29 +56,29 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="pn-counter-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="pn-counter-title">PN-counter</h2>
-          <p>A counter that preserves concurrent additions and corrections.</p>
+          <p>A counter that can go up or down.</p>
         </div>
         <code>pn_counter_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            A PN-counter pairs two G-counters. One records positive changes and
-            the other records negative changes. Each half merges by
-            per-replica maximum, then the counter subtracts the negative total.
+            A PN-counter uses two G-counters. One records increases and the
+            other records decreases. The visible total is the increases minus
+            the decreases.
           </p>
           <h3>Best for</h3>
           <ul>
             <li>Offline counters that must increase and decrease</li>
-            <li>Corrections that may be delivered more than once</li>
+            <li>Corrections that may arrive late or more than once</li>
           </ul>
         </div>
         <dl>
           <div><dt>Updates</dt><dd>Increment and decrement</dd></div>
-          <div><dt>Merge rule</dt><dd>Maximum on both component sets</dd></div>
-          <div><dt>Metadata</dt><dd>Two integers per replica</dd></div>
+          <div><dt>How copies combine</dt><dd>Combine both counters separately</dd></div>
+          <div><dt>What it remembers</dt><dd>Two numbers per person</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/pn-counter/">Read the PN-counter lesson</a>
@@ -86,29 +87,29 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="shared-counter-title">
       <header>
         <div>
-          <p class="structure-kind">DDS</p>
+          <p class="structure-kind">Uses shared order</p>
           <h2 id="shared-counter-title">SharedCounter</h2>
-          <p>A signed counter whose operations pass through one sequencer.</p>
+          <p>A counter that puts every change in one shared order.</p>
         </div>
         <code>counter_kernel</code>
       </header>
       <div class="structure-body">
         <div>
           <p>
-            Each replica sends signed deltas to a sequencer. The sequencer
-            assigns one sequence number and broadcasts the numbered operation.
-            Replicas apply each sequence number once.
+            Everyone sends their increases and decreases to one service. The
+            service numbers each change and sends the same ordered list back
+            to everyone. Each numbered change is used once.
           </p>
           <h3>Best for</h3>
           <ul>
-            <li>Shared totals under an ordered collaborative runtime</li>
-            <li>Small summaries where a sequencer already coordinates updates</li>
+            <li>Shared totals that already pass through one service</li>
+            <li>Small summaries where everyone must use the same order</li>
           </ul>
         </div>
         <dl>
-          <div><dt>Updates</dt><dd>Signed integer deltas</dd></div>
-          <div><dt>Application rule</dt><dd>Apply each sequence number once</dd></div>
-          <div><dt>Metadata</dt><dd>One integer plus pending operations</dd></div>
+          <div><dt>Updates</dt><dd>Increase or decrease by a number</dd></div>
+          <div><dt>How changes apply</dt><dd>Use each numbered change once</dd></div>
+          <div><dt>What it remembers</dt><dd>The total and any changes still waiting</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/shared-counter/">Read the SharedCounter lesson</a>

@@ -5,7 +5,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
 <BaseLayout
   title="Maps"
-  description="Compare sequenced, timestamped, observed-remove, and hierarchical replicated maps."
+  description="Compare ways to store named values when people edit them at the same time."
   territory="Structures"
   sheetTitle="Maps"
 >
@@ -15,90 +15,90 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
       <h1>Maps</h1>
       <p>
         The ranger turns the Eagle Creek reports into a field record with named
-        keys. Alice, Bob, and Carol now need rules for conflicting values,
+        fields. Alice, Bob, and Carol now need rules for different answers,
         removed entries, and folders that can disappear and return.
       </p>
       <LessonIllustration id="structures-maps" />
     </header>
 
     <section aria-labelledby="shared-map-title">
-      <header><div><p class="structure-kind">DDS</p><h2 id="shared-map-title">SharedMap</h2><p>Server order selects one value per key.</p></div><code>map_kernel</code></header>
+      <header><div><p class="structure-kind">Uses shared order</p><h2 id="shared-map-title">SharedMap</h2><p>One shared order chooses a value for each name.</p></div><code>map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
             Alice writes <code>gate-status = Trail open</code>. Bob writes
             <code>Trail closed</code> before he sees her update. The ranger's
-            sequencer places Bob's operation last, so every map keeps Bob's
-            value.
+            service places Bob's change last, so every map keeps Bob's value.
           </p>
           <h3>Best for</h3>
-          <ul><li>Shared JSON settings under one sequenced service</li><li>Keys where server-order last-write-wins is acceptable</li></ul>
+          <ul><li>Shared JSON settings managed by one service</li><li>Named values where the service can choose the last change</li></ul>
         </div>
-        <dl><div><dt>Values</dt><dd>JSON and supported handles</dd></div><div><dt>Conflict rule</dt><dd>Greatest sequence number per key</dd></div><div><dt>Removal</dt><dd>Delete or clear</dd></div></dl>
+        <dl><div><dt>Values</dt><dd>JSON and supported handles</dd></div><div><dt>When answers differ</dt><dd>Keep the last numbered change for each name</dd></div><div><dt>Removal</dt><dd>Delete one value or clear the map</dd></div></dl>
       </div>
       <a class="structure-link" href="/structures/shared-map/">Open the SharedMap lesson</a>
     </section>
 
     <section aria-labelledby="lww-map-title">
-      <header><div><p class="structure-kind">CRDT</p><h2 id="lww-map-title">LWWMap</h2><p>Per-key timestamps select values and tombstones.</p></div><code>lww_map_kernel</code></header>
+      <header><div><p class="structure-kind">No shared order</p><h2 id="lww-map-title">LWWMap</h2><p>The time on each change chooses the value.</p></div><code>lww_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
-            The same key can produce a different selected value when its timestamp
-            differs from server order. Each key retains the winning value or
-            tombstone with its clock and writer evidence.
+            The newest time can choose a different value than the service's
+            delivery order. For each name, the map remembers the winning value
+            or removal, along with its time and author.
           </p>
           <h3>Best for</h3>
-          <ul><li>Offline string settings with deterministic winners</li><li>Maps where clocks, not the relay, define “last”</li></ul>
+          <ul><li>Offline text settings that need one predictable winner</li><li>Maps where clocks, not delivery order, define "last"</li></ul>
         </div>
-        <dl><div><dt>Values</dt><dd>Strings</dd></div><div><dt>Conflict rule</dt><dd>Timestamp, tombstone, then writer ID</dd></div><div><dt>Removal</dt><dd>Retained timestamped tombstone</dd></div></dl>
+        <dl><div><dt>Values</dt><dd>Text</dd></div><div><dt>When answers differ</dt><dd>Later time, removal, then author</dd></div><div><dt>Removal</dt><dd>Remember the removal and its time</dd></div></dl>
       </div>
       <a class="structure-link" href="/structures/lww-map/">Open the LWWMap lesson</a>
     </section>
 
     <section aria-labelledby="or-map-title">
-      <header><div><p class="structure-kind">CRDT</p><h2 id="or-map-title">OR-map</h2><p>Concurrent work can survive removal of a key.</p></div><code>or_map_kernel</code></header>
+      <header><div><p class="structure-kind">No shared order</p><h2 id="or-map-title">OR-map</h2><p>New work can survive a removal made at the same time.</p></div><code>or_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
             Alice removes the Eagle Creek stockpile after observing 5 crates.
-            Bob concurrently records 3 more. Alice cannot remove Bob's unseen
-            identity, so the stockpile remains with all 8 crates.
+            Bob records 3 more before he sees her removal. Alice's removal
+            cannot erase work she has not seen, so the stockpile remains with
+            all 8 crates.
           </p>
           <h3>Best for</h3>
-          <ul><li>Keyed ledgers and nested CRDT values</li><li>Maps where concurrent update must beat removal</li></ul>
+          <ul><li>Named ledgers and values that combine their own changes</li><li>Maps where new work must survive a removal made at the same time</li></ul>
         </div>
-        <dl><div><dt>Values</dt><dd>Tallies, registers, or string sets</dd></div><div><dt>Conflict rule</dt><dd>Observed-remove, add-wins</dd></div><div><dt>Removal</dt><dd>Tombstone observed key identities</dd></div></dl>
+        <dl><div><dt>Values</dt><dd>Counts, shared fields, or text sets</dd></div><div><dt>When answers differ</dt><dd>New unseen work stays</dd></div><div><dt>Removal</dt><dd>Remove only the versions already seen</dd></div></dl>
       </div>
       <a class="structure-link" href="/structures/or-map/">Open the OR-map lesson</a>
     </section>
 
     <section aria-labelledby="directory-title">
-      <header><div><p class="structure-kind">DDS</p><h2 id="directory-title">SharedDirectory</h2><p>A nested map with stable folder identities.</p></div><code>directory_kernel</code></header>
+      <header><div><p class="structure-kind">Uses shared order</p><h2 id="directory-title">SharedDirectory</h2><p>A folder tree that knows when a folder is replaced.</p></div><code>directory_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
             Alice and Bob both create an Eagle Creek folder. The directory
-            merges the concurrent creates into one path. Stable folder identity
-            also prevents stale edits from attaching to a later replacement.
+            combines both creations into one path. It also keeps old edits from
+            attaching to a new folder that later uses the same name.
           </p>
           <h3>Best for</h3>
-          <ul><li>Collaborative project and document trees</li><li>Nested state where path names can be reused</li></ul>
+          <ul><li>Shared project and document folders</li><li>Folder trees where names can be reused</li></ul>
         </div>
-        <dl><div><dt>Values</dt><dd>Nested folders and map entries</dd></div><div><dt>Conflict rule</dt><dd>Sequenced values plus stable folder identity</dd></div><div><dt>Removal</dt><dd>Delete a specific folder instance</dd></div></dl>
+        <dl><div><dt>Values</dt><dd>Folders and named entries</dd></div><div><dt>When answers differ</dt><dd>Use shared order and track each folder separately</dd></div><div><dt>Removal</dt><dd>Delete one specific folder</dd></div></dl>
       </div>
       <a class="structure-link" href="/structures/shared-directory/">Open the SharedDirectory lesson</a>
     </section>
 
     <section class="family-comparison" aria-labelledby="map-choice-title">
-      <h2 id="map-choice-title">Choose the key conflict rule</h2>
-      <table aria-label="Replicated map comparison">
+      <h2 id="map-choice-title">Choose what happens when answers differ</h2>
+      <table aria-label="Map comparison">
         <thead><tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Main cost</th></tr></thead>
         <tbody>
-          <tr><th scope="row">Server-ordered JSON</th><td>SharedMap</td><td>Sequencer dependency</td></tr>
-          <tr><th scope="row">Timestamp-selected strings</th><td>LWWMap</td><td>Clock and tombstones</td></tr>
-          <tr><th scope="row">Concurrent update survives delete</th><td>OR-map</td><td>Causal identities</td></tr>
-          <tr><th scope="row">Nested paths retain identity</th><td>SharedDirectory</td><td>Folder-instance metadata</td></tr>
+          <tr><th scope="row">One service orders JSON changes</th><td>SharedMap</td><td>The service must stay available</td></tr>
+          <tr><th scope="row">Clocks choose text values</th><td>LWWMap</td><td>Remember clocks and removals</td></tr>
+          <tr><th scope="row">New work survives removal</th><td>OR-map</td><td>Remember which work each person saw</td></tr>
+          <tr><th scope="row">Folders can reuse names</th><td>SharedDirectory</td><td>Track each folder separately</td></tr>
         </tbody>
       </table>
     </section>

@@ -5,7 +5,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
 <BaseLayout
   title="Registers"
-  description="Compare last-writer-wins, multi-value, and policy-selected replicated registers."
+  description="Compare ways to choose or preserve answers in one shared field."
   territory="Structures"
   sheetTitle="Registers"
 >
@@ -16,7 +16,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
       <p>
         The beacon list is settled, but the ranger still needs one answer:
         is the Eagle Creek trail open? Alice, Bob, and Carol discover that one
-        shared field still needs a rule for concurrent reports.
+        shared field still needs a rule when reports arrive at the same time.
       </p>
       <LessonIllustration id="structures-registers" />
     </header>
@@ -24,9 +24,9 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="lww-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="lww-title">LWWRegister</h2>
-          <p>One deterministic winner selected by timestamp and author.</p>
+          <p>Use the time and author to choose one answer.</p>
         </div>
         <code>lww_register_kernel</code>
       </header>
@@ -35,24 +35,24 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
           <p>
             Alice reports <code>Trail open</code> while Bob reports
             <code>Trail closed</code>. A last-writer-wins register keeps one
-            value. The greater timestamp determines the value; equal timestamps use the writer
-            ID as a stable tie-breaker.
+            value. The later time wins. If the times match, the author's name
+            breaks the tie.
           </p>
           <p>
-            Carol receives the reports in either order and still chooses the
-            same value. The cost is hidden disagreement: the losing report is
-            discarded.
+            Carol can receive the reports in either order and still choose the
+            same value. The losing report is discarded, so readers do not see
+            the disagreement.
           </p>
           <h3>Best for</h3>
           <ul>
-            <li>Small settings where one deterministic answer is required</li>
-            <li>Values whose clock policy is trusted</li>
+            <li>Small settings that need one predictable answer</li>
+            <li>Values where trusted clocks can decide which answer wins</li>
           </ul>
         </div>
         <dl>
-          <div><dt>Updates</dt><dd>Timestamped string writes</dd></div>
-          <div><dt>Merge rule</dt><dd>Greatest timestamp, then writer ID</dd></div>
-          <div><dt>Metadata</dt><dd>Value, timestamp, and author</dd></div>
+          <div><dt>Updates</dt><dd>Text with a time and author</dd></div>
+          <div><dt>How copies combine</dt><dd>Later time, then author</dd></div>
+          <div><dt>What it remembers</dt><dd>The answer, time, and author</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/lww-register/">
@@ -63,9 +63,9 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="mv-title">
       <header>
         <div>
-          <p class="structure-kind">CRDT</p>
+          <p class="structure-kind">No shared order</p>
           <h2 id="mv-title">MvRegister</h2>
-          <p>Keep concurrent answers until someone observes and resolves them.</p>
+          <p>Keep competing answers until someone resolves them.</p>
         </div>
         <code>mv_register_kernel</code>
       </header>
@@ -73,23 +73,23 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
         <div>
           <p>
             The ranger cannot safely discard either trail report. The
-            multi-value register keeps Alice's and Bob's concurrent answers as
-            siblings. Carol sees the disagreement instead of a silent winner.
+            multi-value register keeps both Alice's and Bob's answers. Carol
+            sees the disagreement instead of a silent winner.
           </p>
           <p>
-            After Carol inspects the bridge, her next write can replace the
-            alternatives she observed. An unseen report would still survive.
+            After Carol inspects the bridge, her next report can replace the
+            answers she saw. A report she has not seen still remains.
           </p>
           <h3>Best for</h3>
           <ul>
-            <li>Reviews where a person must resolve concurrent answers</li>
+            <li>Reviews where a person must resolve competing answers</li>
             <li>Values where losing a valid report would be harmful</li>
           </ul>
         </div>
         <dl>
-          <div><dt>Updates</dt><dd>Causally tagged writes</dd></div>
-          <div><dt>Merge rule</dt><dd>Keep concurrent siblings</dd></div>
-          <div><dt>Metadata</dt><dd>Alternatives plus causal context</dd></div>
+          <div><dt>Updates</dt><dd>Answers with information about earlier answers</dd></div>
+          <div><dt>How copies combine</dt><dd>Keep answers made at the same time</dd></div>
+          <div><dt>What it remembers</dt><dd>Each remaining answer and its history</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/multi-value-register/">
@@ -100,9 +100,9 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="collection-title">
       <header>
         <div>
-          <p class="structure-kind">DDS</p>
+          <p class="structure-kind">Uses shared order</p>
           <h2 id="collection-title">RegisterCollection</h2>
-          <p>Retain sequenced versions and choose a read policy later.</p>
+          <p>Keep numbered versions and choose how to read them.</p>
         </div>
         <code>register_collection_kernel</code>
       </header>
@@ -110,25 +110,25 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
         <div>
           <p>
             Alice and Bob submit reports before either sees the other. The
-            ranger's sequencer stores both versions. An atomic read keeps the
-            first uncontested write; a latest read returns the greatest
-            sequence number.
+            ranger's service numbers and stores both versions. One reading
+            method keeps the first answer that had no competition. Another
+            returns the newest numbered answer.
           </p>
           <p>
-            The collection does not merge by timestamp or preserve causal
-            siblings. It retains sequenced versions so the caller can choose
-            between two server-ordered read policies.
+            The collection does not compare clocks or combine the answers. It
+            keeps the numbered versions so the reader can choose between the
+            two rules.
           </p>
           <h3>Best for</h3>
           <ul>
-            <li>Named cells that need atomic or latest reads</li>
-            <li>Sequenced collaboration where retained versions matter</li>
+            <li>Named fields that need a first or newest answer</li>
+            <li>Shared work where old numbered versions still matter</li>
           </ul>
         </div>
         <dl>
-          <div><dt>Updates</dt><dd>Non-optimistic sequenced writes</dd></div>
-          <div><dt>Read rules</dt><dd>Atomic or latest sequence number</dd></div>
-          <div><dt>Metadata</dt><dd>Retained values and sequence numbers</dd></div>
+          <div><dt>Updates</dt><dd>Answers numbered by one service</dd></div>
+          <div><dt>Read rules</dt><dd>First uncontested or newest</dd></div>
+          <div><dt>What it remembers</dt><dd>Answers and their numbers</dd></div>
         </dl>
       </div>
       <a class="structure-link" href="/structures/register-collection/">
@@ -138,14 +138,14 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
     <section class="family-comparison" aria-labelledby="register-choice-title">
       <h2 id="register-choice-title">Choose what disagreement means</h2>
-      <table aria-label="Replicated register comparison">
+      <table aria-label="Register comparison">
         <thead>
           <tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Trade-off</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">One clock-selected winner</th><td>LWWRegister</td><td>Discard the losing write</td></tr>
-          <tr><th scope="row">Preserve concurrent answers</th><td>MvRegister</td><td>Require later resolution</td></tr>
-          <tr><th scope="row">Choose a server-ordered read</th><td>RegisterCollection</td><td>Require a sequencer</td></tr>
+          <tr><th scope="row">Let time choose one answer</th><td>LWWRegister</td><td>Discard the losing answer</td></tr>
+          <tr><th scope="row">Keep competing answers</th><td>MvRegister</td><td>Someone must resolve them later</td></tr>
+          <tr><th scope="row">Choose from numbered answers</th><td>RegisterCollection</td><td>One service must order them</td></tr>
         </tbody>
       </table>
     </section>
