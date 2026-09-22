@@ -482,6 +482,7 @@ function raceNote(replica: ReplicaId): string {
     grid-area: relay;
     display: flex;
     min-width: 0;
+    align-self: stretch;
     flex-direction: column;
     align-items: center;
     gap: var(--space-4);
@@ -512,6 +513,8 @@ function raceNote(replica: ReplicaId): string {
   .set-evidence {
     display: grid;
     width: 100%;
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr);
     gap: var(--space-3);
     text-align: center;
   }
@@ -539,7 +542,6 @@ function raceNote(replica: ReplicaId): string {
     display: flex;
     width: 100%;
     min-height: 10rem;
-    max-height: 12.5rem;
     padding: 0;
     overflow-y: auto;
     flex-direction: column;
@@ -600,6 +602,11 @@ function raceNote(replica: ReplicaId): string {
     .set-evidence ol {
       min-height: 6rem;
       max-height: 8rem;
+    }
+
+    .set-evidence {
+      flex: none;
+      grid-template-rows: auto auto;
     }
 
     .set-controls {

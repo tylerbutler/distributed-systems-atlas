@@ -401,6 +401,7 @@ const componentLabels = {
     grid-area: sequencer;
     display: flex;
     min-width: 0;
+    align-self: stretch;
     flex-direction: column;
     align-items: center;
     gap: var(--space-4);
@@ -437,7 +438,7 @@ const componentLabels = {
     display: flex;
     width: min(100%, 12rem);
     min-height: 10rem;
-    max-height: 12.5rem;
+    flex: 1;
     margin: 0;
     padding: 0;
     overflow-y: auto;
@@ -601,6 +602,7 @@ const componentLabels = {
     .operation-log {
       min-height: 6rem;
       max-height: 8rem;
+      flex: none;
     }
 
     .pn-explanation {
