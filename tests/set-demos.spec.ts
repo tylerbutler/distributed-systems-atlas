@@ -169,6 +169,14 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         await expect(page.getByLabel("dot definition")
           .getByRole("link", { name: "dot" }))
           .toHaveAttribute("href", "/glossary/#dot");
+        await expect(page.getByText(
+          "Losing contact stops new notes; it does not erase what Bob already wrote.",
+          { exact: true },
+        )).toBeVisible();
+        await expect(page.getByText(
+          "The counter is shared across the dots in this set, not restarted for each writer.",
+          { exact: true },
+        )).toBeVisible();
         const notebooks = page.getByRole("table", {
           name: "Observed-remove notebooks before records meet",
         });

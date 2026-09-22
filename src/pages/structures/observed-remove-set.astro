@@ -48,8 +48,16 @@ import "../../styles/set-lesson.css";
         definition="A unique event identifier made from a replica ID and a local counter."
       />
       <p>
-        Bob adds the replacement while his station and Alice's station cannot
-        exchange notes. His addition gets the fresh dot <code>B:2</code>. An{" "}
+        Before the stations lose contact, Bob receives Alice's
+        <code>A:1</code> note. He copies it into his additions page and records
+        <code>1</code> as the highest dot counter seen. Losing contact stops new
+        notes; it does not erase what Bob already wrote.
+      </p>
+      <p>
+        Bob then adds the replacement while his station and Alice's station
+        cannot exchange notes. He increments the stored counter from
+        <code>1</code> to <code>2</code> and combines it with his replica ID,
+        so the replacement receives <code>B:2</code>. An{" "}
         <dfn><a href="/glossary/#observed-remove-set">observed-remove set</a></dfn>
         {" "}removes only the addition identities that the removing replica
         observed.
@@ -62,7 +70,8 @@ import "../../styles/set-lesson.css";
         Each additions-page row pairs a beacon name with its dot. Each
         removals-page row copies the same pair, so an old note cannot restore
         that installation. The notebook also keeps the highest dot counter seen.
-        Bob has seen <code>A:1</code>, so his next dot is <code>B:2</code>.
+        The counter is shared across the dots in this set, not restarted for
+        each writer.
       </p>
       <figure>
         <table aria-label="Observed-remove notebooks before records meet">

@@ -38,10 +38,13 @@ seen, but it could not remove the old installation. A TwoPSet could retire it,
 but then Alice could not add its replacement under the same name. The
 observed-remove set must support the full story.
 
-Alice at station A removes the old installation while Bob at station B reports
-its replacement when their stations cannot exchange notes. Carol asks what
-their shared list must show after delivery of the delayed records. The ranger
-needs that final list but does not sequence their updates. The lab isolates Alice's and Bob's conflicting
+Alice first sends the old installation's `A:1` note to Bob. Bob copies it into
+his notebook and records `1` as the highest dot counter seen. Alice then
+removes the old installation while Bob reports its replacement after their
+stations lose contact. Losing contact blocks new notes; it does not erase
+`A:1` from Bob's notebook. Carol asks what their shared list must show after
+delivery of the delayed records. The ranger needs that final list but does not
+sequence their updates. The lab isolates Alice's and Bob's conflicting
 replicas: Bob eventually receives a stale copy of the original addition. You
 need to preserve Bob's replacement without restoring the installation Alice
 removed.
@@ -71,10 +74,12 @@ addition; the replica component separates allocators.
 <DotDiagram />
 
 The identity diagram shows why equal counters at different replicas do not
-collide. The lab below uses a different counter-allocation rule from the
-Dots reference model: after B receives `A:1`, its next dot is `B:2`, not
-`B:1`. Watershed takes the maximum set allocation counter on merge, then
-increments it for an add. `B:2` is B's first addition in this run.
+collide. The lab below uses a set-wide counter instead of restarting the
+counter for each writer. Bob received `A:1` before communication stopped, so
+his notebook already records counter `1`. His next local add increments that
+stored counter and creates `B:2`, even though it is Bob's first addition in
+this run. The disconnection prevents later messages from arriving; it does not
+reset the state Bob already has.
 
 Keep that literal dot in the records. Renaming it to `B:1` would hide which
 implementation you are inspecting. A's remove targets `A:1`. It cannot
