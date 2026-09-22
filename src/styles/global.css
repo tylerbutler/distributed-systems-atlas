@@ -271,6 +271,56 @@ p {
   align-items: center;
 }
 
+@media (min-width: 80rem) {
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) {
+    --structure-rail-width: clamp(12rem, 14vw, 14rem);
+    --structure-rail-gap: var(--space-5);
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) > .structure-facts {
+    float: left;
+    width: var(--structure-rail-width);
+    margin: var(--space-6) 0 var(--space-6)
+      calc(0px - var(--structure-rail-width) - var(--structure-rail-gap));
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) > .structure-facts header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) > .structure-facts h2 {
+    font-size: 1.4rem;
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) > .structure-facts dl {
+    grid-template-columns: 1fr;
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson)
+    > .structure-facts
+    dl
+    div:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) .term-callout {
+    display: grid;
+    float: right;
+    clear: right;
+    width: var(--structure-rail-width);
+    margin: var(--space-4)
+      calc(0px - var(--structure-rail-width) - var(--structure-rail-gap))
+      var(--space-5) var(--structure-rail-gap);
+    grid-template-columns: 1fr;
+  }
+
+  .site-main :is(.structure-page, .set-lesson, .register-lesson) .term-callout-label {
+    justify-self: start;
+  }
+}
+
 .reference-list {
   max-width: var(--measure-reading);
   padding: 0;
