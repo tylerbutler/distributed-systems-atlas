@@ -17,9 +17,10 @@ import "../../styles/set-lesson.css";
       <p class="territory-label">Structures</p>
       <h1>MvRegister</h1>
       <p class="structure-summary">
-        The ranger cannot discard Alice's open report or Bob's closed report.
-        Carol must see both before she walks to Eagle Creek and resolves the
-        disagreement.
+        The ranger needs one trail status for the morning bulletin. Alice
+        reports that Eagle Creek is open while Bob reports that it is closed.
+        Neither hiker has seen the other's note, so the ranger cannot treat
+        either report as a correction.
       </p>
     </header>
 
@@ -34,36 +35,68 @@ import "../../styles/set-lesson.css";
     />
 
     <section aria-labelledby="siblings-title">
-      <h2 id="siblings-title">The disagreement remains visible</h2>
+      <h2 id="siblings-title">Two notebooks hold two current answers</h2>
       <p>
-        A <dfn><a href="/glossary/#multi-value-register">multi-value register</a></dfn>
-        {" "}keeps concurrent writes as alternatives, often called siblings.
-        Alice had not seen Bob's report, and Bob had not seen Alice's, so
-        neither write replaces the other.
+        Alice writes <code>Trail open</code> in her notebook and marks it as
+        her first write, <code>A:1</code>. Before that note reaches Bob, he
+        writes <code>Trail closed</code> and marks it <code>B:1</code>. Each
+        notebook contains one valid local answer, but neither write includes
+        evidence that its writer saw the other report.
+      </p>
+      <p>
+        The writes are concurrent. A <dfn><a href="/glossary/#multi-value-register">multi-value register</a></dfn>
+        {" "}keeps both as alternatives. Each surviving alternative is a
+        {" "}<dfn><a href="/glossary/#sibling">sibling</a></dfn>.
       </p>
       <TermCallout
         term="multi-value register"
         definition="A replicated register that retains concurrent writes until a write that observes them supersedes them."
       />
+      <TermCallout
+        term="sibling"
+        definition="A surviving version of a register value with its own write identity and causal history."
+        inlineOnly
+      />
       <figure>
-        <table aria-label="Concurrent MvRegister reports">
+        <table aria-label="MvRegister notebook checkpoints">
           <thead>
-            <tr><th scope="col">Replica</th><th scope="col">Visible alternatives after merge</th></tr>
+            <tr>
+              <th scope="col">Notebook</th>
+              <th scope="col">Before notes are exchanged</th>
+              <th scope="col">After both notes arrive</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice</th><td>Trail closed · Trail open</td></tr>
-            <tr><th scope="row">Bob</th><td>Trail closed · Trail open</td></tr>
-            <tr><th scope="row">Carol</th><td>Trail closed · Trail open</td></tr>
+            <tr>
+              <th scope="row">Alice</th>
+              <td>Trail open <code>[A:1]</code></td>
+              <td>Trail open <code>[A:1]</code><br />Trail closed <code>[B:1]</code></td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td>Trail closed <code>[B:1]</code></td>
+              <td>Trail open <code>[A:1]</code><br />Trail closed <code>[B:1]</code></td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td>No report</td>
+              <td>Trail open <code>[A:1]</code><br />Trail closed <code>[B:1]</code></td>
+            </tr>
           </tbody>
         </table>
-        <figcaption>Convergence can preserve a conflict instead of hiding it.</figcaption>
+        <figcaption>The write identities show that neither report followed the other.</figcaption>
       </figure>
+      <p>
+        The order in which Carol receives the notes does not settle the
+        disagreement. After every note arrives, all three notebooks contain
+        the same two alternatives.
+      </p>
     </section>
 
     <RegisterStructureDemo
       kind="mv-register"
       title="Keep both trail reports"
-      description="Alice and Bob write without observing each other. Exchange both deltas and inspect the alternatives that every notebook retains."
+      description="Run Alice and Bob's preset race, or choose a trail status for any hiker. The notebooks retain writes that did not observe each other."
       rule="Keep concurrent writes as siblings."
       raceLabel="Race Alice's and Bob's reports"
     />
@@ -71,9 +104,16 @@ import "../../styles/set-lesson.css";
     <section aria-labelledby="resolve-title">
       <h2 id="resolve-title">Carol resolves what she observed</h2>
       <p>
-        Carol inspects the bridge, reads both alternatives, and writes a new
-        status. That write replaces the siblings in her causal history. It
-        cannot erase an unseen report from an offline hiker.
+        Carol's notebook now holds both siblings and the combined history
+        <code>[A:1, B:1]</code>. She walks to Eagle Creek, inspects the bridge,
+        and chooses a new trail status. Her new note records that she wrote it
+        after seeing both earlier reports.
+      </p>
+      <p>
+        When Alice and Bob receive Carol's note, it replaces the two siblings
+        that Carol observed. It cannot replace a report that Carol had not yet
+        received. That unseen report would remain as another current
+        alternative.
       </p>
       <p>
         The deeper Atlas lab exposes the write tags, causal context, delayed
