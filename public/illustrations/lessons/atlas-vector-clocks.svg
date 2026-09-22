@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="vector-title vector-desc">
+  <title id="vector-title">Vector clocks: opposing advances</title>
+  <desc id="vector-desc">Two portable knowledge records each retain a circle-marked and a diamond-marked indicator column. The left instrument is farther advanced in the circle column; the right is farther advanced in the diamond column. A plain straightedge rests in front.</desc>
+  <defs>
+    <pattern id="vector-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="vector-case">
+      <path class="light" d="M0 33L28 10H206L232 33V326H0Z"/>
+      <path class="paper" d="M0 33H232V326H0Z"/>
+      <path d="M7 310H232V326H0V40H7Z" fill="url(#vector-hatch)"/>
+      <path class="ink" d="M74 10V-9Q115-27 156-9V10M86 10V-1Q115-11 144-1V10"/>
+      <circle class="ink" cx="65" cy="68" r="13"/>
+      <path class="ink" d="M165 53L180 68L165 83L150 68Z"/>
+      <path class="light" d="M39 99H91V282H39ZM139 99H191V282H139Z"/>
+      <path class="fine" d="M22 122H32M22 153H32M22 184H32M22 215H32M22 246H32M122 122H132M122 153H132M122 184H132M122 215H132M122 246H132"/>
+      <circle class="fine" cx="16" cy="48" r="3"/><circle class="fine" cx="216" cy="48" r="3"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M109 464L737 493L805 461"/>
+  <use href="#vector-case" transform="translate(168 128)"/>
+  <use href="#vector-case" transform="translate(500 128)"/>
+  <path class="paper" d="M211 281H255V406H211ZM311 359H355V406H311ZM543 359H587V406H543ZM643 281H687V406H643Z"/>
+  <path class="ink" d="M207 281H259M307 359H359M539 359H591M639 281H691"/>
+  <path class="fine" d="M219 293V396M319 371V396M551 371V396M651 293V396"/>
+  <path class="light" d="M158 468L712 483L710 514L156 499Z"/>
+  <path class="fine" d="M175 471V483M199 472V489M223 473V485M247 473V491M271 474V486M295 475V493M319 475V487M343 476V494M367 477V489M391 477V495M415 478V490M439 479V497M463 479V491M487 480V498M511 481V493M535 481V499M559 482V494M583 483V501M607 483V495M631 484V502M655 485V497M679 485V503"/>
+  <circle class="ink" cx="690" cy="499" r="5"/>
+</svg>

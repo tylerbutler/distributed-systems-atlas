@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="lww-map-title lww-map-desc">
+  <title id="lww-map-title">LWWMap: compare metadata for each key</title>
+  <desc id="lww-map-desc">Three separate setting records each carry a small clock and a writer-shaped tag. The clock hands differ. A loose incoming report remains on the desk beside the record board.</desc>
+  <defs><pattern id="lww-map-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M118 465L625 508L809 453"/>
+  <g transform="rotate(-5 405 306)">
+    <path class="light" d="M156 156H638V443H156Z"/>
+    <path d="M156 431H638V443H156Z" fill="url(#lww-map-hatch)"/>
+    <path class="paper" d="M177 181H310V415H177ZM330 181H463V415H330ZM483 181H616V415H483Z"/>
+    <path class="fine" d="M187 323H300M340 323H453M493 323H606"/>
+    <path class="ink" d="M196 280V222H204V280M281 280V222H289V280M204 232H281V265H204ZM205 233L280 264"/>
+    <path class="ink" d="M349 280V222H357V280M434 280V222H442V280M357 231L390 213V246L357 267"/>
+    <path class="ink" d="M502 280V222H510V280M587 280V222H595V280M510 232H587V265H510ZM511 233L586 264"/>
+    <circle class="light" cx="220" cy="363" r="25"/>
+    <circle class="light" cx="373" cy="363" r="25"/>
+    <circle class="light" cx="526" cy="363" r="25"/>
+    <path class="fine" d="M220 342V347M241 363H236M220 384V379M199 363H204M373 342V347M394 363H389M373 384V379M352 363H357M526 342V347M547 363H542M526 384V379M505 363H510"/>
+    <path class="ink" d="M220 349V363L234 369M360 359L373 363L385 350M526 379V363L538 356"/>
+    <circle class="paper" cx="278" cy="363" r="13"/>
+    <path class="paper" d="M431 347L447 363L431 379L415 363ZM570 353H586L594 367L586 381H570L562 367Z"/>
+    <path d="M283 190H298V209L291 204L283 209Z" fill="#ebcd42"/>
+  </g>
+  <g transform="rotate(13 709 397)">
+    <path class="paper" d="M655 289H790V469H655Z"/>
+    <path class="ink" d="M675 376V324H683V376M760 376V324H768V376M683 333L712 316V346L683 364"/>
+    <circle class="light" cx="693" cy="417" r="20"/>
+    <path class="ink" d="M693 402V417L682 425M752 403L766 417L752 431L738 417Z"/>
+    <path class="fine" d="M667 392H779M670 452H754"/>
+  </g>
+</svg>

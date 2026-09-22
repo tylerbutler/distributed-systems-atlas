@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="atlas-mv-title atlas-mv-desc">
+  <title id="atlas-mv-title">Multi-value registers: two signal reports</title>
+  <desc id="atlas-mv-desc">Two separately sealed signal-lens reports remain equally visible in one open-front holder. Different hatching distinguishes the lens drawings. A blank decision slip lies below, not yet replacing either report.</desc>
+  <defs>
+    <pattern id="atlas-mv-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <pattern id="atlas-mv-cross" width="9" height="9" patternUnits="userSpaceOnUse"><path d="M0 0L9 9M9 0L0 9" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="atlas-mv-lens"><path class="light" d="M-46 9Q0-12 46 9V69Q0 90-46 69Z"/><ellipse class="paper" cx="0" cy="39" rx="36" ry="43"/><path class="ink" d="M-15 81V96H15V81M-28 96H28"/></g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M105 459L664 512L802 459"/>
+  <path class="light" d="M242 167H655L687 399H221Z"/>
+  <path d="M641 173H655L687 399H670Z" fill="url(#atlas-mv-hatch)"/>
+  <path class="paper" d="M245 177H426V383H245ZM456 177H637V383H456Z"/>
+  <circle class="ink" cx="269" cy="201" r="9"/>
+  <path class="ink" d="M480 190L491 201L480 212L469 201Z"/>
+  <use href="#atlas-mv-lens" transform="translate(335 240)"/>
+  <use href="#atlas-mv-lens" transform="translate(546 240)"/>
+  <ellipse cx="335" cy="279" rx="27" ry="33" fill="url(#atlas-mv-hatch)" stroke="#264653" stroke-width="1.5"/>
+  <ellipse cx="546" cy="279" rx="27" ry="33" fill="url(#atlas-mv-cross)" stroke="#264653" stroke-width="1.5"/>
+  <path class="fine" d="M263 358H410M474 358H621"/>
+  <path class="light" d="M224 369H658L675 393V410H211V393Z"/>
+  <path class="paper" d="M211 393H675V410H211Z"/>
+  <path class="ink" d="M229 371V209M652 371V209"/>
+  <path class="light" d="M405 156H477V184H405Z"/>
+  <path class="ink" d="M420 156V143Q441 123 462 143V156"/>
+  <g transform="rotate(-7 442 453)">
+    <path class="paper" d="M314 426H570V503H314Z"/>
+    <path class="fine" d="M327 490H557"/>
+  </g>
+  <path class="paper" d="M708 253L723 257L681 432L668 452L670 428Z"/>
+  <path class="fine" d="M714 259L677 430"/>
+  <path d="M668 452L670 438L677 440Z" fill="#264653"/>
+</svg>

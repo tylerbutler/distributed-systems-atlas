@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="ordered-collection-title ordered-collection-desc">
+  <title id="ordered-collection-title">OrderedCollection: one acquired job</title>
+  <desc id="ordered-collection-desc">A single bridge-inspection card rests on a circle-marked field notebook outside an empty work tray. Diamond- and hexagon-marked notebooks have no acquired card. The card has no completion mark.</desc>
+  <defs><pattern id="ordered-collection-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 464L614 515L807 461"/>
+  <path class="light" d="M257 208L516 153L680 246L420 308Z"/>
+  <path d="M274 216L516 165L662 246L420 294Z" fill="url(#ordered-collection-hatch)"/>
+  <path class="paper" d="M294 225L516 178L642 247L420 294Z"/>
+  <path class="light" d="M257 208V265L420 361L680 298V246L657 251V282L420 335L280 254V219Z"/>
+  <path class="paper" d="M420 308L680 246V298L420 361Z"/>
+  <path class="ink" d="M420 308V361"/>
+  <path class="fine" d="M437 344L660 291M288 263L404 330"/>
+  <g transform="rotate(-10 286 399)">
+    <path class="light" d="M126 329H395V481H126Z"/>
+    <path d="M130 468H395V481H126V333H130Z" fill="url(#ordered-collection-hatch)"/>
+    <path class="paper" d="M136 317H402V466H136Z"/>
+    <path class="ink" d="M157 317V466"/>
+    <circle class="ink" cx="183" cy="342" r="12"/>
+    <path class="paper" d="M215 287H374V439H215Z"/>
+    <path class="ink" d="M230 361Q294 307 358 361M235 361V397M354 361V397M232 345Q294 290 357 345M253 328V345M294 311V329M335 328V345"/>
+    <path class="fine" d="M230 411Q260 402 293 413T358 413"/>
+    <path d="M343 287H357V309L350 303L343 309Z" fill="#ebcd42"/>
+  </g>
+  <g transform="rotate(8 631 398)">
+    <path class="light" d="M489 364H617V479H489ZM651 344H779V459H651Z"/>
+    <path class="paper" d="M494 355H622V470H494ZM656 335H784V450H656Z"/>
+    <path class="ink" d="M510 355V470M672 335V450M549 386L563 400L549 414L535 400ZM708 365H724L733 380L724 395H708L699 380Z"/>
+    <path class="fine" d="M523 451H606M685 431H767"/>
+  </g>
+</svg>

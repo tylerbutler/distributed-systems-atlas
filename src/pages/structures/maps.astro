@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import LessonIllustration from "../../components/LessonIllustration.astro";
 ---
 
 <BaseLayout
@@ -17,6 +18,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         keys. Alice, Bob, and Carol now need rules for conflicting values,
         removed entries, and folders that can disappear and return.
       </p>
+      <LessonIllustration id="structures-maps" />
     </header>
 
     <section aria-labelledby="shared-map-title">
@@ -112,7 +114,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 <style>
   .map-family { max-width: var(--measure-reading); margin-inline: auto; }
   .page-intro { margin-bottom: var(--space-7); }
-  .page-intro > p:last-child { font-size: 1.2rem; }
+  .page-intro > p:last-of-type { font-size: 1.2rem; }
   .map-family > section:not(.family-comparison) {
     margin-top: var(--space-7);
     padding: var(--space-5);

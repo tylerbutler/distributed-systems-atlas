@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="mv-register-title mv-register-desc">
+  <title id="mv-register-title">MvRegister: keep both reports</title>
+  <desc id="mv-register-desc">An open notebook holds equally sized open-gate and closed-gate reports under one clip. Circle and diamond marks identify their writers. A pencil and a blank resolution slip lie separately beside the notebook.</desc>
+  <defs><pattern id="mv-register-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M106 476Q327 464 510 502M561 492L800 464"/>
+  <g transform="rotate(-5 391 337)">
+    <path class="light" d="M167 197L394 220L626 194L631 464L394 504L162 467Z"/>
+    <path d="M164 451L394 490L630 450V464L394 504L162 467Z" fill="url(#mv-register-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="paper" d="M176 183Q283 174 394 211Q506 169 624 181L630 450Q509 452 394 490Q280 451 164 451Z"/>
+    <path class="ink" d="M394 211V490"/>
+    <path class="fine" d="M185 429Q283 427 378 466M410 467Q516 433 609 435"/>
+    <path class="paper" d="M203 227L372 244V417L202 399ZM417 244L588 225L590 398L419 419Z"/>
+    <circle class="ink" cx="225" cy="253" r="8"/>
+    <path class="ink" d="M441 258L451 268L441 278L431 268Z"/>
+    <path class="ink" d="M228 356V291H239V356M330 367V302H341V367M239 302L278 282V324L239 344M240 305L277 323"/>
+    <path class="ink" d="M441 367V302H452V367M547 356V291H558V356M452 312L547 301V340L452 351ZM453 314L546 338M453 349L546 303"/>
+    <path class="fine" d="M220 379L352 392M437 392L571 376"/>
+    <path class="light" d="M366 209H421V249H366Z"/>
+    <path class="ink" d="M377 209V195Q393 174 410 195V209"/>
+  </g>
+  <g transform="rotate(11 729 331)">
+    <path class="paper" d="M663 279H785V444H663Z"/>
+    <path class="fine" d="M670 436H776"/>
+    <path class="ink" d="M682 254L728 139L738 143L691 258L681 269Z"/>
+    <path class="fine" d="M687 254L733 143"/>
+    <path d="M681 269L683 258L689 261Z" fill="#264653"/>
+  </g>
+  <path class="ink" d="M139 227L145 216H157L164 227L157 238H145Z"/>
+</svg>

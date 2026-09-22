@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="dots-title dots-desc">
+  <title id="dots-title">Dots and causal context: identities and retained evidence</title>
+  <desc id="dots-desc">A beacon report has a two-part seal with a circle writer mark and a blank event slot. An open notebook retains older identity slips in a pocket. A fresh diamond-sealed beacon report lies outside that notebook.</desc>
+  <defs>
+    <pattern id="dots-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="dots-beacon" stroke="#264653" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-32 150L-44 158V170Q0 185 44 170V158L32 150Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <ellipse cx="0" cy="156" rx="39" ry="11" fill="white" stroke-width="2.6"/>
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#dots-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M104 462L641 511L803 461"/>
+  <g transform="rotate(-8 227 268)">
+    <path class="paper" d="M132 145H305V363H132Z"/>
+    <use href="#dots-beacon" transform="translate(218 175) scale(.82)"/>
+    <path class="fine" d="M150 337H286"/>
+    <path class="ink" d="M155 349Q134 371 156 392"/>
+    <path class="paper" d="M137 378H271V429H137Z"/>
+    <circle class="ink" cx="163" cy="403" r="10"/>
+    <path class="ink" d="M186 389V418M200 392H253V413H200Z"/>
+  </g>
+  <g transform="rotate(4 454 363)">
+    <path class="light" d="M336 251L454 269L583 248V481L454 508L334 487Z"/>
+    <path d="M334 475L454 496L583 469V481L454 508L334 487Z" fill="url(#dots-hatch)"/>
+    <path class="paper" d="M343 239Q398 237 454 259Q519 235 582 236V469Q519 473 454 496Q394 475 334 475Z"/>
+    <path class="ink" d="M454 259V496"/>
+    <path class="light" d="M352 344L435 356V453L351 439Z"/>
+    <path class="paper" d="M365 376V293Q365 281 377 281H398Q410 281 410 293V383Z"/>
+    <circle class="ink" cx="383" cy="301" r="7"/>
+    <path class="fine" d="M373 319H401V336H373Z"/>
+    <path class="ink" d="M352 344L393 389L435 356"/>
+    <path class="paper" d="M472 293L563 274V338L472 357ZM472 377L563 358V422L472 441Z"/>
+    <circle class="ink" cx="490" cy="312" r="6"/>
+    <path class="ink" d="M510 295L551 287V315L510 323ZM484 392H493L498 400L493 408H484L479 400ZM510 379L551 371V399L510 407Z"/>
+  </g>
+  <g transform="rotate(11 709 282)">
+    <path class="paper" d="M642 165H784V375H642Z"/>
+    <use href="#dots-beacon" transform="translate(713 190) scale(.78)"/>
+    <path class="fine" d="M656 350H770"/>
+    <path class="ink" d="M717 371V401"/>
+    <path class="paper" d="M650 399H784V450H650Z"/>
+    <path class="ink" d="M676 412L689 425L676 438L663 425ZM698 410V439M714 414H768V435H714Z"/>
+    <path d="M772 399H781V411H772Z" fill="#ebcd42"/>
+  </g>
+</svg>

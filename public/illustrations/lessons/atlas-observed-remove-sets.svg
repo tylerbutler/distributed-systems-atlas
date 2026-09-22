@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="atlas-or-title atlas-or-desc">
+  <title id="atlas-or-title">Observed-remove sets: check a delayed report</title>
+  <desc id="atlas-or-desc">An opened delayed envelope contains an old beacon report with a rounded tag. The same tag is retained in a retirement-record pocket. A separate upright-beacon report has a diamond tag and remains intact.</desc>
+  <defs>
+    <pattern id="atlas-or-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="atlas-or-beacon" stroke="#264653" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M-32 150L-44 158V170Q0 185 44 170V158L32 150Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <ellipse cx="0" cy="156" rx="39" ry="11" fill="white" stroke-width="2.6"/>
+      <path d="M-25 35H25V151Q0 162-25 151Z" fill="white" stroke-width="2.6"/>
+      <path d="M12 42H25V151L12 155Z" fill="url(#atlas-or-hatch)"/>
+      <path d="M-32 28Q0 14 32 28L27 88Q0 99-27 88Z" fill="white" stroke-width="2.6"/>
+      <path d="M-32 28V38Q0 51 32 38M-27 78Q0 90 27 78M-15 45L-13 83M15 45L13 83" fill="none" stroke-width="1.6"/>
+      <path d="M-37 27L-25 12Q0-1 25 12L37 27Q0 43-37 27Z" fill="#f0f5f6" stroke-width="2.6"/>
+      <path d="M-8 9V1Q0-7 8 1V9" fill="none" stroke-width="2.2"/>
+    </g>
+    <g id="atlas-or-old-tag"><path class="paper" d="M0 14Q0 0 14 0H26Q40 0 40 14V64H0Z"/><circle class="ink" cx="20" cy="14" r="5"/><path class="fine" d="M10 37H30M10 48H30"/></g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 468L648 510L801 465"/>
+  <g transform="rotate(-12 272 329)">
+    <path class="light" d="M126 289L258 185L393 287V449H126Z"/>
+    <path d="M132 291L258 194L386 289L258 400Z" fill="url(#atlas-or-hatch)"/>
+    <path class="paper" d="M162 221H354V397H162Z"/>
+    <use href="#atlas-or-beacon" transform="translate(231 245) scale(.68)"/>
+    <use href="#atlas-or-old-tag" transform="translate(290 261) scale(.86)"/>
+    <path class="paper" d="M126 289L258 383L393 287V449H126Z"/>
+    <path class="fine" d="M134 440L215 371M385 440L302 369M155 412L179 406M348 431L363 422"/>
+  </g>
+  <g transform="rotate(5 477 377)">
+    <path class="light" d="M403 273H559V488H403Z"/>
+    <path d="M408 475H559V488H403V279H408Z" fill="url(#atlas-or-hatch)"/>
+    <path class="paper" d="M410 262H567V476H410Z"/>
+    <path class="ink" d="M427 262V476"/>
+    <path class="light" d="M440 362H549V449H440Z"/>
+    <use href="#atlas-or-old-tag" transform="translate(475 306) scale(1.1)"/>
+    <path class="ink" d="M440 362L493 400L549 362"/>
+    <path class="fine" d="M450 431H537"/>
+  </g>
+  <g transform="rotate(11 695 283)">
+    <path class="paper" d="M607 161H775V398H607Z"/>
+    <use href="#atlas-or-beacon" transform="translate(681 189) scale(.86)"/>
+    <path class="fine" d="M623 369H758M623 385H733"/>
+    <path class="ink" d="M727 310Q774 312 754 367"/>
+    <path d="M754 359L781 391L755 425L727 394Z" fill="#ebcd42" stroke="#264653" stroke-width="2.6"/>
+    <circle class="ink" cx="754" cy="376" r="4"/>
+  </g>
+</svg>

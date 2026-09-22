@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="coordination-title coordination-desc">
+  <title id="coordination-title">Coordination: one duty place</title>
+  <desc id="coordination-desc">A single gate key rests at the front of a station duty desk. Inspection cards, a dispatch headset and waiting roster, and a separate signoff sheet represent different coordination tasks.</desc>
+  <defs><pattern id="coordination-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="light" d="M110 382L612 310L799 430L295 513L110 399Z"/>
+  <path class="paper" d="M110 382L612 292L799 412L295 494Z"/>
+  <path d="M110 382L295 494V513L110 399Z" fill="url(#coordination-hatch)"/>
+  <path class="ink" d="M295 494V513M153 426V478M743 443V489"/>
+  <g transform="rotate(-10 257 329)">
+    <path class="light" d="M158 280H320V390H158Z"/>
+    <path class="paper" d="M166 266H311V376H166ZM176 252H302V362H176Z"/>
+    <path class="ink" d="M192 314Q237 276 285 314M197 314V340M282 314V340M193 301Q237 264 284 301"/>
+    <path class="fine" d="M208 288V301M236 280V292M264 288V301"/>
+  </g>
+  <g transform="rotate(7 469 260)">
+    <path class="paper" d="M355 168H562V327H355Z"/>
+    <path class="fine" d="M373 190H543M373 206H525M373 222H543"/>
+    <circle class="fine" cx="394" cy="274" r="18"/>
+    <circle class="fine" cx="458" cy="274" r="18"/>
+    <circle class="fine" cx="522" cy="274" r="18"/>
+    <path class="light" d="M429 157H482V177H429Z"/>
+  </g>
+  <g transform="translate(605 205) rotate(8)">
+    <path class="ink" d="M0 99V46C0-20 126-20 126 46V99" stroke-width="9"/>
+    <path class="paper" d="M-9 54Q8 47 20 59V115Q8 129-9 116ZM107 59Q120 47 136 54V116Q120 129 107 115Z"/>
+    <path class="fine" d="M-3 65V108M128 65V108"/>
+    <path class="ink" d="M116 117Q110 158 66 144"/>
+    <path class="light" d="M50 135L73 139L70 152L47 148Z"/>
+  </g>
+  <path class="paper" d="M597 352L739 338L749 385L607 401Z"/>
+  <circle class="ink" cx="624" cy="374" r="8"/>
+  <path class="ink" d="M668 360L678 370L668 380L658 370ZM709 357H720L726 368L720 379H709L703 368Z"/>
+  <g transform="translate(387 383) rotate(18)">
+    <path class="paper" d="M34 0C-8 0-12 57 25 65V132H36V145H59V132H48V119H59V104H48V65C84 53 77 0 34 0Z"/>
+    <ellipse class="ink" cx="35" cy="28" rx="19" ry="16"/>
+    <path class="fine" d="M35 71V110"/>
+    <path class="ink" d="M18 0Q-8-23-25 1"/>
+    <path d="M-28-4L-7 7L-16 34L-38 23Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+  </g>
+</svg>

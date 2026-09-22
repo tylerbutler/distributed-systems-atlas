@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="local-history-title local-history-desc">
+  <title id="local-history-title">Local history: a copy made before the next entry</title>
+  <desc id="local-history-desc">Two separate observation desks hold local notebooks. A folded earlier report protrudes from an envelope between them. A fresh yellow-tabbed page remains at the sender's desk and is absent from the envelope and receiving notebook.</desc>
+  <defs><pattern id="local-history-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="light" d="M101 361L271 311L404 390V407L232 459L101 381Z"/>
+  <path class="paper" d="M101 361L272 310L404 389L232 442Z"/>
+  <path d="M101 361L232 442V459L101 381Z" fill="url(#local-history-hatch)"/>
+  <path class="ink" d="M130 399V467M363 420V482M232 442V459"/>
+  <path class="fine" d="M110 491L359 513"/>
+  <g transform="rotate(-13 240 337)">
+    <path class="light" d="M138 285H325V400H138Z"/>
+    <path class="paper" d="M146 276H332V390H146Z"/>
+    <path class="ink" d="M166 276V390"/>
+    <circle class="ink" cx="187" cy="298" r="7"/>
+    <path class="fine" d="M204 298H310M182 326H310M182 352H294"/>
+    <path class="paper" d="M221 246Q278 249 323 231L333 357Q275 374 220 369Z"/>
+    <path class="fine" d="M234 278Q273 281 310 266M234 303Q273 306 312 291"/>
+    <path class="ink" d="M236 334L304 323"/>
+    <path d="M306 239L318 236L322 277L315 272L310 279Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+  </g>
+  <path class="light" d="M598 263L713 230L803 282V297L687 331L598 279Z"/>
+  <path class="paper" d="M598 263L713 230L803 282L687 316Z"/>
+  <path d="M598 263L687 316V331L598 279Z" fill="url(#local-history-hatch)"/>
+  <path class="ink" d="M616 289V350M779 304V363"/>
+  <path class="fine" d="M590 381L786 397"/>
+  <path class="paper" d="M627 225L688 235L739 217L763 272L706 292L642 273Z"/>
+  <path class="ink" d="M688 235L706 292"/>
+  <path class="fine" d="M647 243L680 249M650 255L685 261M707 246L739 235M711 261L747 248"/>
+  <path class="ink" d="M654 231L660 237L654 243L648 237Z"/>
+  <g transform="rotate(-8 468 236)">
+    <path class="light" d="M402 211L463 153L541 207V300H402Z"/>
+    <path class="paper" d="M420 166H514V259H420Z"/>
+    <circle class="ink" cx="436" cy="185" r="6"/>
+    <path class="fine" d="M452 185H501M433 207H501M433 229H480"/>
+    <path class="paper" d="M402 211L470 253L541 207V300H402Z"/>
+    <path class="fine" d="M404 294L450 253M537 294L490 251"/>
+    <path class="ink" d="M514 173V218"/>
+  </g>
+  <path class="paper" d="M357 236L369 241L342 306L329 320L331 300Z"/>
+  <path d="M329 320L331 308L338 311Z" fill="#264653"/>
+</svg>

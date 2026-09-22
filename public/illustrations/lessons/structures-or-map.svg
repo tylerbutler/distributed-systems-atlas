@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="or-map-title or-map-desc">
+  <title id="or-map-title">OR-map: a concurrent delivery keeps the record</title>
+  <desc id="or-map-desc">An open stockpile ledger retains tally marks and an old rounded identity slip in a pocket. Beside a loaded handcart, a new delivery report has a distinct diamond tag. The existing tally and physical crates remain intact.</desc>
+  <defs>
+    <pattern id="or-map-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="or-map-crate" stroke="#264653" stroke-width="2.6" stroke-linejoin="round">
+      <path d="M0 20L53 0L109 27L55 49Z" fill="#f0f5f6"/><path d="M0 20L55 49V107L0 77Z" fill="#fff"/><path d="M55 49L109 27V84L55 107Z" fill="#fff"/>
+      <path d="M59 53L105 34V80L59 99Z" fill="url(#or-map-hatch)"/>
+      <path d="M0 38L55 67L109 45M0 61L55 90L109 68M15 30V83M40 43V98M73 43V99M95 34V89" fill="none" stroke-width="1.5"/>
+    </g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M98 473Q278 449 452 493M480 508Q651 468 808 482"/>
+  <g transform="rotate(-6 314 370)">
+    <path class="light" d="M124 256L310 279L495 251V471L310 508L120 479Z"/>
+    <path d="M122 466L310 495L495 458V471L310 508L120 479Z" fill="url(#or-map-hatch)"/>
+    <path class="paper" d="M133 242Q221 238 310 269Q398 233 494 240L495 458Q400 464 310 495Q219 464 122 466Z"/>
+    <path class="ink" d="M310 269V495"/>
+    <path class="paper" d="M340 290L468 269V421L340 444Z"/>
+    <path class="fine" d="M351 329L456 313M351 367L456 351M351 405L456 389"/>
+    <path class="ink" d="M356 306V317M369 303V314M382 301V312M356 344V355M369 342V353M382 340V351M395 338V349M356 382V393M369 380V391M382 378V389"/>
+    <path class="light" d="M150 362L283 381V446L149 426Z"/>
+    <path class="paper" d="M186 375L182 306Q182 291 198 291L223 294Q238 296 238 311V381L213 393Z"/>
+    <circle class="ink" cx="210" cy="311" r="7"/>
+    <path class="ink" d="M150 362L213 406L283 381"/>
+    <path class="fine" d="M196 337L226 341M196 350L226 354"/>
+  </g>
+  <path class="ink" d="M559 417L534 180Q532 164 548 160L569 156M581 419L556 184M552 178L736 148"/>
+  <path class="light" d="M557 398L733 367L767 395L585 431Z"/>
+  <path d="M564 405L585 423L759 390L767 395L585 431L557 409Z" fill="url(#or-map-hatch)"/>
+  <use href="#or-map-crate" transform="translate(570 289) scale(1.05)"/>
+  <use href="#or-map-crate" transform="translate(652 260) scale(1.05)"/>
+  <use href="#or-map-crate" transform="translate(593 201)"/>
+  <ellipse class="light" cx="591" cy="443" rx="24" ry="36" transform="rotate(-9 591 443)"/>
+  <ellipse class="ink" cx="591" cy="443" rx="12" ry="22" transform="rotate(-9 591 443)"/>
+  <ellipse class="light" cx="743" cy="414" rx="22" ry="33" transform="rotate(-9 743 414)"/>
+  <path class="paper" d="M431 129L532 142L522 254L420 241Z"/>
+  <path class="ink" d="M449 178L476 164L505 181L477 195ZM449 178V206L477 221L505 207V181M477 195V221"/>
+  <path class="ink" d="M510 146Q557 123 568 151"/>
+  <path d="M568 144L586 165L570 190L550 168Z" fill="#ebcd42" stroke="#264653" stroke-width="2.2"/>
+  <circle class="ink" cx="568" cy="158" r="3"/>
+</svg>

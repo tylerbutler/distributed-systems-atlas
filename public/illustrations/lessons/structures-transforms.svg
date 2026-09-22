@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="transforms-title transforms-desc">
+  <title id="transforms-title">Transforms: align edits with the report</title>
+  <desc id="transforms-desc">An editing folio contains a structured form and a separate writing page. Narrow correction slips align with form fields, while a bold heading strip and an insertion marker remain separate edits on the writing page.</desc>
+  <defs><pattern id="transforms-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M104 476L662 515L796 468"/>
+  <g transform="rotate(-5 443 325)">
+    <path class="light" d="M165 176L436 195L715 173V464L438 502L160 477Z"/>
+    <path d="M162 465L438 490L715 452V464L438 502L160 477Z" fill="url(#transforms-hatch)"/>
+    <path class="paper" d="M175 164Q309 156 436 185Q575 149 714 160V452Q576 459 438 490Q307 462 162 465Z"/>
+    <path class="ink" d="M436 185L438 490"/>
+    <path class="fine" d="M193 216L404 236M193 397L404 417M193 431L373 448"/>
+    <path class="light" d="M197 249L405 267V312L197 294ZM197 334L266 340V373L197 367Z"/>
+    <path class="paper" d="M211 228L387 244V284L211 268Z"/>
+    <circle class="ink" cx="228" cy="246" r="6"/>
+    <path class="paper" d="M281 317L352 324V358L281 351Z"/>
+    <path class="ink" d="M297 326L304 334L296 340L289 332Z"/>
+    <path class="fine" d="M472 271L677 251M472 310L677 289M472 349L677 328M472 388L609 374"/>
+    <path class="paper" d="M486 196L680 177L687 219L493 238Z"/>
+    <path class="ink" d="M508 212L663 197" stroke-width="6"/>
+    <path class="paper" d="M625 367L680 361V402L625 408Z"/>
+    <path d="M639 398V376L664 384Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+    <path class="fine" d="M469 445L679 422"/>
+  </g>
+  <path class="paper" d="M735 255L750 258L710 428L694 446L697 421Z"/>
+  <path class="fine" d="M741 260L704 423"/>
+  <path d="M694 446L697 433L703 435Z" fill="#264653"/>
+  <path class="paper" d="M190 111L332 124L329 151L187 138Z"/>
+  <path class="fine" d="M203 126L312 136"/>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="rich-text-title rich-text-desc">
+  <title id="rich-text-title">SharedRichText: formatting and insertion</title>
+  <desc id="rich-text-desc">A broad pen rests at a report heading drawn as heavy abstract strokes. A second pencil points to a newly appended triangular trail marker at the end of the final writing strip. The rest of the page remains intact.</desc>
+  <defs><pattern id="rich-text-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M117 465L689 516L804 461"/>
+  <g transform="rotate(-7 430 320)">
+    <path class="light" d="M224 155H650V487H224Z"/>
+    <path d="M230 472H650V487H224V163H230Z" fill="url(#rich-text-hatch)"/>
+    <path class="paper" d="M216 140H640V474H216Z"/>
+    <path class="fine" d="M233 155V458M236 458H624"/>
+    <path d="M260 201H412M432 201H561M260 225H360" fill="none" stroke="#264653" stroke-width="7" stroke-linecap="square"/>
+    <path class="ink" d="M260 278H590M260 310H582M260 342H598M260 374H561M260 410H510"/>
+    <path class="fine" d="M260 286H590M260 318H582M260 350H598M260 382H561M260 418H510"/>
+    <path d="M537 423V395L569 409Z" fill="#ebcd42" stroke="#264653" stroke-width="2.6"/>
+  </g>
+  <g transform="translate(128 109) rotate(-47)">
+    <path class="light" d="M0 0H26V171H0Z"/>
+    <path d="M17 0H26V171H17Z" fill="url(#rich-text-hatch)"/>
+    <path class="paper" d="M0 171H26L21 195H5Z"/>
+    <path d="M5 195H21V208H5Z" fill="#264653"/>
+    <path class="ink" d="M0 32H26"/>
+    <path class="fine" d="M7 9V155"/>
+  </g>
+  <g transform="translate(751 266) rotate(43)">
+    <path class="paper" d="M0 0H17V148L8 177L0 148Z"/>
+    <path class="fine" d="M6 0V148M12 0V148M0 148H17"/>
+    <path d="M5 166L8 177L12 166Z" fill="#264653"/>
+  </g>
+  <path class="light" d="M126 375L146 367L197 412L179 425Z"/>
+  <path class="fine" d="M135 376L184 419"/>
+</svg>

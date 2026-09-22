@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="shared-sequence-title shared-sequence-desc">
+  <title id="shared-sequence-title">SharedSequence: two additions before one anchor</title>
+  <desc id="shared-sequence-desc">An expanded inspection-route strip retains a bridge, weir, and gate. New waterfall and marsh cards both fit before the same weir card. Every waypoint has its own persistent identity tab.</desc>
+  <defs><pattern id="shared-sequence-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M93 462Q417 429 802 464M269 489L623 480"/>
+  <g transform="rotate(-4 450 328)">
+    <path class="light" d="M99 273Q118 253 140 268H780V436H139Q113 451 99 431Z"/>
+    <path d="M111 422H780V436H139Q114 447 99 431L99 416Z" fill="url(#shared-sequence-hatch)"/>
+    <path class="paper" d="M123 273H238V413H123Z"/>
+    <path class="ink" d="M137 356Q180 315 224 356M141 356V384M222 355V384M138 341Q180 301 224 341M155 326V340M181 316V332M205 325V340"/>
+    <path class="fine" d="M137 391Q158 384 180 393T225 393"/>
+    <path class="paper" d="M253 224L368 228L363 413L248 409Z"/>
+    <path class="ink" d="M264 294L286 283L310 294L335 281L349 286M285 285L283 373M297 290L295 378M310 296L308 371M263 381Q288 370 309 384T348 385"/>
+    <path class="fine" d="M319 307L319 354M328 314V350M272 327V354"/>
+    <path class="paper" d="M383 231L498 223L505 408L390 416Z"/>
+    <path class="ink" d="M409 378L412 298M435 384L440 289M465 377L469 305M411 333L400 318M413 318L425 306M439 318L428 305M441 304L453 292M468 337L480 324"/>
+    <path class="light" d="M408 296Q412 282 416 296V318H408ZM436 286Q440 272 444 286V306H436ZM465 302Q469 288 473 302V324H465Z"/>
+    <path class="fine" d="M401 389Q424 383 446 390T486 391"/>
+    <path class="paper" d="M521 273H636V413H521ZM651 273H766V413H651Z"/>
+    <path class="ink" d="M535 325H622L603 363H548ZM535 379Q557 370 579 379T622 379M535 392Q557 383 579 392T622 392"/>
+    <path class="fine" d="M550 332H609M557 343H603M563 354H597"/>
+    <path class="ink" d="M665 380V319H674V380M744 380V319H753V380M674 329H744V366H674ZM675 330L743 365"/>
+    <path class="paper" d="M170 413H191V436H170ZM568 413H590V436H568ZM697 413H719V436H697Z"/>
+    <path d="M294 411L316 412V439H294ZM431 413L453 412V439H431Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+    <circle class="ink" cx="305" cy="425" r="5"/>
+    <path class="ink" d="M442 419L449 426L442 433L435 426ZM573 425L577 419H583L587 425L583 431H577Z"/>
+    <path class="fine" d="M176 419H185V430H176M704 419L712 425L704 431Z"/>
+  </g>
+  <path class="paper" d="M140 173L274 143L296 181L162 211Z"/>
+  <path class="fine" d="M159 177L267 153M167 188L250 169"/>
+</svg>

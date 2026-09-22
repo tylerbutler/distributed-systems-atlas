@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="shared-text-title shared-text-desc">
+  <title id="shared-text-title">SharedText: intact tiles at one writing gap</title>
+  <desc id="shared-text-desc">Two pencils point toward separate short runs of blank character-sized tiles inserted into a field-note strip. Each tile retains its own small identity tab; the following tiles remain intact.</desc>
+  <defs>
+    <pattern id="shared-text-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="shared-text-tile"><path class="paper" d="M0 0H49V78H0Z"/><path class="light" d="M15 78H34V96H15Z"/><path class="fine" d="M7 69H42M21 84H28"/></g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M100 450Q353 478 782 452"/>
+  <g transform="rotate(-5 447 359)">
+    <path class="light" d="M101 321H791V433H101Q83 380 101 321Z"/>
+    <path d="M100 420H791V433H101Z" fill="url(#shared-text-hatch)"/>
+    <use href="#shared-text-tile" transform="translate(122 316)"/>
+    <use href="#shared-text-tile" transform="translate(179 316)"/>
+    <use href="#shared-text-tile" transform="translate(254 280) rotate(-3)"/>
+    <use href="#shared-text-tile" transform="translate(311 277) rotate(-3)"/>
+    <use href="#shared-text-tile" transform="translate(397 287) rotate(4)"/>
+    <use href="#shared-text-tile" transform="translate(454 291) rotate(4)"/>
+    <use href="#shared-text-tile" transform="translate(511 295) rotate(4)"/>
+    <use href="#shared-text-tile" transform="translate(587 316)"/>
+    <use href="#shared-text-tile" transform="translate(644 316)"/>
+    <use href="#shared-text-tile" transform="translate(701 316)"/>
+    <circle class="ink" cx="282" cy="305" r="6"/>
+    <circle class="ink" cx="339" cy="302" r="6"/>
+    <path class="ink" d="M419 306L426 313L419 320L412 313ZM476 310L483 317L476 324L469 317ZM533 314L540 321L533 328L526 321Z"/>
+    <path d="M269 363H282V369H269ZM326 360H339V366H326ZM406 372H419V378H406ZM463 376H476V382H463ZM520 380H533V386H520Z" fill="#ebcd42"/>
+  </g>
+  <g transform="translate(189 139) rotate(-35)">
+    <path class="paper" d="M0 0H17V158L8 187L0 158Z"/>
+    <path class="fine" d="M6 0V158M12 0V158M0 158H17"/>
+    <path d="M5 176L8 187L12 176Z" fill="#264653"/>
+  </g>
+  <g transform="translate(625 125) rotate(31)">
+    <path class="paper" d="M0 0H17V159L8 188L0 159Z"/>
+    <path class="fine" d="M6 0V159M12 0V159M0 159H17"/>
+    <path d="M5 177L8 188L12 177Z" fill="#264653"/>
+  </g>
+  <path class="paper" d="M291 469L573 484L568 518L286 503Z"/>
+  <path class="fine" d="M306 486L550 499"/>
+</svg>

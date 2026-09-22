@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="registers-title registers-desc">
+  <title id="registers-title">Registers: three ways to keep a report</title>
+  <desc id="registers-desc">An empty trail-status board stands above three separate report holders: one selected gate report, two competing reports under one clip, and an archive with two reading tabs.</desc>
+  <defs>
+    <pattern id="registers-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="registers-gate" fill="none" stroke="#264653" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M0 42V0H7V42M65 42V0H72V42M7 7H65V31H7ZM8 8L64 30M8 30L64 8"/></g>
+    <g id="registers-open" fill="none" stroke="#264653" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M0 42V0H7V42M65 42V0H72V42M7 7L29-6V18L7 31M8 9L28 17"/></g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M101 445L708 492L807 440M154 473L351 488"/>
+  <path class="light" d="M332 140L352 140V300H332ZM569 140H589V303H569Z"/>
+  <path class="paper" d="M299 109L612 122V252L299 239Z"/>
+  <path class="fine" d="M312 121L599 133V239L312 227Z"/>
+  <circle class="fine" cx="321" cy="140" r="3"/><circle class="fine" cx="589" cy="151" r="3"/>
+  <path class="ink" d="M419 132V150M482 135V153"/>
+  <g transform="rotate(-8 202 361)">
+    <path class="light" d="M135 309H264V431H135Z"/>
+    <path d="M142 419H264V431H135V316H142Z" fill="url(#registers-hatch)"/>
+    <path class="paper" d="M150 291H249V411H150Z"/>
+    <use href="#registers-gate" transform="translate(163 336)"/>
+    <path class="light" d="M183 281H217V305H183Z"/>
+    <path class="ink" d="M190 281V270Q200 259 210 270V281"/>
+    <path d="M226 303H238V316H226Z" fill="#ebcd42"/>
+  </g>
+  <g transform="rotate(3 437 376)">
+    <path class="paper" d="M331 308H426V435H331ZM438 308H533V435H438Z"/>
+    <use href="#registers-open" transform="translate(343 357) scale(.97)"/>
+    <use href="#registers-gate" transform="translate(450 357) scale(.97)"/>
+    <circle class="ink" cx="348" cy="325" r="5"/>
+    <path class="ink" d="M456 319L462 325L456 331L450 325Z"/>
+    <path class="light" d="M410 292H454V320H410Z"/>
+    <path class="ink" d="M420 292V280Q432 266 444 280V292"/>
+  </g>
+  <g>
+    <path class="light" d="M606 337L733 316L795 366L660 391Z"/>
+    <path class="paper" d="M610 317L711 299L765 349L659 369Z"/>
+    <path class="fine" d="M626 323L707 309M637 336L706 324"/>
+    <path class="paper" d="M618 348L719 330L773 380L667 400Z"/>
+    <path class="fine" d="M637 355L715 341M650 368L721 355"/>
+    <path class="light" d="M606 337L660 384L795 359V423L661 449L606 400Z"/>
+    <path d="M609 348L658 391V443L609 397Z" fill="url(#registers-hatch)"/>
+    <path class="ink" d="M661 384V449"/>
+    <path class="paper" d="M693 325L706 322L743 356V390L736 386L730 392V364Z"/>
+    <path class="paper" d="M674 360L687 357L717 385V425L710 421L704 428V391Z"/>
+  </g>
+</svg>

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="pact-map-title pact-map-desc">
+  <title id="pact-map-title">PactMap: the last signoff is still missing</title>
+  <desc id="pact-map-desc">A closure proposal has three seal positions. Circle and diamond seals are complete; the third position is empty beneath a raised hexagonal stamp. A folded closure notice remains off the board.</desc>
+  <defs><pattern id="pact-map-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M100 470L647 516L806 459"/>
+  <g transform="rotate(-6 408 351)">
+    <path class="light" d="M137 227H639V476H137Z"/>
+    <path d="M143 461H639V476H137V232H143Z" fill="url(#pact-map-hatch)"/>
+    <path class="paper" d="M147 214H648V461H147Z"/>
+    <path class="fine" d="M173 246H618M173 269H618M173 292H536M173 433H618"/>
+    <circle class="fine" cx="239" cy="371" r="38"/>
+    <circle class="fine" cx="397" cy="371" r="38"/>
+    <circle class="fine" cx="554" cy="371" r="38"/>
+    <circle class="ink" cx="239" cy="371" r="24"/>
+    <circle class="fine" cx="239" cy="371" r="17"/>
+    <path class="ink" d="M397 343L425 371L397 399L369 371Z"/>
+    <path class="fine" d="M397 352L416 371L397 390L378 371Z"/>
+    <path class="fine" d="M529 419H579"/>
+  </g>
+  <g transform="translate(535 180) rotate(9)">
+    <path class="paper" d="M-38 38L-19 5H19L38 38L19 71H-19Z"/>
+    <path d="M-38 38L-19 53H19L38 38L19 71H-19Z" fill="url(#pact-map-hatch)" stroke="#264653" stroke-width="2"/>
+    <path class="light" d="M-16 27V-25H16V27Q0 37-16 27Z"/>
+    <path class="paper" d="M-28-24Q-36-60 0-66Q36-60 28-24Q0-10-28-24Z"/>
+    <path class="fine" d="M-18-42Q-4-54 13-44"/>
+  </g>
+  <g transform="rotate(14 723 352)">
+    <path class="paper" d="M669 249H787V467H669Z"/>
+    <path class="light" d="M669 329H787V399H669Z"/>
+    <path class="ink" d="M686 314V271H693V314M762 314V271H769V314M693 279H762V304H693ZM694 280L761 303"/>
+    <path class="fine" d="M681 415H776M681 433H752"/>
+    <path class="ink" d="M687 329V399M766 329V399"/>
+  </g>
+  <path class="light" d="M169 142L283 153L276 194L162 183Z"/>
+  <path class="paper" d="M174 133L288 144L283 174L169 163Z"/>
+  <path class="fine" d="M183 145L274 154"/>
+</svg>

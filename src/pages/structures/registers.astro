@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import LessonIllustration from "../../components/LessonIllustration.astro";
 ---
 
 <BaseLayout
@@ -17,6 +18,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
         is the Eagle Creek trail open? Alice, Bob, and Carol discover that one
         shared field still needs a rule for concurrent reports.
       </p>
+      <LessonIllustration id="structures-registers" />
     </header>
 
     <section aria-labelledby="lww-title">
@@ -166,7 +168,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     margin-bottom: var(--space-7);
   }
 
-  .page-intro > p:last-child {
+  .page-intro > p:last-of-type {
     font-size: 1.2rem;
   }
 

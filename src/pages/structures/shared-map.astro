@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
@@ -17,6 +18,7 @@ import "../../styles/set-lesson.css";
         Alice and Bob write different values before either update is delivered
         to the other hikers.
       </p>
+      <LessonIllustration id="structures-shared-map" />
     </header>
     <StructureFacts family="DDS" model="Sequenced operation-based map" updates="Set, delete, and clear JSON entries" merge="Use the highest sequence number per key." delivery="One server-ordered operation stream" bestFor="Shared JSON state under a sequenced service" cost="Confirmed entries plus pending local writes" />
     <section aria-labelledby="order-title">

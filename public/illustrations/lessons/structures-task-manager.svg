@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="task-manager-title task-manager-desc">
+  <title id="task-manager-title">TaskManager: one dispatcher and a waiting roster</title>
+  <desc id="task-manager-desc">One headset rests on a dispatch radio beside a circle-marked assignment card. A separate narrow roster holds a diamond-marked volunteer slip above a hexagon-marked slip. There is only one headset and one active assignment.</desc>
+  <defs><pattern id="task-manager-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 459L650 516L804 458"/>
+  <path class="light" d="M160 292L390 254L502 313V435L269 475L160 413Z"/>
+  <path class="paper" d="M160 292L269 354L502 313V435L269 475L160 413Z"/>
+  <path d="M168 310L255 360V458L168 408Z" fill="url(#task-manager-hatch)"/>
+  <path class="ink" d="M269 354V475"/>
+  <path class="light" d="M291 374L405 354V413L291 433Z"/>
+  <path class="fine" d="M302 382L392 366M302 392L392 376M302 402L392 386M302 412L392 396"/>
+  <ellipse class="paper" cx="447" cy="374" rx="18" ry="21"/>
+  <ellipse class="paper" cx="447" cy="425" rx="11" ry="14"/>
+  <path class="ink" d="M447 374L452 362M447 425V416M184 291L169 145"/>
+  <path class="fine" d="M164 146L176 145"/>
+  <g transform="translate(248 181) rotate(-7)">
+    <path class="ink" d="M0 99V46C0-25 136-25 136 46V99" stroke-width="9"/>
+    <path class="paper" d="M-10 61Q4 51 22 64V120Q8 137-10 123ZM114 64Q131 51 146 61V123Q130 137 114 120Z"/>
+    <path class="fine" d="M-3 69V116M138 69V116"/>
+    <path class="ink" d="M130 124Q127 155 91 150"/>
+    <path class="light" d="M72 140L100 143L98 158L70 155Z"/>
+  </g>
+  <path class="paper" d="M168 424L272 447L248 510L142 486Z"/>
+  <circle class="ink" cx="185" cy="456" r="12"/>
+  <path class="fine" d="M207 465L244 473M162 480L218 493"/>
+  <path d="M253 445L267 448L260 465L247 461Z" fill="#ebcd42"/>
+  <g transform="rotate(7 658 316)">
+    <path class="light" d="M576 168H753V459H576Z"/>
+    <path d="M582 446H753V459H576V175H582Z" fill="url(#task-manager-hatch)"/>
+    <path class="paper" d="M591 201H738V300H591ZM591 323H738V422H591Z"/>
+    <path class="ink" d="M614 220L626 232L614 244L602 232ZM606 343H619L626 355L619 367H606L599 355Z"/>
+    <path class="fine" d="M605 269H723M605 285H682M605 391H723M605 407H682"/>
+    <path class="light" d="M640 156H687V181H640Z"/>
+    <path class="ink" d="M650 156V143Q663 127 676 143V156"/>
+  </g>
+  <path class="ink" d="M488 419C551 431 519 479 574 485"/>
+</svg>

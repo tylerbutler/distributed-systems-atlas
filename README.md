@@ -35,16 +35,17 @@ plus the seven family overview pages, atlas index, glossary, and bibliography.
 pen-and-ink art direction and 35 scene prompts: one for each individual
 structure lesson, family overview, and published reference sheet.
 
-Eight authored SVGs appear in the introductions to the counters and sets
-overviews and their six individual lessons. Open
-[`art/counters-and-sets.html`](art/counters-and-sets.html)
-in a browser to see the collection. Each image is self-contained and editable,
-with no image-generation service, scripts, fonts, or external assets required.
+All 35 pages now have an authored SVG in their introductions. Open
+[`art/counters-and-sets.html`](art/counters-and-sets.html) for the first eight,
+or [`art/remaining-lessons.html`](art/remaining-lessons.html) for registers,
+maps, sequences, coordination, transforms, and the seven reference sheets.
+You can open either preview in a browser without a server. Each image is
+self-contained and editable, with no scripts, fonts, or external assets.
 
 The SVGs live in `public/illustrations/lessons/<id>.svg`. Completed catalog
-entries have an `asset` path and `alt` text describing the drawing. The other
-27 entries remain scene briefs. `artDirection.svgAdaptation` describes how
-the original scenes become simpler, prop-led drawings; precise numerical
+entries have an `asset` path and `alt` text describing the drawing. Each entry
+also retains its original scene brief. `artDirection.svgAdaptation` describes
+the prop-led treatment of those scenes; precise numerical
 examples stay in the lesson text and diagrams.
 
 `src/components/LessonIllustration.astro` reads each asset and its alt text

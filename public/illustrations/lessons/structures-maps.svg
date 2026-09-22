@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="maps-title maps-desc">
+  <title id="maps-title">Maps: separate records for named things</title>
+  <desc id="maps-desc">An unfolded field folio has separate pockets for a gate report, a stockpile record, and nested trail folders. Loose updates rest beside the corresponding pockets.</desc>
+  <defs><pattern id="maps-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 461L666 512L810 466"/>
+  <g transform="rotate(-6 448 315)">
+    <path class="light" d="M154 218L339 194L527 215L721 191V466L529 492L340 469L152 489Z"/>
+    <path d="M154 477L339 458L529 481L721 455V466L529 492L340 469L152 489Z" fill="url(#maps-hatch)"/>
+    <path class="ink" d="M339 194V469M527 215L529 492"/>
+    <path class="paper" d="M183 219L306 207V389L184 400Z"/>
+    <path class="ink" d="M198 337V273H208V337M278 329V265H288V329M208 283L278 276V316L208 323ZM210 285L277 314"/>
+    <circle class="ink" cx="199" cy="238" r="6"/>
+    <path class="paper" d="M177 356L313 343V440L178 453Z"/>
+    <path class="fine" d="M188 368L302 357M188 432L300 422"/>
+    <path class="paper" d="M365 253L498 267V410L365 395Z"/>
+    <path class="ink" d="M391 328L424 309L467 330L434 350ZM391 328V360L434 383L467 363V330M434 350V383M409 319L450 340M410 339V371"/>
+    <path class="ink" d="M379 272L385 279L379 286L373 279Z"/>
+    <path class="paper" d="M357 387L507 403V455L357 439Z"/>
+    <path class="fine" d="M369 401L495 414"/>
+    <path class="paper" d="M554 268V224L571 222L578 210L621 205L628 216L689 209V400L554 418Z"/>
+    <path class="light" d="M566 284V250L581 248L588 236L629 231L636 242L677 237V416L566 431Z"/>
+    <path class="paper" d="M548 354L696 335V435L550 456Z"/>
+    <path class="fine" d="M560 366L684 349M560 442L684 425"/>
+  </g>
+  <g transform="rotate(-12 196 164)">
+    <path class="paper" d="M138 111H250V191H138Z"/>
+    <circle class="ink" cx="155" cy="128" r="5"/>
+    <path class="ink" d="M164 171V142H170V171M222 171V142H228V171M170 148L193 137V156L170 165"/>
+  </g>
+  <path class="paper" d="M636 117L746 128L735 199L625 188Z"/>
+  <path class="ink" d="M651 130L658 139L649 146L642 137Z"/>
+  <path class="fine" d="M665 154L725 160M661 168L711 173"/>
+</svg>

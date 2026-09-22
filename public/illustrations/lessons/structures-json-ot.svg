@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="json-ot-title json-ot-desc">
+  <title id="json-ot-title">JsonOt: edits to separate fields</title>
+  <desc id="json-ot-desc">An unlettered field-report form has a wide title field and a separate small revision field. A circle-marked wide edit and a diamond-marked short edit fit their own fields without overlap.</desc>
+  <defs><pattern id="json-ot-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M118 471L692 508L798 465"/>
+  <g transform="rotate(-6 441 311)">
+    <path class="light" d="M225 145H684V481H225Z"/>
+    <path d="M229 469H684V481H225V149H229Z" fill="url(#json-ot-hatch)"/>
+    <path class="paper" d="M214 132H672V468H214Z"/>
+    <path class="fine" d="M238 162H647M238 320H647M238 350H647M238 380H647M238 410H564M238 441H646"/>
+    <path class="light" d="M241 195H537V260H241ZM562 195H645V260H562Z"/>
+    <path class="paper" d="M253 182H525V246H253Z"/>
+    <circle class="ink" cx="272" cy="200" r="7"/>
+    <path class="fine" d="M265 231H511"/>
+    <path class="paper" d="M571 182H637V246H571Z"/>
+    <path class="ink" d="M589 192L597 200L589 208L581 200Z"/>
+    <path class="fine" d="M581 231H627"/>
+    <path d="M506 182H516V201L511 197L506 201Z" fill="#ebcd42"/>
+    <path d="M619 182H629V201L624 197L619 201Z" fill="#ebcd42"/>
+    <path class="light" d="M399 112H488V147H399Z"/>
+    <path class="ink" d="M417 112V101Q443 80 470 101V112"/>
+  </g>
+  <g transform="translate(148 184) rotate(-24)">
+    <path class="paper" d="M0 0H16V186L8 213L0 186Z"/>
+    <path class="fine" d="M6 0V186M11 0V186M0 186H16"/>
+    <path d="M4 201L8 213L12 201Z" fill="#264653"/>
+  </g>
+  <g transform="translate(757 210) rotate(19)">
+    <path class="paper" d="M0 0H16V180L8 207L0 180Z"/>
+    <path class="fine" d="M6 0V180M11 0V180M0 180H16"/>
+    <path d="M4 195L8 207L12 195Z" fill="#264653"/>
+  </g>
+</svg>

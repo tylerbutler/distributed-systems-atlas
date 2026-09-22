@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="shared-map-title shared-map-desc">
+  <title id="shared-map-title">SharedMap: update one record from the log</title>
+  <desc id="shared-map-desc">An ordered station log and mechanical stamp sit beside a three-pocket field sheet. A stamped closed-gate report is selected in one pocket, an older open-gate slip lies aside, and the other records remain in place.</desc>
+  <defs>
+    <pattern id="shared-map-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern>
+    <g id="shared-map-closed" fill="none" stroke="#264653" stroke-width="2.6" stroke-linejoin="round"><path d="M0 43V0H8V43M80 43V0H88V43M8 8H80V33H8ZM9 9L79 32M9 32L79 9"/></g>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M99 469L708 511L805 469"/>
+  <g transform="rotate(-5 535 336)">
+    <path class="light" d="M364 172H765V456H364Z"/>
+    <path d="M369 445H765V456H364V178H369Z" fill="url(#shared-map-hatch)"/>
+    <path class="paper" d="M386 205H510V376H386Z"/>
+    <path class="ink" d="M399 218H447V236H399ZM487 218L495 226L487 234L479 226Z"/>
+    <use href="#shared-map-closed" transform="translate(404 268)"/>
+    <path class="paper" d="M377 339H519V427H377Z"/>
+    <path class="fine" d="M389 353H508M389 414H470"/>
+    <path d="M484 342H500V367L492 361L484 367Z" fill="#ebcd42" stroke="#264653" stroke-width="1.5"/>
+    <path class="paper" d="M546 231H617V388H546ZM652 231H723V388H652Z"/>
+    <path class="ink" d="M560 287L579 278L601 288L582 298ZM560 287V310L582 322L601 312V288M582 298V322"/>
+    <path class="ink" d="M666 281H680L685 274H702V313H666ZM666 290H702"/>
+    <path class="paper" d="M536 347H627V427H536ZM642 347H733V427H642Z"/>
+    <path class="fine" d="M546 360H617M652 360H723"/>
+  </g>
+  <g transform="rotate(6 222 320)">
+    <path class="paper" d="M147 177Q150 155 172 156H290V428Q267 446 243 430H128Q151 414 147 391Z"/>
+    <path class="light" d="M147 177Q150 155 172 156Q191 158 190 177Z"/>
+    <path class="fine" d="M161 216H275M159 294H275M157 374H275"/>
+    <path class="ink" d="M162 192H195V205H162ZM159 270H192V283H159ZM157 349H190V362H157Z"/>
+    <use href="#shared-map-closed" transform="translate(191 308) scale(.68)"/>
+    <path class="fine" d="M210 195H270M170 244H267"/>
+  </g>
+  <g transform="translate(128 432) rotate(-18)">
+    <path class="paper" d="M0 0H145V72H0Z"/>
+    <path class="ink" d="M16 16H47V29H16ZM61 52V14H68V52M121 52V14H128V52M68 20L91 8V32L68 44"/>
+  </g>
+  <g transform="translate(631 112)">
+    <path class="light" d="M0 37L77 31L90 49L11 57Z"/>
+    <path class="paper" d="M10 35V7L67 2V31Z"/>
+    <path class="ink" d="M29 5V-15H48V3"/>
+    <path class="paper" d="M19-15Q14-32 39-34Q65-34 60-17Z"/>
+  </g>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="lamport-title lamport-desc">
+  <title id="lamport-title">Lamport clocks: local event counters</title>
+  <desc id="lamport-desc">Two desks each hold a mechanical event counter with one blank rectangular readout. A report envelope with a matching counter-stamp box rests beside the receiving counter's adjustment knob. No wall-clock faces or values are shown.</desc>
+  <defs><pattern id="lamport-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 352L312 373M453 477L782 505"/>
+  <path class="light" d="M113 251L273 221L369 273V289L207 322L113 269Z"/>
+  <path class="paper" d="M113 251L273 221L369 273L207 306Z"/>
+  <path d="M113 251L207 306V322L113 269Z" fill="url(#lamport-hatch)"/>
+  <path class="ink" d="M140 284V329M342 295V341"/>
+  <path class="light" d="M145 170L259 149L312 181V256L196 280L145 248Z"/>
+  <path class="paper" d="M145 170L196 201L312 181V256L196 280L145 248Z"/>
+  <path d="M150 181L190 205V268L150 245Z" fill="url(#lamport-hatch)"/>
+  <path class="light" d="M212 215L295 200V239L212 255Z"/>
+  <path class="paper" d="M219 220L288 208V233L219 246Z"/>
+  <path class="ink" d="M196 201V280M215 166V146H249V160"/>
+  <ellipse class="light" cx="321" cy="224" rx="9" ry="16"/>
+  <circle class="ink" cx="166" cy="229" r="7"/>
+  <path class="light" d="M441 399L660 347L804 424V442L583 495L441 417Z"/>
+  <path class="paper" d="M441 399L660 347L804 424L583 477Z"/>
+  <path d="M441 399L583 477V495L441 417Z" fill="url(#lamport-hatch)"/>
+  <path class="light" d="M526 314L675 282L747 322V418L596 452L526 410Z"/>
+  <path class="paper" d="M526 314L596 354L747 322V418L596 452L526 410Z"/>
+  <path d="M533 327L589 360V438L533 405Z" fill="url(#lamport-hatch)"/>
+  <path class="light" d="M612 369L728 344V395L612 421Z"/>
+  <path class="paper" d="M621 375L719 354V388L621 410Z"/>
+  <path class="ink" d="M596 354V452M615 296V272L655 264V287"/>
+  <ellipse class="light" cx="764" cy="375" rx="16" ry="25"/>
+  <path class="fine" d="M760 359V391M766 355V395M772 360V390"/>
+  <path class="ink" d="M553 361L562 371L553 381L544 371Z"/>
+  <g transform="rotate(-12 454 261)">
+    <path class="paper" d="M373 198H527V301H373Z"/>
+    <path class="ink" d="M373 198L450 258L527 198"/>
+    <path class="light" d="M452 263H512V287H452Z"/>
+    <path class="paper" d="M459 269H505V281H459Z"/>
+    <circle class="ink" cx="393" cy="275" r="7"/>
+    <path class="fine" d="M381 294L417 257"/>
+    <path d="M509 204H519V218H509Z" fill="#ebcd42"/>
+  </g>
+</svg>

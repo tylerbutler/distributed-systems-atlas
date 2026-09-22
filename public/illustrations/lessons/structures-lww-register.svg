@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="lww-register-title lww-register-desc">
+  <title id="lww-register-title">LWWRegister: one selected report</title>
+  <desc id="lww-register-desc">A closed-gate report occupies a single display clip. An open-gate report lies aside. Both slips have blank sequence-stamp boxes and different writer marks; a mechanical stamp rests nearby.</desc>
+  <defs><pattern id="lww-register-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M105 450L655 494L805 432M362 497L522 510"/>
+  <path class="light" d="M377 170L582 181L625 448L367 432Z"/>
+  <path d="M582 181L625 448L606 447L568 190Z" fill="url(#lww-register-hatch)"/>
+  <path class="paper" d="M361 161L581 174L566 420L345 405Z"/>
+  <path class="fine" d="M357 391L552 404M377 229L556 240"/>
+  <path class="paper" d="M386 192L554 202L543 381L374 371Z"/>
+  <path class="ink" d="M402 325L406 265L416 266L412 325M511 331L515 271L525 272L521 332M416 276L515 282L512 313L414 307ZM417 277L511 312M415 306L514 283"/>
+  <path class="fine" d="M399 340L521 348"/>
+  <path class="ink" d="M404 216L455 219L453 238L403 235ZM527 217L536 227L526 235L518 225Z"/>
+  <path class="light" d="M442 151L492 154L491 188L440 185Z"/>
+  <path class="ink" d="M451 151L452 133Q468 113 484 135L483 153"/>
+  <path d="M449 169L483 171L482 179L449 177Z" fill="#ebcd42"/>
+  <g transform="rotate(-17 234 378)">
+    <path class="paper" d="M138 286H295V449H138Z"/>
+    <path class="ink" d="M156 304H204V323H156Z"/>
+    <circle class="ink" cx="274" cy="313" r="7"/>
+    <path class="ink" d="M162 400V344H173V400M264 400V344H275V400M173 352L211 330V366L173 390M174 355L208 365"/>
+    <path class="fine" d="M156 417H279M156 430H242"/>
+  </g>
+  <g transform="translate(635 299) rotate(7)">
+    <path class="light" d="M-5 112L88 104L111 125L16 137Z"/>
+    <path class="paper" d="M9 104L14 45Q50 29 87 44L91 102L80 112L20 120Z"/>
+    <path d="M73 48L87 44L91 102L80 112L69 114Z" fill="url(#lww-register-hatch)"/>
+    <path class="ink" d="M26 103L27 60L74 56L77 99"/>
+    <path class="light" d="M42 39V13H62V37"/>
+    <path class="paper" d="M26 12Q20-6 39-12Q59-20 77-4Q85 6 72 14Z"/>
+    <path class="fine" d="M26 83L76 78M28 90L75 85"/>
+  </g>
+</svg>

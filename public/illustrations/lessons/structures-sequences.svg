@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="sequences-title sequences-desc">
+  <title id="sequences-title">Sequences: move positions, keep identities</title>
+  <desc id="sequences-desc">A route-planning strip holds individually tagged waypoint cards. A second, narrower strip holds small blank note tiles. A new waypoint and a short run of note tiles rest beside gaps in their respective strips.</desc>
+  <defs><pattern id="sequences-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M106 476L717 504L811 450"/>
+  <g transform="rotate(-6 448 286)">
+    <path class="light" d="M119 253H757V391H119Q97 322 119 253Z"/>
+    <path d="M119 378H757V391H119Z" fill="url(#sequences-hatch)"/>
+    <path class="paper" d="M139 247H263V366H139ZM452 247H576V366H452ZM593 247H717V366H593Z"/>
+    <path class="ink" d="M153 320Q200 281 249 320M157 320V344M246 320V344M154 306Q200 268 248 306M174 293V307M200 286V300M227 293V307"/>
+    <path class="ink" d="M470 296H556L537 329H484ZM470 342Q488 334 508 342T558 342M470 354Q488 346 508 354T558 354"/>
+    <path class="ink" d="M607 337V279H616V337M694 337V279H703V337M616 290H694V324H616ZM617 291L693 323"/>
+    <path class="paper" d="M189 366H211V388H189ZM503 366H525V388H503ZM644 366H666V388H644Z"/>
+    <circle class="fine" cx="200" cy="377" r="5"/>
+    <path class="fine" d="M509 373H519V382H509M651 372L659 377L651 382Z"/>
+    <path class="paper" d="M289 144L414 160L399 281L274 265Z"/>
+    <path class="ink" d="M297 191L326 177L351 193L373 181M326 179V244M336 185V249M349 195V247M290 250Q309 243 326 253T382 255"/>
+    <path d="M326 272L348 275L345 297L323 294Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+  </g>
+  <g transform="rotate(5 454 453)">
+    <path class="light" d="M224 414H723V474H224Z"/>
+    <path class="paper" d="M242 408H278V456H242ZM283 408H319V456H283ZM324 408H360V456H324ZM531 408H567V456H531ZM572 408H608V456H572ZM613 408H649V456H613ZM654 408H690V456H654Z"/>
+    <path class="fine" d="M252 456V466H268V456M293 456V466H309V456M334 456V466H350V456M541 456V466H557V456M582 456V466H598V456M623 456V466H639V456M664 456V466H680V456"/>
+    <path class="paper" d="M389 363H425V411H389ZM430 363H466V411H430ZM471 363H507V411H471Z"/>
+    <path class="fine" d="M399 411V421H415V411M440 411V421H456V411M481 411V421H497V411"/>
+  </g>
+</svg>

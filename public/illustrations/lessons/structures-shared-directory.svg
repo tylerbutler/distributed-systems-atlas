@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="directory-title directory-desc">
+  <title id="directory-title">SharedDirectory: the same path, a new identity</title>
+  <desc id="directory-desc">A fresh folder with a diamond seal sits inside a nested trail-file cabinet. A retired folder has the same tab shape but a round seal; a delayed note remains tied to that old seal outside the cabinet.</desc>
+  <defs><pattern id="directory-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M99 481L578 524L803 468"/>
+  <path class="light" d="M348 149L684 109L790 170V440L449 491L348 419Z"/>
+  <path class="paper" d="M348 149L449 212L790 170V440L449 491L348 419Z"/>
+  <path d="M361 174L434 220V465L361 413Z" fill="url(#directory-hatch)"/>
+  <path class="light" d="M469 229L769 192V419L469 465Z"/>
+  <path d="M482 242L755 208V411L482 452Z" fill="url(#directory-hatch)"/>
+  <path class="paper" d="M488 437V259L512 256L523 239L595 230L609 242L742 225V400Z"/>
+  <path class="light" d="M503 424V284L530 280L541 263L598 256L612 268L725 254V401Z"/>
+  <path class="paper" d="M518 416V319L545 315L556 298L601 293L615 305L708 293V398Z"/>
+  <path class="fine" d="M529 330L696 309M529 400L696 380"/>
+  <path class="ink" d="M612 304V344"/>
+  <path d="M612 338L634 359L613 385L592 363Z" fill="#ebcd42" stroke="#264653" stroke-width="2.6"/>
+  <circle class="ink" cx="612" cy="352" r="4"/>
+  <path class="ink" d="M449 212V491M369 164L690 125"/>
+  <path class="fine" d="M454 223L454 470M783 184V427"/>
+  <g transform="rotate(-12 261 397)">
+    <path class="light" d="M117 351V296H145L156 279H201L215 291H354V469H117Z"/>
+    <path class="paper" d="M117 351H354V469H117Z"/>
+    <path class="fine" d="M129 363H340M129 455H340"/>
+    <path class="ink" d="M210 296Q245 344 229 373"/>
+    <circle class="paper" cx="221" cy="391" r="23"/>
+    <circle class="ink" cx="221" cy="380" r="4"/>
+  </g>
+  <path class="paper" d="M128 173L259 185L249 276L118 264Z"/>
+  <path class="ink" d="M128 173L185 226L259 185"/>
+  <circle class="paper" cx="185" cy="226" r="13"/>
+  <path class="ink" d="M185 239C187 287 303 267 243 355"/>
+  <path class="fine" d="M133 248L163 251M241 197L239 213"/>
+</svg>

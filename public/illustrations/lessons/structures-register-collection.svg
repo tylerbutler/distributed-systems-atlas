@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="register-collection-title register-collection-desc">
+  <title id="register-collection-title">RegisterCollection: read retained versions</title>
+  <desc id="register-collection-desc">A shallow indexed file drawer retains two stamped gate reports in separate layers. Two bookmarks reach different reports without removing either from the archive.</desc>
+  <defs><pattern id="register-collection-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M105 437L590 514L803 453M626 527L754 488"/>
+  <path class="light" d="M197 276L529 210L736 330L402 407Z"/>
+  <path d="M208 280L530 218L720 331L402 397Z" fill="url(#register-collection-hatch)"/>
+  <g transform="matrix(1 -.19 .35 .72 228 198)">
+    <path class="paper" d="M0 0H309V187H0Z"/>
+    <path class="ink" d="M21 18H83V40H21Z"/>
+    <circle class="ink" cx="278" cy="28" r="8"/>
+    <path class="ink" d="M77 142V68H90V142M218 142V68H231V142M90 77L144 48V100L90 128M92 80L141 99"/>
+    <path class="fine" d="M20 163H282"/>
+  </g>
+  <path class="paper" d="M451 171L472 167L548 281V391L537 384L526 394V291Z"/>
+  <path class="fine" d="M457 178L539 287V373"/>
+  <g transform="matrix(1 -.19 .35 .72 275 302)">
+    <path class="paper" d="M0 0H309V160H0Z"/>
+    <path class="ink" d="M21 18H83V40H21ZM278 18L289 29L278 40L267 29Z"/>
+    <path class="ink" d="M77 127V58H90V127M218 127V58H231V127M90 67H218V113H90ZM92 69L216 111M92 111L216 69"/>
+    <path class="fine" d="M20 143H282"/>
+  </g>
+  <path class="light" d="M197 276L222 291L224 401L399 505L736 430V330L714 335L714 410L400 480L244 390V305Z"/>
+  <path class="paper" d="M399 398L736 330V430L399 505Z"/>
+  <path d="M202 291L222 305L224 401L399 505V483L244 390V316Z" fill="url(#register-collection-hatch)"/>
+  <path class="ink" d="M399 398V505"/>
+  <path class="light" d="M521 407L621 386V424L521 445Z"/>
+  <path class="ink" d="M540 413L603 400V416L541 429"/>
+  <path class="paper" d="M597 254L618 250L666 332V429L655 422L644 433V341Z"/>
+  <path d="M601 258L614 255L658 333V355L651 357L651 338Z" fill="#ebcd42"/>
+  <path class="fine" d="M264 419L378 486M418 482L495 465M680 427L719 418"/>
+</svg>

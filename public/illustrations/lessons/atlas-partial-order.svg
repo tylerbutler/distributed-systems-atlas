@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="partial-order-title partial-order-desc">
+  <title id="partial-order-title">Partial order: a handoff and an independent record</title>
+  <desc id="partial-order-desc">A closed report envelope rests between two observation desks with matching report marks. A third desk is separate, with its own hexagon-marked notebook and pencil and no connecting message.</desc>
+  <defs><pattern id="partial-order-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="light" d="M105 242L242 209L341 269V285L204 322L105 260Z"/>
+  <path class="paper" d="M105 242L242 209L341 269L204 306Z"/>
+  <path d="M105 242L204 306V322L105 260Z" fill="url(#partial-order-hatch)"/>
+  <path class="ink" d="M128 277V343M312 294V359"/>
+  <path class="fine" d="M113 368L263 384"/>
+  <path class="paper" d="M140 205L199 214L256 195L280 254L221 274L158 255Z"/>
+  <path class="ink" d="M199 214L221 274"/>
+  <circle class="ink" cx="171" cy="220" r="6"/>
+  <path class="fine" d="M169 239L203 247M216 226L248 216M221 242L257 230"/>
+  <path class="light" d="M318 399L472 357L583 424V440L428 483L318 416Z"/>
+  <path class="paper" d="M318 399L472 357L583 424L428 467Z"/>
+  <path d="M318 399L428 467V483L318 416Z" fill="url(#partial-order-hatch)"/>
+  <path class="ink" d="M341 432V496M553 452V516"/>
+  <path class="fine" d="M334 515L435 532"/>
+  <path class="paper" d="M359 354L419 364L480 344L507 411L440 433L377 411Z"/>
+  <path class="ink" d="M419 364L440 433M379 368L385 375L379 382L373 375Z"/>
+  <circle class="ink" cx="455" cy="384" r="6"/>
+  <path class="fine" d="M388 396L418 404M454 408L485 398"/>
+  <g transform="rotate(18 326 329)">
+    <path class="paper" d="M267 291H391V369H267Z"/>
+    <path class="ink" d="M267 291L329 338L391 291"/>
+    <circle class="paper" cx="329" cy="337" r="10"/>
+    <path class="fine" d="M273 362L304 334M385 362L354 334"/>
+    <path d="M373 298H383V311H373Z" fill="#ebcd42"/>
+  </g>
+  <path class="light" d="M592 175L716 145L805 198V214L681 247L592 191Z"/>
+  <path class="paper" d="M592 175L716 145L805 198L681 230Z"/>
+  <path d="M592 175L681 230V247L592 191Z" fill="url(#partial-order-hatch)"/>
+  <path class="ink" d="M613 207V265M779 224V284"/>
+  <path class="fine" d="M600 292L780 310"/>
+  <path class="paper" d="M622 143L727 127L751 185L646 205Z"/>
+  <path class="ink" d="M637 141L659 201M654 153L659 145H668L673 153L668 161H659Z"/>
+  <path class="fine" d="M673 173L731 162M678 188L732 177"/>
+  <path class="paper" d="M772 106L783 111L754 170L742 180L745 163Z"/>
+  <path d="M742 180L745 169L750 172Z" fill="#264653"/>
+</svg>

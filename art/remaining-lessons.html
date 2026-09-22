@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Remaining lessons - Atlas illustration sheet</title>
+    <style>
+      :root { color-scheme: light; color: #264653; background: #f0f5f6; font-family: system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      body { max-width: 1320px; margin: 0 auto; padding: 48px 32px 64px; }
+      header { max-width: 720px; margin-bottom: 48px; }
+      h1 { margin: 0 0 12px; font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.1; letter-spacing: -.035em; }
+      h2 { margin: 0 0 24px; font-size: 1.5rem; }
+      p { margin: 0; line-height: 1.65; }
+      header p { color: #45616c; }
+      header p + p { margin-top: 12px; }
+      nav { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 24px; }
+      nav a { padding-block: 10px; }
+      section + section { margin-top: 56px; }
+      .sheet { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+      figure { margin: 0; min-width: 0; }
+      img { display: block; width: 100%; height: auto; background: white; }
+      figcaption { padding-top: 14px; border-top: 1px solid #a7bac1; }
+      a { color: #264653; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+      figcaption a { display: inline-block; font-size: 1.125rem; font-weight: 650; }
+      a:hover { text-decoration-thickness: 2px; }
+      a:focus-visible { outline: 3px solid #264653; outline-offset: 5px; background: #ebcd42; }
+      ::selection { color: #264653; background: #ebcd42; }
+      footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid #a7bac1; color: #45616c; font-size: .875rem; }
+      @media (max-width: 640px) {
+        body { padding: 32px 20px 48px; }
+        header { margin-bottom: 36px; }
+        .sheet { grid-template-columns: 1fr; gap: 28px; }
+      }
+      @media print {
+        body { padding: 0; }
+        nav { display: none; }
+        figure { break-inside: avoid; }
+        section + section { break-before: page; }
+        a { text-decoration: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Field records &amp; instruments</h1>
+      <p>The remaining 27 lesson illustrations for Distributed Systems Atlas. Open a title to inspect its editable SVG. Use the lesson text and diagrams for exact values and protocol rules.</p>
+      <p><a href="counters-and-sets.html">Browse the first eight: counters and sets.</a></p>
+      <nav aria-label="Illustration families">
+        <a href="#registers">Registers</a>
+        <a href="#maps">Maps</a>
+        <a href="#sequences">Sequences</a>
+        <a href="#coordination">Coordination</a>
+        <a href="#transforms">Transforms</a>
+        <a href="#reference">Reference sheets</a>
+      </nav>
+    </header>
+    <main>
+      <section aria-labelledby="registers">
+        <h2 id="registers">Registers</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-registers.svg" width="900" height="600" alt="An empty trail-status board above a single-report clip, a paired-report clip, and an archive with two reading tabs.">
+            <figcaption><a href="../public/illustrations/lessons/structures-registers.svg">Register family</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-lww-register.svg" width="900" height="600" alt="A stamped closed-gate report in one display clip, with an open-gate report set aside and a mechanical stamp nearby.">
+            <figcaption><a href="../public/illustrations/lessons/structures-lww-register.svg">LWWRegister</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-multi-value-register.svg" width="900" height="600" alt="Open-gate and closed-gate reports share a notebook clip; a pencil and a blank resolution slip lie beside them.">
+            <figcaption><a href="../public/illustrations/lessons/structures-multi-value-register.svg">MvRegister</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-register-collection.svg" width="900" height="600" alt="Two bookmarks reach different stamped gate reports retained in separate layers of one file drawer.">
+            <figcaption><a href="../public/illustrations/lessons/structures-register-collection.svg">RegisterCollection</a></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="maps">
+        <h2 id="maps">Maps</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-maps.svg" width="900" height="600" alt="An unfolded field folio has separate pockets for a gate report, a stockpile record, and nested trail folders.">
+            <figcaption><a href="../public/illustrations/lessons/structures-maps.svg">Map family</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-map.svg" width="900" height="600" alt="A station log and stamp beside a field sheet with one selected gate report and two unchanged record pockets.">
+            <figcaption><a href="../public/illustrations/lessons/structures-shared-map.svg">SharedMap</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-lww-map.svg" width="900" height="600" alt="Three setting records each have their own clock and writer tag; an incoming report lies beside the board.">
+            <figcaption><a href="../public/illustrations/lessons/structures-lww-map.svg">LWWMap</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-or-map.svg" width="900" height="600" alt="A stockpile ledger retains its tally and an old identity slip beside a loaded cart and a differently tagged delivery report.">
+            <figcaption><a href="../public/illustrations/lessons/structures-or-map.svg">OR-map</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-directory.svg" width="900" height="600" alt="A diamond-sealed folder sits in a nested cabinet; a delayed note remains tied to a retired folder's round seal.">
+            <figcaption><a href="../public/illustrations/lessons/structures-shared-directory.svg">SharedDirectory</a></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="sequences">
+        <h2 id="sequences">Sequences</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-sequences.svg" width="900" height="600" alt="Tagged waypoint cards and blank note tiles form two separate editing strips, with additions beside their gaps.">
+            <figcaption><a href="../public/illustrations/lessons/structures-sequences.svg">Sequence family</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-sequence.svg" width="900" height="600" alt="New waterfall and marsh cards fit before the same weir card in a tagged inspection route with a bridge and gate.">
+            <figcaption><a href="../public/illustrations/lessons/structures-shared-sequence.svg">SharedSequence</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-text.svg" width="900" height="600" alt="Two pencils point toward separate runs of blank character-sized tiles, each with its own identity tab.">
+            <figcaption><a href="../public/illustrations/lessons/structures-shared-text.svg">SharedText</a></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="coordination">
+        <h2 id="coordination">Coordination</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-coordination.svg" width="900" height="600" alt="One gate key at a duty desk beside inspection cards, a dispatch headset and roster, and a separate signoff sheet.">
+            <figcaption><a href="../public/illustrations/lessons/structures-coordination.svg">Coordination family</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-claims.svg" width="900" height="600" alt="One key and a stamped claim rest on a circle-marked notebook; two unstamped requests remain separate and the hook is empty.">
+            <figcaption><a href="../public/illustrations/lessons/structures-claims.svg">Claims</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-ordered-collection.svg" width="900" height="600" alt="One bridge-inspection card rests on a notebook outside an empty work tray; two other notebooks have no job card.">
+            <figcaption><a href="../public/illustrations/lessons/structures-ordered-collection.svg">OrderedCollection</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-task-manager.svg" width="900" height="600" alt="One headset and assignment card sit at a dispatch radio beside a roster with diamond- and hexagon-marked volunteers.">
+            <figcaption><a href="../public/illustrations/lessons/structures-task-manager.svg">TaskManager</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-pact-map.svg" width="900" height="600" alt="A proposal has two completed seals and one empty seal position below a raised stamp; its closure notice remains folded.">
+            <figcaption><a href="../public/illustrations/lessons/structures-pact-map.svg">PactMap</a></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="transforms">
+        <h2 id="transforms">Transforms</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/structures-transforms.svg" width="900" height="600" alt="An editing folio has correction slips on a structured form and separate heading and insertion edits on a writing page.">
+            <figcaption><a href="../public/illustrations/lessons/structures-transforms.svg">Transform family</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-json-ot.svg" width="900" height="600" alt="A wide circle-marked edit and a short diamond-marked edit fit separate title and revision fields on a report form.">
+            <figcaption><a href="../public/illustrations/lessons/structures-json-ot.svg">JsonOt</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/structures-shared-rich-text.svg" width="900" height="600" alt="A broad pen emphasizes a report heading while a pencil points to a triangular marker appended to the final writing strip.">
+            <figcaption><a href="../public/illustrations/lessons/structures-shared-rich-text.svg">SharedRichText</a></figcaption>
+          </figure>
+        </div>
+      </section>
+      <section aria-labelledby="reference">
+        <h2 id="reference">Reference sheets</h2>
+        <div class="sheet">
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-local-history.svg" width="900" height="600" alt="An earlier report travels between two desks in an envelope while a fresh yellow-tabbed page remains at the sender's desk.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-local-history.svg">Local history</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-partial-order.svg" width="900" height="600" alt="A report envelope lies between two observation desks; a third desk has a separate notebook and no connecting message.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-partial-order.svg">Partial order</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-lamport-clocks.svg" width="900" height="600" alt="Two desks have local event counters with blank readouts; a stamped envelope lies beside the receiving counter's knob.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-lamport-clocks.svg">Lamport clocks</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-vector-clocks.svg" width="900" height="600" alt="Two instruments have circle and diamond columns: the first is ahead in the circle column, the second in the diamond column.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-vector-clocks.svg">Vector clocks</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-dots-and-causal-context.svg" width="900" height="600" alt="A beacon report has a writer-and-event seal beside a notebook of retained identity slips and a separate fresh report.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-dots-and-causal-context.svg">Dots and causal context</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-multi-value-registers.svg" width="900" height="600" alt="Two signal-lens reports with different hatching and writer seals share one holder above a blank decision slip.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-multi-value-registers.svg">Multi-value registers</a></figcaption>
+          </figure>
+          <figure>
+            <img src="../public/illustrations/lessons/atlas-observed-remove-sets.svg" width="900" height="600" alt="A delayed beacon report has the same rounded tag as a retained retirement record; a diamond-tagged replacement report remains separate.">
+            <figcaption><a href="../public/illustrations/lessons/atlas-observed-remove-sets.svg">Observed-remove sets</a></figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <p>27 self-contained SVGs, each with a 900 &times; 600 viewBox. Mineral-blue ink, sparse hatching, and shape-based identity marks continue the counter and set collection. The lesson pages include these images alongside their existing diagrams and labs.</p>
+    </footer>
+  </body>
+</html>

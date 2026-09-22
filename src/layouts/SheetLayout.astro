@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
+import LessonIllustration from "../components/LessonIllustration.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
 import { firstTrail, trailPosition } from "../lib/atlas/trail";
@@ -69,6 +70,7 @@ const next = nextStep
       {entry.data.requires.length > 0
         ? <SheetLinks heading="Ideas used on this sheet" sheets={entry.data.requires.map(resolve)} />
         : <p class="sheet-prerequisites">No supporting sheet required</p>}
+      <LessonIllustration id={`atlas-${entry.id}`} />
     </header>
     {["opening", "continuation"].map((section) => (
       <div class={`sheet-local sheet-local-${section}`}>

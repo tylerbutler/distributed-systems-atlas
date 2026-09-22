@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="claims-title claims-desc">
+  <title id="claims-title">Claims: one accepted assignment</title>
+  <desc id="claims-desc">The station's only gate key rests on a circle-marked notebook beside an accepted stamped claim. Diamond- and hexagon-marked request slips remain separate and unstamped. The key hook is empty.</desc>
+  <defs><pattern id="claims-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 463L649 512L806 457"/>
+  <path class="light" d="M548 111L707 119V201L548 193Z"/>
+  <circle class="fine" cx="560" cy="124" r="3"/><circle class="fine" cx="695" cy="133" r="3"/>
+  <path class="ink" d="M622 145V173Q622 194 646 185V174" stroke-width="4"/>
+  <g transform="rotate(-10 300 353)">
+    <path class="light" d="M143 224H426V474H143Z"/>
+    <path d="M146 459H426V474H143V228H146Z" fill="url(#claims-hatch)"/>
+    <path class="paper" d="M153 213H435V458H153Z"/>
+    <path class="ink" d="M174 213V458"/>
+    <circle class="ink" cx="197" cy="240" r="13"/>
+    <path class="fine" d="M185 441H416"/>
+    <path class="paper" d="M204 338H408V424H204Z"/>
+    <path class="ink" d="M219 352H277V373H219Z"/>
+    <circle class="ink" cx="382" cy="363" r="8"/>
+    <path class="fine" d="M219 395H391M219 408H335"/>
+    <path d="M281 243C247 243 243 291 273 300V345H284V359H306V345H297V331H307V319H297V300C328 287 315 243 281 243Z" fill="#fff" stroke="#264653" stroke-width="2.6" stroke-linejoin="round"/>
+    <ellipse class="ink" cx="282" cy="269" rx="16" ry="13"/>
+    <path class="ink" d="M270 246Q245 224 232 245"/>
+    <path d="M224 239L245 246L239 272L218 266Z" fill="#ebcd42" stroke="#264653" stroke-width="2"/>
+  </g>
+  <g transform="rotate(9 661 377)">
+    <path class="paper" d="M547 249H698V340H547ZM588 375H739V466H588Z"/>
+    <path class="ink" d="M567 265L576 274L567 283L558 274ZM604 393H614L620 403L614 413H604L598 403Z"/>
+    <path class="fine" d="M560 305H684M560 321H663M602 432H724M602 448H703"/>
+  </g>
+  <path class="paper" d="M435 140L503 145L527 207L455 202Z"/>
+  <path class="light" d="M445 184L516 190L527 207L455 202Z"/>
+  <path class="ink" d="M465 166L464 143H487L489 169"/>
+  <path class="paper" d="M452 143Q448 126 473 125Q500 126 499 144Z"/>
+</svg>
