@@ -42,7 +42,7 @@ function raceNote(replica: ReplicaId): string {
         : "No note in this race";
   }
   return replica === "A"
-    ? "Remove observed tag A:1"
+    ? "Remove observed dot A:1"
     : replica === "B"
       ? "Add Eagle Creek as B:2"
       : "No note in this race";
@@ -93,7 +93,7 @@ function raceNote(replica: ReplicaId): string {
                 <div data-removals-page={replica.id}><em>Empty</em></div>
               </section>
               <p>
-                <span>Highest tag number seen</span>
+                <span>Highest dot counter seen</span>
                 <strong data-highest-tag={replica.id}>1</strong>
               </p>
             </div>

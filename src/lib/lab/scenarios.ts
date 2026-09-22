@@ -296,9 +296,9 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
       comparisonHeading: "Causal context comparison",
       inspectorNote: register
         ? "Each sibling retains its authored version. The merged context does not replace sibling versions."
-        : "Watershed uses a set-wide allocation counter: the concurrent B addition is B:2. Context shows tag maxima, not a gap-free vector clock.",
+        : "Watershed uses a set-wide allocation counter: the concurrent B addition is B:2. Context shows dot maxima, not a gap-free vector clock.",
       invariantLabels: {
-        uniqueTags: "Unique tags",
+        uniqueTags: "Unique dots",
         removeTargetsOnlyObservedDots: "Remove targets only observed dots",
         concurrentAddSurvives: "Concurrent add survives",
         removedDotsStayRemoved: "Removed dots stay removed",

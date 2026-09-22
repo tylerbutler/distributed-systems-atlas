@@ -1,6 +1,6 @@
 ---
 title: Observed-remove sets
-summary: Remove observed addition tags while preserving a concurrent add and rejecting stale replay.
+summary: Remove observed addition dots while preserving a concurrent add and rejecting stale replay.
 territory: structures
 status: published
 requires: [dots-and-causal-context]
@@ -8,8 +8,10 @@ introduces: [observed-remove set, tombstone, add-wins]
 related: [dots-and-causal-context, multi-value-registers]
 scenarios: [or-set-concurrent-add-remove-stale-replay]
 terms:
+  - term: dot
+    definition: A unique event identifier made from a replica ID and a local counter.
   - term: observed-remove set
-    definition: A replicated set whose remove operation targets only addition tags observed by the removing replica.
+    definition: A replicated set whose remove operation targets only addition dots observed by the removing replica.
   - term: tombstone
     definition: Retained removal metadata that prevents an old addition from becoming live again.
   - term: add-wins
@@ -45,9 +47,16 @@ need to preserve Bob's replacement without restoring the installation Alice
 removed.
 
 The visible string cannot distinguish those cases. Both messages contain
-`beacon`. Give each addition a unique tag, and make removal name the tags
+`beacon`. Give each addition a unique <dfn><a href="/glossary/#dot">dot</a></dfn>,
+and make removal name the dots
 the removing replica observed. Then an old add and a new add can receive
 different treatment even though their value text matches.
+
+<TermCallout
+  term="dot"
+  definition="A unique event identifier made from a replica ID and a local counter."
+  inlineOnly
+/>
 
 An **observed-remove set** uses that rule. Its **add-wins** result applies
 to an addition concurrent with a removal that did not observe it. It does
@@ -63,17 +72,17 @@ addition; the replica component separates allocators.
 
 The identity diagram shows why equal counters at different replicas do not
 collide. The lab below uses a different counter-allocation rule from the
-Dots reference model: after B receives `A:1`, its next tag is `B:2`, not
+Dots reference model: after B receives `A:1`, its next dot is `B:2`, not
 `B:1`. Watershed takes the maximum set allocation counter on merge, then
 increments it for an add. `B:2` is B's first addition in this run.
 
-Keep that literal tag in the records. Renaming it to `B:1` would hide which
+Keep that literal dot in the records. Renaming it to `B:1` would hide which
 implementation you are inspecting. A's remove targets `A:1`. It cannot
 target `B:2` because A has received no message about that addition.
 
 A <dfn><a href="/glossary/#tombstone">tombstone</a></dfn> preserves the removed
-tag. Membership asks whether a value has any live tags; replay protection asks
-whether an incoming tag has already been removed. The same visible set can
+dot. Membership asks whether a value has any live dots; replay protection asks
+whether an incoming dot has already been removed. The same visible set can
 conceal different answers to the second question.
 
 <TermCallout
@@ -83,9 +92,9 @@ conceal different answers to the second question.
 />
 
 Unlike the Dots lesson's full causal-state snapshots, this lab sends sparse
-deltas. An add delta contains its new tag, while a remove delta contains
-the observed tags it removes. The displayed **Causal context** is a
-per-writer maximum over live and removed tags. It is not a gap-free vector
+deltas. An add delta contains its new dot, while a remove delta contains
+the observed dots it removes. The displayed **Causal context** is a
+per-writer maximum over live and removed dots. It is not a gap-free vector
 clock, and it is not the rule that decides membership.
 
 ## Save a stale copy before removing
@@ -106,7 +115,7 @@ until the final step.
 
 Before the last step, predict whether beacon's visible membership will
 change and whether `A:1` will become live. They are separate predictions.
-Beacon is already visible through `B:2`, so the live-tag field is necessary
+Beacon is already visible through `B:2`, so the live-dot field is necessary
 to detect an incorrect resurrection.
 
 The ordinary controls include **Duplicate m1 from A to B**, **Partition A
@@ -116,7 +125,7 @@ run selects it only after delivery of the two new deltas.
 
 Without JavaScript, both initial sets below are empty. The article's staged
 records supply the outcome; interactive controls are not needed to understand
-which tags each removal can name.
+which dots each removal can name.
 
 </div>
 
@@ -124,22 +133,22 @@ which tags each removal can name.
 
 <div class="sheet-continuation">
 
-## Follow live and removed tags through delivery
+## Follow live and removed dots through delivery
 
 After delivery of the original `m1`, both stations retain live `A:1`. The saved
-copy has the same payload and tag. Duplicating a message does not allocate
+copy has the same payload and dot. Duplicating a message does not allocate
 another addition.
 
 While delivery is blocked, A moves `A:1` from live membership to removal
 knowledge. B has not received that removal and still has live `A:1`.
-Its local add allocates `B:2`, so B now retains two live tags for the same
+Its local add allocates `B:2`, so B now retains two live dots for the same
 visible value.
 
 Healing changes only the link. At that frame, A's visible set remains empty
 and B's contains beacon. The old copy, removal, and new addition are all
 still queued. A working connection alone is not convergence.
 
-<figure aria-label="Observed-remove tag checkpoints">
+<figure aria-label="Observed-remove dot checkpoints">
   <table>
     <thead><tr><th scope="col">Checkpoint</th><th scope="col">Live at A</th><th scope="col">Live at B</th></tr></thead>
     <tbody>
@@ -151,7 +160,7 @@ still queued. A working connection alone is not convergence.
     </tbody>
   </table>
   <figcaption>Both final states retain the tombstone A:1. Their displayed
-  tag maxima are [A:1, B:2]; those maxima do not claim that B:1 was delivered.</figcaption>
+  dot maxima are [A:1, B:2]; those maxima do not claim that B:1 was delivered.</figcaption>
 </figure>
 
 The removal delta retracts `A:1` at B but leaves `B:2`. The new-add delta
@@ -160,13 +169,13 @@ matching set metadata, but the queue still contains the duplicate. Atlas's
 **Converged** check requires matching metadata and an empty queue.
 
 When the duplicate is delivered, the merge finds `A:1` in B's tombstones and
-keeps it out of the live tags. Both stations display beacon through `B:2`.
+keeps it out of the live dots. Both stations display beacon through `B:2`.
 This is idempotent replay of the same authored delta, not a new add.
 
 Change the observations and removal changes too. After the reference run,
 choose **Remove beacon at A** and deliver its delta. A has now observed
 `B:2`, so that removal targets it and both visible sets become empty.
-A subsequent **Add beacon at A** uses a fresh tag and can make beacon
+A subsequent **Add beacon at A** uses a fresh dot and can make beacon
 visible again. A value is not permanently banned because one of its
 addition events was removed.
 
@@ -176,20 +185,20 @@ addition events was removed.
 
 Suppose A and B discard `A:1`'s tombstone when their visible sets match
 after step 9. The network then delivers the stale copy with `A:1`. If the merge has no
-removal record left, it can accept that old tag as a live addition.
+removal record left, it can accept that old dot as a live addition.
 
 Beacon was already visible, so checking only the list of strings misses the
-error. Inspect its live tags: the correct result contains only `B:2`.
+error. Inspect its live dots: the correct result contains only `B:2`.
 An extra `A:1` is a resurrected event, not another valid concurrent add.
 
 Deleting by the value string instead would make the opposite mistake:
-A's removal could erase `B:2` at B despite never observing it. The tags
+A's removal could erase `B:2` at B despite never observing it. The dots
 let you reject the stale addition and retain the concurrent one under the
 same rule.
 
 The lab has no switch that deletes tombstones. Its correct kernel lets you
 test the distinction by replaying a copied delta and inspecting metadata.
-The final test must require both the surviving tag and the retained removal.
+The final test must require both the surviving dot and the retained removal.
 
 </section>
 
@@ -198,24 +207,24 @@ The final test must require both the surviving tag and the retained removal.
 ## Removal knowledge outlives membership
 
 Each live addition needs an identity. Repeated adds can therefore grow the
-tag set even when the visible set contains one string. Removed additions
+dot set even when the visible set contains one string. Removed additions
 leave tombstones in this lab. Storage depends on retained event metadata,
 not only the number of visible members.
 
-Sparse deltas reduce what a single update sends here: an add sends its tag,
-and a remove sends the tags it observed for that member. Receiving a later
-tag does not supply every earlier addition payload. Reading tag maxima as
+Sparse deltas reduce what a single update sends here: an add sends its dot,
+and a remove sends the dots it observed for that member. Receiving a later
+dot does not supply every earlier addition payload. Reading dot maxima as
 a complete causal prefix would invent observations that the delta did not
 deliver.
 
 The replica IDs must identify unique allocators, and their counters must
 not repeat. A restart or restored snapshot needs an identity and state
-policy that prevents tag reuse. The teaching run has two fixed replicas
+policy that prevents dot reuse. The teaching run has two fixed replicas
 and no disk recovery.
 
 The lab does not garbage-collect tombstones. A safe cleanup rule needs
 evidence about which old messages, snapshots, and returning replicas can
-still introduce a removed tag. Matching visible values or waiting for a
+still introduce a removed dot. Matching visible values or waiting for a
 timeout supplies no such proof. Compact OR-set designs can encode removal
 knowledge differently, but removing metadata without replacing its
 information changes the merge semantics.
@@ -237,19 +246,19 @@ No Watershed knowledge is a prerequisite. The public
 [`watershed/or_set_kernel` source](/bibliography/#watershed-pinned-or-set)
 is the implementation reference. Atlas imports the stable `@atlas/toolkit`
 entry point and calls ack-free operations. The kernel allocates and merges
-tags; Atlas schedules authored deltas and records immutable frames.
+dots; Atlas schedules authored deltas and records immutable frames.
 
 This pseudocode describes the explicit-tombstone subset used by the lab,
-without pruning or replica retirement. `live[value]` is a set of tags;
+without pruning or replica retirement. `live[value]` is a set of dots;
 `removed` contains tombstones. The allocation counter takes the maximum
 across merged states, even when their replica IDs differ.
 
 ```text
 add(value):
   counter = counter + 1
-  tag = (self, counter)
-  live[value].add(tag)
-  queue(delta(live = {value: {tag}},
+  dot = (self, counter)
+  live[value].add(dot)
+  queue(delta(live = {value: {dot}},
               removed = {}, counter = counter))
 
 remove(value):
@@ -268,9 +277,9 @@ visible(value):
   return live[value] is not empty
 ```
 
-Missing tag sets start empty. Union and tombstone filtering preserve the
+Missing dot sets start empty. Union and tombstone filtering preserve the
 observed-remove rule through reordered and duplicate delivery. The counter
-controls allocation; explicit tags and tombstones control membership.
+controls allocation; explicit dots and tombstones control membership.
 
 Bieniusa and colleagues'
 [An Optimized Conflict-free Replicated Set](/bibliography/#bieniusa-optimized-set)

@@ -57,7 +57,7 @@ const lessons = [
     id: "observed-remove-sets", title: "Observed-remove sets", scenario: "or-set-concurrent-add-remove-stale-replay",
     outcome: "The concurrent add survives stale replay",
     headings: ["A removed signal returns in an old message", "Retain the identity after membership changes",
-      "Save a stale copy before removing", "Follow live and removed tags through delivery",
+      "Save a stale copy before removing", "Follow live and removed dots through delivery",
       "Break it: discard the tombstone", "Removal knowledge outlives membership", "Field notes"],
     figure: "Observed-remove tag checkpoints", evidence: ["B:2", "A:1", "Stale A:1 replayed"],
     initial: ["Empty set", "No removed dots", "A:0, B:0"], replicas: ["A", "B"],

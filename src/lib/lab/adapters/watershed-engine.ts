@@ -139,8 +139,8 @@ export function createWatershedEngine<O extends Observation>(
           action.type === "write"
             ? "Watershed wrote a new version that replaces only observed siblings; its authored delta is queued for each peer."
             : action.type === "add"
-              ? "Watershed allocated a new addition tag; its authored delta is queued for each peer."
-              : "Watershed removed only observed addition tags. Concurrent additions remain valid; the removal delta is queued.");
+              ? "Watershed allocated a new addition dot; its authored delta is queued for each peer."
+              : "Watershed removed only observed addition dots. Concurrent additions remain valid; the removal delta is queued.");
       }
       case "duplicate":
       case "deliver": {
@@ -150,7 +150,7 @@ export function createWatershedEngine<O extends Observation>(
         if (action.type === "duplicate") {
           const copy = { ...message, id: `${message.id}:copy${++copyNumber}` };
           messages.push(copy);
-          return append(action, `duplicate ${message.id}`, `Queued ${copy.id} with the same Watershed delta and tags.`);
+          return append(action, `duplicate ${message.id}`, `Queued ${copy.id} with the same Watershed delta and dots.`);
         }
         if (partitions.has(pair(message.from, message.to))) return error(action, "message crosses an active partition");
         const before = replicas.get(message.to)!;

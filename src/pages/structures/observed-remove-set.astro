@@ -28,36 +28,41 @@ import "../../styles/set-lesson.css";
       family="CRDT"
       model="State-based observed-remove set"
       updates="Add, remove, and re-add"
-      merge="Union addition tags, then subtract observed removals."
+      merge="Union addition dots, then subtract observed removals."
       delivery="Safe under repeated and out-of-order delivery"
       bestFor="Collaborative membership where values can return"
-      cost="Live addition tags plus retained removal knowledge"
+      cost="Live addition dots plus retained removal knowledge"
     />
 
     <section aria-labelledby="identity-title">
       <h2 id="identity-title">A replacement needs a new identity</h2>
       <p>
-        Alice's original report gave the old beacon tag <code>A:1</code>.
-        After she observes that installation, her removal names
-        <code>A:1</code>. It does not remove every future beacon called Eagle
-        Creek.
+        Alice's original report gave the old beacon a{" "}
+        <dfn><a href="/glossary/#dot">dot</a></dfn>: <code>A:1</code>. A dot
+        combines the writer's replica ID with a local counter. After Alice
+        observes that installation, her removal names <code>A:1</code>. It
+        does not remove every future beacon called Eagle Creek.
       </p>
+      <TermCallout
+        term="dot"
+        definition="A unique event identifier made from a replica ID and a local counter."
+      />
       <p>
         Bob adds the replacement while his station and Alice's station cannot
-        exchange notes. His addition gets the fresh tag <code>B:2</code>. An{" "}
+        exchange notes. His addition gets the fresh dot <code>B:2</code>. An{" "}
         <dfn><a href="/glossary/#observed-remove-set">observed-remove set</a></dfn>
         {" "}removes only the addition identities that the removing replica
         observed.
       </p>
       <TermCallout
         term="observed-remove set"
-        definition="A replicated set whose remove operation targets only addition tags observed by the removing replica."
+        definition="A replicated set whose remove operation targets only addition dots observed by the removing replica."
       />
       <p>
-        Each additions-page row pairs a beacon name with its tag. Each
+        Each additions-page row pairs a beacon name with its dot. Each
         removals-page row copies the same pair, so an old note cannot restore
-        that installation. The notebook also keeps the highest tag number seen.
-        Bob has seen <code>A:1</code>, so his next tag is <code>B:2</code>.
+        that installation. The notebook also keeps the highest dot counter seen.
+        Bob has seen <code>A:1</code>, so his next dot is <code>B:2</code>.
       </p>
       <figure>
         <table aria-label="Observed-remove notebooks before records meet">
@@ -66,7 +71,7 @@ import "../../styles/set-lesson.css";
               <th scope="col">Notebook</th>
               <th scope="col">Additions page</th>
               <th scope="col">Removals page</th>
-              <th scope="col">Highest tag number seen</th>
+              <th scope="col">Highest dot counter seen</th>
               <th scope="col">Visible list</th>
             </tr>
           </thead>
@@ -98,15 +103,15 @@ import "../../styles/set-lesson.css";
           </tbody>
         </table>
         <figcaption>
-          The notebook preserves the name, identity, removal knowledge, and
+          The notebook preserves the name, dot, removal knowledge, and
           counter needed to interpret the next note.
         </figcaption>
       </figure>
       <p>
         After all records arrive, each additions page retains Eagle Creek:
         <code>B:2</code>, each removals page retains Eagle Creek:
-        <code>A:1</code>, and each highest tag number is <code>2</code>. The
-        visible list contains Eagle Creek because the replacement tag remains.
+        <code>A:1</code>, and each highest dot counter is <code>2</code>. The
+        visible list contains Eagle Creek because the replacement dot remains.
       </p>
     </section>
 
@@ -114,7 +119,7 @@ import "../../styles/set-lesson.css";
       kind="or-set"
       title="Keep the replacement, not the old beacon"
       description="Alice removes the installation she observed while Bob concurrently installs a replacement under a fresh identity."
-      rule="Remove observed tags; keep concurrent fresh tags."
+      rule="Remove observed dots; keep concurrent fresh dots."
       raceLabel="Race removal against replacement"
     />
 
@@ -127,14 +132,14 @@ import "../../styles/set-lesson.css";
       </p>
       <p>
         A delayed copy of <code>A:1</code> does not return. The replicas retain
-        removal knowledge for that exact tag. The visible value is still Eagle
+        removal knowledge for that exact dot. The visible value is still Eagle
         Creek, but the notebook's surviving <code>B:2</code> identity proves
         that it is the replacement.
       </p>
       <p>
         The full reference lesson lets you temporarily block notes between
         Alice and Bob, preserve a stale copy, exchange the conflicting deltas,
-        and inspect the live tags and tombstones.
+        and inspect the live dots and tombstones.
       </p>
       <p class="lesson-entry">
         <a href="/atlas/observed-remove-sets/">Open the interactive observed-remove set lesson</a>

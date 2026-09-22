@@ -102,7 +102,7 @@ test("set notebooks update after the shared record arrives", async ({ page }) =>
     timeout: 10_000,
   });
 
-  test("OR-set additions receive tags automatically", async ({ page }) => {
+  test("OR-set additions receive dots automatically", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/structures/observed-remove-set/");
     const demo = page.getByTestId("or-set-demo");
@@ -163,6 +163,12 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         await expect(page.getByLabel("TwoPSet composition and membership rule"))
           .toContainText("TwoPSet = additions GSet + removals GSet");
       } else if (testId === "or-set-demo") {
+        await expect(page.getByLabel("dot definition")).toContainText(
+          "replica ID and a local counter",
+        );
+        await expect(page.getByLabel("dot definition")
+          .getByRole("link", { name: "dot" }))
+          .toHaveAttribute("href", "/glossary/#dot");
         const notebooks = page.getByRole("table", {
           name: "Observed-remove notebooks before records meet",
         });
@@ -170,7 +176,7 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           "Notebook",
           "Additions page",
           "Removals page",
-          "Highest tag number seen",
+          "Highest dot counter seen",
           "Visible list",
         ]);
         await expect(notebooks.getByRole("row", { name: /^Bob / }).locator("code"))

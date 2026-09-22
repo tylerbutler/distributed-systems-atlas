@@ -53,7 +53,7 @@ test("reset creates a fresh two-phase set", () => {
   expect(createSetDemo("two-p-set").view.replicas[0]?.values).toEqual(["Eagle Creek"]);
 });
 
-test("OR-set additions receive the next local tag", () => {
+test("OR-set additions receive the next local dot", () => {
   const bob = state(updateSetReplica(createSetDemo("or-set"), {
     author: "B",
     action: "add",

@@ -308,7 +308,7 @@ class SetStructureDemoElement extends HTMLElement {
             operation.action === "add" ? "reported" : "retired"
           } ${operation.element}${
             operation.tag ? ` as ${operation.tag}` : operation.observedTags?.length
-              ? ` by tag ${operation.observedTags.join(", ")}`
+              ? ` by dot ${operation.observedTags.join(", ")}`
               : ""
           }; delivered to ${recipients}`,
         );
@@ -334,7 +334,7 @@ class SetStructureDemoElement extends HTMLElement {
         ? "A:1 is removed. B:2 is live."
         : view.phase === "initial"
           ? "A:1 is the live old installation."
-          : `Live tags: ${liveTags.join(", ") || "none"}. Removed tags: ${
+          : `Live dots: ${liveTags.join(", ") || "none"}. Removed dots: ${
             removedTags.join(", ") || "none"
           }.`;
     }
