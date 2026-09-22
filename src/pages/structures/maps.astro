@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
+import StructureKindTag from "../../components/StructureKindTag.astro";
 ---
 
 <BaseLayout
@@ -22,7 +23,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     </header>
 
     <section aria-labelledby="shared-map-title">
-      <header><div><p class="structure-kind">Uses shared order</p><h2 id="shared-map-title">SharedMap</h2><p>One shared order chooses a value for each name.</p></div><code>map_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><h2 id="shared-map-title">SharedMap</h2><p>One shared order chooses a value for each name.</p></div><code>map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -39,7 +40,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     </section>
 
     <section aria-labelledby="lww-map-title">
-      <header><div><p class="structure-kind">No shared order</p><h2 id="lww-map-title">LWWMap</h2><p>The time on each change chooses the value.</p></div><code>lww_map_kernel</code></header>
+      <header><div><StructureKindTag kind="CRDT" /><h2 id="lww-map-title">LWWMap</h2><p>The time on each change chooses the value.</p></div><code>lww_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -56,7 +57,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     </section>
 
     <section aria-labelledby="or-map-title">
-      <header><div><p class="structure-kind">No shared order</p><h2 id="or-map-title">OR-map</h2><p>New work can survive a removal made at the same time.</p></div><code>or_map_kernel</code></header>
+      <header><div><StructureKindTag kind="CRDT" /><h2 id="or-map-title">OR-map</h2><p>New work can survive a removal made at the same time.</p></div><code>or_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -74,7 +75,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     </section>
 
     <section aria-labelledby="directory-title">
-      <header><div><p class="structure-kind">Uses shared order</p><h2 id="directory-title">SharedDirectory</h2><p>A folder tree that knows when a folder is replaced.</p></div><code>directory_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><h2 id="directory-title">SharedDirectory</h2><p>A folder tree that knows when a folder is replaced.</p></div><code>directory_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -131,7 +132,6 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
   }
   section h2, section header p { margin: 0; }
   section h2 { margin-block: var(--space-1); }
-  .structure-kind { color: var(--instrument); font: 700 0.75rem/1 var(--font-data); }
   section header code { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
   .structure-body {
     display: grid;

@@ -1,4 +1,6 @@
 ---
+import StructureKindTag from "./StructureKindTag.astro";
+
 interface Props {
   family: "CRDT" | "OT" | "DDS";
   model: string;
@@ -15,7 +17,7 @@ const { family, model, updates, merge, delivery, bestFor, cost } = Astro.props;
 <aside class="structure-facts" aria-labelledby="structure-facts-title">
   <header>
     <h2 id="structure-facts-title">Quick facts</h2>
-    <strong>{family}</strong>
+    <StructureKindTag kind={family} />
   </header>
   <dl>
     <div><dt>Model</dt><dd>{model}</dd></div>
@@ -47,14 +49,6 @@ const { family, model, updates, merge, delivery, bestFor, cost } = Astro.props;
   h2 {
     margin: 0;
     font-size: clamp(1.5rem, 4vw, 2rem);
-  }
-
-  header strong {
-    padding: 0.2rem 0.45rem;
-    border: var(--rule-width) solid currentColor;
-    color: var(--instrument);
-    font-family: var(--font-data);
-    font-size: 0.8rem;
   }
 
   dl {

@@ -5,6 +5,21 @@ export const replicaTerm: GlossaryTerm = {
   definition: "A local copy of shared data that can change independently and merge messages from other copies.",
 };
 
+export const crdtTerm: GlossaryTerm = {
+  term: "CRDT",
+  definition: "A conflict-free replicated data type combines changes with a rule that does not depend on one shared delivery order.",
+};
+
+export const ddsTerm: GlossaryTerm = {
+  term: "DDS",
+  definition: "A distributed data structure uses one shared order of accepted operations to keep every copy in agreement.",
+};
+
+export const otTerm: GlossaryTerm = {
+  term: "operational transform",
+  definition: "A collaboration model that rewrites operations against changes made at the same time before it applies them.",
+};
+
 export const eventualConsistencyTerm: GlossaryTerm = {
   term: "eventual consistency",
   definition: "Each replica sees only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
@@ -117,6 +132,8 @@ export const sharedRichTextTerm: GlossaryTerm = {
 
 export const standaloneTerms = [
   claimsTerm,
+  crdtTerm,
+  ddsTerm,
   eventualConsistencyTerm,
   gCounterTerm,
   gSetTerm,
@@ -124,6 +141,7 @@ export const standaloneTerms = [
   lwwRegisterTerm,
   lwwMapTerm,
   orderedCollectionTerm,
+  otTerm,
   orMapTerm,
   pactMapTerm,
   pnCounterTerm,

@@ -67,7 +67,7 @@ pnpm dev
 ```
 
 Open the local URL printed by Astro. The publication includes `/`,
-`/structures/`, `/structures/counters/`, `/structures/g-counter/`,
+`/structures/`, `/structures/models/`, `/structures/counters/`, `/structures/g-counter/`,
 `/structures/pn-counter/`, `/structures/shared-counter/`,
 `/structures/sets/`, `/structures/g-set/`, `/structures/two-p-set/`,
 `/structures/observed-remove-set/`, `/structures/registers/`,

@@ -1,0 +1,42 @@
+---
+interface Props {
+  kind: "CRDT" | "DDS" | "OT";
+}
+
+const { kind } = Astro.props;
+const labels = {
+  CRDT: "CRDT",
+  DDS: "DDS",
+  OT: "OT",
+} as const;
+---
+
+<a
+  class="structure-kind-tag"
+  data-kind={kind}
+  href={`/structures/models/#${kind.toLowerCase()}`}
+  aria-label={`Learn what ${labels[kind]} means`}
+>
+  {labels[kind]}
+</a>
+
+<style>
+  .structure-kind-tag {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border: var(--rule-width) solid currentColor;
+    color: var(--instrument);
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .structure-kind-tag:hover {
+    color: var(--clear);
+    background: var(--instrument);
+  }
+</style>

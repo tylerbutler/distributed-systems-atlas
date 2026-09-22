@@ -1,0 +1,380 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureKindTag from "../../components/StructureKindTag.astro";
+
+const models = [
+  {
+    kind: "DDS" as const,
+    name: "Distributed data structure",
+    glossary: "/glossary/#dds",
+    summary: "Put every accepted change in one shared order.",
+    body: [
+      "A DDS sends changes through one service. The service numbers them, and every connected copy applies the same numbered list.",
+      "The structure still needs a rule for that list. A map may keep the last numbered value, while a claim may keep the first accepted owner.",
+    ],
+    tradeoff: "The rule is often simple, but the shared ordering service must be available.",
+    members: [
+      ["SharedCounter", "/structures/shared-counter/"],
+      ["RegisterCollection", "/structures/register-collection/"],
+      ["SharedMap", "/structures/shared-map/"],
+      ["SharedDirectory", "/structures/shared-directory/"],
+      ["Claims", "/structures/claims/"],
+      ["OrderedCollection", "/structures/ordered-collection/"],
+      ["TaskManager", "/structures/task-manager/"],
+      ["PactMap", "/structures/pact-map/"],
+    ],
+  },
+  {
+    kind: "CRDT" as const,
+    name: "Conflict-free replicated data type",
+    glossary: "/glossary/#crdt",
+    summary: "Combine changes without depending on one shared order.",
+    body: [
+      "A CRDT gives each copy enough information to combine work safely. Changes can arrive late, out of order, or more than once and still produce the same result.",
+      "Each CRDT has its own combine rule. Counters keep the highest known counts, sets keep addition and removal evidence, and registers compare times or preserve competing answers.",
+    ],
+    tradeoff: "It tolerates unreliable delivery, but may keep extra history to make that safe.",
+    members: [
+      ["G-counter", "/structures/g-counter/"],
+      ["PN-counter", "/structures/pn-counter/"],
+      ["GSet", "/structures/g-set/"],
+      ["TwoPSet", "/structures/two-p-set/"],
+      ["Observed-remove set", "/structures/observed-remove-set/"],
+      ["LWWRegister", "/structures/lww-register/"],
+      ["MvRegister", "/structures/multi-value-register/"],
+      ["LWWMap", "/structures/lww-map/"],
+      ["OR-map", "/structures/or-map/"],
+      ["SharedSequence", "/structures/shared-sequence/"],
+      ["SharedText", "/structures/shared-text/"],
+    ],
+  },
+  {
+    kind: "OT" as const,
+    name: "Operational transform",
+    glossary: "/glossary/#operational-transform",
+    summary: "Rewrite changes so they still make sense together.",
+    body: [
+      "Operational transform, or OT, adjusts one change against another change made at the same time. If one person inserts text, another person's position can move before their change applies.",
+      "JsonOt uses this method for paths in a JSON document. SharedRichText uses it for text, formatting, and embedded content.",
+    ],
+    tradeoff: "It stores little extra history, but every pair of change types needs a correct transform rule.",
+    members: [
+      ["JsonOt", "/structures/json-ot/"],
+      ["SharedRichText", "/structures/shared-rich-text/"],
+    ],
+  },
+];
+
+const rows = [
+  {
+    label: "How copies agree",
+    dds: "Apply one numbered list",
+    crdt: "Combine changes with a safe rule",
+    ot: "Rewrite changes before applying them",
+  },
+  {
+    label: "Needs shared order",
+    dds: "Yes",
+    crdt: "No",
+    ot: "Yes",
+  },
+  {
+    label: "Late or repeated delivery",
+    dds: "The service orders and rejects repeats",
+    crdt: "The combine rule handles it",
+    ot: "The client buffers and transforms changes",
+  },
+  {
+    label: "Typical cost",
+    dds: "Depends on the structure",
+    crdt: "Extra counts, identities, or removal history",
+    ot: "Waiting and buffered changes",
+  },
+  {
+    label: "Good fit",
+    dds: "One owner, queue, or server-ordered value",
+    crdt: "Offline work and unreliable delivery",
+    ot: "JSON, text, and formatting",
+  },
+];
+---
+
+<BaseLayout
+  title="CRDT, DDS, and JSON-OT"
+  description="Compare three ways shared data can handle changes made at the same time."
+  territory="Structures"
+  sheetTitle="CRDT, DDS, and JSON-OT"
+>
+  <article class="model-page">
+    <header class="page-intro">
+      <h1>Three ways shared data can agree</h1>
+      <p>
+        When people change the same shared data at the same time, every copy
+        must reach the same result. Atlas uses three approaches: put changes
+        in one order, combine them with a safe rule, or rewrite them so they
+        still fit together.
+      </p>
+    </header>
+
+    <section class="model-strip" aria-label="Shared data models">
+      {models.map((model) => (
+        <article id={model.kind.toLowerCase()} class="model">
+          <header>
+            <StructureKindTag kind={model.kind} />
+            <h2><dfn><a href={model.glossary}>{model.name}</a></dfn></h2>
+            <p class="model-summary">{model.summary}</p>
+          </header>
+          <div class="model-body">
+            {model.body.map((paragraph) => <p>{paragraph}</p>)}
+            <p class="model-tradeoff"><strong>Trade-off:</strong> {model.tradeoff}</p>
+          </div>
+          <footer>
+            <h3>Structures in Atlas</h3>
+            <ul>
+              {model.members.map(([name, href]) => (
+                <li><a href={href}>{name}</a></li>
+              ))}
+            </ul>
+          </footer>
+        </article>
+      ))}
+    </section>
+
+    <section class="comparison" aria-labelledby="comparison-title">
+      <h2 id="comparison-title">Side by side</h2>
+      <p>
+        None of these approaches is best everywhere. The useful question is
+        what the data must survive and what service the application already has.
+      </p>
+      <div class="table-scroll" role="region" aria-labelledby="comparison-title" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"><span class="visually-hidden">Question</span></th>
+              <th scope="col">DDS</th>
+              <th scope="col">CRDT</th>
+              <th scope="col">OT</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                <td>{row.dds}</td>
+                <td>{row.crdt}</td>
+                <td>{row.ot}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="choice-guide" aria-labelledby="choice-title">
+      <h2 id="choice-title">A practical starting point</h2>
+      <ol>
+        <li>
+          <strong>Use a DDS</strong> when one service already orders changes
+          and the rule needs one owner, one worker, or one winning value.
+        </li>
+        <li>
+          <strong>Use a CRDT</strong> when changes may happen offline or arrive
+          late, out of order, or more than once.
+        </li>
+        <li>
+          <strong>Use OT</strong> when edits change positions inside JSON,
+          text, or formatted content.
+        </li>
+      </ol>
+    </section>
+
+    <nav class="structure-next" aria-label="Continue through structures">
+      <a href="/structures/">Browse structure families</a>
+      <a href="/structures/counters/">Start with counters</a>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .model-page {
+    max-width: var(--content);
+    margin-inline: auto;
+  }
+
+  .page-intro {
+    max-width: var(--measure-reading);
+  }
+
+  .model-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border: var(--rule-width) solid var(--instrument-deep);
+    background: var(--clear);
+  }
+
+  .model {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: var(--space-5);
+    scroll-margin-top: var(--space-5);
+  }
+
+  .model + .model {
+    border-left: var(--rule-width) solid var(--instrument-deep);
+  }
+
+  .model header {
+    padding-bottom: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+  }
+
+  .model h2 {
+    margin-block: var(--space-3) var(--space-2);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .model h2 a {
+    color: inherit;
+  }
+
+  .model-summary {
+    margin: 0;
+    color: var(--instrument);
+    font-family: var(--font-ui);
+    font-weight: 650;
+    line-height: 1.4;
+  }
+
+  .model-body {
+    flex: 1;
+    padding-block: var(--space-4);
+  }
+
+  .model-body p {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .model-tradeoff {
+    padding-top: var(--space-3);
+    border-top: var(--rule-width) dashed var(--line);
+    color: var(--muted);
+  }
+
+  .model footer {
+    padding-top: var(--space-4);
+    border-top: var(--rule-width) solid var(--line);
+  }
+
+  .model h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .model ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    padding: 0;
+    margin: var(--space-3) 0 0;
+    list-style: none;
+  }
+
+  .model li {
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  .comparison,
+  .choice-guide {
+    margin-top: var(--space-7);
+  }
+
+  .table-scroll {
+    margin-top: var(--space-5);
+    overflow-x: auto;
+    border: var(--rule-width) solid var(--instrument-deep);
+    background: var(--clear);
+  }
+
+  table {
+    width: 100%;
+    min-width: 44rem;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: var(--space-4);
+    border-bottom: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  thead th {
+    color: var(--clear);
+    background: var(--instrument);
+    font-family: var(--font-data);
+    font-size: 0.8rem;
+  }
+
+  tbody th {
+    width: 12rem;
+    border-right: var(--rule-width) solid var(--line);
+    background: var(--sky-sheet);
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+
+  tbody tr:last-child :is(th, td) {
+    border-bottom: 0;
+  }
+
+  .choice-guide {
+    max-width: var(--measure-reading);
+    padding-block: var(--space-6);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  .choice-guide ol {
+    display: grid;
+    gap: var(--space-4);
+    padding-left: 1.4rem;
+  }
+
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (width < 58rem) {
+    .model-strip {
+      grid-template-columns: 1fr;
+    }
+
+    .model + .model {
+      border-top: var(--rule-width) solid var(--instrument-deep);
+      border-left: 0;
+    }
+  }
+</style>

@@ -13,6 +13,7 @@ export type RemainingStructure = {
   id: RemainingStructureId;
   glossaryId: string;
   family: RemainingFamily;
+  kind: "CRDT" | "DDS" | "OT";
   name: string;
   module: string;
   tagline: string;
@@ -35,6 +36,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "shared-sequence",
     glossaryId: "sharedsequence",
     family: "sequences",
+    kind: "CRDT",
     name: "SharedSequence",
     module: "sequence_kernel",
     tagline: "Reorder one route without making concurrent index edits fight.",
@@ -63,6 +65,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "shared-text",
     glossaryId: "sharedtext",
     family: "sequences",
+    kind: "CRDT",
     name: "SharedText",
     module: "text_kernel",
     tagline: "Merge concurrent typing by grapheme identity, not fragile offsets.",
@@ -90,6 +93,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "claims",
     glossaryId: "claims",
     family: "coordination",
+    kind: "DDS",
     name: "Claims",
     module: "claims_kernel",
     tagline: "Choose one permanent claimant for a named responsibility.",
@@ -118,6 +122,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "ordered-collection",
     glossaryId: "orderedcollection",
     family: "coordination",
+    kind: "DDS",
     name: "OrderedCollection",
     module: "ordered_collection_kernel",
     tagline: "Give one queued job to one worker without duplicate ownership.",
@@ -146,6 +151,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "task-manager",
     glossaryId: "taskmanager",
     family: "coordination",
+    kind: "DDS",
     name: "TaskManager",
     module: "task_manager_kernel",
     tagline: "Queue volunteers for one role and promote the next connected client.",
@@ -174,6 +180,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "pact-map",
     glossaryId: "pactmap",
     family: "coordination",
+    kind: "DDS",
     name: "PactMap",
     module: "pact_map_kernel",
     tagline: "Accept a shared setting only after the connected roster signs off.",
@@ -201,6 +208,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "json-ot",
     glossaryId: "jsonot",
     family: "transforms",
+    kind: "OT",
     name: "JsonOt",
     module: "json_ot_kernel",
     tagline: "Transform concurrent edits to different paths in one JSON document.",
@@ -225,6 +233,7 @@ export const remainingStructures: RemainingStructure[] = [
     id: "shared-rich-text",
     glossaryId: "sharedrichtext",
     family: "transforms",
+    kind: "OT",
     name: "SharedRichText",
     module: "rich_text_kernel",
     tagline: "Transform formatting and text edits against one shared document.",

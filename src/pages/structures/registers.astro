@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
+import StructureKindTag from "../../components/StructureKindTag.astro";
 ---
 
 <BaseLayout
@@ -24,7 +25,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="lww-title">
       <header>
         <div>
-          <p class="structure-kind">No shared order</p>
+          <StructureKindTag kind="CRDT" />
           <h2 id="lww-title">LWWRegister</h2>
           <p>Use the time and author to choose one answer.</p>
         </div>
@@ -63,7 +64,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="mv-title">
       <header>
         <div>
-          <p class="structure-kind">No shared order</p>
+          <StructureKindTag kind="CRDT" />
           <h2 id="mv-title">MvRegister</h2>
           <p>Keep competing answers until someone resolves them.</p>
         </div>
@@ -100,7 +101,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
     <section aria-labelledby="collection-title">
       <header>
         <div>
-          <p class="structure-kind">Uses shared order</p>
+          <StructureKindTag kind="DDS" />
           <h2 id="collection-title">RegisterCollection</h2>
           <p>Keep numbered versions and choose how to read them.</p>
         </div>
@@ -195,11 +196,6 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 
   section h2 {
     margin-block: var(--space-1);
-  }
-
-  .structure-kind {
-    color: var(--instrument);
-    font: 700 0.75rem/1 var(--font-data);
   }
 
   section header code {

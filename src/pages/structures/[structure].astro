@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
+import StructureKindTag from "../../components/StructureKindTag.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   remainingFamilies,
@@ -27,6 +28,7 @@ const family = remainingFamilies[structure.family];
         <p class="territory-label">Structures · {family.name}</p>
         <h1>{structure.name}</h1>
         <p class="structure-summary">{structure.tagline}</p>
+        <StructureKindTag kind={structure.kind} />
         <LessonIllustration id={`structures-${structure.id}`} />
       </header>
 

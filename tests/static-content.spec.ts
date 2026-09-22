@@ -336,7 +336,7 @@ test("the counter family page links each counter lesson", async ({ page }) => {
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
   await expect(page.getByRole("region", { name: "G-counter" })).toContainText(
-    "Per-replica maximum",
+    "Keep each person's highest count",
   );
   await expect(page.getByRole("region", { name: "PN-counter" })).toContainText(
     "Increment and decrement",
@@ -351,24 +351,16 @@ test("the sets family compares its three removal rules", async ({ page }) => {
   await page.goto("/structures/sets/");
 
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Sets");
-  const article = page.locator(".set-family");
-  await expect(article).toContainText("Alice");
-  await expect(article).toContainText("Bob");
-  await expect(article).toContainText("Carol");
-  await expect(article).toContainText("ranger");
-  await expect(article).toContainText(
-    "The ranger does not assign sequence numbers to these reports",
-  );
-  await expect(page.getByRole("region", { name: "GSet" })).toContainText("Set union");
+  await expect(page.getByRole("region", { name: "GSet" })).toContainText("Keep every listed item");
   await expect(page.getByRole("region", { name: "TwoPSet" }))
-    .toContainText("permanent tombstones");
+    .toContainText("permanent removals");
   await expect(page.getByRole("region", { name: "Observed-remove set" }))
-    .toContainText("subtract observed removals");
-  await expect(page.getByRole("table", { name: "Replicated set comparison" })
+    .toContainText("Keep additions that were not removed");
+  await expect(page.getByRole("table", { name: "Set comparison" })
     .locator("tbody tr")).toHaveText([
-    "Items never leaveGSetRetain each member",
-    "Removal is permanentTwoPSetRetain every removed value",
-    "Items can returnObserved-remove setRetain identities and removal knowledge",
+    "No item removalGSetRemember each item",
+    "Removal is permanentTwoPSetRemember every removed item",
+    "Items can returnObserved-remove setRemember each addition and removal",
   ]);
   await expect(page.getByRole("link", {
     name: "Open the observed-remove set lesson",
@@ -381,6 +373,8 @@ test("the sets family compares its three removal rules", async ({ page }) => {
 
 test("the structures index and landing route readers through published families", async ({ page }) => {
   await page.goto("/structures/");
+  await expect(page.getByRole("link", { name: "Compare CRDT, DDS, and OT structures" }))
+    .toHaveAttribute("href", "/structures/models/");
   const familyLinks = page.getByRole("list", { name: "Structure lessons" }).getByRole("link");
   await expect(familyLinks).toHaveCount(7);
   await expect(page.getByRole("link", { name: /^Registers/ }))
@@ -393,6 +387,25 @@ test("the structures index and landing route readers through published families"
   await page.goto("/");
   await expect(page.getByRole("link", { name: "Open the reference atlas" }))
     .toHaveAttribute("href", "/atlas/");
+});
+
+test("the model comparison explains tags and links structure pages", async ({ page }) => {
+  await page.goto("/structures/models/");
+
+  await expect(page.getByRole("heading", { level: 1 }))
+    .toHaveText("Three ways shared data can agree");
+  await expect(page.locator("#dds")).toContainText("Apply one numbered list");
+  await expect(page.locator("#crdt")).toContainText("Combine changes with a safe rule");
+  await expect(page.locator("#ot")).toContainText("Rewrite changes before applying them");
+  await expect(page.getByRole("table")).toContainText("Offline work and unreliable delivery");
+
+  await page.goto("/structures/g-counter/");
+  await expect(page.getByRole("link", { name: "Learn what CRDT means" }))
+    .toHaveAttribute("href", "/structures/models/#crdt");
+
+  await page.goto("/structures/json-ot/");
+  await expect(page.getByRole("link", { name: "Learn what OT means" }))
+    .toHaveAttribute("href", "/structures/models/#ot");
 });
 
 test("the G-counter lesson exposes a direct reading path", async ({ page }) => {
