@@ -86,7 +86,7 @@ import {
 
     <StructureFacts
       family="CRDT"
-      model="State-based convergent replicated data type"
+      model="State-based grow-only counter"
       updates="Increment only"
       merge="Keep the largest count from each replica, then sum the components."
       delivery="Safe under repeated and out-of-order delivery"
