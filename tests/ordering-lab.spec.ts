@@ -20,11 +20,12 @@ for (const width of [390, 1280]) {
       const scenario = scenarioById(fixture.id);
       const trace = scenarioTrace(fixture.id);
       const expected = presentFrame(trace.at(-1)!, trace, scenario.presentation);
-      for (const [index, action] of (scenario.actions ?? []).entries()) {
-        await lab.getByRole("button", { name: `Reference step ${index + 1}: ${action.type}`, exact: true }).click();
+      for (const _action of scenario.actions ?? []) {
+        await lab.getByRole("button", { name: /^Next: / }).click();
         await expect(lab.getByRole("alert")).toBeHidden();
       }
-      await expect(lab.locator(".lab-explanation h3")).toHaveText(expected.outcome!.heading);
+      await expect(lab.getByRole("region", { name: "Observation complete" }))
+        .toContainText(expected.outcome!.heading);
       for (const replica of expected.replicas) {
         await expect(lab.getByRole("region", { name: `Replica ${replica.id}`, exact: true }).locator("dd"))
           .toHaveText(replica.details.map((detail) => detail.value));
@@ -37,8 +38,8 @@ for (const width of [390, 1280]) {
       }
       expect(await lab.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
       await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
-      await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
-      await expect(lab.getByRole("button", { name: `Reference step 1: ${scenario.actions![0].type}`, exact: true })).toBeEnabled();
+      await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
+      await expect(lab.getByRole("button", { name: /^Next: / })).toBeEnabled();
     });
   }
 }

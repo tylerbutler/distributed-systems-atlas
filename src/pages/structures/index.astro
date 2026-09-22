@@ -3,14 +3,14 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
-  title="Structures"
-  description="Learn replicated data structures through focused family and structure lessons."
-  sheetTitle="Structures"
+  title="Learning path"
+  description="Follow replicated data structures in order, from counters to transforms."
+  sheetTitle="Learning path"
 >
   <header class="page-intro">
-    <h1>Structures</h1>
+    <h1>Learn through structures</h1>
     <p>
-      Start with the value you need to share. Each lesson introduces the
+      Follow these families in order. Start with counters. Each lesson adds
       metadata only when its merge rule needs it.
     </p>
   </header>
@@ -20,49 +20,43 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
       <a href="/structures/counters/">
         <h2>Counters</h2>
         <p>Compare grow-only, correcting, and sequenced counters.</p>
-        <span class="status">Read now</span>
+        <span class="status">Start here</span>
       </a>
     </li>
     <li>
       <a href="/structures/sets/">
         <h2>Sets</h2>
         <p>Compare add-only, permanent-removal, and observed-removal rules.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
     <li>
       <a href="/structures/registers/">
         <h2>Registers</h2>
         <p>Compare clock-selected, conflict-preserving, and sequenced registers.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
     <li>
       <a href="/structures/maps/">
         <h2>Maps</h2>
         <p>Compare sequenced, timestamped, observed-remove, and hierarchical maps.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
     <li>
       <a href="/structures/sequences/">
         <h2>Sequences</h2>
         <p>Keep ordered items and graphemes stable through concurrent edits.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
     <li>
       <a href="/structures/coordination/">
         <h2>Coordination</h2>
         <p>Choose one owner, worker, assignee, or accepted value.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
     <li>
       <a href="/structures/transforms/">
         <h2>Transforms</h2>
         <p>Transform concurrent JSON and rich-text operations.</p>
-        <span class="status">Read now</span>
       </a>
     </li>
   </ol>
@@ -88,7 +82,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
   .structure-index li > a {
     display: grid;
-    grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr) auto;
+    grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr);
     gap: var(--space-4);
     min-height: 44px;
     align-items: baseline;
@@ -100,6 +94,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   .structure-index h2,
   .structure-index p {
     margin: 0;
+  }
+
+  .structure-index .status {
+    grid-column: 1 / -1;
   }
 
   .structure-index h2::before {

@@ -85,7 +85,7 @@ for (const lesson of [
     await page.goto(`/atlas/${lesson.route}/`);
     const lab = page.getByTestId("causal-lab");
     const actions = scenarioById(lesson.scenario).actions!;
-    const reference = lab.getByRole("button", { name: /^Reference step / });
+    const reference = lab.getByRole("button", { name: /^Next: / });
     await expect(reference).toBeEnabled();
     for (const name of lesson.deviation) {
       await lab.getByRole("button", { name, exact: true }).click();
@@ -98,12 +98,12 @@ for (const lesson of [
       ]);
     }
     await lab.getByRole("button", { name: "Frame 0: initial", exact: true }).click();
-    await expect(reference).toBeDisabled();
+    await expect(reference).toHaveCount(0);
     await lab.getByRole("button", { name: /^Frame 2:/ }).click();
     await expect(reference).toHaveCount(0);
     await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
-    for (const [index, action] of actions.entries()) {
-      const next = lab.getByRole("button", { name: `Reference step ${index + 1}: ${action.type}`, exact: true });
+    for (const _action of actions) {
+      const next = lab.getByRole("button", { name: /^Next: / });
       await expect(next).toBeEnabled();
       await next.click();
       await expect(lab.getByRole("alert")).toBeHidden();
@@ -123,7 +123,7 @@ test("a register write made before observing blue preserves that concurrent sibl
     const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
     await detail(replica, "Register siblings", "green [A:2, B:0]; blue [A:0, B:1]");
   }
-  await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+  await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
   await expect(lab.getByRole("region", { name: "Invariant checks" })).toContainText("Converged: yes");
 });
 
@@ -187,7 +187,7 @@ for (const lesson of lessons) {
       await expect(lab).toContainText("No queued messages");
       await expect(lab.getByText(/controls need JavaScript/)).toBeVisible();
       await expect(lab.getByRole("button")).toHaveCount(0);
-      await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+      await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
       await livePage.goto(`/atlas/${lesson.id}/`);
       const live = livePage.getByTestId("causal-lab");
       await expect(live.getByRole("button", { name: "Reset lab", exact: true })).toBeVisible();
@@ -230,8 +230,8 @@ for (const lesson of lessons) {
         for (const text of lesson.initial) await expect(replica(id)).toContainText(text);
       }
       const actions = scenarioById(lesson.scenario).actions!;
-      for (const [index, action] of actions.entries()) {
-        const control = lab.getByRole("button", { name: `Reference step ${index + 1}: ${action.type}`, exact: true });
+      for (const [index] of actions.entries()) {
+        const control = lab.getByRole("button", { name: /^Next: / });
         await control.focus();
         await expect(control).toHaveCSS("outline-style", "solid");
         await page.keyboard.press("Enter");
@@ -246,21 +246,21 @@ for (const lesson of lessons) {
             await detail(replica(id), "Register siblings", "red [A:1, B:0]; blue [A:0, B:1]");
             await detail(replica(id), "Causal context", "A:1, B:1");
           }
-          await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+          await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
         }
         if (lesson.id === "observed-remove-sets" && index === 6) {
           await detail(replica("A"), "Visible value", "Empty set");
           await detail(replica("B"), "Set membership", "beacon [A:1, B:2]");
           await expect(lab.locator(".lab-message")).toHaveCount(3);
-          await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+          await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
         }
         if (lesson.id === "observed-remove-sets" && index === 8) {
           for (const id of ["A", "B"]) await detail(replica(id), "Set membership", "beacon [B:2]");
           await expect(lab.locator(".lab-message")).toHaveCount(1);
-          await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+          await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
         }
       }
-      await expect(lab.locator(".lab-explanation h3")).toHaveText(lesson.outcome);
+      await expect(lab.getByRole("region", { name: "Observation complete" })).toContainText(lesson.outcome);
       if (lesson.id === "local-history") {
         await detail(replica("A"), "Local history", "a1, a2");
         await detail(replica("B"), "Local history", "b1");
@@ -296,10 +296,11 @@ for (const lesson of lessons) {
       }
       await expect(lab.locator(".lab-message")).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (width < 1024) await lab.locator(".lab-advanced > summary").click();
       await lab.getByRole("button", { name: "Frame 0: initial", exact: true }).click();
-      await expect(lab.locator(".lab-explanation h3")).toHaveCount(0);
+      await expect(lab.getByRole("region", { name: "Observation complete" })).toHaveCount(0);
       await lab.getByRole("button", { name: "Reset lab", exact: true }).click();
-      await expect(lab.getByRole("button", { name: `Reference step 1: ${actions[0].type}`, exact: true })).toBeEnabled();
+      await expect(lab.getByRole("button", { name: /^Next: / })).toBeEnabled();
       for (const id of lesson.replicas) {
         for (const text of lesson.initial) await expect(replica(id)).toContainText(text);
       }

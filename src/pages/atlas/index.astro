@@ -8,7 +8,7 @@ import {
   type SheetMeta,
   type Territory,
 } from "../../lib/atlas/graph";
-import { buildAtlasEntries, buildTrail } from "../../lib/atlas/trail";
+import { buildAtlasEntries } from "../../lib/atlas/trail";
 import { scenarioIds } from "../../lib/lab/scenarios";
 
 const sheets = await getCollection("sheet");
@@ -23,8 +23,6 @@ if (issues.length > 0) {
 }
 
 const entries = buildAtlasEntries(metadata);
-const trail = buildTrail(metadata);
-const firstTrailSheet = trail[0];
 const territories = [
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
   ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
@@ -33,21 +31,18 @@ const territories = [
 ] as const satisfies readonly (readonly [Territory, string, string])[];
 ---
 
-<BaseLayout title="Atlas" description="Browse replicated data structures first, then open the causal mechanisms, failure modes, and systems that explain their behavior.">
+<BaseLayout title="Reference atlas" description="Find replicated structures, causal mechanisms, failure modes, and systems by topic.">
   <header class="page-intro">
-    <h1>Atlas</h1>
-    <p>Start with the state you need to share: a counter, register, set, map, sequence, or larger system.</p>
-    <p>Open the causal machinery when a structure's merge rule raises a question.</p>
+    <h1>Reference atlas</h1>
+    <p>Use this map to find a structure, mechanism, failure mode, or system by topic.</p>
+    <p>New to the subject? <a href="/structures/">Follow the learning path from counters.</a></p>
   </header>
   <nav class="first-trail" aria-labelledby="first-trail-title">
-    <h2 id="first-trail-title">Structure-first trail</h2>
+    <h2 id="first-trail-title">Causal evidence trail</h2>
     <p>
-      Seven sheets connect merge behavior to causal evidence.
-      {firstTrailSheet?.status === "published" && (
-        <> <a href={`/atlas/${firstTrailSheet.id}/`}>Start with {firstTrailSheet.title}</a>.</>
-      )}
+      Seven sheets connect merge behavior to causal evidence in a fixed sequence.
     </p>
-    <a class="trail-overview" href="#territories">View all trail stops</a>
+    <a class="trail-overview" href="#territories">Find a trail sheet in the map</a>
   </nav>
   <div class="territory-chart" id="territories" data-testid="territory-chart">
     {territories.map(([id, title, summary]) => (

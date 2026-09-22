@@ -51,6 +51,26 @@ causal-lab h4 {
   font-size: 1.1rem;
 }
 
+.lab-guidance {
+  padding: 1rem;
+  border-block-color: var(--instrument-deep);
+}
+
+causal-lab .lab-guidance h3,
+causal-lab .lab-completion h3 {
+  margin-top: 0;
+}
+
+.lab-guidance .lab-guided-action {
+  color: var(--instrument-deep);
+  background: var(--signal);
+  font-weight: 650;
+}
+
+.lab-guidance > button + button {
+  margin-inline-start: 0.5rem;
+}
+
 causal-lab p {
   max-width: var(--measure-reading);
   margin-block: 0.5rem 1rem;
@@ -213,6 +233,20 @@ causal-lab button:active:not(:disabled) {
   border-top: 2px solid currentColor;
 }
 
+.lab-message-advanced {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.lab-message-advanced summary,
+.lab-advanced > summary {
+  min-height: 44px;
+  padding-block: 0.75rem;
+  font-family: var(--font-ui);
+  font-weight: 650;
+  cursor: pointer;
+}
+
 .lab-message[data-blocked="true"] {
   border-top-style: dashed;
   border-top-color: var(--interference);
@@ -250,6 +284,33 @@ causal-lab .lab-comparison h3 {
 .lab-invariants {
   border-top: 1px solid var(--instrument);
   font-size: 0.95rem;
+}
+
+.lab-advanced {
+  border-block: 1px solid var(--instrument);
+}
+
+.lab-advanced-body {
+  padding-bottom: 1rem;
+}
+
+.lab-completion {
+  padding: 1rem;
+  border-top: var(--rule-signal) solid var(--signal);
+}
+
+.lab-completion .observation-label {
+  color: var(--signal);
+}
+
+.lab-next {
+  display: inline-block;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  color: var(--instrument-deep);
+  background: var(--signal);
+  font-family: var(--font-ui);
+  font-weight: 650;
 }
 
 .lab-inspector details {
@@ -349,32 +410,31 @@ causal-lab [aria-pressed="true"] {
     align-items: start;
   }
 
-  causal-lab[data-motion] > :is(h2, .lab-controls, [role="status"], [role="alert"]) {
+  causal-lab[data-motion] > :is(h2, .lab-guidance, .lab-controls, .lab-advanced, .lab-completion, [role="status"], [role="alert"]) {
     grid-column: 1 / -1;
   }
 
   causal-lab[data-motion] .lab-replicas {
-    grid-area: 3 / 1;
+    grid-column: 1;
   }
 
   causal-lab[data-motion] .lab-messages {
-    grid-area: 4 / 1;
+    grid-column: 1;
   }
 
   causal-lab[data-motion] .lab-comparison {
-    grid-area: 5 / 1;
-  }
-
-  causal-lab[data-motion] .lab-trace {
-    grid-area: 6 / 1;
-  }
-
-  causal-lab[data-motion] .lab-inspector {
-    grid-area: 3 / 2 / 5 / 3;
+    grid-column: 1;
   }
 
   causal-lab[data-motion] .lab-invariants {
-    grid-area: 5 / 2 / 7 / 3;
+    grid-column: 2;
+    grid-row: 4 / span 3;
+  }
+
+  .lab-advanced-body {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 2rem;
   }
 }
 

@@ -1,7 +1,7 @@
 import { createEngine } from "./engine-registry";
 import type { LabAction, LabError, SimulationEngine, TraceFrame } from "./contract";
 import { presentFrame, type LabPresentation, type PresentedFrame } from "./present-frame";
-import { scenarioById } from "./scenarios";
+import { followsReference, scenarioById } from "./scenarios";
 
 function node<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag);
@@ -31,6 +31,8 @@ let instanceNumber = 0;
 class CausalLabElement extends HTMLElement {
   private engine!: SimulationEngine;
   private presentation!: LabPresentation;
+  private guideActions: readonly LabAction[] = [];
+  private guideVisible = true;
   private traceIndex = 0;
   private lastError?: LabError;
   private selectedMessage?: string;
@@ -38,6 +40,7 @@ class CausalLabElement extends HTMLElement {
   private signal?: Animation;
   private controlNumber = 0;
   private readonly idPrefix = `causal-lab-${++instanceNumber}`;
+  private readonly guidance = section("Guided run");
   private readonly controls = section("Lesson controls");
   private readonly replicas = node("div");
   private readonly comparison = section("Comparison");
@@ -45,6 +48,9 @@ class CausalLabElement extends HTMLElement {
   private readonly trace = section("Trace navigation");
   private readonly inspector = section("State inspector");
   private readonly invariants = section("Invariant checks");
+  private readonly advanced = node("details");
+  private readonly advancedBody = node("div");
+  private readonly completion = section("Observation complete");
   private readonly explanation = node("div");
   private readonly status = node("p");
   private readonly alert = node("div");
@@ -58,6 +64,7 @@ class CausalLabElement extends HTMLElement {
         const definition = scenarioById(scenario);
         this.engine = createEngine(definition);
         this.presentation = definition.presentation;
+        this.guideActions = definition.actions ?? [];
       } catch (error) {
         this.alert.setAttribute("role", "alert");
         this.alert.textContent = `Could not start lab (${scenario ?? "no scenario"}): ${
@@ -73,6 +80,15 @@ class CausalLabElement extends HTMLElement {
       this.trace.className = "lab-trace";
       this.inspector.className = "lab-inspector";
       this.invariants.className = "lab-invariants";
+      this.guidance.className = "lab-guidance instrument-panel";
+      this.advanced.className = "lab-advanced";
+      this.advancedBody.className = "lab-advanced-body";
+      this.advanced.open = matchMedia("(min-width: 64.001rem)").matches;
+      this.advanced.append(node("summary", "Recorded evidence and replay"), this.advancedBody);
+      this.advancedBody.append(this.trace, this.inspector);
+      this.completion.className = "lab-completion instrument-panel";
+      this.completion.setAttribute("aria-live", "polite");
+      this.completion.hidden = true;
       this.explanation.className = "lab-explanation";
       this.status.setAttribute("role", "status");
       this.status.setAttribute("aria-live", "polite");
@@ -80,8 +96,8 @@ class CausalLabElement extends HTMLElement {
       this.alert.setAttribute("role", "alert");
       this.alert.hidden = true;
       this.replaceChildren(
-        node("h2", this.presentation.title), this.controls, this.replicas, this.messages,
-        this.comparison, this.trace, this.inspector, this.invariants, this.status, this.alert,
+        node("h2", this.presentation.title), this.guidance, this.controls, this.replicas, this.messages,
+        this.comparison, this.advanced, this.invariants, this.completion, this.status, this.alert,
       );
     }
     this.motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -282,6 +298,7 @@ class CausalLabElement extends HTMLElement {
     this.renderMessages(presented);
     this.renderTrace(presented, history);
     this.renderInspector(frame, presented, openInspectors);
+    this.renderGuidance(history);
     this.comparison.hidden = presented.comparison === null;
     this.comparison.setAttribute("aria-label", presented.comparisonHeading);
     this.comparison.replaceChildren(node("h3", presented.comparisonHeading));
@@ -306,12 +323,7 @@ class CausalLabElement extends HTMLElement {
     }
     this.invariants.append(checks);
     this.explanation.replaceChildren(node("p", presented.explanation));
-    if (presented.outcome) {
-      this.explanation.append(
-        node("h3", presented.outcome.heading),
-        node("p", presented.outcome.explanation),
-      );
-    }
+    this.renderCompletion(presented.outcome);
     if (focusKey) {
       const replacement = [...this.querySelectorAll<HTMLElement>("[data-control]")]
         .find((element) => element.dataset.control === focusKey && !element.matches(":disabled"));
@@ -325,6 +337,86 @@ class CausalLabElement extends HTMLElement {
 
   private present(frame: TraceFrame): PresentedFrame {
     return presentFrame(frame, this.engine.history(), this.presentation);
+  }
+
+  private renderGuidance(history: readonly TraceFrame[]): void {
+    if (!this.guideActions.length) {
+      this.guidance.hidden = true;
+      return;
+    }
+    this.guidance.hidden = false;
+    this.guidance.replaceChildren(node("h3", "Guided run"));
+    if (!this.guideVisible) {
+      this.guidance.append(
+        node("p", "Free exploration is active. Show the guide when you want the reference sequence."),
+        this.button("Show guided run", "show-guide", () => {
+          this.guideVisible = true;
+          this.render();
+        }),
+      );
+      return;
+    }
+    const onTrack = followsReference(history.at(-1)!, history, this.guideActions);
+    const step = history.length - 1;
+    if (!onTrack) {
+      this.guidance.append(
+        node("p", "This run no longer matches the reference sequence. Reset it, or continue with the full controls."),
+        this.actionButton("Restart guided run", { type: "reset" }),
+        this.button("Continue exploring", "hide-guide", () => {
+          this.guideVisible = false;
+          this.render();
+        }),
+      );
+      return;
+    }
+    if (step >= this.guideActions.length) {
+      this.guidance.append(
+        node("p", `${this.guideActions.length} of ${this.guideActions.length} steps complete. Inspect the recorded result below.`),
+        this.button("Explore another run", "hide-guide", () => {
+          this.guideVisible = false;
+          this.render();
+        }),
+      );
+      return;
+    }
+    const action = this.guideActions[step];
+    const key = JSON.stringify(action);
+    const source = [...this.querySelectorAll<HTMLButtonElement>("button[data-control]")]
+      .find((button) => button.dataset.control === key);
+    const label = source?.textContent?.trim() || action.type;
+    const next = this.actionButton(`Next: ${label}`, action, source?.getAttribute("aria-description") ?? "");
+    next.classList.add("lab-guided-action");
+    this.guidance.append(
+      node("p", `Step ${step + 1} of ${this.guideActions.length}. Complete this action in the live lab.`),
+      next,
+      this.button("Explore freely", "hide-guide", () => {
+        this.guideVisible = false;
+        this.render();
+      }),
+    );
+  }
+
+  private renderCompletion(outcome: PresentedFrame["outcome"]): void {
+    this.completion.hidden = outcome === null;
+    if (!outcome) {
+      this.completion.replaceChildren();
+      return;
+    }
+    const article = this.closest<HTMLElement>(".sheet");
+    const href = article?.dataset.nextHref ?? "/atlas/";
+    const title = article?.dataset.nextTitle ?? "Reference atlas";
+    const next = node("a", `Continue to ${title}`);
+    next.href = href;
+    next.className = "lab-next";
+    const takeaway = node("p", outcome.heading);
+    takeaway.className = "observation-label";
+    this.completion.replaceChildren(
+      node("h3", "Signal accounted for"),
+      takeaway,
+      node("p", outcome.explanation),
+      node("p", "Optional experiment: reset the lab and change one delivery or comparison. Check which recorded evidence changes."),
+      next,
+    );
   }
 
   private renderControls(frame: PresentedFrame): void {
@@ -342,6 +434,7 @@ class CausalLabElement extends HTMLElement {
         )));
       }
     }
+    operations.append(this.withReason(this.actionButton("Reset lab", { type: "reset" })));
     this.controls.append(operations);
   }
 
@@ -400,9 +493,15 @@ class CausalLabElement extends HTMLElement {
       deliver.setAttribute("aria-describedby", reason.id);
       const buttons = node("div");
       buttons.className = "lab-buttons";
-      buttons.append(select, this.withReason(deliver),
-        this.withReason(this.actionButton(`Duplicate ${label}`, { type: "duplicate", message: message.id })));
-      item.append(buttons);
+      buttons.append(select, this.withReason(deliver));
+      const advanced = node("details");
+      advanced.className = "lab-message-advanced";
+      advanced.open = matchMedia("(min-width: 64.001rem)").matches;
+      advanced.append(
+        node("summary", "Advanced message actions"),
+        this.withReason(this.actionButton(`Duplicate ${label}`, { type: "duplicate", message: message.id })),
+      );
+      item.append(buttons, advanced);
       list.append(item);
     }
     this.messages.append(list);
@@ -474,7 +573,6 @@ class CausalLabElement extends HTMLElement {
           : this.playback ? "Playback is running." : "")),
       this.withReason(this.button("Pause", "pause", () => this.render(),
         this.playback ? "" : "Playback is stopped.")),
-      this.actionButton("Reset lab", { type: "reset" }),
     );
     this.trace.append(controls, node("p", this.motion?.matches
       ? "Advance one recorded frame at a time. No actions are generated."

@@ -15,12 +15,9 @@ function connectionControls(frame: TraceFrame): PresentedControl[] {
     const left = replica.id;
     const right = peer.id;
     const partitioned = frame.partitions.includes(`${left}:${right}`);
-    return [
-      { kind: "action", label: `Partition ${left} and ${right}`, action: { type: "partition", left, right },
-        reason: partitioned ? "This connection is already partitioned." : "" },
-      { kind: "action", label: `Heal ${left} and ${right}`, action: { type: "heal", left, right },
-        reason: partitioned ? "" : "This connection is already open." },
-    ];
+    return [partitioned
+      ? { kind: "action", label: `Heal ${left} and ${right}`, action: { type: "heal", left, right }, reason: "" }
+      : { kind: "action", label: `Partition ${left} and ${right}`, action: { type: "partition", left, right }, reason: "" }];
   }));
 }
 
@@ -111,7 +108,11 @@ function fixtureActions(fixture: typeof orderingFixtures[number]): LabAction[] {
   });
 }
 
-function followsReference(frame: TraceFrame, history: readonly TraceFrame[], actions: readonly LabAction[]): boolean {
+export function followsReference(
+  frame: TraceFrame,
+  history: readonly TraceFrame[],
+  actions: readonly LabAction[],
+): boolean {
   return history.length === frame.index + 1 && history[0]?.action === null
     && history.slice(1).every((entry, index) => JSON.stringify(entry.action) === JSON.stringify(actions[index]));
 }
@@ -138,12 +139,8 @@ function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[])
       oneComponentPerReplica: "One vector component per replica",
     },
     valueLabel: (replica) => replica.value.join(", ") || "No local values",
-    controls(frame, history) {
+    controls(frame) {
       const controls: PresentedControl[] = [];
-      const next = actions[frame.index];
-      if (next && followsReference(frame, history, actions)) {
-        controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
-      }
       for (const replica of frame.replicas) {
         controls.push({
           kind: "action", label: `Local event at ${replica.id}`,
@@ -305,12 +302,8 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
         converged: "Converged",
       },
       valueLabel: (replica) => replica.value.join(", ") || (register ? "Empty register" : "Empty set"),
-      controls(frame, history) {
+      controls(frame) {
         const controls: PresentedControl[] = [];
-        const next = actions[frame.index];
-        if (next && followsReference(frame, history, actions)) {
-          controls.push({ kind: "action", label: `Reference step ${frame.index + 1}: ${next.type}`, action: next, reason: "" });
-        }
         for (const replica of frame.replicas) {
           if (register) {
             for (const value of ["red", "blue", "green"]) controls.push({
@@ -367,6 +360,16 @@ const scenarioDefinitions: readonly LabScenario[] = [
     kind: "dots",
     replicas: ["A", "B"],
     initialValues: [],
+    actions: [
+      { type: "add", replica: "A", value: "beacon" },
+      { type: "deliver", message: "m1:A:B" },
+      { type: "partition", left: "A", right: "B" },
+      { type: "remove", replica: "A", value: "beacon" },
+      { type: "add", replica: "B", value: "beacon" },
+      { type: "heal", left: "A", right: "B" },
+      { type: "deliver", message: "m2:A:B" },
+      { type: "deliver", message: "m3:B:A" },
+    ],
     presentation: dotsPresentation,
   },
 ];

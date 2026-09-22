@@ -53,7 +53,7 @@ for (const width of [390, 1440]) {
     const lab = page.getByTestId("causal-lab");
     await lab.getByRole("button", { name: "Add beacon at A", exact: true }).click();
     await lab.getByRole("button", { name: "Add beacon at B", exact: true }).click();
-    const stops = lab.locator("button:enabled, summary");
+    const stops = lab.locator("button:enabled:visible, summary:visible");
     const sections: string[] = [];
     await stops.first().focus();
     for (const stop of await stops.all()) {
@@ -63,9 +63,9 @@ for (const width of [390, 1440]) {
       if (section && sections.at(-1) !== section) sections.push(section);
       await page.keyboard.press("Tab");
     }
-    expect(sections).toEqual([
-      "Lesson controls", "Queued messages", "Trace navigation", "Trace history", "State inspector",
-    ]);
+    expect(sections).toEqual(width < 1024
+      ? ["Guided run", "Lesson controls", "Queued messages"]
+      : ["Guided run", "Lesson controls", "Queued messages", "Trace navigation", "Trace history", "State inspector"]);
     const references = page.locator(".sheet-references");
     const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
     expect(await related.evaluate((element) => {

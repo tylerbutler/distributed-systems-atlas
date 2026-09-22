@@ -50,7 +50,11 @@ const next = nextStep
   sheetTitle={entry.data.title}
   trailStep={position >= 0 ? { current: position + 1, total: firstTrail.length } : undefined}
 >
-  <article class="sheet">
+  <article
+    class="sheet"
+    data-next-href={next?.status === "published" ? `/atlas/${next.id}/` : "/atlas/"}
+    data-next-title={next?.status === "published" ? next.title : "Reference atlas"}
+  >
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
       <p class="territory-label">

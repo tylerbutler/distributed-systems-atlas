@@ -114,15 +114,11 @@ describe("canonical ordering fixtures", () => {
     expect(frame.messages).toEqual(fixture.expected.messages);
   });
 
-  test.each(ids)("shares %s actions and snapshots between replay, presentation, and live controls", (id) => {
+  test.each(ids)("shares %s actions and snapshots between replay and the guided run", (id) => {
     const scenario = scenarioById(id);
     const engine = createEngine(scenario);
     expect(scenario.actions?.length).toBeGreaterThan(0);
     for (const action of scenario.actions ?? []) {
-      const controls = scenario.presentation.controls(engine.current(), engine.history());
-      if (action.type !== "deliver") {
-        expect(controls).toContainEqual(expect.objectContaining({ kind: "action", action, reason: "" }));
-      }
       dispatch(engine, action);
     }
     expect(scenarioTrace(id)).toEqual(engine.history());

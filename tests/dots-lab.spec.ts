@@ -1,5 +1,28 @@
 import { expect, test } from "@playwright/test";
 
+test("guided run leads to the completed observation and keeps evidence optional on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/atlas/dots-and-causal-context/");
+  const lab = page.getByTestId("causal-lab");
+  const guide = lab.getByRole("region", { name: "Guided run" });
+  await expect(guide).toContainText("Step 1 of 8");
+  await expect(guide.getByRole("button", { name: "Next: Add beacon at A", exact: true })).toBeVisible();
+  await expect(lab.locator(".lab-advanced")).not.toHaveAttribute("open", "");
+  await expect(lab.getByRole("region", { name: "Trace navigation" })).toBeHidden();
+  await expect(lab.getByRole("button", { name: "Reset lab", exact: true })).toBeVisible();
+
+  for (let step = 0; step < 8; step++) {
+    await guide.getByRole("button", { name: /^Next: / }).click();
+  }
+
+  await expect(guide).toContainText("8 of 8 steps complete");
+  const completion = lab.getByRole("region", { name: "Observation complete" });
+  await expect(completion).toContainText("The new B dot survives");
+  await expect(completion.getByRole("link", { name: "Continue to Local history", exact: true }))
+    .toHaveAttribute("href", "/atlas/local-history/");
+});
+
 test("one frame updates every observation view", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   const lab = page.getByTestId("causal-lab");
@@ -25,8 +48,8 @@ test("one frame updates every observation view", async ({ page }) => {
     .filter((child) => child.matches("section, nav, .lab-replicas, [role=status]"))
     .map((child) => child.getAttribute("aria-label") ?? child.className ?? child.getAttribute("role")));
   expect(order.slice(0, 7)).toEqual([
-    "Lesson controls", "lab-replicas", "Queued messages", "Vector comparison",
-    "Trace navigation", "State inspector", "Invariant checks",
+    "Guided run", "Lesson controls", "lab-replicas", "Queued messages",
+    "Vector comparison", "Invariant checks", "Observation complete",
   ]);
 });
 

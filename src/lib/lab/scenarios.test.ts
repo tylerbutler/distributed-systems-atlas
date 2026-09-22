@@ -8,6 +8,7 @@ import {
   scenarioById,
   scenarioIds,
   scenarioTrace,
+  followsReference,
 } from "./scenarios";
 
 test("registers all seven trail scenarios", () => {
@@ -21,6 +22,16 @@ test("registers all seven trail scenarios", () => {
     kind: "dots",
     replicas: ["A", "B"],
     initialValues: [],
+    actions: [
+      { type: "add", replica: "A", value: "beacon" },
+      { type: "deliver", message: "m1:A:B" },
+      { type: "partition", left: "A", right: "B" },
+      { type: "remove", replica: "A", value: "beacon" },
+      { type: "add", replica: "B", value: "beacon" },
+      { type: "heal", left: "A", right: "B" },
+      { type: "deliver", message: "m2:A:B" },
+      { type: "deliver", message: "m3:B:A" },
+    ],
     presentation: dotsPresentation,
   });
 });
@@ -34,8 +45,7 @@ test.each([
   expect(trace).toHaveLength(steps + 1);
   for (const frame of trace.slice(0, -1)) {
     expect(presentFrame(frame, trace, scenario.presentation).outcome).toBeNull();
-    expect(presentFrame(frame, trace, scenario.presentation).controls.some((control) =>
-      control.kind === "action" && control.label.startsWith(`Reference step ${frame.index + 1}:`))).toBe(true);
+    expect(scenario.actions?.[frame.index]).toBeDefined();
   }
   const final = trace.at(-1)!;
   expect(final.invariants.converged).toBe(true);
@@ -55,31 +65,30 @@ test.each(scenarioIds().filter((id) => id !== "dots-concurrent-add-remove")
       if ("message" in result) throw new Error(result.message);
       return result;
     };
-    const referenceControls = (history = engine.history()) =>
-      presentFrame(engine.current(), history, scenario.presentation).controls.filter((control) =>
-        control.kind === "action" && control.label.startsWith("Reference step "));
-    expect(referenceControls()).toHaveLength(1);
+    const onReference = (history = engine.history()) =>
+      followsReference(engine.current(), history, actions);
+    expect(onReference()).toBe(true);
     for (const action of actions.slice(0, deviationIndex)) dispatch(action);
     dispatch(scenario.kind === "mv-register"
       ? { type: "write", replica: "B", value: "red" }
       : scenario.kind === "or-set"
         ? { type: "add", replica: "A", value: "other" }
         : { type: "local-event", replica: "B" });
-    expect(referenceControls()).toEqual([]);
+    expect(onReference()).toBe(false);
     dispatch(actions[deviationIndex + 1]);
     expect(engine.current().action).toEqual(actions[deviationIndex + 1]);
     if (scenario.kind === "mv-register" && deviationIndex === 0) {
       expect(engine.current().messages.some((message) => message.id === "m1:A:B")).toBe(false);
     }
-    expect(referenceControls()).toEqual([]);
-    expect(referenceControls([engine.current()])).toEqual([]);
+    expect(onReference()).toBe(false);
+    expect(onReference([engine.current()])).toBe(false);
     dispatch({ type: "reset" });
     for (const action of actions) {
-      expect(referenceControls()).toEqual([expect.objectContaining({ action, reason: "" })]);
-      expect(referenceControls(engine.history().slice(0, -1))).toEqual([]);
+      expect(onReference()).toBe(true);
+      expect(onReference(engine.history().slice(0, -1))).toBe(false);
       dispatch(action);
     }
-    expect(referenceControls()).toEqual([]);
+    expect(onReference()).toBe(true);
   },
 );
 

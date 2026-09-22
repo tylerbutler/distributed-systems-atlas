@@ -16,10 +16,10 @@ const path = Astro.url.pathname.replace(/\/$/, "");
     <nav aria-label="Primary">
       <ul class="site-nav">
         <li>
-          <a href="/structures/" aria-current={path === "/structures" ? "page" : path.startsWith("/structures/") ? "location" : undefined}>Structures</a>
+          <a href="/structures/" aria-current={path === "/structures" ? "page" : path.startsWith("/structures/") ? "location" : undefined}>Learning path</a>
         </li>
         <li>
-          <a href="/atlas/" aria-current={path === "/atlas" ? "page" : path.startsWith("/atlas/") ? "location" : undefined}>Atlas</a>
+          <a href="/atlas/" aria-current={path === "/atlas" ? "page" : path.startsWith("/atlas/") ? "location" : undefined}>Reference atlas</a>
         </li>
         <li><a href="/glossary/" aria-current={path === "/glossary" ? "page" : undefined}>Glossary</a></li>
         <li><a href="/bibliography/" aria-current={path === "/bibliography" ? "page" : undefined}>Bibliography</a></li>

@@ -329,11 +329,11 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
 
-    const hero = page.getByRole("region", { name: "Start with the data you need to share" });
+    const hero = page.getByRole("region", { name: "Start with a structure you already know" });
     const headline = page.getByRole("heading", { level: 1 });
-    const recommended = page.getByText(/This is the recommended first lesson/);
-    const primary = page.getByRole("link", { name: "Start with counters", exact: true });
-    const secondary = page.getByRole("link", { name: "Browse all structure families", exact: true });
+    const recommended = page.getByText(/Begin with additions that merge without a winner/);
+    const primary = page.getByRole("link", { name: "Start the learning path", exact: true });
+    const secondary = page.getByRole("link", { name: "Open the reference atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
 
@@ -357,7 +357,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
 
 test("the landing page makes counters the single recommended start", async ({ page }) => {
   await page.goto("/");
-  const hero = page.getByRole("region", { name: "Start with the data you need to share" });
+  const hero = page.getByRole("region", { name: "Start with a structure you already know" });
   await expect(hero.getByRole("heading", { level: 2 })).toHaveText("Counters");
   await expect(hero.getByRole("link")).toHaveCount(3);
 });
@@ -394,10 +394,10 @@ test("working navigation stays visible in a broad publication band", async ({ pa
     await expect(header).toHaveCSS("border-radius", "0px");
     await expect(header).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
     const nav = header.getByRole("navigation", { name: "Primary", exact: true });
-    const atlas = nav.getByRole("link", { name: "Atlas", exact: true });
+    const atlas = nav.getByRole("link", { name: "Reference atlas", exact: true });
     await expect(atlas).toBeInViewport();
     await expect(nav.getByRole("button")).toHaveCount(0);
-    for (const label of ["Structures", "Atlas", "Glossary", "Bibliography"]) {
+    for (const label of ["Learning path", "Reference atlas", "Glossary", "Bibliography"]) {
       await expect(nav.getByText(label, { exact: true })).toBeInViewport();
     }
     if (width < 768) {
