@@ -19,7 +19,7 @@ for (const example of [
     path: "/structures/observed-remove-set/",
     testId: "or-set-demo",
     race: "Race removal against replacement",
-    values: [["Eagle Creek"], ["Eagle Creek"], ["Eagle Creek"]],
+    values: [["Eagle CreekB:2"], ["Eagle CreekB:2"], ["Eagle CreekB:2"]],
     evidence: "A:1 is removed. B:2 is live.",
   },
 ]) {
@@ -36,7 +36,8 @@ for (const example of [
     );
     await race.click();
     for (const [index, values] of example.values.entries()) {
-      const members = demo.locator("[data-member-list]").nth(index).locator("span");
+      const members = demo.locator("[data-member-list]").nth(index)
+        .locator(":scope > span");
       await expect(members).toHaveText(values);
     }
     if (example.testId === "g-set-demo") {
@@ -67,6 +68,11 @@ for (const example of [
       await expect(demo.locator("[data-deliveries]")).toContainText(
         "Bob reported Eagle Creek as B:2",
       );
+      await expect(demo.locator("[data-member-list] > span > sup")).toHaveText([
+        "B:2",
+        "B:2",
+        "B:2",
+      ]);
     }
     await expect(race).toBeFocused();
   });
@@ -82,7 +88,7 @@ test("replica controls stay active while set records travel", async ({ page }) =
   await expect(demo.locator(".set-operation-pulse")).toContainText("+ Eagle Creek");
   await expect(bob).toBeEnabled();
   await bob.click();
-  await expect(demo.locator("[data-member-list] span")).toHaveCount(6, {
+  await expect(demo.locator("[data-member-list] > span")).toHaveCount(6, {
     timeout: 10_000,
   });
 });
@@ -93,36 +99,44 @@ test("set notebooks update after the shared record arrives", async ({ page }) =>
 
   await demo.getByRole("button", { name: "Report Eagle Creek" }).click();
   await expect(demo.locator(".set-operation-pulse.shared").first()).toBeVisible();
-  await expect(demo.locator("[data-member-list]").nth(0).locator("span"))
+  await expect(demo.locator("[data-member-list]").nth(0).locator(":scope > span"))
     .toHaveText(["Eagle Creek"]);
-  await expect(demo.locator("[data-member-list]").nth(1).locator("span")).toHaveCount(0);
-  await expect(demo.locator("[data-member-list]").nth(2).locator("span")).toHaveCount(0);
+  await expect(demo.locator("[data-member-list]").nth(1).locator(":scope > span")).toHaveCount(0);
+  await expect(demo.locator("[data-member-list]").nth(2).locator(":scope > span")).toHaveCount(0);
 
-  await expect(demo.locator("[data-member-list] span")).toHaveCount(3, {
+  await expect(demo.locator("[data-member-list] > span")).toHaveCount(3, {
     timeout: 10_000,
   });
+});
 
-  test("OR-set additions receive dots automatically", async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/structures/observed-remove-set/");
-    const demo = page.getByTestId("or-set-demo");
+test("OR-set additions receive dots automatically", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/structures/observed-remove-set/");
+  const demo = page.getByTestId("or-set-demo");
 
-    await expect(demo.locator("[data-additions-page]").first()).toContainText(
-      "Eagle Creek: A:1",
-    );
-    await demo.getByRole("button", { name: "Install" }).nth(1).click();
-    await expect(demo.locator("[data-deliveries]")).toContainText(
-      "Bob reported Eagle Creek as B:2",
-    );
-    await expect(demo.locator("[data-additions-page] span")).toHaveText([
-      "Eagle Creek: A:1",
-      "Eagle Creek: B:2",
-      "Eagle Creek: A:1",
-      "Eagle Creek: B:2",
-      "Eagle Creek: A:1",
-      "Eagle Creek: B:2",
-    ]);
-  });
+  await expect(demo.locator("[data-additions-page]").first()).toContainText(
+    "Eagle Creek: A:1",
+  );
+  await demo.getByRole("button", { name: "Install" }).nth(1).click();
+  await expect(demo.locator("[data-deliveries]")).toContainText(
+    "Bob reported Eagle Creek as B:2",
+  );
+  await expect(demo.locator("[data-additions-page] span")).toHaveText([
+    "Eagle Creek: A:1",
+    "Eagle Creek: B:2",
+    "Eagle Creek: A:1",
+    "Eagle Creek: B:2",
+    "Eagle Creek: A:1",
+    "Eagle Creek: B:2",
+  ]);
+  await expect(demo.locator("[data-member-list] > span > sup")).toHaveText([
+    "A:1",
+    "B:2",
+    "A:1",
+    "B:2",
+    "A:1",
+    "B:2",
+  ]);
 });
 
 test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
@@ -180,6 +194,13 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         const notebooks = page.getByRole("table", {
           name: "Observed-remove notebooks before records meet",
         });
+        await expect(page.locator(".notebook-checkpoints figure")).toHaveCount(3);
+        await expect(page.getByRole("table", {
+          name: "Observed-remove notebooks before contact is lost",
+        })).toBeVisible();
+        await expect(page.getByRole("table", {
+          name: "Observed-remove notebooks after records meet",
+        })).toBeVisible();
         await expect(notebooks.getByRole("columnheader")).toHaveText([
           "Notebook",
           "Additions page",
@@ -191,6 +212,13 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           .toHaveText(["A:1", "B:2", "2"]);
         await expect(notebooks.getByRole("row", { name: /^Alice / }).locator("code"))
           .toHaveText(["A:1", "1"]);
+        const converged = page.getByRole("table", {
+          name: "Observed-remove notebooks after records meet",
+        });
+        await expect(converged.getByRole("row", { name: /^Bob / }).locator("code"))
+          .toHaveText(["B:2", "A:1", "2"]);
+        await expect(converged.getByRole("row", { name: /^Bob / }).locator("sup"))
+          .toHaveText(["B:2"]);
       }
     }
   } finally {
@@ -204,10 +232,15 @@ test("reset restores the observed-remove set baseline", async ({ page }) => {
   const demo = page.getByTestId("or-set-demo");
   await demo.getByRole("button", { name: "Race removal against replacement" }).click();
   await demo.getByRole("button", { name: "Reset", exact: true }).click();
-  await expect(demo.locator("[data-member-list] span")).toHaveText([
-    "Eagle Creek",
-    "Eagle Creek",
-    "Eagle Creek",
+  await expect(demo.locator("[data-member-list] > span")).toHaveText([
+    "Eagle CreekA:1",
+    "Eagle CreekA:1",
+    "Eagle CreekA:1",
+  ]);
+  await expect(demo.locator("[data-member-list] > span > sup")).toHaveText([
+    "A:1",
+    "A:1",
+    "A:1",
   ]);
   await expect(demo.locator("[data-evidence]")).toHaveText(
     "A:1 is the live old installation.",

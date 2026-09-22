@@ -101,7 +101,12 @@ function raceNote(replica: ReplicaId): string {
           <p class="notebook-label">Visible beacon list</p>
           <div class="member-list" data-member-list={replica.id}>
             {replica.values.length
-              ? replica.values.map((value) => <span>{value}</span>)
+              ? replica.values.map((value) => (
+                  <span>
+                    {value}
+                    {kind === "or-set" && <sup>A:1</sup>}
+                  </span>
+                ))
               : <em>Empty set</em>}
           </div>
           <p class="paper-note">
@@ -391,7 +396,7 @@ function raceNote(replica: ReplicaId): string {
     align-content: flex-start;
   }
 
-  .member-list span {
+  .member-list > span {
     position: relative;
     padding: 0.25rem 0.5rem;
     border-radius: 999px;
@@ -402,7 +407,7 @@ function raceNote(replica: ReplicaId): string {
     font-weight: 700;
   }
 
-  .member-list span:not(:last-of-type)::after {
+  .member-list > span:not(:last-of-type)::after {
     position: absolute;
     left: calc(100% + var(--space-1));
     color: var(--clear);
@@ -412,6 +417,22 @@ function raceNote(replica: ReplicaId): string {
   .member-list em {
     color: color-mix(in oklch, var(--clear) 58%, transparent);
     font-size: 0.875rem;
+  }
+
+  .member-list sup {
+    margin-left: 0.2rem;
+    color: var(--instrument-deep);
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 0;
+  }
+
+  .member-list sup + sup {
+    margin-left: 0;
+  }
+
+  .member-list sup + sup::before {
+    content: ", ";
   }
 
   .paper-note {

@@ -245,10 +245,18 @@ class SetStructureDemoElement extends HTMLElement {
     const replica = view.replicas.find(({ id }) => id === replicaId);
     if (!replica) return;
     const list = this.querySelector<HTMLElement>(`[data-member-list="${replica.id}"]`)!;
-    list.replaceChildren(...(replica.values.length
-      ? replica.values.map((value) => node("span", value))
-      : [node("em", "Empty set")]));
     const notebook = view.orSetNotebooks?.[replica.id];
+    list.replaceChildren(...(replica.values.length
+      ? replica.values.map((value) => {
+        const member = node("span", value);
+        for (const { tag } of notebook?.additions.filter(
+          ({ element }) => element === value,
+        ) ?? []) {
+          member.append(node("sup", tag));
+        }
+        return member;
+      })
+      : [node("em", "Empty set")]));
     if (notebook) {
       this.renderNotebookEntries(
         replica.id,

@@ -4,6 +4,110 @@ import StructureFacts from "../../components/StructureFacts.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import "../../styles/set-lesson.css";
+
+type NotebookEntry = { element: string; dot: string };
+type NotebookRow = {
+  name: string;
+  additions: NotebookEntry[];
+  removals: NotebookEntry[];
+  counter: number;
+  dots: string[];
+};
+
+const notebookCheckpoints: Array<{
+  title: string;
+  label: string;
+  note: string;
+  rows: NotebookRow[];
+}> = [
+  {
+    title: "Before contact is lost",
+    label: "Observed-remove notebooks before contact is lost",
+    note: "Alice's original note has reached all three notebooks.",
+    rows: [
+      {
+        name: "Alice",
+        additions: [{ element: "Eagle Creek", dot: "A:1" }],
+        removals: [],
+        counter: 1,
+        dots: ["A:1"],
+      },
+      {
+        name: "Bob",
+        additions: [{ element: "Eagle Creek", dot: "A:1" }],
+        removals: [],
+        counter: 1,
+        dots: ["A:1"],
+      },
+      {
+        name: "Carol",
+        additions: [{ element: "Eagle Creek", dot: "A:1" }],
+        removals: [],
+        counter: 1,
+        dots: ["A:1"],
+      },
+    ],
+  },
+  {
+    title: "While notes are blocked",
+    label: "Observed-remove notebooks before records meet",
+    note: "Alice records the removal while Bob records the replacement. Carol still has the earlier page.",
+    rows: [
+      {
+        name: "Alice",
+        additions: [],
+        removals: [{ element: "Eagle Creek", dot: "A:1" }],
+        counter: 1,
+        dots: [],
+      },
+      {
+        name: "Bob",
+        additions: [
+          { element: "Eagle Creek", dot: "A:1" },
+          { element: "Eagle Creek", dot: "B:2" },
+        ],
+        removals: [],
+        counter: 2,
+        dots: ["A:1", "B:2"],
+      },
+      {
+        name: "Carol",
+        additions: [{ element: "Eagle Creek", dot: "A:1" }],
+        removals: [],
+        counter: 1,
+        dots: ["A:1"],
+      },
+    ],
+  },
+  {
+    title: "After every note arrives",
+    label: "Observed-remove notebooks after records meet",
+    note: "All three notebooks retain the replacement dot and the old dot's removal.",
+    rows: [
+      {
+        name: "Alice",
+        additions: [{ element: "Eagle Creek", dot: "B:2" }],
+        removals: [{ element: "Eagle Creek", dot: "A:1" }],
+        counter: 2,
+        dots: ["B:2"],
+      },
+      {
+        name: "Bob",
+        additions: [{ element: "Eagle Creek", dot: "B:2" }],
+        removals: [{ element: "Eagle Creek", dot: "A:1" }],
+        counter: 2,
+        dots: ["B:2"],
+      },
+      {
+        name: "Carol",
+        additions: [{ element: "Eagle Creek", dot: "B:2" }],
+        removals: [{ element: "Eagle Creek", dot: "A:1" }],
+        counter: 2,
+        dots: ["B:2"],
+      },
+    ],
+  },
+];
 ---
 
 <BaseLayout
@@ -73,55 +177,54 @@ import "../../styles/set-lesson.css";
         The counter is shared across the dots in this set, not restarted for
         each writer.
       </p>
-      <figure>
-        <table aria-label="Observed-remove notebooks before records meet">
-          <thead>
-            <tr>
-              <th scope="col">Notebook</th>
-              <th scope="col">Additions page</th>
-              <th scope="col">Removals page</th>
-              <th scope="col">Highest dot counter seen</th>
-              <th scope="col">Visible list</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">Alice</th>
-              <td>empty</td>
-              <td>Eagle Creek: <code>A:1</code></td>
-              <td><code>1</code></td>
-              <td>empty</td>
-            </tr>
-            <tr>
-              <th scope="row">Bob</th>
-              <td>
-                Eagle Creek: <code>A:1</code><br />
-                Eagle Creek: <code>B:2</code>
-              </td>
-              <td>empty</td>
-              <td><code>2</code></td>
-              <td>Eagle Creek</td>
-            </tr>
-            <tr>
-              <th scope="row">Carol</th>
-              <td>Eagle Creek: <code>A:1</code></td>
-              <td>empty</td>
-              <td><code>1</code></td>
-              <td>Eagle Creek</td>
-            </tr>
-          </tbody>
-        </table>
-        <figcaption>
-          The notebook preserves the name, dot, removal knowledge, and
-          counter needed to interpret the next note.
-        </figcaption>
-      </figure>
-      <p>
-        After all records arrive, each additions page retains Eagle Creek:
-        <code>B:2</code>, each removals page retains Eagle Creek:
-        <code>A:1</code>, and each highest dot counter is <code>2</code>. The
-        visible list contains Eagle Creek because the replacement dot remains.
-      </p>
+      <div class="notebook-checkpoints">
+        {notebookCheckpoints.map((checkpoint) => (
+          <figure>
+            <h3>{checkpoint.title}</h3>
+            <p>{checkpoint.note}</p>
+            <div class="notebook-table-scroll">
+              <table aria-label={checkpoint.label}>
+                <thead>
+                  <tr>
+                    <th scope="col">Notebook</th>
+                    <th scope="col">Additions page</th>
+                    <th scope="col">Removals page</th>
+                    <th scope="col">Highest dot counter seen</th>
+                    <th scope="col">Visible list</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {checkpoint.rows.map((row) => (
+                    <tr>
+                      <th scope="row">{row.name}</th>
+                      <td>
+                        {row.additions.length
+                          ? row.additions.map((entry) => (
+                              <span>{entry.element}: <code>{entry.dot}</code><br /></span>
+                            ))
+                          : "empty"}
+                      </td>
+                      <td>
+                        {row.removals.length
+                          ? row.removals.map((entry) => (
+                              <span>{entry.element}: <code>{entry.dot}</code><br /></span>
+                            ))
+                          : "empty"}
+                      </td>
+                      <td><code>{row.counter}</code></td>
+                      <td>
+                        {row.dots.length
+                          ? <span class="visible-member">Eagle Creek{row.dots.map((dot) => <sup>{dot}</sup>)}</span>
+                          : "empty"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </figure>
+        ))}
+      </div>
     </section>
 
     <SetStructureDemo
@@ -173,6 +276,50 @@ import "../../styles/set-lesson.css";
 </BaseLayout>
 
 <style>
+  .notebook-checkpoints {
+    display: grid;
+    margin-block: var(--space-6);
+    gap: var(--space-6);
+  }
+
+  .notebook-checkpoints figure {
+    margin: 0;
+  }
+
+  .notebook-checkpoints h3 {
+    margin-bottom: var(--space-1);
+  }
+
+  .notebook-checkpoints figure > p {
+    margin-top: 0;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+  }
+
+  .notebook-table-scroll {
+    overflow-x: auto;
+  }
+
+  .visible-member {
+    white-space: nowrap;
+  }
+
+  .visible-member sup {
+    margin-left: 0.2rem;
+    color: var(--instrument-deep);
+    font-size: 0.72em;
+    font-weight: 750;
+  }
+
+  .visible-member sup + sup {
+    margin-left: 0;
+  }
+
+  .visible-member sup + sup::before {
+    content: ", ";
+  }
+
   .lesson-entry {
     margin-top: var(--space-5);
     font-family: var(--font-ui);
