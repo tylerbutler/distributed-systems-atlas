@@ -38,7 +38,7 @@ class RegisterStructureDemoElement extends HTMLElement {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
         const button = form.querySelector<HTMLButtonElement>("[data-register-write]")!;
-        const input = form.querySelector<HTMLInputElement>("[data-register-input]")!;
+        const input = form.querySelector<HTMLSelectElement>("[data-register-input]")!;
         const operation: RegisterOperation = {
           author: form.dataset.replica as ReplicaId,
           value: input.value,
@@ -200,7 +200,7 @@ class RegisterStructureDemoElement extends HTMLElement {
   }
 
   private renderControls(): void {
-    for (const input of this.querySelectorAll<HTMLInputElement>("[data-register-input]")) {
+    for (const input of this.querySelectorAll<HTMLSelectElement>("[data-register-input]")) {
       input.disabled = false;
     }
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-register-write]")) {

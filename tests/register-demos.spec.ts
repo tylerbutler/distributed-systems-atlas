@@ -31,7 +31,7 @@ for (const example of [
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
     await expect(demo.getByText("Field note", { exact: true })).toHaveCount(3);
-    await expect(demo.getByRole("textbox", { name: "New trail status" })).toHaveCount(3);
+    await expect(demo.getByRole("combobox", { name: "Trail status" })).toHaveCount(3);
     await expect(demo.getByRole("button", { name: "Write status" })).toHaveCount(3);
     await expect(demo.locator(".paper-note").first()).toContainText(
       "trail-status: Trail open",
@@ -52,11 +52,11 @@ test("register controls stay active while writes travel", async ({ page }) => {
   const alice = demo.locator('[data-client="A"]');
   const carol = demo.locator('[data-client="C"]');
 
-  await alice.getByRole("textbox", { name: "New trail status" }).fill("Trail open");
+  await alice.getByRole("combobox", { name: "Trail status" }).selectOption("Trail open");
   await alice.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator(".register-operation-pulse")).toContainText("Trail open");
   await expect(carol.getByRole("button", { name: "Write status" })).toBeEnabled();
-  await carol.getByRole("textbox", { name: "New trail status" }).fill("Inspect bridge");
+  await carol.getByRole("combobox", { name: "Trail status" }).selectOption("Inspect bridge");
   await carol.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator("[data-register-values] span")).toHaveCount(6, {
     timeout: 10_000,
@@ -68,7 +68,7 @@ test("register replicas update after the shared write arrives", async ({ page })
   const demo = page.getByTestId("mv-register-demo");
   const alice = demo.locator('[data-client="A"]');
 
-  await alice.getByRole("textbox", { name: "New trail status" }).fill("Trail open");
+  await alice.getByRole("combobox", { name: "Trail status" }).selectOption("Trail open");
   await alice.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator(".register-operation-pulse.shared").first()).toBeVisible();
   await expect(demo.locator("[data-register-values] span")).toHaveText([

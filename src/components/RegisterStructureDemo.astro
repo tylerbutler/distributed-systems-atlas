@@ -22,6 +22,7 @@ const valueByReplica: Record<ReplicaId, string> = {
   B: "Trail closed",
   C: "Inspect bridge",
 };
+const statusOptions = ["Trail open", "Trail closed", "Inspect bridge"];
 
 function raceNote(replica: ReplicaId): { body: string; evidence: string } {
   if (replica === "C") {
@@ -83,14 +84,13 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
           </p>
           <form class="register-write" data-register-form data-replica={replica.id}>
             <label>
-              <span>New trail status</span>
-              <input
-                type="text"
+              <span>Trail status</span>
+              <select
                 data-register-input={replica.id}
-                autocomplete="off"
-                required
                 disabled
-              />
+              >
+                {statusOptions.map((status) => <option value={status}>{status}</option>)}
+              </select>
             </label>
             <button type="submit" data-register-write disabled>Write status</button>
           </form>
@@ -338,7 +338,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     font: 0.75rem/1.35 var(--font-ui);
   }
 
-  .register-write input {
+  .register-write select {
     width: 100%;
     min-width: 0;
     min-height: 2.75rem;
@@ -350,7 +350,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     font: 0.875rem/1 var(--font-ui);
   }
 
-  .register-write input:focus-visible {
+  .register-write select:focus-visible {
     outline: 3px solid var(--signal);
     outline-offset: 3px;
   }
