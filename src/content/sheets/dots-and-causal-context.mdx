@@ -91,7 +91,7 @@ even when its visible string is identical.
 
 ## Context records what a replica has observed
 
-One dot names one event. A <dfn><a href="/glossary/#causal-context">causal
+One dot identifies one event. A <dfn><a href="/glossary/#causal-context">causal
 context</a></dfn> records accumulated knowledge of events. After A creates its
 first addition, A knows about `A:1`. B learns about that addition when it
 receives the message. Removing it changes membership without making A forget that
@@ -201,10 +201,9 @@ After you complete both final deliveries in the guided run, each replica shows
 `A:1`. Both replicas retain knowledge of both additions, even though only one
 contributes to visible membership.
 
-B:1 was never observed by A's remove. At the point of removal, A could name
-`A:1`, but it had received no message about B's new addition. A's removal
-can remove only addition dots for `beacon` in A's observed context. It
-therefore names `A:1`, and merging that removal at B does not remove `B:1`.
+A had seen `A:1` but had received no message about B's new addition, `B:1`.
+A's removal targets only dots for `beacon` in A's observed context. When B
+receives that removal, `B:1` remains live.
 Delivering B's addition at A gives A the surviving dot too.
 
 An **observed-remove set (OR-Set)** uses that observed context to decide which
@@ -391,8 +390,8 @@ undelivered, or permit a replica to forget its removal records.
 
 You'll encounter **actor** for replica identity, **tag** for an addition's dot,
 and **tombstone** for retained removal knowledge. **OR-Set** abbreviates
-observed-remove set; **add-wins set** names its treatment of concurrent adds
-and removes. A version vector is one compact representation of causal
+observed-remove set; **add-wins set** describes how concurrent adds and
+removes resolve. A version vector is one compact representation of causal
 knowledge. A dotted version vector distinguishes an individual event from a
 summarized history; the terms are related, not interchangeable names for this
 entire set algorithm.
