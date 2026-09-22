@@ -243,7 +243,7 @@ class RegisterStructureDemoElement extends HTMLElement {
       evidence.textContent = this.state.view.winnerAuthor
         ? `T${this.state.view.timestamp} · ${registerUserName(
           this.state.view.winnerAuthor as ReplicaId,
-        )} wins the author tie.`
+        )}'s timestamp wins.`
         : "No timestamped write yet.";
     } else if (this.kind === "mv-register") {
       const count = this.state.view.replicas[0]?.values.length ?? 0;

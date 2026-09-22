@@ -29,7 +29,10 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
   }
   const body = `trail-status: ${valueByReplica[replica]}`;
   if (kind === "lww-register") {
-    return { body, evidence: `time T10 · writer ${replica}` };
+    return {
+      body,
+      evidence: `time ${replica === "A" ? "T10" : "T12"} · writer ${replica}`,
+    };
   }
   if (kind === "mv-register") {
     return {

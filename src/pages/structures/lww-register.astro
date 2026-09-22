@@ -39,32 +39,48 @@ import "../../styles/set-lesson.css";
       <p>
         A <dfn><a href="/glossary/#last-writer-wins-register">last-writer-wins register</a></dfn>
         {" "}does not use message arrival order. It compares the timestamp
-        attached to each write. If two writes have the same time, the greater
-        writer ID breaks the tie.
+        that each writer records on the field note. Alice marks her report
+        <code>T10</code>. Bob later marks his report <code>T12</code>.
       </p>
       <TermCallout {...lwwRegisterTerm} />
       <figure>
-        <table aria-label="Equal-time LWWRegister race">
+        <table aria-label="LWWRegister timestamp race">
           <thead>
             <tr><th scope="col">Writer</th><th scope="col">Value</th><th scope="col">Timestamp</th></tr>
           </thead>
           <tbody>
             <tr><th scope="row">Alice · A</th><td>Trail open</td><td>T10</td></tr>
-            <tr><th scope="row">Bob · B</th><td>Trail closed</td><td>T10</td></tr>
-            <tr><th scope="row">Winner</th><td>Trail closed</td><td>B breaks the tie</td></tr>
+            <tr><th scope="row">Bob · B</th><td>Trail closed</td><td>T12</td></tr>
+            <tr><th scope="row">Winner</th><td>Trail closed</td><td>T12 is greater</td></tr>
           </tbody>
         </table>
         <figcaption>Carol gets the same winner even if the network delivers Alice's report last.</figcaption>
       </figure>
       <pre aria-label="LWWRegister merge rule"><code>max(timestamp, writer ID)</code></pre>
+      <p>
+        If two notes have the same timestamp, the greater writer ID breaks the
+        tie. This fallback gives every notebook the same answer; it is not the
+        main meaning of “last.”
+      </p>
+    </section>
+
+    <section aria-labelledby="sequence-title">
+      <h2 id="sequence-title">The ranger does not assign these timestamps</h2>
+      <p>
+        Alice and Bob supply the timestamps with their writes. The ranger does
+        not put the reports into one numbered order. If the ranger assigned
+        each timestamp from a central sequence, this one-field register would
+        behave like a SharedMap with one key: the last sequenced write would
+        win, and equal-time ties could not occur.
+      </p>
     </section>
 
     <RegisterStructureDemo
       kind="lww-register"
       title="Choose one field report"
-      description="Race equal-time reports from Alice and Bob. Delivery order changes nothing because each value includes the timestamp and writer ID."
+      description="Race Alice's T10 report against Bob's T12 report. Delivery order changes nothing because each value includes its timestamp."
       rule="Use the greatest timestamp; writer ID breaks a tie."
-      raceLabel="Race the equal-time reports"
+      raceLabel="Race the timestamped reports"
     />
 
     <section aria-labelledby="limit-title">

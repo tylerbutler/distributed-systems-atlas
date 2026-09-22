@@ -258,7 +258,7 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   lww_view.b |> should.equal(["Trail closed"])
   lww_view.c |> should.equal(["Trail closed"])
   lww_view.winner_author |> should.equal("B")
-  lww_view.timestamp |> should.equal(10)
+  lww_view.timestamp |> should.equal(12)
 
   let assert Ok(mv) = toolkit.new_register_demo("mv-register")
   let assert Ok(mv) = toolkit.register_demo_stage_race(mv)

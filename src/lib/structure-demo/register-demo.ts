@@ -134,7 +134,7 @@ export function deliverRegisterOperations(
   try {
     const delivered = value(deliverRegisterDemo(state.room));
     const result = state.kind === "lww-register"
-      ? `Both writes were delivered. Bob has the greater writer ID at T10, so every hiker reads "${delivered.view.replicas[0]?.values[0]}".`
+      ? `Both writes were delivered. Bob's T12 timestamp is later than Alice's T10, so every hiker reads "${delivered.view.replicas[0]?.values[0]}".`
       : state.kind === "mv-register"
         ? "Both writes were delivered. Every hiker keeps Trail closed and Trail open as concurrent alternatives."
         : `Both writes were delivered. Atomic reads "${delivered.view.atomicValue}"; latest reads "${delivered.view.latestValue}".`;

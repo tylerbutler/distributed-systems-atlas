@@ -14,13 +14,13 @@ function state(result: RegisterDemoResult) {
 }
 
 describe("register demos", () => {
-  test("LWW resolves an equal-time race by author", () => {
+  test("LWW keeps the write with the later timestamp", () => {
     const delivered = state(deliverRegisterOperations(
       state(stageRegisterRace(createRegisterDemo("lww-register"))),
     ));
     expect(delivered.view.replicas.map(({ values }) => values))
       .toEqual([["Trail closed"], ["Trail closed"], ["Trail closed"]]);
-    expect(delivered.view).toMatchObject({ winnerAuthor: "B", timestamp: 10 });
+    expect(delivered.view).toMatchObject({ winnerAuthor: "B", timestamp: 12 });
   });
 
   test("MV preserves concurrent alternatives", () => {

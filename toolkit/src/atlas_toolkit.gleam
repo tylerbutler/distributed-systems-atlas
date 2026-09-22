@@ -282,7 +282,7 @@ pub fn register_demo_stage_race(
   case room {
     LwwRegisterRoom(a, b, c, _) -> {
       let a_operation = DemoLwwRegister("Trail open", 10, "A")
-      let b_operation = DemoLwwRegister("Trail closed", 10, "B")
+      let b_operation = DemoLwwRegister("Trail closed", 12, "B")
       let a = demo_lww_merge(a, a_operation)
       let b = demo_lww_merge(b, b_operation)
       Ok(LwwRegisterRoom(a, b, c, [a_operation, b_operation]))
