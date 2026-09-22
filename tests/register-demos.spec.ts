@@ -31,6 +31,8 @@ for (const example of [
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
     await expect(demo.getByText("Field note", { exact: true })).toHaveCount(3);
+    await expect(demo.getByRole("textbox", { name: "New trail status" })).toHaveCount(3);
+    await expect(demo.getByRole("button", { name: "Write status" })).toHaveCount(3);
     await expect(demo.locator(".paper-note").first()).toContainText(
       "trail-status: Trail open",
     );
@@ -47,13 +49,15 @@ for (const example of [
 test("register controls stay active while writes travel", async ({ page }) => {
   await page.goto("/structures/multi-value-register/");
   const demo = page.getByTestId("mv-register-demo");
-  const alice = demo.getByRole("button", { name: "Write Trail open" });
-  const carol = demo.getByRole("button", { name: "Write Inspect bridge" });
+  const alice = demo.locator('[data-client="A"]');
+  const carol = demo.locator('[data-client="C"]');
 
-  await alice.click();
+  await alice.getByRole("textbox", { name: "New trail status" }).fill("Trail open");
+  await alice.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator(".register-operation-pulse")).toContainText("Trail open");
-  await expect(carol).toBeEnabled();
-  await carol.click();
+  await expect(carol.getByRole("button", { name: "Write status" })).toBeEnabled();
+  await carol.getByRole("textbox", { name: "New trail status" }).fill("Inspect bridge");
+  await carol.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator("[data-register-values] span")).toHaveCount(6, {
     timeout: 10_000,
   });
@@ -62,8 +66,10 @@ test("register controls stay active while writes travel", async ({ page }) => {
 test("register replicas update after the shared write arrives", async ({ page }) => {
   await page.goto("/structures/multi-value-register/");
   const demo = page.getByTestId("mv-register-demo");
+  const alice = demo.locator('[data-client="A"]');
 
-  await demo.getByRole("button", { name: "Write Trail open" }).click();
+  await alice.getByRole("textbox", { name: "New trail status" }).fill("Trail open");
+  await alice.getByRole("button", { name: "Write status" }).click();
   await expect(demo.locator(".register-operation-pulse.shared").first()).toBeVisible();
   await expect(demo.locator("[data-register-values] span")).toHaveText([
     "Trail open",

@@ -34,11 +34,14 @@ class RegisterStructureDemoElement extends HTMLElement {
     if (this.dataset.ready) return;
     this.dataset.ready = "true";
     this.state = createRegisterDemo(this.kind);
-    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-register-value]")) {
-      button.addEventListener("click", () => {
+    for (const form of this.querySelectorAll<HTMLFormElement>("[data-register-form]")) {
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const button = form.querySelector<HTMLButtonElement>("[data-register-write]")!;
+        const input = form.querySelector<HTMLInputElement>("[data-register-input]")!;
         const operation: RegisterOperation = {
-          author: button.dataset.replica as ReplicaId,
-          value: button.dataset.registerValue ?? "",
+          author: form.dataset.replica as ReplicaId,
+          value: input.value,
         };
         const result = updateRegisterReplica(this.state, operation);
         this.apply(result, button);
@@ -197,7 +200,10 @@ class RegisterStructureDemoElement extends HTMLElement {
   }
 
   private renderControls(): void {
-    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-register-value]")) {
+    for (const input of this.querySelectorAll<HTMLInputElement>("[data-register-input]")) {
+      input.disabled = false;
+    }
+    for (const button of this.querySelectorAll<HTMLButtonElement>("[data-register-write]")) {
       button.disabled = false;
     }
     this.button("race").disabled = this.delivering;

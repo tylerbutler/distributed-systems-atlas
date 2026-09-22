@@ -81,14 +81,19 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
             <strong>{raceNote(replica.id).body}</strong>
             <small>{raceNote(replica.id).evidence}</small>
           </p>
-          <button
-            type="button"
-            data-replica={replica.id}
-            data-register-value={valueByReplica[replica.id]}
-            disabled
-          >
-            Write {valueByReplica[replica.id]}
-          </button>
+          <form class="register-write" data-register-form data-replica={replica.id}>
+            <label>
+              <span>New trail status</span>
+              <input
+                type="text"
+                data-register-input={replica.id}
+                autocomplete="off"
+                required
+                disabled
+              />
+            </label>
+            <button type="submit" data-register-write disabled>Write status</button>
+          </form>
         </section>
       ))}
 
@@ -319,6 +324,35 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     color: var(--clear);
     background: transparent;
     font: 700 0.78rem/1 var(--font-ui);
+  }
+
+  .register-write {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .register-write label {
+    display: grid;
+    gap: var(--space-1);
+    color: color-mix(in oklch, var(--clear) 72%, transparent);
+    font: 0.75rem/1.35 var(--font-ui);
+  }
+
+  .register-write input {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding-inline: var(--space-3);
+    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 55%, transparent);
+    border-radius: 0;
+    color: var(--instrument-deep);
+    background: var(--clear);
+    font: 0.875rem/1 var(--font-ui);
+  }
+
+  .register-write input:focus-visible {
+    outline: 3px solid var(--signal);
+    outline-offset: 3px;
   }
 
   .register-instrument button:hover:not(:disabled) {
