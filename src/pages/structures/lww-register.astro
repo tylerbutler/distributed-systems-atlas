@@ -58,20 +58,19 @@ import "../../styles/set-lesson.css";
       </figure>
       <pre aria-label="LWWRegister merge rule"><code>max(timestamp, writer ID)</code></pre>
       <p>
-        If two notes have the same timestamp, the greater writer ID breaks the
-        tie. This fallback gives every notebook the same answer; it is not the
-        main meaning of “last.”
+        The timestamp is the primary comparison. If two notes have the same
+        timestamp, the greater writer ID breaks the tie. This fallback gives
+        every notebook the same answer.
       </p>
     </section>
 
     <section aria-labelledby="sequence-title">
-      <h2 id="sequence-title">The ranger does not assign these timestamps</h2>
+      <h2 id="sequence-title">Where the timestamp comes from</h2>
       <p>
-        Alice and Bob supply the timestamps with their writes. The ranger does
-        not put the reports into one numbered order. If the ranger assigned
-        each timestamp from a central sequence, this one-field register would
-        behave like a SharedMap with one key: the last sequenced write would
-        win, and equal-time ties could not occur.
+        In this example, Alice and Bob record timestamps on their field notes.
+        In a system with a sequencer, the assigned sequence number can be used
+        as the timestamp instead. In both cases, the write with the greater
+        timestamp wins.
       </p>
     </section>
 
