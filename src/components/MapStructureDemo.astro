@@ -1,4 +1,5 @@
 ---
+import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
 import {
   createMapDemo,
@@ -159,6 +160,8 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
       <p><span>Mechanism evidence</span><strong data-evidence>No race delivered yet.</strong></p>
       <ol data-history aria-label="Map operation log" reversed><li>No operations shared yet.</li></ol>
     </div>
+
+    <DemoTransportControls />
 
     <div class="map-controls">
       <button type="button" data-action="race" disabled>{raceLabel}</button>

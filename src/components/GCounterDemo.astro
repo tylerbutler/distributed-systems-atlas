@@ -1,4 +1,5 @@
 ---
+import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
 import {
   createGCounterDemo,
@@ -93,30 +94,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </p>
     <p class="gcounter-error" role="alert" hidden></p>
 
+    <DemoTransportControls />
+
     <section class="gcounter-controls" aria-label="Worked example controls">
       <h3>Run the worked example</h3>
       <p>
         Reset the sandbox and leave Alice's and Bob's notes together, or adjust
         how the notes travel.
       </p>
-      <label class="playback-speed">
-        <span>Speed</span>
-        <input
-          type="range"
-          min="0.25"
-          max="2"
-          step="0.25"
-          value="1"
-          data-pace
-          title="Change playback speed without changing note delivery."
-          disabled
-        />
-        <output data-pace-output>1×</output>
-      </label>
-      <label class="auto-deliver-toggle">
-        <input type="checkbox" data-auto-deliver checked disabled />
-        <span>Auto-deliver</span>
-      </label>
       <button type="button" data-action="race" disabled>
         Leave Alice +7 and Bob +3 together
       </button>
@@ -491,37 +476,14 @@ const initial = presentGCounterDemo(createGCounterDemo());
     text-align: center;
   }
 
-  .playback-speed {
-    display: grid;
-    grid-area: speed;
-    grid-template-columns: 1fr auto;
-    gap: var(--space-2) var(--space-3);
-    align-items: center;
-    min-width: 0;
-    font-family: var(--font-ui);
-  }
-
-  .playback-speed input {
-    grid-column: 1;
-    width: 100%;
-    accent-color: var(--signal);
-  }
-
-  .playback-speed output {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    color: var(--signal);
-    font-family: var(--font-data);
-  }
-
   .gcounter-controls {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
       "heading heading heading"
       "intro intro intro"
-      "speed auto guided"
-      "race resend reset";
+      "race resend reset"
+      "guided guided guided";
     gap: var(--space-3);
     align-items: end;
     padding-block: var(--space-5);
@@ -548,23 +510,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
     gap: var(--space-2);
     font-family: var(--font-ui);
     cursor: pointer;
-  }
-
-  .auto-deliver-toggle {
-    display: flex;
-    grid-area: auto;
-    min-height: 44px;
-    align-items: center;
-    gap: var(--space-2);
-    font-family: var(--font-ui);
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .auto-deliver-toggle input {
-    width: 1.1rem;
-    height: 1.1rem;
-    accent-color: var(--signal);
   }
 
   .guided-toggle input {
@@ -738,8 +683,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
       grid-template-areas:
         "heading"
         "intro"
-        "speed"
-        "auto"
         "race"
         "resend"
         "reset"

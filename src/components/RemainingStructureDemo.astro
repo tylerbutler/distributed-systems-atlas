@@ -1,4 +1,5 @@
 ---
+import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
 import type { RemainingStructure } from "../lib/structure-demo/remaining-structures";
 import "../styles/remaining-structure-demo.css";
@@ -45,6 +46,8 @@ const { structure } = Astro.props;
       <span>Shared view</span>
       <ul data-state>{structure.initial.map((item) => <li>{item}</li>)}</ul>
     </section>
+    <DemoTransportControls />
+
     <div class="remaining-controls">
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
       <button type="button" data-action="reset" disabled>Reset</button>
@@ -55,6 +58,11 @@ const { structure } = Astro.props;
 </remaining-structure-demo>
 
 <script>
+  import {
+    autoDeliveryChangeEvent,
+    DemoTransportControlsElement,
+  } from "../lib/structure-demo/demo-transport-controls";
+
   class RemainingStructureDemo extends HTMLElement {
     connectedCallback() {
       if (this.dataset.ready) return;
@@ -67,7 +75,14 @@ const { structure } = Astro.props;
       const localRecords = this.querySelectorAll("[data-local-record]");
       const note = this.querySelector("[data-enhancement-note]");
       const buttons = this.querySelectorAll("button");
+      const race = this.querySelector<HTMLButtonElement>('[data-action="race"]');
+      const transport = this.querySelector<DemoTransportControlsElement>(
+        "demo-transport-controls",
+      );
       if (!(state instanceof HTMLElement) || !(status instanceof HTMLElement)) return;
+      if (!race || !transport) throw new Error("Missing remaining demo controls");
+      let pending = false;
+      let generation = 0;
       const render = (values: string[]) => {
         state.replaceChildren(...values.map((value) => {
           const item = document.createElement("li");
@@ -80,20 +95,40 @@ const { structure } = Astro.props;
           record.textContent = value;
         });
       };
-      buttons.forEach((button) => button.disabled = false);
-      if (note instanceof HTMLElement) note.hidden = true;
-      this.querySelector('[data-action="race"]')?.addEventListener("click", (event) => {
+      const deliver = async () => {
+        if (!pending) return;
+        const deliveryGeneration = generation;
+        race.disabled = true;
+        await new Promise((resolve) =>
+          window.setTimeout(resolve, transport.nextDuration(800))
+        );
+        if (deliveryGeneration !== generation) return;
+        pending = false;
         render(final);
         renderLocalRecords(final.join(" · "));
         status.textContent = this.dataset.result ?? "";
-        (event.currentTarget as HTMLButtonElement).focus();
+        race.disabled = false;
+        race.focus();
+      };
+      buttons.forEach((button) => button.disabled = false);
+      if (note instanceof HTMLElement) note.hidden = true;
+      race.addEventListener("click", () => {
+        pending = true;
+        status.textContent = "Race queued for delivery.";
+        if (transport.autoDeliver) void deliver();
+      });
+      transport.addEventListener(autoDeliveryChangeEvent, () => {
+        if (transport.autoDeliver) void deliver();
       });
       this.querySelector('[data-action="reset"]')?.addEventListener("click", (event) => {
+        generation += 1;
+        pending = false;
         render(initial);
         localRecords.forEach((record, index) => {
           record.textContent = initialRecords[["A", "B", "C"][index]] ?? "";
         });
         status.textContent = `Ready: ${initial.join(" · ")}`;
+        race.disabled = false;
         (event.currentTarget as HTMLButtonElement).focus();
       });
       this.querySelectorAll("[data-client-action]").forEach((button) => {

@@ -11,6 +11,10 @@ import {
   type MapOperation,
   type ReplicaId,
 } from "./map-demo";
+import {
+  autoDeliveryChangeEvent,
+  DemoTransportControlsElement,
+} from "./demo-transport-controls";
 
 const HOP_LATENCY_MS = 800;
 
@@ -55,7 +59,7 @@ class MapStructureDemoElement extends HTMLElement {
         if (!result.ok) return;
         this.renderReplica(operation.author);
         this.queueOutbound(operation);
-        void this.deliverQueued(button);
+        if (this.transport.autoDeliver) void this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", () => void this.runRace());
@@ -64,6 +68,11 @@ class MapStructureDemoElement extends HTMLElement {
       this.state = createMapDemo(this.kind);
       this.render();
       this.button("race").focus();
+    });
+    this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+      if (this.transport.autoDeliver && this.state.view.pending) {
+        void this.deliverQueued(this.transport);
+      }
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -86,6 +95,14 @@ class MapStructureDemoElement extends HTMLElement {
     return button;
   }
 
+  private get transport(): DemoTransportControlsElement {
+    const controls = this.querySelector<DemoTransportControlsElement>(
+      "demo-transport-controls",
+    );
+    if (!controls) throw new Error("Missing map transport controls");
+    return controls;
+  }
+
   private async runRace(): Promise<void> {
     this.resetFlow();
     this.state = createMapDemo(this.kind);
@@ -93,16 +110,18 @@ class MapStructureDemoElement extends HTMLElement {
     this.apply(staged, this.button("race"));
     if (!staged.ok) return;
     for (const operation of mapRaceOperations(this.kind)) this.queueOutbound(operation);
-    await this.deliverQueued(this.button("race"));
+    if (this.transport.autoDeliver) {
+      await this.deliverQueued(this.button("race"));
+    }
   }
 
-  private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
+  private async deliverQueued(focus: HTMLElement): Promise<void> {
     if (this.delivering) return;
     this.delivering = true;
     this.renderControls();
     const generation = this.generation;
     try {
-      while (this.state.view.pending) {
+      while (this.transport.autoDeliver && this.state.view.pending) {
         await Promise.all(this.outboundArrivals.splice(0));
         if (generation !== this.generation) return;
         const result = deliverMapDemoOperations(this.state);
@@ -120,7 +139,9 @@ class MapStructureDemoElement extends HTMLElement {
       if (generation !== this.generation) return;
       this.delivering = false;
       this.renderControls();
-      if (this.state.view.pending) void this.deliverQueued(focus);
+      if (this.transport.autoDeliver && this.state.view.pending) {
+        void this.deliverQueued(focus);
+      }
     }
   }
 
@@ -199,7 +220,10 @@ class MapStructureDemoElement extends HTMLElement {
         transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
         opacity: 1,
       },
-    ], { duration: HOP_LATENCY_MS, easing: "ease-in-out" });
+    ], {
+      duration: this.transport.nextDuration(HOP_LATENCY_MS),
+      easing: "ease-in-out",
+    });
     this.activeAnimations.add(animation);
     await animation.finished.catch(() => undefined);
     this.activeAnimations.delete(animation);

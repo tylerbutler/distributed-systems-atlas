@@ -11,6 +11,10 @@ import {
   type SharedCounterDemoResult,
   type SharedCounterDemoState,
 } from "./shared-counter";
+import {
+  autoDeliveryChangeEvent,
+  DemoTransportControlsElement,
+} from "./demo-transport-controls";
 
 type Action = "race" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -43,7 +47,7 @@ class SharedCounterDemoElement extends HTMLElement {
         if (!result.ok) return;
         this.renderReplica(presentSharedCounterDemo(this.state), replica);
         this.queueOutbound(replica, `${sharedCounterUserName(replica)} ${formatSigned(amount)}`);
-        void this.deliverQueued(button);
+        if (this.transport.autoDeliver) void this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", async () => {
@@ -55,6 +59,14 @@ class SharedCounterDemoElement extends HTMLElement {
       this.render();
       this.button("race").focus();
     });
+    this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+      if (
+        this.transport.autoDeliver &&
+        presentSharedCounterDemo(this.state).canDeliver
+      ) {
+        void this.deliverQueued(this.transport);
+      }
+    });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
   }
@@ -63,6 +75,14 @@ class SharedCounterDemoElement extends HTMLElement {
     const button = this.querySelector<HTMLButtonElement>(`[data-action="${action}"]`);
     if (!button) throw new Error(`Missing SharedCounter ${action} control`);
     return button;
+  }
+
+  private get transport(): DemoTransportControlsElement {
+    const controls = this.querySelector<DemoTransportControlsElement>(
+      "demo-transport-controls",
+    );
+    if (!controls) throw new Error("Missing SharedCounter transport controls");
+    return controls;
   }
 
   private async runRace(): Promise<void> {
@@ -77,16 +97,21 @@ class SharedCounterDemoElement extends HTMLElement {
     this.render();
     this.queueOutbound("A", "Alice +3");
     this.queueOutbound("B", "Bob -1");
-    await this.deliverQueued(this.button("race"));
+    if (this.transport.autoDeliver) {
+      await this.deliverQueued(this.button("race"));
+    }
   }
 
-  private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
+  private async deliverQueued(focus: HTMLElement): Promise<void> {
     if (this.delivering) return;
     this.delivering = true;
     this.renderControls();
     const generation = this.generation;
     try {
-      while (presentSharedCounterDemo(this.state).canDeliver) {
+      while (
+        this.transport.autoDeliver &&
+        presentSharedCounterDemo(this.state).canDeliver
+      ) {
         while (this.outboundArrivals.length > 0) {
           await Promise.all(this.outboundArrivals.splice(0));
           if (generation !== this.generation) return;
@@ -107,7 +132,10 @@ class SharedCounterDemoElement extends HTMLElement {
       if (generation !== this.generation) return;
       this.delivering = false;
       this.renderControls();
-      if (presentSharedCounterDemo(this.state).canDeliver) {
+      if (
+        this.transport.autoDeliver &&
+        presentSharedCounterDemo(this.state).canDeliver
+      ) {
         void this.deliverQueued(focus);
       }
     }
@@ -169,7 +197,8 @@ class SharedCounterDemoElement extends HTMLElement {
     dot.className = `shared-operation-pulse ${leg}`;
     dot.dataset.leg = leg;
     dot.ariaHidden = "true";
-    const dotLabel = node("span", `${label} · ${HOP_LATENCY_MS} ms`);
+    const duration = this.transport.nextDuration(HOP_LATENCY_MS);
+    const dotLabel = node("span", `${label} · ${Math.round(duration)} ms`);
     dotLabel.className = "shared-operation-label";
     dot.append(dotLabel);
     layer.append(dot);
@@ -183,7 +212,7 @@ class SharedCounterDemoElement extends HTMLElement {
         opacity: 1,
       },
     ], {
-      duration: HOP_LATENCY_MS,
+      duration,
       easing: "ease-in-out",
     });
     this.activeAnimations.add(animation);

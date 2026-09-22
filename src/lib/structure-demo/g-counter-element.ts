@@ -11,6 +11,10 @@ import {
   type ReplicaId,
 } from "./g-counter";
 import { annotate } from "rough-notation";
+import {
+  autoDeliveryChangeEvent,
+  DemoTransportControlsElement,
+} from "./demo-transport-controls";
 
 type Action = "race" | "resend" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -31,8 +35,6 @@ function isReplicaId(value: string): value is ReplicaId {
 
 class GCounterDemoElement extends HTMLElement {
   private state: GCounterDemoState = createGCounterDemo();
-  private speed = 1;
-  private autoDeliver = true;
   private delivering = false;
   private guided = false;
   private guidedTimer: number | undefined;
@@ -60,7 +62,7 @@ class GCounterDemoElement extends HTMLElement {
             [this.querySelector<HTMLElement>(`[data-total="${replica}"]`)!],
             "circle",
           );
-          if (this.autoDeliver) await this.deliverQueued(button);
+          if (this.transport.autoDeliver) await this.deliverQueued(button);
         }
       });
     }
@@ -80,16 +82,10 @@ class GCounterDemoElement extends HTMLElement {
       );
       this.querySelector<HTMLButtonElement>("[data-increment]")!.focus();
     });
-    const pace = this.querySelector<HTMLInputElement>("[data-pace]")!;
-    pace.addEventListener("input", () => {
-      this.speed = Number(pace.value);
-      this.querySelector<HTMLOutputElement>("[data-pace-output]")!.value = `${this.speed}×`;
-    });
-    const autoDeliver = this.querySelector<HTMLInputElement>("[data-auto-deliver]")!;
-    autoDeliver.addEventListener("change", async () => {
-      this.autoDeliver = autoDeliver.checked;
-      if (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
-        await this.deliverQueued(autoDeliver);
+    this.transport.addEventListener(autoDeliveryChangeEvent, async () => {
+      this.render();
+      if (this.transport.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+        await this.deliverQueued(this.transport);
       }
     });
     const guided = this.querySelector<HTMLInputElement>("[data-guided-observations]")!;
@@ -115,6 +111,14 @@ class GCounterDemoElement extends HTMLElement {
     return button;
   }
 
+  private get transport(): DemoTransportControlsElement {
+    const controls = this.querySelector<DemoTransportControlsElement>(
+      "demo-transport-controls",
+    );
+    if (!controls) throw new Error("Missing G-counter transport controls");
+    return controls;
+  }
+
   private async runRace(): Promise<void> {
     this.resetFlow();
     this.state = createGCounterDemo();
@@ -135,7 +139,7 @@ class GCounterDemoElement extends HTMLElement {
     );
     this.queueOutbound("A", "+7");
     this.queueOutbound("B", "+3");
-    if (this.autoDeliver) {
+    if (this.transport.autoDeliver) {
       await this.deliverQueued(this.button("resend"));
     } else {
       this.button("race").focus();
@@ -148,7 +152,10 @@ class GCounterDemoElement extends HTMLElement {
     this.delivering = true;
     const generation = this.generation;
     try {
-      while (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+      while (
+        this.transport.autoDeliver &&
+        presentGCounterDemo(this.state).canDeliver
+      ) {
         await (this.outboundArrivals.shift() ?? Promise.resolve());
         if (generation !== this.generation) return;
         const queuedOperations = presentGCounterDemo(this.state).queuedOperations;
@@ -174,7 +181,10 @@ class GCounterDemoElement extends HTMLElement {
         this.render();
         this.deliveryFocus?.focus();
       }
-      if (this.autoDeliver && presentGCounterDemo(this.state).canDeliver) {
+      if (
+        this.transport.autoDeliver &&
+        presentGCounterDemo(this.state).canDeliver
+      ) {
         void this.deliverQueued(focus);
       }
     }
@@ -223,16 +233,17 @@ class GCounterDemoElement extends HTMLElement {
 
   private setBusy(busy: boolean): void {
     for (const control of this.querySelectorAll<HTMLButtonElement | HTMLInputElement>("button, input")) {
+      if (control.closest("demo-transport-controls")) continue;
       control.disabled = busy;
     }
   }
 
   private queueOutbound(author: ReplicaId, label: string): void {
     const now = performance.now();
-    const duration = this.motionDuration();
+    const duration = this.transport.nextDuration(HOP_LATENCY_MS);
     const arrivalAt = Math.max(
       now + duration,
-      this.lastOutboundArrival + FIFO_GAP_MS / this.speed,
+      this.lastOutboundArrival + FIFO_GAP_MS / this.transport.speed,
     );
     this.lastOutboundArrival = arrivalAt;
     this.outboundArrivals.push(this.animateHop(
@@ -305,16 +316,12 @@ class GCounterDemoElement extends HTMLElement {
     }
   }
 
-  private motionDuration(): number {
-    return HOP_LATENCY_MS / this.speed;
-  }
-
   private async animateHop(
     from: HTMLElement,
     to: HTMLElement,
     label: string,
     leg: "outbound" | "sequenced",
-    duration = this.motionDuration(),
+    duration = this.transport.nextDuration(HOP_LATENCY_MS),
   ): Promise<void> {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
@@ -325,7 +332,7 @@ class GCounterDemoElement extends HTMLElement {
     dot.className = `operation-pulse ${leg}`;
     dot.dataset.leg = leg;
     dot.ariaHidden = "true";
-    const dotLabel = node("span", `${label} · ${HOP_LATENCY_MS} ms`);
+    const dotLabel = node("span", `${label} · ${Math.round(duration)} ms`);
     dotLabel.className = "operation-pulse-label";
     dot.append(dotLabel);
     layer.append(dot);
@@ -388,7 +395,7 @@ class GCounterDemoElement extends HTMLElement {
     if (elements.length === 0) return;
     this.guidedTimer = window.setTimeout(
       () => this.clearGuidedMarks(),
-      Math.max(900, 1400 / this.speed),
+      Math.max(900, 1400 / this.transport.speed),
     );
   }
 
@@ -465,7 +472,7 @@ class GCounterDemoElement extends HTMLElement {
       button.disabled = false;
     }
     this.button("race").disabled = false;
-    this.button("race").textContent = this.autoDeliver
+    this.button("race").textContent = this.transport.autoDeliver
       ? "Leave Alice +7 and Bob +3 together"
       : "Hold Alice +7 and Bob +3 notes";
     this.button("resend").disabled =
@@ -474,8 +481,6 @@ class GCounterDemoElement extends HTMLElement {
       ? `Repeat ${gCounterUserName(view.latestAuthor)}'s note`
       : "Repeat latest checkpoint note";
     this.button("reset").disabled = false;
-    this.querySelector<HTMLInputElement>("[data-pace]")!.disabled = false;
-    this.querySelector<HTMLInputElement>("[data-auto-deliver]")!.disabled = false;
     this.querySelector<HTMLInputElement>("[data-guided-observations]")!.disabled = false;
   }
 }

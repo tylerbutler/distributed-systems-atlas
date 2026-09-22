@@ -11,6 +11,10 @@ import {
   type SetDemoResult,
   type SetDemoState,
 } from "./set-demo";
+import {
+  autoDeliveryChangeEvent,
+  DemoTransportControlsElement,
+} from "./demo-transport-controls";
 
 const HOP_LATENCY_MS = 800;
 
@@ -73,7 +77,7 @@ class SetStructureDemoElement extends HTMLElement {
         this.apply(result, button);
         if (!result.ok) return;
         this.queueOutbound(result.state.queuedOperations.at(-1)!);
-        void this.deliverQueued(button);
+        if (this.transport.autoDeliver) void this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", () => void this.runRace());
@@ -82,6 +86,14 @@ class SetStructureDemoElement extends HTMLElement {
       this.state = createSetDemo(this.kind);
       this.render();
       this.button("race").focus();
+    });
+    this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+      if (
+        this.transport.autoDeliver &&
+        presentSetDemo(this.state).canDeliver
+      ) {
+        void this.deliverQueued(this.transport);
+      }
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -99,6 +111,14 @@ class SetStructureDemoElement extends HTMLElement {
     return button;
   }
 
+  private get transport(): DemoTransportControlsElement {
+    const controls = this.querySelector<DemoTransportControlsElement>(
+      "demo-transport-controls",
+    );
+    if (!controls) throw new Error("Missing set transport controls");
+    return controls;
+  }
+
   private async runRace(): Promise<void> {
     this.resetFlow();
     this.state = createSetDemo(this.kind);
@@ -108,16 +128,21 @@ class SetStructureDemoElement extends HTMLElement {
     for (const operation of this.state.queuedOperations) {
       this.queueOutbound(operation);
     }
-    await this.deliverQueued(this.button("race"));
+    if (this.transport.autoDeliver) {
+      await this.deliverQueued(this.button("race"));
+    }
   }
 
-  private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
+  private async deliverQueued(focus: HTMLElement): Promise<void> {
     if (this.delivering) return;
     this.delivering = true;
     this.renderControls();
     const generation = this.generation;
     try {
-      while (presentSetDemo(this.state).canDeliver) {
+      while (
+        this.transport.autoDeliver &&
+        presentSetDemo(this.state).canDeliver
+      ) {
         await Promise.all(this.outboundArrivals.splice(0));
         if (generation !== this.generation) return;
         const result = deliverSetDemoOperations(this.state);
@@ -135,7 +160,12 @@ class SetStructureDemoElement extends HTMLElement {
       if (generation !== this.generation) return;
       this.delivering = false;
       this.renderControls();
-      if (presentSetDemo(this.state).canDeliver) void this.deliverQueued(focus);
+      if (
+        this.transport.autoDeliver &&
+        presentSetDemo(this.state).canDeliver
+      ) {
+        void this.deliverQueued(focus);
+      }
     }
   }
 
@@ -214,7 +244,10 @@ class SetStructureDemoElement extends HTMLElement {
         transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
         opacity: 1,
       },
-    ], { duration: HOP_LATENCY_MS, easing: "ease-in-out" });
+    ], {
+      duration: this.transport.nextDuration(HOP_LATENCY_MS),
+      easing: "ease-in-out",
+    });
     this.activeAnimations.add(animation);
     await animation.finished.catch(() => undefined);
     this.activeAnimations.delete(animation);

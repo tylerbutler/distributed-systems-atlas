@@ -11,6 +11,10 @@ import {
   type RegisterOperation,
   type ReplicaId,
 } from "./register-demo";
+import {
+  autoDeliveryChangeEvent,
+  DemoTransportControlsElement,
+} from "./demo-transport-controls";
 
 const HOP_LATENCY_MS = 800;
 
@@ -48,7 +52,7 @@ class RegisterStructureDemoElement extends HTMLElement {
         if (!result.ok) return;
         this.renderReplica(operation.author);
         this.queueOutbound(operation);
-        void this.deliverQueued(button);
+        if (this.transport.autoDeliver) void this.deliverQueued(button);
       });
     }
     this.button("race").addEventListener("click", () => void this.runRace());
@@ -57,6 +61,11 @@ class RegisterStructureDemoElement extends HTMLElement {
       this.state = createRegisterDemo(this.kind);
       this.render();
       this.button("race").focus();
+    });
+    this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+      if (this.transport.autoDeliver && this.state.view.pending > 0) {
+        void this.deliverQueued(this.transport);
+      }
     });
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
@@ -78,6 +87,14 @@ class RegisterStructureDemoElement extends HTMLElement {
     return button;
   }
 
+  private get transport(): DemoTransportControlsElement {
+    const controls = this.querySelector<DemoTransportControlsElement>(
+      "demo-transport-controls",
+    );
+    if (!controls) throw new Error("Missing register transport controls");
+    return controls;
+  }
+
   private async runRace(): Promise<void> {
     this.resetFlow();
     this.state = createRegisterDemo(this.kind);
@@ -85,16 +102,18 @@ class RegisterStructureDemoElement extends HTMLElement {
     this.apply(staged, this.button("race"));
     if (!staged.ok) return;
     for (const operation of registerRaceOperations()) this.queueOutbound(operation);
-    await this.deliverQueued(this.button("race"));
+    if (this.transport.autoDeliver) {
+      await this.deliverQueued(this.button("race"));
+    }
   }
 
-  private async deliverQueued(focus: HTMLButtonElement): Promise<void> {
+  private async deliverQueued(focus: HTMLElement): Promise<void> {
     if (this.delivering) return;
     this.delivering = true;
     this.renderControls();
     const generation = this.generation;
     try {
-      while (this.state.view.pending > 0) {
+      while (this.transport.autoDeliver && this.state.view.pending > 0) {
         await Promise.all(this.outboundArrivals.splice(0));
         if (generation !== this.generation) return;
         const operations = [...this.state.queuedOperations];
@@ -113,7 +132,9 @@ class RegisterStructureDemoElement extends HTMLElement {
       if (generation !== this.generation) return;
       this.delivering = false;
       this.renderControls();
-      if (this.state.view.pending > 0) void this.deliverQueued(focus);
+      if (this.transport.autoDeliver && this.state.view.pending > 0) {
+        void this.deliverQueued(focus);
+      }
     }
   }
 
@@ -183,7 +204,10 @@ class RegisterStructureDemoElement extends HTMLElement {
         transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
         opacity: 1,
       },
-    ], { duration: HOP_LATENCY_MS, easing: "ease-in-out" });
+    ], {
+      duration: this.transport.nextDuration(HOP_LATENCY_MS),
+      easing: "ease-in-out",
+    });
     this.activeAnimations.add(animation);
     await animation.finished.catch(() => undefined);
     this.activeAnimations.delete(animation);
