@@ -57,9 +57,9 @@ const models = [
     summary: "Rewrite changes so they still make sense together.",
     body: [
       "Operational transform, or OT, adjusts one change against another change made at the same time. If one person inserts text, another person's position can move before their change applies.",
-      "JsonOt uses this method for paths in a JSON document. SharedRichText uses it for text, formatting, and embedded content.",
+      "JsonOt uses this method for paths in a JSON document. SharedRichText uses it for text, formatting, and embedded content. Both show local edits before the sequencer confirms them.",
     ],
-    tradeoff: "It stores little extra history, but every pair of change types needs a correct transform rule.",
+    tradeoff: "It needs shared order for agreement, recent operations for transforms, and a correct rule for each pair of change types.",
     members: [
       ["JsonOt", "/structures/json-ot/"],
       ["SharedRichText", "/structures/shared-rich-text/"],
@@ -81,6 +81,12 @@ const rows = [
     ot: "Yes",
   },
   {
+    label: "Local change before shared order",
+    dds: "Depends on the structure",
+    crdt: "Yes; no shared order needed",
+    ot: "Yes; the edit stays pending",
+  },
+  {
     label: "Late or repeated delivery",
     dds: "The service orders and rejects repeats",
     crdt: "The combine rule handles it",
@@ -90,7 +96,7 @@ const rows = [
     label: "Typical cost",
     dds: "Depends on the structure",
     crdt: "Extra counts, identities, or removal history",
-    ot: "Waiting and buffered changes",
+    ot: "Buffered edits and recent operations",
   },
   {
     label: "Good fit",
@@ -170,6 +176,34 @@ const rows = [
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section class="local-visibility" aria-labelledby="local-visibility-title">
+      <h2 id="local-visibility-title">Before the sequencer replies</h2>
+      <p>
+        Alice edits a shared report while Bob edits his copy. With{" "}
+        <a href="/structures/json-ot/">JsonOt</a> or{" "}
+        <a href="/structures/shared-rich-text/">SharedRichText</a>, each sees
+        their own edit when they submit it. Their clients send one operation
+        at a time and buffer further local edits until the ranger confirms
+        the operation on the wire.
+      </p>
+      <p>
+        When Bob's numbered edit reaches Alice, her client transforms the
+        incoming edit and her pending work so both fit the document. Her
+        provisional view can change as those edits combine. The ranger must
+        number Alice's operation before her client can confirm it as part of
+        the shared result. If the ranger stops replying, Alice still sees her
+        pending edit, but she cannot confirm it as shared.
+      </p>
+      <p>
+        DDSes make different choices about local visibility. SharedCounter,
+        SharedMap, and SharedDirectory show pending changes. Claims,
+        RegisterCollection, and OrderedCollection wait for sequencing before
+        they change their readable state. TaskManager tracks a pending
+        volunteer but waits to assign a task; PactMap also waits for sign-off
+        before it exposes a new value.
+      </p>
     </section>
 
     <section class="choice-guide" aria-labelledby="choice-title">
@@ -289,8 +323,13 @@ const rows = [
   }
 
   .comparison,
+  .local-visibility,
   .choice-guide {
     margin-top: var(--space-7);
+  }
+
+  .local-visibility {
+    max-width: var(--measure-reading);
   }
 
   .table-scroll {

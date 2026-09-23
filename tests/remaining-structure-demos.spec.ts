@@ -118,13 +118,17 @@ test("a direct claim shows the kernel winner instead of the scripted race result
   await expect(demo.locator("[data-status]")).toHaveText("Delivery complete.");
 });
 
-test("DDS lessons distinguish local application from sequenced outcomes", async ({ page }) => {
+test("model and lesson prose distinguish local edits from sequenced outcomes", async ({ page }) => {
   await page.goto("/structures/models/");
   const dds = page.locator("#dds");
   await expect(dds).toContainText("SharedCounter, SharedMap, and SharedDirectory show an author's change locally before it has a number.");
   await expect(dds).toContainText("Claims, RegisterCollection, and OrderedCollection wait for a number");
   await expect(dds).toContainText("TaskManager tracks a pending volunteer locally but waits for sequencing");
   await expect(dds).toContainText("PactMap waits for sequencing to show a pending proposal");
+  await expect(page.locator("#ot")).toContainText("Both show local edits before the sequencer confirms them.");
+  await expect(page.getByRole("row", { name: /Local change before shared order/ })).toContainText("Yes; the edit stays pending");
+  await expect(page.getByRole("heading", { name: "Before the sequencer replies" })).toBeVisible();
+  await expect(page.locator(".local-visibility")).toContainText("Their clients send one operation at a time and buffer further local edits");
 
   for (const [slug, detail] of [
     ["shared-counter", "The local update is optimistic."],
@@ -135,6 +139,8 @@ test("DDS lessons distinguish local application from sequenced outcomes", async 
     ["ordered-collection", "None can mark the inspection as theirs until a numbered request"],
     ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
     ["pact-map", "Only after the required stations sign off can anyone read the new value."],
+    ["json-ot", "Alice sees her title edit before the ranger gives it a number"],
+    ["shared-rich-text", "Alice sees the bold heading as soon as she edits it"],
   ] as const) {
     await page.goto(`/structures/${slug}/`);
     await expect(page.locator("article").first()).toContainText(detail);
