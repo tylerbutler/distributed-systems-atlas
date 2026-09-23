@@ -205,21 +205,21 @@ const notebookCheckpoints: Array<{
                       <td>
                         {row.additions.length
                           ? row.additions.map((entry) => (
-                              <span class="visible-member">{entry.element}<sup>{entry.dot}</sup></span><br />
+                              <span class="dotted-value">{entry.element}<sup>{entry.dot}</sup></span><br />
                             ))
                           : "empty"}
                       </td>
                       <td>
                         {row.removals.length
                           ? row.removals.map((entry) => (
-                              <span class="visible-member">{entry.element}<sup>{entry.dot}</sup></span><br />
+                              <span class="dotted-value">{entry.element}<sup>{entry.dot}</sup></span><br />
                             ))
                           : "empty"}
                       </td>
                       <td><code>{row.counter}</code></td>
                       <td>
                         {row.dots.length
-                          ? <span class="visible-member">Eagle Creek{row.dots.map((dot) => <sup>{dot}</sup>)}</span>
+                          ? <span class="dotted-value">Eagle Creek{row.dots.map((dot) => <sup>{dot}</sup>)}</span>
                           : "empty"}
                       </td>
                     </tr>
@@ -327,25 +327,6 @@ const notebookCheckpoints: Array<{
 
   .notebook-checkpoints table {
     font-size: 0.95rem;
-  }
-
-  .visible-member {
-    white-space: nowrap;
-  }
-
-  .visible-member sup {
-    margin-left: 0.2rem;
-    color: var(--instrument-deep);
-    font-size: max(0.72em, 0.75rem);
-    font-weight: 750;
-  }
-
-  .visible-member sup + sup {
-    margin-left: 0;
-  }
-
-  .visible-member sup + sup::before {
-    content: ", ";
   }
 
   .lesson-entry {

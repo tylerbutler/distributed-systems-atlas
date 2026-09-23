@@ -73,6 +73,25 @@
   font-family: var(--font-data);
 }
 
+.dotted-value {
+  white-space: nowrap;
+}
+
+.dotted-value sup {
+  margin-left: 0.2rem;
+  color: var(--instrument-deep);
+  font-size: max(0.72em, 0.75rem);
+  font-weight: 750;
+}
+
+.dotted-value sup + sup {
+  margin-left: 0;
+}
+
+.dotted-value sup + sup::before {
+  content: ", ";
+}
+
 :is(.set-lesson, .register-lesson) figcaption {
   margin-top: var(--space-2);
   color: var(--muted);

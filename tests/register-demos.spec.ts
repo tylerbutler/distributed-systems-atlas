@@ -122,6 +122,17 @@ test("register facts leave room for the demo", async ({ page }) => {
   }
 });
 
+test("MvRegister notebook values show superscript write identities", async ({ page }) => {
+  await page.goto("/structures/multi-value-register/");
+  const table = page.getByRole("table", { name: "MvRegister notebook checkpoints" });
+  await expect(table.locator("tbody sup")).toHaveText([
+    "A:1", "A:1", "B:1",
+    "B:1", "A:1", "B:1",
+    "A:1", "B:1",
+  ]);
+  await expect(table.locator("tbody td code")).toHaveCount(0);
+});
+
 test("the register family links every dedicated lesson", async ({ page }) => {
   await page.goto("/structures/registers/");
   await expect(page.getByRole("link", { name: "Open the LWWRegister lesson" }))
