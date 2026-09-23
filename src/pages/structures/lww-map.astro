@@ -8,13 +8,57 @@ import { lwwMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="LWWMap" description="Each Eagle Creek map key has its own timestamped conflict rule." territory="Structures" sheetTitle="LWWMap">
+<BaseLayout title="LWWMap" description="Each line in the hikers' trail report table uses a timestamp to choose its answer." territory="Structures" sheetTitle="LWWMap">
   <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>LWWMap</h1><p class="structure-summary">Alice and Bob still have a gate-status line in their notebooks. This time they date each note: the ranger's delivery order does not decide which answer stays.</p><LessonIllustration id="structures-lww-map" /></header>
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>LWWMap</h1><p class="structure-summary">Alice and Bob still have copies of the trail report table. They change the gate-status line while they are apart. Can Carol settle their disagreement without asking the ranger to number the notes?</p><LessonIllustration id="structures-lww-map" /></header>
     <StructureFacts structure="LWWMap" family="CRDT" model="Per-key last-writer-wins map" updates="Write or cross out a text entry" merge="Use the latest time; at equal time, removal wins, then writer ID breaks a tie between writes." delivery="Safe under repeated and out-of-order delivery" bestFor="Offline string settings with a trusted clock policy" cost="Time and writer for each answer or removal" />
-    <section aria-labelledby="clock-title"><h2 id="clock-title">A date beside each line</h2><p>An <dfn><a href="/glossary/#lwwmap">LWWMap</a></dfn> compares the time on notes for each named line separately. A note with a later time wins even if another arrives after it. If two notes have the same time, a crossed-out line wins over a new answer; if both contain answers, the writer ID breaks the tie.</p><TermCallout {...lwwMapTerm} /></section>
-    <MapStructureDemo kind="lww-map" title="Compare dated gate-status notes" description="Alice and Bob write on the same line. Each notebook uses the time beside that line, not the order in which notes arrive." rule="Use the latest time; if tied, removal wins, then writer ID." raceLabel="Race the dated gate-status notes" />
-    <section aria-labelledby="clock-risk-title"><h2 id="clock-risk-title">"Last" depends on the clock</h2><p>A fast watch can make an earlier note win over a later one. Each notebook must keep a crossed-out line until it is safe to forget the removal. Use this rule when one answer is worth that cost.</p></section>
+    <section aria-labelledby="clock-title">
+      <h2 id="clock-title">A time beside each line</h2>
+      <p>
+        SharedMap uses the ranger's ledger number to choose the gate answer.
+        An <dfn><a href="/glossary/#lwwmap">LWWMap</a></dfn> uses the time
+        attached to each gate note instead. Carol compares those times for
+        the gate line, then does the same for any other line in her table.
+      </p>
+      <TermCallout {...lwwMapTerm} />
+      <p>
+        Suppose Bob's "Trail closed" note has time 11, and Alice's "Trail open"
+        note has time 10. The ranger accepts Bob's note first and Alice's
+        second. SharedMap keeps Alice's answer because he numbered it last.
+        LWWMap keeps Bob's answer because 11 is later than 10. The ranger
+        still delivers both notes, but his order does not choose the LWWMap
+        answer.
+      </p>
+      <p>
+        If the ranger supplied his ledger numbers as timestamps, both rules
+        would choose the same answer. This demo does not do that. Watershed's
+        runtime on each hiker's client starts with local wall-clock time and
+        advances it past any time that client has already seen for that line.
+      </p>
+      <p>
+        The demo uses the station to deliver notes, but LWWMap does not need
+        the ranger to number them. The hikers can exchange notes directly or
+        after a delay and still agree on the value for each line. SharedMap
+        needs the ranger's accepted order before everyone can agree.
+      </p>
+      <p>
+        If two notes have the same time, a crossed-out line wins over a new
+        answer. If both contain answers, the writer ID breaks the tie.
+      </p>
+    </section>
+    <MapStructureDemo kind="lww-map" title="Compare times on gate-status notes" description="Alice and Bob change the gate-status line. Carol uses the time on each note, not the ranger's delivery order, to choose one answer." rule="Use the latest time; if tied, removal wins, then writer ID." raceLabel="Race the dated gate-status notes" />
+    <section aria-labelledby="clock-risk-title">
+      <h2 id="clock-risk-title">"Last" depends on the clock</h2>
+      <p>
+        If Bob's watch is fast, his earlier gate note can have a later time
+        than Alice's newer note. Every notebook will agree on Bob's answer,
+        but it will not be the last answer written in real time. Advancing a
+        client's clock past times it has seen cannot fix a fast clock on
+        another client. Use LWWMap only when the clock policy and the risk of
+        losing a later human edit are acceptable. Each notebook must also
+        keep a crossed-out line until it is safe to forget the removal.
+      </p>
+    </section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>
@@ -23,8 +67,8 @@ import "../../styles/set-lesson.css";
       </p>
       <p>
         <strong>Implementation:</strong> The demo calls Watershed through the Gleam toolkit
-        for the three-client demo. The runtime issues the clocks compared
-        for each key.
+        for the three-client demo. Each client's runtime supplies wall-clock
+        times and advances each line's clock past the times it has observed.
       </p>
     </section>
     <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/shared-map/">Back to SharedMap</a><a href="/structures/maps/">Browse map family</a><a href="/structures/or-map/">Continue to OR-map</a></nav>

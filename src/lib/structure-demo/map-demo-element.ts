@@ -251,14 +251,15 @@ class MapStructureDemoElement extends HTMLElement {
     const replica = this.state.view.replicas.find(({ id }) => id === replicaId);
     if (!replica) return;
     const entries = this.querySelector<HTMLElement>(`[data-map-entries="${replica.id}"]`)!;
-    entries.replaceChildren(...(replica.entries.length
+    const heading = entries.querySelector(".map-entry-heading");
+    entries.replaceChildren(...(heading ? [heading] : []), ...(replica.entries.length
       ? replica.entries.map((entry) => {
         const row = node("div", "");
         row.append(node("dt", entry.key), node("dd", entry.value));
         return row;
       })
       : [Object.assign(node("div", ""), { className: "empty-entry" })]));
-    if (!replica.entries.length) entries.firstElementChild!.append(node("dd", "No entries"));
+    if (!replica.entries.length) entries.lastElementChild!.append(node("dd", "No entries"));
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       this.state.view.pending
         ? "Local view · operation in transit"
@@ -291,7 +292,7 @@ class MapStructureDemoElement extends HTMLElement {
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;
     evidence.textContent = this.kind === "shared-map"
       ? this.state.deliveries.length
-        ? `Ledger number ${this.state.view.sequenceNumber}: gate-status uses the last numbered note.`
+        ? `Ledger number ${this.state.view.sequenceNumber}: ${this.state.deliveries.at(-1)!.key} uses the last numbered note.`
         : "No race delivered yet."
       : this.kind === "lww-map"
         ? this.state.deliveries.length

@@ -73,6 +73,14 @@ export function mapRaceOperations(kind: MapKind): readonly MapOperation[] {
   return RACES[kind];
 }
 
+function sharedMapResult(state: MapDemoState, view: MapRoomView): string {
+  const operation = state.queuedOperations.at(-1);
+  const entries = view.replicas[0]?.entries;
+  if (!operation || !entries) throw new Error("Missing shared map result");
+  const value = entries.find(({ key }) => key === operation.key)?.value;
+  return `The ranger numbered ${mapUserName(operation.author)}'s ${operation.key} note last. Every notebook ${value === undefined ? "has no answer" : `reads ${value}`} on that line.`;
+}
+
 export function createMapDemo(kind: MapKind): MapDemoState {
   const created = value(createMapRoom(kind));
   return {
@@ -84,7 +92,9 @@ export function createMapDemo(kind: MapKind): MapDemoState {
     latestDeliveries: [],
     result: kind === "or-map"
       ? "Eagle Creek starts with 5 supply crates. Race removal against a concurrent delivery."
-      : "Run the race, or let any hiker change their own notebook.",
+      : kind === "shared-map"
+        ? "Each notebook starts with gate and bridge reports. Race the gate edits or change a line yourself."
+        : "Run the race, or let any hiker change their own notebook.",
   };
 }
 
@@ -140,7 +150,9 @@ export function stageMapDemoRace(state: MapDemoState): MapDemoResult {
           ? "Alice crossed out the stockpile line while Bob logged 3 more crates."
           : state.kind === "shared-directory"
             ? "Alice and Bob concurrently created the same Eagle Creek folder."
-            : "Alice wrote Trail open while Bob wrote Trail closed.",
+            : state.kind === "shared-map"
+              ? "Alice and Bob changed the gate-status line. The bridge-status line stays as it was."
+              : "Alice wrote Trail open while Bob wrote Trail closed.",
       },
     };
   } catch (error) {
@@ -173,7 +185,7 @@ export function deliverMapDemoOperations(state: MapDemoState): MapDemoResult {
     const delivered = value(deliverMapOperations(state.room));
     const latestDeliveries = labelDeliveries(state.queuedOperations, delivered.deliveries);
     const result = state.kind === "shared-map"
-      ? "The ranger numbered Bob's note last. Every notebook reads Trail closed."
+      ? sharedMapResult(state, delivered.view)
       : state.kind === "lww-map"
         ? "The time on Bob's note wins. Every notebook reads Trail closed."
         : state.kind === "or-map"

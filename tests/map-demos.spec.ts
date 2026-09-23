@@ -6,7 +6,7 @@ for (const example of [
     testId: "shared-map-demo",
     heading: "SharedMap",
     race: "Race the two gate-status notes",
-    entries: ["gate-statusTrail closed"],
+    entries: ["LineReport", "bridge-statusInspection due", "gate-statusTrail closed"],
     evidence: /^Ledger number \d+: gate-status uses the last numbered note\.$/,
   },
   {
@@ -73,17 +73,22 @@ test("map controls stay active while operations travel", async ({ page }) => {
   await page.goto("/structures/shared-map/");
   const demo = page.getByTestId("shared-map-demo");
   const alice = demo.getByRole("button", { name: "Write Trail open" });
-  const carol = demo.getByRole("button", { name: "Write Inspect bridge" });
+  const carol = demo.getByRole("button", { name: "Write Bridge clear" });
 
   await alice.click();
   await expect(demo.locator(".map-operation-pulse")).toContainText("Trail open");
   await expect(carol).toBeEnabled();
   await carol.click();
-  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
-    "Inspect bridge",
-    "Inspect bridge",
-    "Inspect bridge",
-  ], { timeout: 10_000 });
+  for (const entries of await demo.locator("[data-map-entries]").all()) {
+    await expect(entries.locator("div:not(.map-entry-heading)")).toHaveText([
+      "bridge-statusBridge clear",
+      "gate-statusTrail open",
+    ], { timeout: 10_000 });
+  }
+  await expect(demo.locator("[data-evidence]"))
+    .toContainText("bridge-status uses the last numbered note.");
+  await expect(demo.locator('[role="status"]'))
+    .toContainText("Every notebook reads Bridge clear on that line.");
 });
 
 test("map replicas update after the shared operation arrives", async ({ page }) => {
@@ -92,17 +97,19 @@ test("map replicas update after the shared operation arrives", async ({ page }) 
 
   await demo.getByRole("button", { name: "Write Trail open" }).click();
   await expect(demo.locator(".map-operation-pulse.shared").first()).toBeVisible();
-  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
-    "Trail open",
-    "No entries",
-    "No entries",
-  ]);
+  await expect(demo.locator('[data-client="A"] [data-map-entries] div:not(.map-entry-heading)'))
+    .toHaveText(["bridge-statusInspection due", "gate-statusTrail open"]);
+  for (const client of ["B", "C"]) {
+    await expect(demo.locator(`[data-client="${client}"] [data-map-entries] div:not(.map-entry-heading)`))
+      .toHaveText(["bridge-statusInspection due", "gate-statusReport pending"]);
+  }
 
-  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
-    "Trail open",
-    "Trail open",
-    "Trail open",
-  ], { timeout: 10_000 });
+  for (const entries of await demo.locator("[data-map-entries]").all()) {
+    await expect(entries.locator("div:not(.map-entry-heading)")).toHaveText([
+      "bridge-statusInspection due",
+      "gate-statusTrail open",
+    ], { timeout: 10_000 });
+  }
 });
 
 test("the map family links every dedicated lesson", async ({ page }) => {
@@ -123,10 +130,11 @@ test("reset restores a new map room", async ({ page }) => {
   const demo = page.getByTestId("shared-map-demo");
   await demo.getByRole("button", { name: "Race the two gate-status notes" }).click();
   await demo.getByRole("button", { name: "Reset", exact: true }).click();
-  await expect(demo.locator("[data-map-entries] dd")).toHaveText([
-    "No entries",
-    "No entries",
-    "No entries",
-  ]);
+  for (const entries of await demo.locator("[data-map-entries]").all()) {
+    await expect(entries.locator("div:not(.map-entry-heading)")).toHaveText([
+      "bridge-statusInspection due",
+      "gate-statusReport pending",
+    ]);
+  }
   await expect(demo.locator("[data-evidence]")).toHaveText("No race delivered yet.");
 });

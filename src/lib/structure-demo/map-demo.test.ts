@@ -14,7 +14,10 @@ function state(result: MapDemoResult) {
 }
 
 describe.each([
-  ["shared-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["shared-map", [
+    { key: "bridge-status", value: "Inspection due" },
+    { key: "gate-status", value: "Trail closed" },
+  ]],
   ["lww-map", [{ key: "gate-status", value: "Trail closed" }]],
   ["or-map", [{ key: "Eagle Creek", value: "8" }]],
   ["shared-directory", [{ key: "eagle-creek", value: "folder" }]],
@@ -38,10 +41,15 @@ test("accepts another map write while delivery is pending", () => {
   const carol = state(updateMapReplica(alice, {
     author: "C",
     action: "set",
-    key: "gate-status",
-    value: "Inspect bridge",
+    key: "bridge-status",
+    value: "Bridge clear",
   }));
   expect(carol.queuedOperations).toHaveLength(2);
-  expect(state(deliverMapDemoOperations(carol)).view.replicas[1]?.entries)
-    .toEqual([{ key: "gate-status", value: "Inspect bridge" }]);
+  const delivered = state(deliverMapDemoOperations(carol));
+  expect(delivered.view.replicas[1]?.entries)
+    .toEqual([
+      { key: "bridge-status", value: "Bridge clear" },
+      { key: "gate-status", value: "Trail open" },
+    ]);
+  expect(delivered.result).toContain("Every notebook reads Bridge clear on that line.");
 });

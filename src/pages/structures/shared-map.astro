@@ -8,15 +8,16 @@ import { sharedMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="SharedMap" description="The ranger numbers competing gate-status notes in a shared notebook." territory="Structures" sheetTitle="SharedMap">
+<BaseLayout title="SharedMap" description="The ranger numbers changes to named lines in each hiker's trail report table." territory="Structures" sheetTitle="SharedMap">
   <article class="register-lesson">
     <header class="page-intro">
       <p class="territory-label">Structures</p>
       <h1>SharedMap</h1>
       <p class="structure-summary">
-        The ranger gives each hiker a notebook with a line for the gate status.
-        Alice writes "Trail open" and Bob writes "Trail closed" before either
-        sees the other's note.
+        Each hiker copies the ranger's trail report table into a notebook.
+        One line says "gate-status: Report pending"; another says
+        "bridge-status: Inspection due." Alice and Bob change the gate line
+        before either sees the other's note. The bridge line stays as it was.
       </p>
       <LessonIllustration id="structures-shared-map" />
     </header>
@@ -25,8 +26,10 @@ import "../../styles/set-lesson.css";
       <h2 id="order-title">The ranger numbers each change</h2>
       <p>
         In a <dfn><a href="/glossary/#sharedmap">SharedMap</a></dfn>, the ranger
-        numbers every accepted change. When two hikers change the same line,
-        the higher number decides what all three notebooks show.
+        numbers every accepted change. Each named line has its own answer:
+        changing gate-status does not erase bridge-status. When two hikers
+        change the same line, the higher number decides what all three
+        notebooks show on that line.
       </p>
       <p>
         Alice sees her own note as soon as she writes it. She keeps it in her
@@ -35,10 +38,10 @@ import "../../styles/set-lesson.css";
         back the numbered changes.
       </p>
       <TermCallout {...sharedMapTerm} />
-      <figure><table aria-label="SharedMap gate-status race"><thead><tr><th scope="col">Ledger number</th><th scope="col">Note</th><th scope="col">Gate status</th></tr></thead><tbody><tr><th scope="row">1</th><td>Alice · Trail open</td><td>Trail open</td></tr><tr><th scope="row">2</th><td>Bob · Trail closed</td><td>Trail closed</td></tr></tbody></table><figcaption>The ranger's ledger number, not the time on a note, decides which answer stays.</figcaption></figure>
+      <figure><table aria-label="SharedMap trail report table after the gate-status race"><thead><tr><th scope="col">Line</th><th scope="col">Before</th><th scope="col">After Alice and Bob's notes</th></tr></thead><tbody><tr><th scope="row">gate-status</th><td>Report pending</td><td>Trail closed</td></tr><tr><th scope="row">bridge-status</th><td>Inspection due</td><td>Inspection due</td></tr></tbody></table><figcaption>The ranger numbers Alice's gate note before Bob's. Bob's answer wins on the gate line; neither note changes the bridge line.</figcaption></figure>
     </section>
-    <MapStructureDemo kind="shared-map" title="Number two gate-status notes" description="Alice and Bob write on the gate-status line before they see each other's note. The ranger numbers Bob's change last." rule="Use the highest ledger number for each line." raceLabel="Race the two gate-status notes" />
-    <section aria-labelledby="limit-title"><h2 id="limit-title">One answer survives</h2><p>The ranger's rule leaves one answer on the line; the other disappears. If dates on offline notes should choose the answer, use LWWMap. If a new note must survive a crossed-out line, use OR-map.</p></section>
+    <MapStructureDemo kind="shared-map" title="Update a shared trail report table" description="Alice and Bob change gate-status while bridge-status stays put. Carol can change the bridge line separately." rule="Use the highest ledger number for each line." raceLabel="Race the two gate-status notes" />
+    <section aria-labelledby="limit-title"><h2 id="limit-title">One answer per line survives</h2><p>The ranger's rule leaves one answer on each line. Alice's gate answer disappears when Bob's numbered note arrives; the bridge line is unchanged. If dates on offline notes should choose the answer, use LWWMap. If a new note must survive a crossed-out line, use OR-map.</p></section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>

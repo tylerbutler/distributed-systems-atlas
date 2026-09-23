@@ -50,6 +50,9 @@ function operationFor(replica: ReplicaId): MapOperation {
       value: "",
     };
   }
+  if (kind === "shared-map" && replica === "C") {
+    return { author: replica, action: "set", key: "bridge-status", value: "Bridge clear" };
+  }
   return {
     author: replica,
     action: "set",
@@ -67,7 +70,9 @@ function buttonLabel(operation: MapOperation): string {
 
 function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
   if (replica === "C") {
-    return { body: "No slip in this race", evidence: "Carol observes delivery" };
+    return kind === "shared-map"
+      ? { body: "Optional: bridge-status = Bridge clear", evidence: "Carol can change this line separately" }
+      : { body: "No slip in this race", evidence: "Carol observes delivery" };
   }
   if (kind === "or-map") {
     return replica === "A"
@@ -118,6 +123,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
               </div>
             </header>
             <dl class="map-entries" data-map-entries={replica.id}>
+              {kind === "shared-map" && <div class="map-entry-heading"><dt>Line</dt><dd>Report</dd></div>}
               {replica.entries.length
                 ? replica.entries.map((entry) => (
                     <div><dt>{entry.key}</dt><dd>{entry.value}</dd></div>

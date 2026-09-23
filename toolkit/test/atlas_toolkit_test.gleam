@@ -304,7 +304,10 @@ pub fn map_sluice_rooms_show_each_conflict_rule_test() {
   let #(shared, _) = sluice.map_room_deliver(shared)
   let shared_view = sluice.map_room_snapshot(shared)
   shared_view.a
-  |> should.equal([sluice.MapEntry("gate-status", "Trail closed")])
+  |> should.equal([
+    sluice.MapEntry("bridge-status", "Inspection due"),
+    sluice.MapEntry("gate-status", "Trail closed"),
+  ])
   shared_view.b |> should.equal(shared_view.a)
   shared_view.c |> should.equal(shared_view.a)
 

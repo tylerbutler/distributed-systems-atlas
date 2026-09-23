@@ -3,6 +3,7 @@ import gleam/int
 import gleam/json
 import gleam/list
 import gleam/result
+import gleam/string
 import watershed
 import watershed/or_map_kernel
 import watershed/sluice_js
@@ -332,6 +333,9 @@ pub fn new_map_room(kind: String) -> Result(MapRoom, String) {
       sluice_js.settle(sluice)
       use b <- result.try(shared_map_from_document(document_b))
       use c <- result.try(shared_map_from_document(document_c))
+      watershed.set(a, "gate-status", json.string("Report pending"))
+      watershed.set(a, "bridge-status", json.string("Inspection due"))
+      sluice_js.settle(sluice)
       Ok(fn(a_client, b_client, c_client) {
         SharedMapRoom(sluice, a, b, c, a_client, b_client, c_client)
       })
@@ -1141,6 +1145,7 @@ fn json_text(value: json.Json) -> String {
 fn shared_map_entries(map: watershed.SharedMap) -> List(MapEntry) {
   watershed.entries(map)
   |> list.map(fn(entry) { MapEntry(entry.0, json_text(entry.1)) })
+  |> list.sort(fn(a, b) { string.compare(a.key, b.key) })
 }
 
 fn lww_map_entries(map: watershed.LwwMap) -> List(MapEntry) {
