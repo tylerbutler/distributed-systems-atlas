@@ -64,7 +64,7 @@ test("multiple checkpoint notes can wait before sharing", async ({ page }) => {
   await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
-  const autoDeliver = demo.getByRole("checkbox", { name: "Auto-deliver" });
+  const autoDeliver = demo.getByRole("checkbox", { name: "Broadcast" });
 
   await expect(autoDeliver).toBeChecked();
   await autoDeliver.uncheck();
@@ -76,7 +76,7 @@ test("multiple checkpoint notes can wait before sharing", async ({ page }) => {
   await demo.getByRole("button", { name: "Record 7 birds for Carol" }).click();
   await expect(totals).toHaveText(["4", "10", "8"]);
   await expect(demo.locator('[role="status"]')).toContainText(
-    "6 checkpoint notes are waiting",
+    "6 checkpoint notes are queued for sharing",
   );
   await autoDeliver.check();
   await expect(totals).toHaveText(["22", "22", "22"]);
@@ -84,11 +84,11 @@ test("multiple checkpoint notes can wait before sharing", async ({ page }) => {
   await expect(demo.getByRole("list", { name: "Checkpoint note log" }).getByRole("listitem"))
     .toHaveCount(6);
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The final checkpoint note reached every hiker. All three read 22 birds.",
+    "The final checkpoint note was delivered to every hiker. All three read 22 birds.",
   );
 });
 
-test("auto-deliver keeps replica controls active while operations queue", async ({ page }) => {
+test("broadcast keeps replica controls active while operations queue", async ({ page }) => {
   await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
   const totals = demo.locator("[data-total]");
@@ -227,8 +227,8 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("button", { name: "Leave Alice +7 and Bob +3 together" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toHaveAttribute("min", "0.25");
-    await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeChecked();
-    await expect(page.getByRole("checkbox", { name: "Auto-deliver" })).toBeDisabled();
+    await expect(page.getByRole("checkbox", { name: "Broadcast" })).toBeChecked();
+    await expect(page.getByRole("checkbox", { name: "Broadcast" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
     await expect(page.locator("[data-guided-panel]")).toBeHidden();
     const explanation = page.getByText("Open the hikers' count tables", { exact: true });

@@ -77,7 +77,7 @@ class GCounterDemoElement extends HTMLElement {
       this.state = createGCounterDemo();
       this.render();
       this.showGuidedObservation(
-        "Turn off Auto-deliver to hold several checkpoint notes.",
+        "Turn off Broadcast to hold several checkpoint notes.",
         [],
       );
       this.querySelector<HTMLButtonElement>("[data-increment]")!.focus();
@@ -94,7 +94,7 @@ class GCounterDemoElement extends HTMLElement {
       this.querySelector<HTMLElement>("[data-guided-panel]")!.hidden = !this.guided;
       if (this.guided) {
         this.showGuidedObservation(
-          "Turn off Auto-deliver to hold several checkpoint notes.",
+          "Turn off Broadcast to hold several checkpoint notes.",
           [],
         );
       } else {
