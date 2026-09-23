@@ -21,8 +21,8 @@ import "../../styles/set-lesson.css";
       <p class="structure-summary">
         Alice reports the trail open while Bob reports it closed. Neither has
         seen the other's note. The ranger records Alice's report as number 1
-        and Bob's as number 2, then keeps both. Carol can ask for the first
-        accepted report or the latest one.
+        and Bob's as number 2, then keeps both. Carol can ask for the atomic
+        winner or the latest report.
       </p>
       <LessonIllustration id="structures-register-collection" />
     </header>
@@ -47,34 +47,71 @@ import "../../styles/set-lesson.css";
         read and a latest read can return different answers.
       </p>
       <TermCallout {...registerCollectionTerm} />
-      <figure>
+      <p>
+        Alice and Bob each submit a report before either has seen a sequenced
+        write. They both put <code>0</code> on their slips as the last sequence
+        number they saw. The ranger then assigns Alice's report <code>1</code>
+        {" "}and Bob's <code>2</code>. Bob's larger number does not mean he had
+        seen Alice's report when he wrote his own.
+      </p>
+      <figure class="sequence-example">
         <table aria-label="RegisterCollection read policies">
           <thead>
-            <tr><th scope="col">Sequence</th><th scope="col">Report</th><th scope="col">Read effect</th></tr>
+            <tr>
+              <th scope="col">Report</th>
+              <th scope="col">Last sequence seen at submit</th>
+              <th scope="col">Assigned sequence</th>
+              <th scope="col">Atomic read</th>
+              <th scope="col">Latest read</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">SN 1 · Alice</th><td>Trail open</td><td>Atomic winner</td></tr>
-            <tr><th scope="row">SN 2 · Bob</th><td>Trail closed</td><td>Latest version</td></tr>
+            <tr><th scope="row">Alice: Trail open</th><td>0</td><td>1</td><td>Trail open</td><td>Trail open</td></tr>
+            <tr><th scope="row">Bob: Trail closed</th><td>0</td><td>2</td><td>Trail open</td><td>Trail closed</td></tr>
+            <tr><th scope="row">Carol: Inspect bridge</th><td>2</td><td>3</td><td>Inspect bridge</td><td>Inspect bridge</td></tr>
           </tbody>
         </table>
-        <figcaption>Both policies read the same retained history but answer different questions.</figcaption>
+        <figcaption>Carol's write is a later example, after the two-report race in the demo.</figcaption>
       </figure>
+      <p>
+        The ranger changes the atomic value only when a writer's last-seen
+        number is at least the current atomic winner's sequence number.
+        Bob's reference of <code>0</code> is less than the atomic winner's
+        sequence number, <code>1</code>. The ranger keeps Alice as the atomic
+        winner and Bob as the latest version. After Carol has seen sequence
+        <code>2</code>, she writes <code>Inspect bridge</code>. Her reference
+        of <code>2</code> lets her replace Alice's atomic value. The ranger
+        assigns her report <code>3</code> and removes the older versions she
+        saw, so both reads return her report.
+      </p>
+      <aside class="term-callout perspective-note" aria-labelledby="register-perspective-title">
+        <h3 class="term-callout-label" id="register-perspective-title">Alternative perspective</h3>
+        <p>
+          A <dfn><a href="/glossary/#dot">dot</a></dfn> identifies one event
+          with a replica ID and a local counter. Here, the ranger assigns a
+          sequence number to each committed report. A writer also records the
+          last sequence number they saw. Carol can use that number to tell
+          how far through the ranger's ledger the writer had read. These are
+          not dots: the ranger must assign one shared order.
+        </p>
+      </aside>
     </section>
 
     <RegisterStructureDemo
       kind="register-collection"
-      title="Read the first winner or the latest version"
+      title="Read the atomic winner or the latest version"
       description="Alice and Bob submit from the same reference point. The ranger sequences both, retains both, and exposes two read policies."
-      rule="Atomic keeps the first uncontested write; latest keeps the greatest sequence number."
+      rule="Atomic changes when a writer has seen its current winner; latest uses the greatest sequence number."
       raceLabel="Race the two station submissions"
     />
 
     <section aria-labelledby="choice-title">
       <h2 id="choice-title">The reader must choose a policy</h2>
       <p>
-        An atomic read returns Alice's first uncontested write. A latest read
-        returns Bob's later sequence number. Neither answer is a merge of the
-        reports, and neither exposes causal siblings like an MvRegister.
+        In the demo's two-report race, an atomic read returns Alice's report.
+        A latest read returns Bob's later report. Carol's later write shows
+        that the atomic winner can change. Neither policy merges the reports
+        or exposes causal siblings like an MvRegister.
       </p>
       <p>
         This is a sequenced distributed data structure, not a CRDT. If the
@@ -103,3 +140,13 @@ import "../../styles/set-lesson.css";
     </nav>
   </article>
 </BaseLayout>
+
+<style>
+  .sequence-example {
+    overflow-x: auto;
+  }
+
+  .sequence-example table {
+    min-width: 42rem;
+  }
+</style>

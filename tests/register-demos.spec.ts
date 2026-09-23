@@ -115,6 +115,10 @@ test("register facts leave room for the demo", async ({ page }) => {
       const facts = (await page.locator(".register-lesson > .structure-facts").boundingBox())!;
       const demo = (await page.getByTestId(testId).boundingBox())!;
       expect(demo.y).toBeGreaterThanOrEqual(facts.y + facts.height);
+      for (const callout of await page.locator(".register-lesson > section:first-of-type .term-callout").all()) {
+        const box = await callout.boundingBox();
+        if (box) expect(demo.y).toBeGreaterThanOrEqual(box.y + box.height);
+      }
       expect(await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
       )).toBe(0);
@@ -131,6 +135,30 @@ test("MvRegister notebook values show superscript write identities", async ({ pa
     "A:1", "B:1",
   ]);
   await expect(table.locator("tbody td code")).toHaveCount(0);
+});
+
+test("RegisterCollection distinguishes seen and assigned sequence numbers", async ({ page }) => {
+  await page.goto("/structures/register-collection/");
+  const table = page.getByRole("table", { name: "RegisterCollection read policies" });
+  const rows = table.locator("tbody tr");
+  await expect(rows.nth(0).locator("th, td")).toHaveText([
+    "Alice: Trail open", "0", "1", "Trail open", "Trail open",
+  ]);
+  await expect(rows.nth(1).locator("th, td")).toHaveText([
+    "Bob: Trail closed", "0", "2", "Trail open", "Trail closed",
+  ]);
+  await expect(rows.nth(2).locator("th, td")).toHaveText([
+    "Carol: Inspect bridge", "2", "3", "Inspect bridge", "Inspect bridge",
+  ]);
+  const perspective = page.getByRole("complementary", { name: "Alternative perspective" });
+  await expect(perspective).toContainText("not dots");
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(perspective).toBeVisible();
+    expect(await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )).toBe(0);
+  }
 });
 
 test("the register family links every dedicated lesson", async ({ page }) => {
