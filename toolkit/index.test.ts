@@ -2,22 +2,64 @@ import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
   createRegisterDemoRoom,
+  createRemainingDemoRoom,
   createMapRoom,
   createSetRoom, createSharedCounterRoom, deliverOneSharedCounterOperation,
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
+  deliverRemainingDemo,
   stageMapRace,
   stageRegisterDemoRace,
+  stageRemainingDemoRace,
   stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
   updateSharedCounterRoom, write,
   type Change, type Result, type State,
+  type RemainingDemoOperationResult,
 } from "@atlas/toolkit";
 
 function unwrap<T>(result: Result<T>): T {
   if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
   return result.value;
 }
+
+function unwrapRemaining<T>(result: RemainingDemoOperationResult<T>): T {
+  if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
+  return result.value;
+}
+
+test.each([
+  ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
+  ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
+  ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
+  ["ordered-collection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
+  ["task-manager", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
+  ["pact-map", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
+  ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
+  ["shared-rich-text", ["Hello World"], ["Hello [bold] World ▲"]],
+] as const)("%s derives its view from Watershed operations", (kind, initial, expected) => {
+  const created = unwrapRemaining(createRemainingDemoRoom(kind));
+  expect(created.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+
+  const staged = unwrapRemaining(stageRemainingDemoRace(created.room));
+  expect(staged.view.pending).toBeGreaterThan(0);
+  expect(staged.view.replicas.map(({ values }) => values)).not.toEqual([
+    expected,
+    expected,
+    expected,
+  ]);
+
+  const delivered = unwrapRemaining(deliverRemainingDemo(created.room));
+  expect(delivered.view.replicas.map(({ values }) => values)).toEqual([
+    expected,
+    expected,
+    expected,
+  ]);
+  expect(delivered.view.pending).toBe(0);
+
+  const reset = unwrapRemaining(createRemainingDemoRoom(kind));
+  expect(reset.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+});
 
 test("the public facade returns plain JSON data and does not mutate its inputs", () => {
   for (const create of [createMvRegister, createOrSet]) {

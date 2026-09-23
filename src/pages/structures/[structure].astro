@@ -19,6 +19,9 @@ export function getStaticPaths() {
 const structure = structureById(Astro.params.structure ?? "");
 if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
+const operationNames = structure.operations.length === 1
+  ? structure.operations[0]
+  : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
 ---
 
 <BaseLayout title={`${structure.name} | Distributed Systems Atlas`} description={structure.tagline}>
@@ -72,13 +75,20 @@ const family = remainingFamilies[structure.family];
       <section aria-labelledby="source-title">
         <h2 id="source-title">Sources and implementation</h2>
         <p>
-          <strong>Sources:</strong> Atlas's{" "}
-          <a href="https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/remaining-structures.ts">scenario definitions</a>
-          {" "}specify this example and its expected result.
+          <strong>Sources:</strong>{" "}
+          {structure.sources.map((source, index) => (
+            <>
+              {index > 0 ? " and " : ""}
+              <a href={`https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/${source.path}`}>
+                Watershed's <code>{source.name}</code>{index === structure.sources.length - 1 ? "." : ""}
+              </a>
+            </>
+          ))}
         </p>
         <p>
-          <strong>Implementation:</strong> The shared three-client demo plays
-          back that result in the browser. It does not call a Watershed kernel.
+          <strong>Implementation:</strong> Atlas calls <code>{operationNames}</code>
+          {" "}through its Gleam toolkit. The displayed client records and shared
+          view come from those kernel results.
         </p>
       </section>
 

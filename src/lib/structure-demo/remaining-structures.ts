@@ -22,11 +22,12 @@ export type RemainingStructure = {
   raceLabel: string;
   recordLabel: string;
   messageLabel: string;
+  sources: Array<{ name: string; path: string }>;
+  operations: string[];
   initial: string[];
   initialRecord: Record<"A" | "B" | "C", string>;
   local: Record<"A" | "B" | "C", string>;
   evidence: Record<"A" | "B" | "C", string>;
-  final: string[];
   result: string;
   next?: RemainingStructureId;
 };
@@ -45,6 +46,12 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race the route insertions",
     recordLabel: "Route card",
     messageLabel: "Insertion slip",
+    sources: [{ name: "sequence_kernel", path: "sequence_kernel.gleam" }],
+    operations: [
+      "sequence_kernel.p2p_insert",
+      "sequence_kernel.apply_remote",
+      "sequence_kernel.values",
+    ],
     initial: ["Bridge", "Weir", "North gate"],
     initialRecord: {
       A: "Bridge · Weir · North gate",
@@ -57,7 +64,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "Marsh identity B:1 · anchor Weir",
       C: "No slip in this race",
     },
-    final: ["Bridge", "Falls", "Marsh", "Weir", "North gate"],
     result: "Both waypoints survive at one logical gap, in deterministic identity order.",
     next: "shared-text",
   },
@@ -74,6 +80,12 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race the field-note edits",
     recordLabel: "Field-note page",
     messageLabel: "Text-edit slip",
+    sources: [{ name: "text_kernel", path: "text_kernel.gleam" }],
+    operations: [
+      "text_kernel.p2p_insert",
+      "text_kernel.apply_remote",
+      "text_kernel.value",
+    ],
     initial: ["The weir is clear."],
     initialRecord: {
       A: "The weir is clear.",
@@ -86,7 +98,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "grapheme identity B:1 · before weir",
       C: "No slip in this race",
     },
-    final: ["The still calm weir is clear."],
     result: "Both insertions remain, and no edit splits a grapheme.",
   },
   {
@@ -102,6 +113,13 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race the gate-key claims",
     recordLabel: "Claim ledger",
     messageLabel: "Claim slip",
+    sources: [{ name: "claims_kernel", path: "claims_kernel.gleam" }],
+    operations: [
+      "claims_kernel.claim_once",
+      "claims_kernel.ack_local",
+      "claims_kernel.apply_remote",
+      "claims_kernel.get",
+    ],
     initial: ["gate-key: unclaimed"],
     initialRecord: {
       A: "gate-key: unclaimed",
@@ -114,7 +132,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "claimant Bob · awaits sequence",
       C: "claimant Carol · awaits sequence",
     },
-    final: ["gate-key: Alice"],
     result: "Alice's claim sequences first. Every station reads the same owner.",
     next: "ordered-collection",
   },
@@ -131,6 +148,16 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race to acquire the inspection",
     recordLabel: "Work queue card",
     messageLabel: "Acquire slip",
+    sources: [{
+      name: "ordered_collection_kernel",
+      path: "ordered_collection_kernel.gleam",
+    }],
+    operations: [
+      "ordered_collection_kernel.acquire",
+      "ordered_collection_kernel.ack_local",
+      "ordered_collection_kernel.apply_remote",
+      "ordered_collection_kernel.summary_jobs",
+    ],
     initial: ["Queue: inspect bridge"],
     initialRecord: {
       A: "Queue: inspect bridge",
@@ -143,7 +170,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "requester Bob · awaits sequence",
       C: "requester Carol · awaits sequence",
     },
-    final: ["Alice owns inspect bridge", "Queue empty"],
     result: "Accept one acquire. Bob and Carol cannot receive the same job.",
     next: "task-manager",
   },
@@ -160,6 +186,13 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Queue the dispatcher volunteers",
     recordLabel: "Duty roster",
     messageLabel: "Volunteer slip",
+    sources: [{ name: "task_manager_kernel", path: "task_manager_kernel.gleam" }],
+    operations: [
+      "task_manager_kernel.volunteer",
+      "task_manager_kernel.ack_local",
+      "task_manager_kernel.apply_remote",
+      "task_manager_kernel.summary_queues",
+    ],
     initial: ["dispatcher: unassigned"],
     initialRecord: {
       A: "dispatcher: unassigned",
@@ -172,7 +205,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "volunteer Bob · FIFO position pending",
       C: "volunteer Carol · FIFO position pending",
     },
-    final: ["dispatcher: Alice", "waiting: Bob, Carol"],
     result: "Alice is assigned. Bob is first in the failover queue.",
     next: "pact-map",
   },
@@ -189,6 +221,13 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Propose and sign off the closure",
     recordLabel: "Closure agreement",
     messageLabel: "Agreement slip",
+    sources: [{ name: "pact_map_kernel", path: "pact_map_kernel.gleam" }],
+    operations: [
+      "pact_map_kernel.set",
+      "pact_map_kernel.apply_set",
+      "pact_map_kernel.apply_accept",
+      "pact_map_kernel.get",
+    ],
     initial: ["closure-target: absent"],
     initialRecord: {
       A: "closure-target: absent",
@@ -201,7 +240,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "acceptance by B",
       C: "acceptance by C",
     },
-    final: ["closure-target: ridge-pass", "accepted by A, B, C"],
     result: "The value becomes readable only after the full roster signs off.",
   },
   {
@@ -217,6 +255,17 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race the JSON field edits",
     recordLabel: "JSON worksheet",
     messageLabel: "Patch slip",
+    sources: [
+      { name: "json_ot_kernel", path: "json_ot_kernel.gleam" },
+      { name: "json_ot", path: "json_ot.gleam" },
+    ],
+    operations: [
+      "json_ot.object_insert",
+      "json_ot_kernel.submit",
+      "json_ot_kernel.ack_local",
+      "json_ot_kernel.apply_remote",
+      "json_ot_kernel.view",
+    ],
     initial: ["{}"],
     initialRecord: { A: "{}", B: "{}", C: "{}" },
     local: { A: "Set title", B: "Set revision", C: "Observe the document" },
@@ -225,7 +274,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "path /revision · value 1",
       C: "No slip in this race",
     },
-    final: ['{"title":"field notes","revision":1}'],
     result: "Both disjoint path edits survive transformation.",
     next: "shared-rich-text",
   },
@@ -242,6 +290,18 @@ export const remainingStructures: RemainingStructure[] = [
     raceLabel: "Race formatting and insertion",
     recordLabel: "Report page",
     messageLabel: "Rich-text edit slip",
+    sources: [
+      { name: "rich_text_kernel", path: "rich_text_kernel.gleam" },
+      { name: "rich_text", path: "rich_text.gleam" },
+    ],
+    operations: [
+      "rich_text.delta_retain",
+      "rich_text.delta_insert_text",
+      "rich_text_kernel.submit",
+      "rich_text_kernel.ack_local",
+      "rich_text_kernel.apply_remote",
+      "rich_text_kernel.view",
+    ],
     initial: ["Hello World"],
     initialRecord: { A: "Hello World", B: "Hello World", C: "Hello World" },
     local: { A: "Bold Hello", B: "Append marker", C: "Observe the report" },
@@ -250,7 +310,6 @@ export const remainingStructures: RemainingStructure[] = [
       B: "retain 11 · insert ▲",
       C: "No slip in this race",
     },
-    final: ["Hello [bold] World ▲"],
     result: "The heading keeps its formatting and Bob's insertion remains.",
   },
 ];

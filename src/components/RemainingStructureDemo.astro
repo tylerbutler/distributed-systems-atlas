@@ -13,10 +13,7 @@ const { structure } = Astro.props;
 
 <remaining-structure-demo
   data-testid={`${structure.id}-demo`}
-  data-initial={JSON.stringify(structure.initial)}
-  data-initial-records={JSON.stringify(structure.initialRecord)}
-  data-final={JSON.stringify(structure.final)}
-  data-result={structure.result}
+  data-kind={structure.id}
 >
   <section class="remaining-demo" aria-labelledby={`${structure.id}-demo-title`}>
     <header>
@@ -54,88 +51,204 @@ const { structure } = Astro.props;
       <p data-enhancement-note>Enable JavaScript to run the race. The expected result remains in the lesson.</p>
     </div>
     <p role="status" data-status>{`Ready: ${structure.initial.join(" · ")}`}</p>
+    <p role="alert" data-error hidden></p>
   </section>
 </remaining-structure-demo>
 
 <script>
+  import {
+    actInRemainingDemo,
+    createRemainingDemo,
+    deliverRemainingRace,
+    stageRemainingRace,
+    type RemainingDemoState,
+  } from "../lib/structure-demo/remaining-structure-demo";
   import {
     autoDeliveryChangeEvent,
     DemoTransportControlsElement,
   } from "../lib/structure-demo/demo-transport-controls";
 
   class RemainingStructureDemo extends HTMLElement {
+    private state!: RemainingDemoState;
+    private delivering = false;
+    private generation = 0;
+    private acted = new Set<string>();
+
     connectedCallback() {
       if (this.dataset.ready) return;
       this.dataset.ready = "true";
-      const initial = JSON.parse(this.dataset.initial ?? "[]");
-      const initialRecords = JSON.parse(this.dataset.initialRecords ?? "{}");
-      const final = JSON.parse(this.dataset.final ?? "[]");
-      const state = this.querySelector("[data-state]");
-      const status = this.querySelector("[data-status]");
-      const localRecords = this.querySelectorAll("[data-local-record]");
       const note = this.querySelector("[data-enhancement-note]");
-      const buttons = this.querySelectorAll("button");
-      const race = this.querySelector<HTMLButtonElement>('[data-action="race"]');
-      const transport = this.querySelector<DemoTransportControlsElement>(
-        "demo-transport-controls",
-      );
-      if (!(state instanceof HTMLElement) || !(status instanceof HTMLElement)) return;
-      if (!race || !transport) throw new Error("Missing remaining demo controls");
-      let pending = false;
-      let generation = 0;
-      const render = (values: string[]) => {
-        state.replaceChildren(...values.map((value) => {
-          const item = document.createElement("li");
-          item.textContent = value;
-          return item;
-        }));
-      };
-      const renderLocalRecords = (value: string) => {
-        localRecords.forEach((record) => {
-          record.textContent = value;
-        });
-      };
-      const deliver = async () => {
-        if (!pending) return;
-        const deliveryGeneration = generation;
-        race.disabled = true;
-        await new Promise((resolve) =>
-          window.setTimeout(resolve, transport.nextDuration(800))
-        );
-        if (deliveryGeneration !== generation) return;
-        pending = false;
-        render(final);
-        renderLocalRecords(final.join(" · "));
-        status.textContent = this.dataset.result ?? "";
-        race.disabled = false;
-        race.focus();
-      };
-      buttons.forEach((button) => button.disabled = false);
       if (note instanceof HTMLElement) note.hidden = true;
-      race.addEventListener("click", () => {
-        pending = true;
-        status.textContent = "Race queued for delivery.";
-        if (transport.autoDeliver) void deliver();
+      this.state = createRemainingDemo(this.kind);
+      this.querySelectorAll<HTMLButtonElement>("[data-client-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
+          if (client !== "A" && client !== "B" && client !== "C") {
+            this.showError("Missing client identity.");
+            return;
+          }
+          try {
+            this.state = actInRemainingDemo(this.state, client);
+            this.acted.add(client);
+            this.clearError();
+            this.render(`Queued ${client}'s operation. Other client controls remain available.`);
+            if (this.transport.autoDeliver) void this.deliver(button);
+          } catch (error) {
+            this.showError(error);
+          }
+        });
       });
-      transport.addEventListener(autoDeliveryChangeEvent, () => {
-        if (transport.autoDeliver) void deliver();
+      this.race.addEventListener("click", () => {
+        this.resetFlow();
+        try {
+          this.state = stageRemainingRace(this.state);
+          this.acted = new Set(["A", "B", "C"]);
+          this.clearError();
+          this.render("Race queued for delivery.");
+          if (this.transport.autoDeliver) void this.deliver(this.race);
+        } catch (error) {
+          this.showError(error);
+        }
       });
       this.querySelector('[data-action="reset"]')?.addEventListener("click", (event) => {
-        generation += 1;
-        pending = false;
-        render(initial);
-        localRecords.forEach((record, index) => {
-          record.textContent = initialRecords[["A", "B", "C"][index]] ?? "";
-        });
-        status.textContent = `Ready: ${initial.join(" · ")}`;
-        race.disabled = false;
+        this.resetFlow();
+        this.clearError();
+        this.render();
         (event.currentTarget as HTMLButtonElement).focus();
       });
-      this.querySelectorAll("[data-client-action]").forEach((button) => {
-        button.addEventListener("click", () => {
-          status.textContent = "Note queued. Other client controls remain available.";
-        });
+      this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+        if (this.transport.autoDeliver && this.state.view.pending > 0) {
+          void this.deliver(this.transport);
+        }
       });
+      this.render();
+    }
+
+    private get kind(): RemainingDemoState["kind"] {
+      const kind = this.dataset.kind;
+      if (
+        kind === "shared-sequence"
+        || kind === "shared-text"
+        || kind === "claims"
+        || kind === "ordered-collection"
+        || kind === "task-manager"
+        || kind === "pact-map"
+        || kind === "json-ot"
+        || kind === "shared-rich-text"
+      ) return kind;
+      throw new Error("Missing remaining demo kind");
+    }
+
+    private get race(): HTMLButtonElement {
+      const button = this.querySelector<HTMLButtonElement>('[data-action="race"]');
+      if (!button) throw new Error("Missing remaining demo race control");
+      return button;
+    }
+
+    private get transport(): DemoTransportControlsElement {
+      const controls = this.querySelector<DemoTransportControlsElement>(
+        "demo-transport-controls",
+      );
+      if (!controls) throw new Error("Missing remaining demo transport controls");
+      return controls;
+    }
+
+    private async deliver(focus: HTMLElement): Promise<void> {
+      if (this.delivering || this.state.view.pending === 0) return;
+      this.delivering = true;
+      this.renderControls();
+      const generation = this.generation;
+      await new Promise((resolve) =>
+        window.setTimeout(resolve, this.transport.nextDuration(800))
+      );
+      if (generation !== this.generation) return;
+      try {
+        this.state = deliverRemainingRace(this.state);
+        this.clearError();
+        this.render(this.state.view.pending > 0
+          ? "Some operations still await delivery."
+          : "Delivery complete.");
+        focus.focus();
+      } catch (error) {
+        this.showError(error);
+      } finally {
+        if (generation !== this.generation) return;
+        this.delivering = false;
+        this.renderControls();
+        if (this.transport.autoDeliver && this.state.view.pending > 0) {
+          void this.deliver(focus);
+        }
+      }
+    }
+
+    private resetFlow(): void {
+      this.generation += 1;
+      this.delivering = false;
+      this.acted.clear();
+      this.state = createRemainingDemo(this.kind);
+    }
+
+    private render(statusText?: string): void {
+      const shared = this.state.view.replicas.find(({ id }) => id === "C")
+        ?? this.state.view.replicas[0];
+      this.renderValues(
+        this.querySelector<HTMLElement>("[data-state]"),
+        shared?.values ?? [],
+      );
+      for (const replica of this.state.view.replicas) {
+        const record = this.querySelector<HTMLElement>(
+          `[data-client="${replica.id}"] [data-local-record]`,
+        );
+        if (record) record.textContent = replica.values.join(" · ");
+      }
+      this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
+      const status = this.querySelector<HTMLElement>("[data-status]");
+      if (status) {
+        status.textContent = statusText
+          ?? `Ready: ${(shared?.values ?? []).join(" · ")}`;
+      }
+      this.renderControls();
+    }
+
+    private renderValues(target: HTMLElement | null, values: string[]): void {
+      if (!target) throw new Error("Missing remaining demo state");
+      target.replaceChildren(...values.map((value) => {
+        const item = document.createElement("li");
+        item.textContent = value;
+        return item;
+      }));
+    }
+
+    private renderControls(): void {
+      for (const button of this.querySelectorAll<HTMLButtonElement>(
+        "[data-client-action]",
+      )) {
+        const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
+        button.disabled = client ? this.acted.has(client) : true;
+      }
+      this.race.disabled = this.delivering;
+      const reset = this.querySelector<HTMLButtonElement>('[data-action="reset"]');
+      if (reset) reset.disabled = false;
+    }
+
+    private showError(error: unknown): void {
+      const message = error instanceof Error ? error.message : String(error);
+      const alert = this.querySelector<HTMLElement>("[data-error]");
+      if (alert) {
+        alert.hidden = false;
+        alert.textContent = `The operation failed: ${message}`;
+      }
+      const status = this.querySelector<HTMLElement>("[data-status]");
+      if (status) status.textContent = "The last valid kernel state is unchanged.";
+      this.renderControls();
+    }
+
+    private clearError(): void {
+      const alert = this.querySelector<HTMLElement>("[data-error]");
+      if (alert) {
+        alert.hidden = true;
+        alert.textContent = "";
+      }
     }
   }
   if (!customElements.get("remaining-structure-demo")) {
