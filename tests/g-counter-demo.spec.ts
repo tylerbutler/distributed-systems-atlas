@@ -227,6 +227,7 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     await expect(page.getByRole("button", { name: "Leave Alice +7 and Bob +3 together" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toBeDisabled();
     await expect(page.getByRole("slider", { name: "Speed" })).toHaveAttribute("min", "0.25");
+    await expect(page.getByRole("checkbox", { name: "Jitter" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Broadcast" })).toBeChecked();
     await expect(page.getByRole("checkbox", { name: "Broadcast" })).toBeDisabled();
     await expect(page.getByRole("checkbox", { name: "Guided observations" })).toBeDisabled();
@@ -246,14 +247,37 @@ test("G-counter controls meet the keyboard and responsive layout contract", asyn
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/g-counter/");
   const demo = page.getByTestId("g-counter-demo");
+  const jitterToggle = demo.getByRole("checkbox", { name: "Jitter" });
+  const broadcastToggle = demo.getByRole("checkbox", { name: "Broadcast" });
+  const controls = demo.locator("demo-transport-controls");
+  await expect(jitterToggle).not.toBeChecked();
+  await expect(broadcastToggle).toBeChecked();
+  await jitterToggle.focus();
+  await jitterToggle.press("Space");
+  await expect(jitterToggle).toBeChecked();
+  const durationWithJitter = await controls.evaluate((element) => {
+    const random = Math.random;
+    Math.random = () => 1;
+    try {
+      return (element as HTMLElement & { nextDuration: (latency: number) => number })
+        .nextDuration(500);
+    } finally {
+      Math.random = random;
+    }
+  });
+  expect(durationWithJitter).toBe(620);
+  await jitterToggle.uncheck();
+  expect(await controls.evaluate((element) => (
+    element as HTMLElement & { nextDuration: (latency: number) => number }
+  ).nextDuration(500))).toBe(500);
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )).toBe(0);
     const speed = (await demo.locator(".speed-control").boundingBox())!;
-    const jitter = (await demo.locator("[data-transport-jitter]").boundingBox())!;
-    const autoDeliver = (await demo.locator(".auto-deliver-control").boundingBox())!;
+    const jitter = (await jitterToggle.locator("..").boundingBox())!;
+    const autoDeliver = (await broadcastToggle.locator("..").boundingBox())!;
     expect(speed.width).toBeLessThanOrEqual(256);
     if (width < 768) {
       expect(jitter.y).toBeGreaterThanOrEqual(speed.y + speed.height);

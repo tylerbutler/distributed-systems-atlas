@@ -8,15 +8,10 @@ export class DemoTransportControlsElement extends HTMLElement {
     this.dataset.ready = "true";
 
     const speed = this.speedInput;
-    const jitter = this.jitterButton;
+    const jitter = this.jitterInput;
     const autoDeliver = this.autoDeliverInput;
 
     speed.addEventListener("input", () => this.renderSpeed());
-    jitter.addEventListener("click", () => {
-      const enabled = jitter.getAttribute("aria-pressed") !== "true";
-      jitter.setAttribute("aria-pressed", String(enabled));
-      jitter.textContent = `Jitter: ${enabled ? "on" : "off"}`;
-    });
     autoDeliver.addEventListener("change", () => {
       this.dispatchEvent(new CustomEvent(autoDeliveryChangeEvent, { bubbles: true }));
     });
@@ -36,7 +31,7 @@ export class DemoTransportControlsElement extends HTMLElement {
   }
 
   nextDuration(baseLatency: number): number {
-    const jitterRange = this.jitterButton.getAttribute("aria-pressed") === "true"
+    const jitterRange = this.jitterInput.checked
       ? this.jitterRange
       : 0;
     return demoTransportDuration(baseLatency, this.speed, jitterRange);
@@ -48,10 +43,10 @@ export class DemoTransportControlsElement extends HTMLElement {
     return input;
   }
 
-  private get jitterButton(): HTMLButtonElement {
-    const button = this.querySelector<HTMLButtonElement>("[data-transport-jitter]");
-    if (!button) throw new Error("Missing demo jitter control");
-    return button;
+  private get jitterInput(): HTMLInputElement {
+    const input = this.querySelector<HTMLInputElement>("[data-transport-jitter]");
+    if (!input) throw new Error("Missing demo jitter control");
+    return input;
   }
 
   private get autoDeliverInput(): HTMLInputElement {
