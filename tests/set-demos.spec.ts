@@ -208,17 +208,21 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           "Highest dot counter seen",
           "Visible list",
         ]);
+        await expect(notebooks.getByRole("row", { name: /^Bob / }).locator("sup"))
+          .toHaveText(["A:1", "B:2", "A:1", "B:2"]);
         await expect(notebooks.getByRole("row", { name: /^Bob / }).locator("code"))
-          .toHaveText(["A:1", "B:2", "2"]);
+          .toHaveText(["2"]);
+        await expect(notebooks.getByRole("row", { name: /^Alice / }).locator("sup"))
+          .toHaveText(["A:1"]);
         await expect(notebooks.getByRole("row", { name: /^Alice / }).locator("code"))
-          .toHaveText(["A:1", "1"]);
+          .toHaveText(["1"]);
         const converged = page.getByRole("table", {
           name: "Observed-remove notebooks after records meet",
         });
         await expect(converged.getByRole("row", { name: /^Bob / }).locator("code"))
-          .toHaveText(["B:2", "A:1", "2"]);
+          .toHaveText(["2"]);
         await expect(converged.getByRole("row", { name: /^Bob / }).locator("sup"))
-          .toHaveText(["B:2"]);
+          .toHaveText(["B:2", "A:1", "B:2"]);
       }
     }
   } finally {

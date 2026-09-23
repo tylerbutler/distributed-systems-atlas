@@ -205,14 +205,14 @@ const notebookCheckpoints: Array<{
                       <td>
                         {row.additions.length
                           ? row.additions.map((entry) => (
-                              <span>{entry.element}: <code>{entry.dot}</code><br /></span>
+                              <span class="visible-member">{entry.element}<sup>{entry.dot}</sup></span><br />
                             ))
                           : "empty"}
                       </td>
                       <td>
                         {row.removals.length
                           ? row.removals.map((entry) => (
-                              <span>{entry.element}: <code>{entry.dot}</code><br /></span>
+                              <span class="visible-member">{entry.element}<sup>{entry.dot}</sup></span><br />
                             ))
                           : "empty"}
                       </td>
