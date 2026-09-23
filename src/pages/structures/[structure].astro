@@ -49,6 +49,7 @@ const operationNames = structure.operations.length === 1
           stale while another client works. Watershed's <code>{structure.module}</code>
           uses this structure's rule to produce one shared result.
         </p>
+        {structure.localVisibility && <p>{structure.localVisibility}</p>}
       </section>
 
       <p>

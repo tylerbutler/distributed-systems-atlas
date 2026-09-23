@@ -117,3 +117,26 @@ test("a direct claim shows the kernel winner instead of the scripted race result
   ]);
   await expect(demo.locator("[data-status]")).toHaveText("Delivery complete.");
 });
+
+test("DDS lessons distinguish local application from sequenced outcomes", async ({ page }) => {
+  await page.goto("/structures/models/");
+  const dds = page.locator("#dds");
+  await expect(dds).toContainText("SharedCounter, SharedMap, and SharedDirectory show an author's change locally before it has a number.");
+  await expect(dds).toContainText("Claims, RegisterCollection, and OrderedCollection wait for a number");
+  await expect(dds).toContainText("TaskManager tracks a pending volunteer locally but waits for sequencing");
+  await expect(dds).toContainText("PactMap waits for sequencing to show a pending proposal");
+
+  for (const [slug, detail] of [
+    ["shared-counter", "The local update is optimistic."],
+    ["shared-map", "Alice sees her own write as soon as she makes it."],
+    ["shared-directory", "Alice can use her new folder before the ranger numbers its creation."],
+    ["register-collection", "Writes stay hidden until the sequencer"],
+    ["claims", "her local read still shows an unclaimed key"],
+    ["ordered-collection", "None can mark the inspection as theirs until a numbered request"],
+    ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
+    ["pact-map", "Only after the required stations sign off can anyone read the new value."],
+  ] as const) {
+    await page.goto(`/structures/${slug}/`);
+    await expect(page.locator("article").first()).toContainText(detail);
+  }
+});

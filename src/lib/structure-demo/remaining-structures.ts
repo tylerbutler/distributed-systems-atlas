@@ -19,6 +19,7 @@ export type RemainingStructure = {
   tagline: string;
   rule: string;
   story: string;
+  localVisibility?: string;
   raceLabel: string;
   recordLabel: string;
   messageLabel: string;
@@ -110,6 +111,7 @@ export const remainingStructures: RemainingStructure[] = [
     tagline: "Choose one permanent claimant for a named responsibility.",
     rule: "Accept the first sequenced claim; committed claims are write-once.",
     story: "Alice, Bob, and Carol all volunteer to hold the only gate key.",
+    localVisibility: "Alice can submit her claim at once, but her local read still shows an unclaimed key. The ranger's sequence decides which claim wins; only then does the winner appear in anyone's ledger.",
     raceLabel: "Race the gate-key claims",
     recordLabel: "Claim ledger",
     messageLabel: "Claim slip",
@@ -145,6 +147,7 @@ export const remainingStructures: RemainingStructure[] = [
     tagline: "Give one queued job to one worker without duplicate ownership.",
     rule: "The sequencer grants each queued item to the first accepted acquire.",
     story: "The ranger queue contains one bridge inspection while three hikers request it.",
+    localVisibility: "Alice, Bob, and Carol can send acquire requests before the ranger numbers them. None can mark the inspection as theirs until a numbered request takes it from the queue. The same rule applies when someone adds, completes, or releases a job.",
     raceLabel: "Race to acquire the inspection",
     recordLabel: "Work queue card",
     messageLabel: "Acquire slip",
@@ -183,6 +186,7 @@ export const remainingStructures: RemainingStructure[] = [
     tagline: "Queue volunteers for one role and promote the next connected client.",
     rule: "A FIFO volunteer queue assigns one client and preserves failover order.",
     story: "The ranger needs one dispatcher and a known replacement if that hiker disconnects.",
+    localVisibility: "Alice's volunteer slip enters her pending local list, so she will not submit the same request twice. She cannot mark herself assigned or even confirmed in the queue until the ranger numbers her request.",
     raceLabel: "Queue the dispatcher volunteers",
     recordLabel: "Duty roster",
     messageLabel: "Volunteer slip",
@@ -218,6 +222,7 @@ export const remainingStructures: RemainingStructure[] = [
     tagline: "Accept a shared setting only after the connected roster signs off.",
     rule: "A proposal remains pending until every expected client accepts it.",
     story: "Alice proposes a trail closure target that must be delivered to every staffed station.",
+    localVisibility: "Alice can send a proposal, but her local read still shows the old value. After the ranger numbers the proposal, each station can see that it is pending. Only after the required stations sign off can anyone read the new value.",
     raceLabel: "Propose and sign off the closure",
     recordLabel: "Closure agreement",
     messageLabel: "Agreement slip",

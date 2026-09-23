@@ -28,6 +28,13 @@ import "../../styles/set-lesson.css";
         accepted operation a sequence number. When two writes target the same
         key, the greater sequence number determines the value.
       </p>
+      <p>
+        Alice sees her own write as soon as she makes it. Her local map keeps
+        that pending value over its confirmed entries until the ranger's
+        numbered operation returns. If Bob's write arrives in the meantime,
+        Alice still sees her pending value until the ranger confirms or
+        reconciles her write.
+      </p>
       <TermCallout {...sharedMapTerm} />
       <figure><table aria-label="SharedMap gate-status race"><thead><tr><th scope="col">Sequence</th><th scope="col">Write</th><th scope="col">Visible value</th></tr></thead><tbody><tr><th scope="row">SN 1</th><td>Alice · Trail open</td><td>Trail open</td></tr><tr><th scope="row">SN 2</th><td>Bob · Trail closed</td><td>Trail closed</td></tr></tbody></table><figcaption>The server order is the conflict rule, not a timestamp in the value.</figcaption></figure>
     </section>

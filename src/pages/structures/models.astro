@@ -9,8 +9,10 @@ const models = [
     glossary: "/glossary/#dds",
     summary: "Put every accepted change in one shared order.",
     body: [
-      "A DDS sends changes through one service. The service numbers them, and every connected copy applies the same numbered list.",
-      "The structure still needs a rule for that list. A map may keep the last numbered value, while a claim may keep the first accepted owner.",
+      "A DDS sends changes through one service. The service numbers them, and every connected copy applies the same numbered list to its confirmed state.",
+      "SharedCounter, SharedMap, and SharedDirectory show an author's change locally before it has a number. The service later confirms or reconciles that change.",
+      "Claims, RegisterCollection, and OrderedCollection wait for a number before they change their readable state. TaskManager tracks a pending volunteer locally but waits for sequencing to assign the task. PactMap waits for sequencing to show a pending proposal, then for the required sign-offs before anyone can read the new value.",
+      "Each structure still needs a rule for the numbered list. A map may keep the last numbered value, while a claim may keep the first accepted owner.",
     ],
     tradeoff: "The rule is often simple, but the shared ordering service must be available.",
     members: [
