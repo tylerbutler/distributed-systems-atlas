@@ -257,10 +257,16 @@ const notebookCheckpoints: Array<{
         </p>
       </aside>
       <p>
-        A delayed copy of <code>A:1</code> does not return. The replicas retain
-        removal knowledge for that exact dot. The visible value is still Eagle
-        Creek, but the notebook's surviving <code>B:2</code> identity proves
-        that it is the replacement.
+        The visible value is still Eagle Creek, but the surviving
+        <code>B:2</code> dot identifies Bob's replacement, not the old beacon.
+      </p>
+      <p>
+        This OR-set keeps <code>A:1</code>'s removal record after the live dot
+        disappears. The demo does not garbage-collect tombstones. If Alice
+        discarded that record while an old note, snapshot, or returning replica
+        could reintroduce <code>A:1</code>, the old beacon could reappear.
+        <a href="/atlas/dots-and-causal-context/#what-causal-metadata-costs">What causal metadata costs</a>
+        {" "}explains the storage cost and what safe cleanup requires.
       </p>
       <p>
         The full reference lesson lets you temporarily block notes between
