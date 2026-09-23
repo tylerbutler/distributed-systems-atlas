@@ -6,11 +6,11 @@ import gleam/dynamic/decode
 import gleam/int
 import gleam/json
 import gleam/list
-import gleam/order
 import gleam/result
 import gleam/string
 import lattice_core/replica_id
 import watershed/g_counter_kernel
+import watershed/lww_register_kernel
 import watershed/mv_register_kernel
 import watershed/or_set_kernel
 import watershed/pn_counter_kernel
@@ -34,10 +34,10 @@ pub opaque type PositiveNegativeCounter {
 
 pub opaque type RegisterDemoRoom {
   LwwRegisterRoom(
-    a: DemoLwwRegister,
-    b: DemoLwwRegister,
-    c: DemoLwwRegister,
-    pending: List(DemoLwwRegister),
+    a: lww_register_kernel.LwwRegisterState,
+    b: lww_register_kernel.LwwRegisterState,
+    c: lww_register_kernel.LwwRegisterState,
+    pending: List(lww_register_kernel.LwwRegisterOperation),
   )
   MvRegisterRoom(
     a: mv_register_kernel.MvRegisterState,
@@ -52,10 +52,6 @@ pub opaque type RegisterDemoRoom {
     pending: List(register_collection_kernel.WriteOperation),
     sequence_number: Int,
   )
-}
-
-type DemoLwwRegister {
-  DemoLwwRegister(value: String, timestamp: Int, author: String)
 }
 
 pub type Tag {
@@ -249,19 +245,23 @@ pub fn new_mv(replica: String) -> Register {
 pub fn new_register_demo(kind: String) -> Result(RegisterDemoRoom, String) {
   case kind {
     "lww-register" ->
-      Ok(LwwRegisterRoom(
-        DemoLwwRegister("", 0, ""),
-        DemoLwwRegister("", 0, ""),
-        DemoLwwRegister("", 0, ""),
-        [],
-      ))
+      Ok(
+        LwwRegisterRoom(
+          lww_register_kernel.new(replica_id.new("A")),
+          lww_register_kernel.new(replica_id.new("B")),
+          lww_register_kernel.new(replica_id.new("C")),
+          [],
+        ),
+      )
     "mv-register" ->
-      Ok(MvRegisterRoom(
-        mv_register_kernel.new(replica_id.new("A")),
-        mv_register_kernel.new(replica_id.new("B")),
-        mv_register_kernel.new(replica_id.new("C")),
-        [],
-      ))
+      Ok(
+        MvRegisterRoom(
+          mv_register_kernel.new(replica_id.new("A")),
+          mv_register_kernel.new(replica_id.new("B")),
+          mv_register_kernel.new(replica_id.new("C")),
+          [],
+        ),
+      )
     "register-collection" ->
       Ok(RegisterCollectionRoom(
         register_collection_kernel.new(),
@@ -282,10 +282,8 @@ pub fn register_demo_stage_race(
 ) -> Result(RegisterDemoRoom, String) {
   case room {
     LwwRegisterRoom(a, b, c, _) -> {
-      let a_operation = DemoLwwRegister("Trail open", 1, "A")
-      let b_operation = DemoLwwRegister("Trail closed", 2, "B")
-      let a = demo_lww_merge(a, a_operation)
-      let b = demo_lww_merge(b, b_operation)
+      use #(a, a_operation) <- result.try(lww_demo_write(a, "Trail open", 1))
+      use #(b, b_operation) <- result.try(lww_demo_write(b, "Trail closed", 2))
       Ok(LwwRegisterRoom(a, b, c, [a_operation, b_operation]))
     }
     MvRegisterRoom(a, b, c, _) -> {
@@ -293,26 +291,34 @@ pub fn register_demo_stage_race(
         mv_register_kernel.p2p_set(a, "Trail open")
       let #(b, _, mv_register_kernel.Set(_, b_delta)) =
         mv_register_kernel.p2p_set(b, "Trail closed")
-      Ok(MvRegisterRoom(a, b, c, [
-        mv_register_kernel.from_sequenced(a_delta, a.replica_id),
-        mv_register_kernel.from_sequenced(b_delta, b.replica_id),
-      ]))
+      Ok(
+        MvRegisterRoom(a, b, c, [
+          mv_register_kernel.from_sequenced(a_delta, a.replica_id),
+          mv_register_kernel.from_sequenced(b_delta, b.replica_id),
+        ]),
+      )
     }
     RegisterCollectionRoom(a, b, c, _, sequence_number) ->
-      Ok(RegisterCollectionRoom(a, b, c, [
-        register_collection_kernel.write(
-          a,
-          "trail-status",
-          json.string("Trail open"),
-          sequence_number,
-        ),
-        register_collection_kernel.write(
-          b,
-          "trail-status",
-          json.string("Trail closed"),
-          sequence_number,
-        ),
-      ], sequence_number))
+      Ok(RegisterCollectionRoom(
+        a,
+        b,
+        c,
+        [
+          register_collection_kernel.write(
+            a,
+            "trail-status",
+            json.string("Trail open"),
+            sequence_number,
+          ),
+          register_collection_kernel.write(
+            b,
+            "trail-status",
+            json.string("Trail closed"),
+            sequence_number,
+          ),
+        ],
+        sequence_number,
+      ))
   }
 }
 
@@ -323,24 +329,31 @@ pub fn register_demo_write(
 ) -> Result(RegisterDemoRoom, String) {
   case room {
     LwwRegisterRoom(a, b, c, pending) -> {
-      let DemoLwwRegister(_, a_time, _) = a
-      let DemoLwwRegister(_, b_time, _) = b
-      let DemoLwwRegister(_, c_time, _) = c
-      let sequence_number = int.max(a_time, int.max(b_time, c_time)) + 1
+      let sequence_number =
+        int.max(a.last_seen, int.max(b.last_seen, c.last_seen)) + 1
       case replica {
         "A" -> {
-          let operation = DemoLwwRegister(value, sequence_number, "A")
-          let a = demo_lww_merge(a, operation)
+          use #(a, operation) <- result.try(lww_demo_write(
+            a,
+            value,
+            sequence_number,
+          ))
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
         "B" -> {
-          let operation = DemoLwwRegister(value, sequence_number, "B")
-          let b = demo_lww_merge(b, operation)
+          use #(b, operation) <- result.try(lww_demo_write(
+            b,
+            value,
+            sequence_number,
+          ))
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
         "C" -> {
-          let operation = DemoLwwRegister(value, sequence_number, "C")
-          let c = demo_lww_merge(c, operation)
+          use #(c, operation) <- result.try(lww_demo_write(
+            c,
+            value,
+            sequence_number,
+          ))
           Ok(LwwRegisterRoom(a, b, c, list.append(pending, [operation])))
         }
         _ -> Error("the register replica must be A, B, or C")
@@ -351,23 +364,38 @@ pub fn register_demo_write(
         "A" -> {
           let #(a, _, mv_register_kernel.Set(_, delta)) =
             mv_register_kernel.p2p_set(a, value)
-          Ok(MvRegisterRoom(a, b, c, list.append(pending, [
-            mv_register_kernel.from_sequenced(delta, a.replica_id),
-          ])))
+          Ok(MvRegisterRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [
+              mv_register_kernel.from_sequenced(delta, a.replica_id),
+            ]),
+          ))
         }
         "B" -> {
           let #(b, _, mv_register_kernel.Set(_, delta)) =
             mv_register_kernel.p2p_set(b, value)
-          Ok(MvRegisterRoom(a, b, c, list.append(pending, [
-            mv_register_kernel.from_sequenced(delta, b.replica_id),
-          ])))
+          Ok(MvRegisterRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [
+              mv_register_kernel.from_sequenced(delta, b.replica_id),
+            ]),
+          ))
         }
         "C" -> {
           let #(c, _, mv_register_kernel.Set(_, delta)) =
             mv_register_kernel.p2p_set(c, value)
-          Ok(MvRegisterRoom(a, b, c, list.append(pending, [
-            mv_register_kernel.from_sequenced(delta, c.replica_id),
-          ])))
+          Ok(MvRegisterRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [
+              mv_register_kernel.from_sequenced(delta, c.replica_id),
+            ]),
+          ))
         }
         _ -> Error("the register replica must be A, B, or C")
       }
@@ -402,11 +430,13 @@ pub fn register_demo_deliver(room: RegisterDemoRoom) -> RegisterDemoRoom {
     LwwRegisterRoom(a, b, c, pending) -> {
       let #(a, b, c) =
         list.fold(pending, #(a, b, c), fn(states, operation) {
-          #(
-            demo_lww_merge(states.0, operation),
-            demo_lww_merge(states.1, operation),
-            demo_lww_merge(states.2, operation),
-          )
+          let assert Ok(#(a, _)) =
+            lww_register_kernel.apply_remote(states.0, operation)
+          let assert Ok(#(b, _)) =
+            lww_register_kernel.apply_remote(states.1, operation)
+          let assert Ok(#(c, _)) =
+            lww_register_kernel.apply_remote(states.2, operation)
+          #(a, b, c)
         })
       LwwRegisterRoom(a, b, c, [])
     }
@@ -449,22 +479,23 @@ pub fn register_demo_deliver(room: RegisterDemoRoom) -> RegisterDemoRoom {
   }
 }
 
-fn demo_lww_merge(
-  left: DemoLwwRegister,
-  right: DemoLwwRegister,
-) -> DemoLwwRegister {
-  let DemoLwwRegister(_, left_time, left_author) = left
-  let DemoLwwRegister(_, right_time, right_author) = right
-  case
-    right_time > left_time
-    || {
-      right_time == left_time
-      && string.compare(right_author, left_author) == order.Gt
-    }
-  {
-    True -> right
-    False -> left
-  }
+fn lww_demo_write(
+  state: lww_register_kernel.LwwRegisterState,
+  value: String,
+  timestamp: Int,
+) -> Result(
+  #(
+    lww_register_kernel.LwwRegisterState,
+    lww_register_kernel.LwwRegisterOperation,
+  ),
+  String,
+) {
+  lww_register_kernel.p2p_set(state, value, timestamp)
+  |> result.map(fn(update) {
+    let #(next, _, operation) = update
+    #(next, operation)
+  })
+  |> result.map_error(fn(_) { "LWW timestamp is invalid" })
 }
 
 fn json_string_value(value: json.Json) -> String {
@@ -501,21 +532,28 @@ fn visible_value(value: String) -> List(String) {
 pub fn register_demo_snapshot(room: RegisterDemoRoom) -> RegisterDemoSnapshot {
   case room {
     LwwRegisterRoom(a, b, c, pending) -> {
-      let DemoLwwRegister(value, timestamp, author) = a
-      let DemoLwwRegister(a_value, _, _) = a
-      let DemoLwwRegister(b_value, _, _) = b
-      let DemoLwwRegister(c_value, _, _) = c
+      let assert Ok(#(timestamp, author)) =
+        a
+        |> lww_register_kernel.summary
+        |> json.to_string
+        |> json.parse(
+          decode.at(["state"], {
+            use timestamp <- decode.field("timestamp", decode.int)
+            use author <- decode.field("replica_id", decode.string)
+            decode.success(#(timestamp, author))
+          }),
+        )
       RegisterDemoSnapshot(
-        visible_value(a_value),
-        visible_value(b_value),
-        visible_value(c_value),
+        visible_value(lww_register_kernel.value(a)),
+        visible_value(lww_register_kernel.value(b)),
+        visible_value(lww_register_kernel.value(c)),
         list.length(pending),
         timestamp,
         author,
         timestamp,
         "",
         "",
-        [value],
+        [lww_register_kernel.value(a)],
       )
     }
     MvRegisterRoom(a, b, c, pending) ->

@@ -38,18 +38,28 @@ import "../../styles/set-lesson.css";
     />
 
     <section aria-labelledby="clock-title">
-      <h2 id="clock-title">The sequence number becomes the timestamp</h2>
+      <h2 id="clock-title">What makes a report last?</h2>
       <p>
+        Alice writes <time datetime="09:10">9:10 a.m.</time> on her trail
+        report. Bob writes <time datetime="09:12">9:12 a.m.</time> on his.
         A <dfn><a href="/glossary/#last-writer-wins-register">last-writer-wins register</a></dfn>
-        {" "}does not use message arrival order. It compares the timestamp
-        attached to each write. For these reports, the ranger's sequencer
-        supplies that timestamp as a sequence number.
+        {" "}compares the timestamp on each report, not the order in which
+        Carol receives them. With those times, she chooses Bob's report even
+        if Alice's note arrives last.
       </p>
       <TermCallout {...lwwRegisterTerm} />
+      <p>
+        Carol only needs to know which timestamp is greater. For this race,
+        the ranger can use his numbered ledger instead of the hikers' watches:
+        Alice's report gets <code>1</code> and Bob's gets <code>2</code>.
+        Those numbers act as timestamps. They tell Carol the order in the
+        ranger's ledger, not when the hikers wrote their reports or whether
+        Bob had seen Alice's report.
+      </p>
       <figure>
         <table aria-label="LWWRegister timestamp race">
           <thead>
-            <tr><th scope="col">Writer</th><th scope="col">Value</th><th scope="col">Sequence number</th></tr>
+            <tr><th scope="col">Writer</th><th scope="col">Value</th><th scope="col">Ledger number (timestamp)</th></tr>
           </thead>
           <tbody>
             <tr><th scope="row">Alice · A</th><td>Trail open</td><td>1</td></tr>
@@ -60,9 +70,11 @@ import "../../styles/set-lesson.css";
         <figcaption>Carol gets the same winner even if the network delivers Alice's report last.</figcaption>
       </figure>
       <p>
-        The sequence number acts as the timestamp and is the primary
-        comparison. If two writes have the same timestamp, the greater writer
-        ID breaks the tie. This fallback gives every notebook the same answer.
+        An LWW register does not require a ranger or a shared sequencer.
+        Writers can attach their own timestamps. If two writes have the same
+        timestamp, the greater writer ID breaks the tie, so every notebook
+        chooses the same value. A fast watch could also make an earlier report
+        look later; the chosen clock determines what "last" means.
       </p>
     </section>
 
@@ -88,11 +100,12 @@ import "../../styles/set-lesson.css";
       <p>
         <strong>Sources:</strong> Watershed's{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/lww_register_kernel.gleam">LWWRegister kernel</a>
-        {" "}and its timestamp-plus-author comparison rule.
+        {" "}defines the timestamp-and-writer comparison.
       </p>
       <p>
-        <strong>Implementation:</strong> Atlas calls Watershed through its toolkit
-        to compare Alice's and Bob's writes across three clients.
+        <strong>Implementation:</strong> Atlas calls the kernel through its
+        toolkit to assign integer timestamps and merge writes across three
+        clients.
       </p>
     </section>
 

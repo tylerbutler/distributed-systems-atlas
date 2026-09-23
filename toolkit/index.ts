@@ -2,6 +2,13 @@ import * as core from "./build/dev/javascript/atlas_toolkit/atlas_toolkit.mjs";
 import * as sluiceCore from "./sluice-runtime.mjs";
 import { Result$isOk, Result$Ok$0, type Result as GleamResult } from "./build/dev/javascript/prelude.mjs";
 
+// Gleam emits $replica instead of $replica_id in lattice_registers declarations.
+declare global {
+  namespace $replica {
+    type ReplicaId$ = import("./build/dev/javascript/lattice_core/lattice_core/replica_id.mjs").ReplicaId$;
+  }
+}
+
 export type Tag = { replicaId: string; counter: number };
 export type MvRegister = {
   version: 1; kind: "mv-register"; replicaId: string;
