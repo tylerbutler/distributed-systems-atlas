@@ -48,7 +48,7 @@ function noteLabel(operation: SetDemoOperation): string {
       operation.tag ? ` as ${operation.tag}` : ""
     }`;
   }
-  return `Removals page: ${operation.element}${
+  return `${operation.observedTags ? "Removal note" : "Removals page"}: ${operation.element}${
     operation.observedTags?.length
       ? ` (${operation.observedTags.join(", ")})`
       : ""
@@ -291,16 +291,12 @@ class SetStructureDemoElement extends HTMLElement {
       })
       : [node("em", "Empty set")]));
     if (notebook) {
-      this.renderNotebookEntries(
-        replica.id,
-        "additions",
-        notebook.additions.map(({ element, tag }) => `${element}: ${tag}`),
-      );
-      this.renderNotebookEntries(
-        replica.id,
-        "removals",
-        notebook.removals.map(({ element, tag }) => `${element}: ${tag}`),
-      );
+      const additions = this.querySelector<HTMLElement>(
+        `[data-additions-page="${replica.id}"]`,
+      )!;
+      additions.replaceChildren(...(notebook.additions.length
+        ? notebook.additions.map(({ element, tag }) => node("span", `${element}: ${tag}`))
+        : [node("em", "Empty")]));
       this.querySelector<HTMLElement>(
         `[data-highest-tag="${replica.id}"]`,
       )!.textContent = String(notebook.highestTagNumber);
@@ -385,20 +381,6 @@ class SetStructureDemoElement extends HTMLElement {
       `${operationCount} ${operationCount === 1 ? "record" : "records"} shared`;
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     this.renderControls();
-  }
-
-  private renderNotebookEntries(
-    replicaId: ReplicaId,
-    page: "additions" | "removals",
-    entries: string[],
-  ): void {
-    const container = this.querySelector<HTMLElement>(
-      `[data-${page}-page="${replicaId}"]`,
-    );
-    if (!container) return;
-    container.replaceChildren(...(entries.length
-      ? entries.map((entry) => node("span", entry))
-      : [node("em", "Empty")]));
   }
 }
 

@@ -54,15 +54,11 @@ for (const example of [
     }
     await expect(demo.locator("[data-evidence]")).toContainText(example.evidence);
     if (example.testId === "or-set-demo") {
+      await expect(demo.locator("[data-removals-page]")).toHaveCount(0);
       await expect(demo.locator("[data-additions-page] span")).toHaveText([
         "Eagle Creek: B:2",
         "Eagle Creek: B:2",
         "Eagle Creek: B:2",
-      ]);
-      await expect(demo.locator("[data-removals-page] span")).toHaveText([
-        "Eagle Creek: A:1",
-        "Eagle Creek: A:1",
-        "Eagle Creek: A:1",
       ]);
       await expect(demo.locator("[data-highest-tag]")).toHaveText(["2", "2", "2"]);
       await expect(demo.locator("[data-deliveries]")).toContainText(

@@ -82,16 +82,12 @@ function raceNote(replica: ReplicaId): string {
             </div>
           </header>
           {kind === "or-set" && (
-            <div class="or-set-pages" aria-label={`${setDemoUserName(replica.id)}'s OR-set notebook pages`}>
+            <div class="or-set-pages" aria-label={`${setDemoUserName(replica.id)}'s OR-set notebook`}>
               <section>
                 <span>Additions page</span>
                 <div data-additions-page={replica.id}>
                   <span>Eagle Creek: A:1</span>
                 </div>
-              </section>
-              <section>
-                <span>Removals page</span>
-                <div data-removals-page={replica.id}><em>Empty</em></div>
               </section>
               <p>
                 <span>Highest dot counter seen</span>
