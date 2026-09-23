@@ -258,6 +258,10 @@ p {
   font-size: 0.875rem;
 }
 
+.site-footer > p:first-of-type {
+  margin-top: var(--space-6);
+}
+
 .footer-links {
   display: flex;
   flex-wrap: wrap;

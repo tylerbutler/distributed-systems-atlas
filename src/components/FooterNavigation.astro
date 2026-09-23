@@ -1,0 +1,125 @@
+---
+import { getCollection } from "astro:content";
+import { remainingFamilies, structuresForFamily } from "../lib/structure-demo/remaining-structures";
+
+const structureGroups = [
+  {
+    title: "Counters",
+    href: "/structures/counters/",
+    lessons: [
+      ["G-counter", "g-counter"],
+      ["PN-counter", "pn-counter"],
+      ["SharedCounter", "shared-counter"],
+    ],
+  },
+  {
+    title: "Sets",
+    href: "/structures/sets/",
+    lessons: [
+      ["GSet", "g-set"],
+      ["TwoPSet", "two-p-set"],
+      ["Observed-remove set", "observed-remove-set"],
+    ],
+  },
+  {
+    title: "Registers",
+    href: "/structures/registers/",
+    lessons: [
+      ["LWWRegister", "lww-register"],
+      ["MvRegister", "multi-value-register"],
+      ["RegisterCollection", "register-collection"],
+    ],
+  },
+  {
+    title: "Maps",
+    href: "/structures/maps/",
+    lessons: [
+      ["SharedMap", "shared-map"],
+      ["LWWMap", "lww-map"],
+      ["OR-map", "or-map"],
+      ["SharedDirectory", "shared-directory"],
+    ],
+  },
+  ...(["sequences", "coordination", "transforms"] as const).map((family) => ({
+    title: remainingFamilies[family].name,
+    href: `/structures/${family}/`,
+    lessons: structuresForFamily(family).map(({ name, id }) => [name, id]),
+  })),
+];
+
+const sheets = (await getCollection("sheet", ({ data }) => data.status === "published"))
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+---
+
+<nav class="footer-navigation" aria-labelledby="footer-navigation-title">
+  <h2 id="footer-navigation-title">Browse all pages</h2>
+  <div class="footer-navigation-groups">
+    <section>
+      <h3>Start here</h3>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/structures/">Learning path</a></li>
+        <li><a href="/structures/models/">CRDT, DDS, and OT</a></li>
+        <li><a href="/atlas/">Reference atlas</a></li>
+        <li><a href="/glossary/">Glossary</a></li>
+        <li><a href="/bibliography/">Bibliography</a></li>
+      </ul>
+    </section>
+    {structureGroups.map((group) => (
+      <section>
+        <h3><a href={group.href}>{group.title}</a></h3>
+        <ul>
+          {group.lessons.map(([name, slug]) => (
+            <li><a href={`/structures/${slug}/`}>{name}</a></li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <section>
+      <h3>Reference sheets</h3>
+      <ul>
+        {sheets.map((sheet) => (
+          <li><a href={`/atlas/${sheet.id}/`}>{sheet.data.title}</a></li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</nav>
+
+<style>
+  .footer-navigation {
+    color: var(--graphite);
+  }
+
+  h2 {
+    margin: 0 0 var(--space-5);
+    font-size: 1.5rem;
+  }
+
+  .footer-navigation-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: var(--space-5);
+  }
+
+  section {
+    border-top: var(--rule-width) solid var(--line);
+  }
+
+  h3 {
+    margin: var(--space-4) 0 var(--space-2);
+    font-size: 1rem;
+  }
+
+  ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  li a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+</style>

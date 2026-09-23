@@ -1,5 +1,6 @@
 ---
 import { Script } from "astro-tinylytics";
+import FooterNavigation from "../components/FooterNavigation.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import ObservationRail from "../components/ObservationRail.astro";
 import "../styles/global.css";
@@ -44,11 +45,10 @@ const siteTitle = "Distributed Systems Atlas";
     <ObservationRail {territory} {sheetTitle} {trailStep} />
     <main id="main" class="site-main" tabindex="-1"><slot /></main>
     <footer class="site-footer">
+      <FooterNavigation />
       <p>Distributed Systems Atlas. A place to study what replicas know.</p>
       <p class="footer-links">
         <span><span>Source</span> <span class="status">Planned</span></span>
-        <a href="/glossary/">Glossary</a>
-        <a href="/bibliography/">Bibliography</a>
       </p>
     </footer>
   </body>

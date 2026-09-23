@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test";
 import { execFile } from "node:child_process";
+import { readFileSync, readdirSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { remainingStructures } from "../src/lib/structure-demo/remaining-structures";
 
 const trailTitles = [
   "Multi-value registers",
@@ -122,7 +124,39 @@ test("the observation rail shell links public reference pages", async ({ page })
   const source = footer.getByText("Source", { exact: true }).locator("..");
   await expect(source).toContainText("Planned");
   await expect(source.locator("a, button, [tabindex]")).toHaveCount(0);
-  await expect(footer.getByRole("navigation")).toHaveCount(0);
+  await expect(footer.getByRole("navigation", { name: "Browse all pages" })).toBeVisible();
+});
+
+test("footer navigation links to every published page without JavaScript", async ({ browser }) => {
+  const pages = readdirSync(new URL("../src/pages/", import.meta.url), { recursive: true, encoding: "utf8" })
+    .filter((file) => file.endsWith(".astro") && !file.includes("["))
+    .map((file) => `/${file.replace(/index\.astro$/, "").replace(/\.astro$/, "")}`.replace(/\/?$/, "/"));
+  const lessons = remainingStructures.map(({ id }) => `/structures/${id}/`);
+  const sheets = readdirSync(new URL("../src/content/sheets/", import.meta.url))
+    .filter((file) => file.endsWith(".mdx") &&
+      /^status: published$/m.test(readFileSync(new URL(`../src/content/sheets/${file}`, import.meta.url), "utf8")))
+    .map((file) => `/atlas/${file.replace(/\.mdx$/, "")}/`);
+  const expected = [...pages, ...lessons, ...sheets].sort();
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    for (const width of [320, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const nav = page.getByRole("navigation", { name: "Browse all pages" });
+      await expect(nav).toBeVisible();
+      const hrefs = await nav.getByRole("link").evaluateAll((links) =>
+        links.map((link) => link.getAttribute("href"))
+      );
+      expect(hrefs.sort()).toEqual(expected);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
+    await page.goto("/atlas/dots-and-causal-context/");
+    await expect(page.getByRole("navigation", { name: "Browse all pages" }).getByRole("link"))
+      .toHaveCount(expected.length);
+  } finally {
+    await context.close();
+  }
 });
 
 test("generated glossary and bibliography expose published metadata", async ({ page }) => {
