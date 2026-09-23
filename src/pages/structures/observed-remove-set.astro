@@ -315,6 +315,10 @@ const notebookCheckpoints: Array<{
     overflow-x: auto;
   }
 
+  .notebook-checkpoints table {
+    font-size: 0.95rem;
+  }
+
   .visible-member {
     white-space: nowrap;
   }
@@ -322,7 +326,7 @@ const notebookCheckpoints: Array<{
   .visible-member sup {
     margin-left: 0.2rem;
     color: var(--instrument-deep);
-    font-size: 0.72em;
+    font-size: max(0.72em, 0.75rem);
     font-weight: 750;
   }
 
