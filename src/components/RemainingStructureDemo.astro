@@ -17,10 +17,10 @@ const { structure } = Astro.props;
 >
   <section class="remaining-demo" aria-labelledby={`${structure.id}-demo-title`}>
     <header>
-      <p class="instrument-kicker">Three Eagle Creek clients</p>
-      <h2 id={`${structure.id}-demo-title`}>{structure.name} authored race</h2>
+      <p class="instrument-kicker">Three Eagle Creek hikers</p>
+      <h2 id={`${structure.id}-demo-title`}>{structure.name} at Eagle Creek</h2>
       <p>{structure.story}</p>
-      <p class="remaining-rule"><span>Watershed rule</span><strong>{structure.rule}</strong></p>
+      <p class="remaining-rule"><span>How they agree</span><strong>{structure.rule}</strong></p>
     </header>
     <div class="remaining-clients">
       {(["A", "B", "C"] as const).map((id, index) => (
@@ -39,8 +39,8 @@ const { structure } = Astro.props;
         </section>
       ))}
     </div>
-    <section class="remaining-state" aria-label="Converged state">
-      <span>Shared view</span>
+    <section class="remaining-state" aria-label="Shared result">
+      <span>What everyone sees</span>
       <ul data-state>{structure.initial.map((item) => <li>{item}</li>)}</ul>
     </section>
     <DemoTransportControls />
@@ -91,7 +91,7 @@ const { structure } = Astro.props;
             this.state = actInRemainingDemo(this.state, client);
             this.acted.add(client);
             this.clearError();
-            this.render(`Queued ${client}'s operation. Other client controls remain available.`);
+            this.render(`Queued ${client}'s note. The other hikers can still send theirs.`);
             if (this.transport.autoDeliver) void this.deliver(button);
           } catch (error) {
             this.showError(error);
@@ -104,7 +104,7 @@ const { structure } = Astro.props;
           this.state = stageRemainingRace(this.state);
           this.acted = new Set(["A", "B", "C"]);
           this.clearError();
-          this.render("Race queued for delivery.");
+          this.render("Notes queued for delivery.");
           if (this.transport.autoDeliver) void this.deliver(this.race);
         } catch (error) {
           this.showError(error);
@@ -166,7 +166,7 @@ const { structure } = Astro.props;
         this.state = deliverRemainingRace(this.state);
         this.clearError();
         this.render(this.state.view.pending > 0
-          ? "Some operations still await delivery."
+          ? "Some notes still await delivery."
           : "Delivery complete.");
         focus.focus();
       } catch (error) {
@@ -236,7 +236,7 @@ const { structure } = Astro.props;
       const alert = this.querySelector<HTMLElement>("[data-error]");
       if (alert) {
         alert.hidden = false;
-        alert.textContent = `The operation failed: ${message}`;
+        alert.textContent = `The change failed: ${message}`;
       }
       const status = this.querySelector<HTMLElement>("[data-status]");
       if (status) status.textContent = "The last valid kernel state is unchanged.";

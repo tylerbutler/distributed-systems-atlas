@@ -10,22 +10,22 @@ import "../../styles/set-lesson.css";
 
 <BaseLayout title="SharedDirectory" description="Alice and Bob concurrently create one stable Eagle Creek folder." territory="Structures" sheetTitle="SharedDirectory">
   <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>SharedDirectory</h1><p class="structure-summary">The flat field map has grown into folders for each trail. Alice and Bob both create an Eagle Creek folder before either sees the other operation.</p><LessonIllustration id="structures-shared-directory" /></header>
-    <StructureFacts structure="SharedDirectory" family="DDS" model="Sequenced hierarchical map" updates="Create or delete folders; set, delete, or clear entries" merge="Resolve paths through stable folder identities." delivery="One server-ordered operation stream" bestFor="Collaborative trees whose path names can be reused" cost="Map entries plus identity metadata for every folder instance" />
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>SharedDirectory</h1><p class="structure-summary">The hikers now keep their trail notes in folders. Alice and Bob each make an Eagle Creek folder before either sees the other's work.</p><LessonIllustration id="structures-shared-directory" /></header>
+    <StructureFacts structure="SharedDirectory" family="DDS" model="Sequenced hierarchical map" updates="Make or remove folders; add or remove their notes" merge="Keep old notes with the old folder, even if its name is reused." delivery="One server-ordered operation stream" bestFor="Shared folders whose names can be reused" cost="A distinct mark for each folder and its entries" />
     <section aria-labelledby="folder-title">
-      <h2 id="folder-title">A path name is not enough identity</h2>
-      <p>A <dfn><a href="/glossary/#shareddirectory">SharedDirectory</a></dfn> gives each folder instance stable identity. Concurrent creates of the same name converge on one folder. If that folder is deleted and recreated, stale operations for the old instance do not attach to the replacement.</p>
+      <h2 id="folder-title">The same name can belong to a new folder</h2>
+      <p>A <dfn><a href="/glossary/#shareddirectory">SharedDirectory</a></dfn> lets Alice and Bob use one shared folder when they both make one called Eagle Creek. If they later remove it and make another with the same name, notes meant for the old folder do not appear in the new one.</p>
       <TermCallout {...sharedDirectoryTerm} />
       <p>
-        Alice can use her new folder before the ranger numbers its creation.
-        She also sees her own pending entry changes and deletions. The ranger's
-        numbered operations confirm the folder's shared identity and reconcile
-        any concurrent work from Bob.
+        Alice can use her new folder before the ranger gives it a number.
+        She also sees the notes she adds or removes while she waits. The
+        ranger's numbered ledger helps Alice and Bob agree on which folder
+        they share.
       </p>
-      <figure><table aria-label="SharedDirectory concurrent folder creation"><thead><tr><th scope="col">Hiker</th><th scope="col">Operation</th><th scope="col">Merged tree</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Create /eagle-creek</td><td rowspan="2">One /eagle-creek folder</td></tr><tr><th scope="row">Bob</th><td>Create /eagle-creek</td></tr></tbody></table><figcaption>The shared path resolves to one folder identity on every replica.</figcaption></figure>
+      <figure><table aria-label="SharedDirectory concurrent folder creation"><thead><tr><th scope="col">Hiker</th><th scope="col">Action</th><th scope="col">After sharing</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Make /eagle-creek</td><td rowspan="2">One shared /eagle-creek folder</td></tr><tr><th scope="row">Bob</th><td>Make /eagle-creek</td></tr></tbody></table><figcaption>Both hikers' notebooks refer to the same folder.</figcaption></figure>
     </section>
-    <MapStructureDemo kind="shared-directory" title="Merge two creates of the same folder" description="Alice and Bob create /eagle-creek concurrently. The sequenced directory resolves both operations to one shared path." rule="Retain stable folder identities across concurrent create, delete, and recreate operations." raceLabel="Race the Eagle Creek folder creates" />
-    <section aria-labelledby="stale-title"><h2 id="stale-title">Reusing a name does not reuse an instance</h2><p>A later folder may use the same path text, but it has a different identity. This prevents a delayed key write for a deleted folder from appearing inside its replacement.</p></section>
+    <MapStructureDemo kind="shared-directory" title="Make one shared folder" description="Alice and Bob each make /eagle-creek before they see the other's work. The ranger's ledger lets them agree on one folder." rule="Keep old notes with the old folder, even if a new folder uses its name." raceLabel="Race the Eagle Creek folder creates" />
+    <section aria-labelledby="stale-title"><h2 id="stale-title">A new folder can reuse an old name</h2><p>A new folder may have the same name as a removed one. A delayed note for the old folder must not appear in the new one.</p></section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>

@@ -262,7 +262,7 @@ class MapStructureDemoElement extends HTMLElement {
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       this.state.view.pending
         ? "Local view · operation in transit"
-        : replica.entries.length ? "Matches the other maps" : "Empty map";
+        : replica.entries.length ? "Matches the other notebooks" : "No notes yet";
   }
 
   private render(renderReplicas = true): void {
@@ -291,19 +291,19 @@ class MapStructureDemoElement extends HTMLElement {
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;
     evidence.textContent = this.kind === "shared-map"
       ? this.state.deliveries.length
-        ? `SN ${this.state.view.sequenceNumber}: gate-status uses the last sequenced write.`
+        ? `Ledger number ${this.state.view.sequenceNumber}: gate-status uses the last numbered note.`
         : "No race delivered yet."
       : this.kind === "lww-map"
         ? this.state.deliveries.length
-          ? "The per-key timestamp selects Trail closed, independent of arrival order."
+          ? "The time beside gate-status selects Trail closed, even if notes arrive out of order."
           : "No timestamped race delivered yet."
         : this.kind === "or-map"
           ? this.state.deliveries.length
-            ? "Alice removed the observed key; Bob's unseen +3 tag survives."
+            ? "Alice crossed out the entry she saw; Bob's new note of 3 crates remains."
             : "The baseline tally is 5 crates."
           : this.state.deliveries.length
-            ? "Two concurrent creates resolve to one eagle-creek path."
-            : "No folder identity has been created.";
+            ? "Alice and Bob's two notes now refer to one eagle-creek folder."
+            : "No folder has been made yet.";
     const operationCount = new Set(
       this.state.deliveries.map(({ sequenceNumber }) => sequenceNumber),
     ).size;

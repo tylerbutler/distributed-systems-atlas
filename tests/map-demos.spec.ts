@@ -5,17 +5,17 @@ for (const example of [
     path: "/structures/shared-map/",
     testId: "shared-map-demo",
     heading: "SharedMap",
-    race: "Race the two gate-status writes",
+    race: "Race the two gate-status notes",
     entries: ["gate-statusTrail closed"],
-    evidence: /^SN \d+: the last sequenced write wins gate-status\.$/,
+    evidence: /^Ledger number \d+: gate-status uses the last numbered note\.$/,
   },
   {
     path: "/structures/lww-map/",
     testId: "lww-map-demo",
     heading: "LWWMap",
-    race: "Race the timestamped gate writes",
+    race: "Race the dated gate-status notes",
     entries: ["gate-statusTrail closed"],
-    evidence: "The per-key timestamp selects Trail closed, independent of arrival order.",
+    evidence: "The time beside gate-status selects Trail closed, even if notes arrive out of order.",
   },
   {
     path: "/structures/or-map/",
@@ -23,7 +23,7 @@ for (const example of [
     heading: "OR-map",
     race: "Race removal against the 3-crate delivery",
     entries: ["Eagle Creek8"],
-    evidence: "Alice removed the observed key; Bob's unseen +3 tag survives.",
+    evidence: "Alice crossed out the entry she saw; Bob's new note of 3 crates remains.",
   },
   {
     path: "/structures/shared-directory/",
@@ -31,7 +31,7 @@ for (const example of [
     heading: "SharedDirectory",
     race: "Race the Eagle Creek folder creates",
     entries: ["eagle-creekfolder"],
-    evidence: "Two concurrent creates resolve to one eagle-creek path.",
+    evidence: "Alice and Bob's two notes now refer to one eagle-creek folder.",
   },
 ]) {
   test(`${example.testId} runs its three-client authored race`, async ({ page }) => {
@@ -41,7 +41,7 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
-    await expect(demo.getByText("Map-edit slip", { exact: true })).toHaveCount(3);
+    await expect(demo.getByText("Note to share", { exact: true })).toHaveCount(3);
     await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
       "No slip in this race",
     );
@@ -121,7 +121,7 @@ test("reset restores a new map room", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-map/");
   const demo = page.getByTestId("shared-map-demo");
-  await demo.getByRole("button", { name: "Race the two gate-status writes" }).click();
+  await demo.getByRole("button", { name: "Race the two gate-status notes" }).click();
   await demo.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(demo.locator("[data-map-entries] dd")).toHaveText([
     "No entries",

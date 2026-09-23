@@ -84,7 +84,7 @@ export function createMapDemo(kind: MapKind): MapDemoState {
     latestDeliveries: [],
     result: kind === "or-map"
       ? "Eagle Creek starts with 5 supply crates. Race removal against a concurrent delivery."
-      : "Run the authored race, or let any hiker edit a local map.",
+      : "Run the race, or let any hiker change their own notebook.",
   };
 }
 
@@ -117,7 +117,7 @@ export function updateMapReplica(
         deliveries: state.deliveries,
         latestDeliveries: [],
         queuedOperations: [...state.queuedOperations, operation],
-        result: `${mapUserName(operation.author)} recorded ${operation.key}. The map operation is in transit.`,
+        result: `${mapUserName(operation.author)} changed ${operation.key} in their notebook. The note is on its way.`,
       },
     };
   } catch (error) {
@@ -137,7 +137,7 @@ export function stageMapDemoRace(state: MapDemoState): MapDemoResult {
         latestDeliveries: [],
         queuedOperations: [...RACES[state.kind]],
         result: state.kind === "or-map"
-          ? "Alice struck the stockpile while Bob concurrently logged 3 more crates."
+          ? "Alice crossed out the stockpile line while Bob logged 3 more crates."
           : state.kind === "shared-directory"
             ? "Alice and Bob concurrently created the same Eagle Creek folder."
             : "Alice wrote Trail open while Bob wrote Trail closed.",
@@ -173,12 +173,12 @@ export function deliverMapDemoOperations(state: MapDemoState): MapDemoResult {
     const delivered = value(deliverMapOperations(state.room));
     const latestDeliveries = labelDeliveries(state.queuedOperations, delivered.deliveries);
     const result = state.kind === "shared-map"
-      ? "The sequencer placed Bob's write last. Every map reads Trail closed."
+      ? "The ranger numbered Bob's note last. Every notebook reads Trail closed."
       : state.kind === "lww-map"
-        ? "Every map applies the same timestamp rule and reads Trail closed."
+        ? "The time on Bob's note wins. Every notebook reads Trail closed."
         : state.kind === "or-map"
-          ? "Bob's unseen concurrent update survives Alice's removal. Every ledger keeps 8 crates."
-          : "Both folder creates converge on one Eagle Creek directory.";
+          ? "Bob's new note survives Alice's crossed-out line. Every tally shows 8 crates."
+          : "Alice and Bob's two notes refer to one Eagle Creek folder.";
     return {
       ok: true,
       state: {

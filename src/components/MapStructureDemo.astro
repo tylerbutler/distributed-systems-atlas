@@ -71,19 +71,19 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
   }
   if (kind === "or-map") {
     return replica === "A"
-      ? { body: "Remove Eagle Creek", evidence: "remove the observed key identity" }
-      : { body: "Eagle Creek tally: +3", evidence: "nested counter update" };
+      ? { body: "Cross out Eagle Creek", evidence: "the stockpile entry Alice saw" }
+      : { body: "Eagle Creek tally: +3", evidence: "Bob's new crate count" };
   }
   if (kind === "shared-directory") {
     return {
       body: "Create /eagle-creek",
-      evidence: `stable folder identity ${replica}:eagle-creek`,
+      evidence: `folder ${replica}:eagle-creek stays distinct if the name is reused`,
     };
   }
   const body = `gate-status: ${statusByReplica[replica]}`;
   return kind === "lww-map"
-    ? { body, evidence: `timestamp from writer ${replica}` }
-    : { body, evidence: "sequence number assigned at ranger station" };
+    ? { body, evidence: `time on writer ${replica}'s note` }
+    : { body, evidence: "ranger's ledger number decides" };
 }
 ---
 
@@ -92,11 +92,11 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
     <div class="map-operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="map-heading">
       <div>
-        <p class="instrument-kicker">Three field maps</p>
+        <p class="instrument-kicker">Three hikers' notebooks</p>
         <h2 id={`${kind}-demo-title`}>{title}</h2>
         <p>{description}</p>
       </div>
-      <p class="merge-rule">Conflict rule <strong>{rule}</strong></p>
+      <p class="merge-rule">How they agree <strong>{rule}</strong></p>
     </header>
 
     <div class="map-network">
@@ -113,7 +113,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
               <div>
                 <h3>{mapUserName(replica.id)}</h3>
                 <p data-replica-state={replica.id}>
-                  {replica.entries.length ? "Baseline received" : "Empty map"}
+                  {replica.entries.length ? "Starting notes received" : "No notes yet"}
                 </p>
               </div>
             </header>
@@ -125,7 +125,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
                 : <div class="empty-entry"><dd>No entries</dd></div>}
             </dl>
             <p class="map-edit-slip">
-              <span>Map-edit slip</span>
+              <span>Note to share</span>
               <strong>{raceSlip(replica.id).body}</strong>
               <small>{raceSlip(replica.id).evidence}</small>
             </p>
@@ -148,15 +148,17 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
           <span>{kind === "shared-map" ? "Ranger sequencer" : "Trail exchange"}</span>
           <strong>
             {kind === "shared-map"
-              ? "Server order selects writes"
+              ? "Ranger's ledger numbers decide"
               : kind === "lww-map"
-                ? "Per-key timestamps select writes"
-                : "Identity metadata retained after merge"}
+                ? "The time beside each line decides"
+                : kind === "or-map"
+                  ? "New stockpile notes stay"
+                  : "Old folder notes stay with the old folder"}
           </strong>
           <output data-message-count>0 operations shared</output>
         </section>
         <div class="map-evidence">
-          <p><span>Mechanism evidence</span><strong data-evidence>No race delivered yet.</strong></p>
+          <p><span>What the notes show</span><strong data-evidence>No race delivered yet.</strong></p>
           <ol data-history aria-label="Map operation log, newest first" reversed>
             <li>No operations shared yet.</li>
           </ol>

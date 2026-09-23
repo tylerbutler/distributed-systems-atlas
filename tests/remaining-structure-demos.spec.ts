@@ -7,7 +7,7 @@ const examples = [
   ["ordered-collection", "OrderedCollection", "Race to acquire the inspection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", "TaskManager", "Queue the dispatcher volunteers", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", "PactMap", "Propose and sign off the closure", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
-  ["json-ot", "JsonOt", "Race the JSON field edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
+  ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const;
 
@@ -79,7 +79,7 @@ test("direct controls remain active after another client queues work", async ({ 
   await controls.first().click();
   await expect(controls.nth(1)).toBeEnabled();
   await controls.nth(1).click();
-  await expect(demo.locator("[data-status]")).toContainText("remain available");
+  await expect(demo.locator("[data-status]")).toContainText("can still send theirs");
 });
 
 test("reset cancels an in-flight kernel delivery", async ({ page }) => {
@@ -102,7 +102,7 @@ test("kernel errors are visible and preserve the last valid state", async ({ pag
   await controls.first().click();
   await expect(demo.locator("[data-state] li")).toHaveText(["gate-key: Alice"]);
   await controls.nth(1).click();
-  await expect(demo.locator("[data-error]")).toContainText("operation failed");
+  await expect(demo.locator("[data-error]")).toContainText("change failed");
   await expect(demo.locator("[data-state] li")).toHaveText(["gate-key: Alice"]);
 });
 
@@ -132,10 +132,10 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
 
   for (const [slug, detail] of [
     ["shared-counter", "The local update is optimistic."],
-    ["shared-map", "Alice sees her own write as soon as she makes it."],
-    ["shared-directory", "Alice can use her new folder before the ranger numbers its creation."],
+    ["shared-map", "Alice sees her own note as soon as she writes it."],
+    ["shared-directory", "Alice can use her new folder before the ranger gives it a number."],
     ["register-collection", "Writes stay hidden until the sequencer"],
-    ["claims", "her local read still shows an unclaimed key"],
+    ["claims", "her ledger still shows that nobody holds the gate key"],
     ["ordered-collection", "None can mark the inspection as theirs until a numbered request"],
     ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
     ["pact-map", "Only after the required stations sign off can anyone read the new value."],

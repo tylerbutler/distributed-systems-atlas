@@ -36,33 +36,32 @@ const operationNames = structure.operations.length === 1
       </header>
 
       <section class="structure-story">
-        <h2>Set the Eagle Creek problem first</h2>
+        <h2>At Eagle Creek</h2>
         <p>{structure.story}</p>
         <p>
-          Each person carries a {structure.recordLabel.toLowerCase()}. When a person makes a
-          change, they copy it onto a {structure.messageLabel.toLowerCase()} with the
-          identity, path, sequence, or acceptance evidence that the rule needs. The demo
-          shows both the local record and the note that travels.
+          Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
+          change on a {structure.messageLabel.toLowerCase()} to send to the others.
+          The slip includes the details they need to agree on the result. In the
+          demo, you can see both the hiker's copy and the slip they send.
         </p>
         <p>
-          An ordinary local edit refers to a position or value. That reference can become
-          stale while another client works. Watershed's <code>{structure.module}</code>
-          uses this structure's rule to produce one shared result.
+          Another hiker may act before the slip arrives. The rule decides what
+          each hiker should record when they receive the other's work.
         </p>
         {structure.localVisibility && <p>{structure.localVisibility}</p>}
       </section>
 
       <p>
         A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
-        applies this rule to the shared record.
+        uses this rule to keep the shared record in agreement.
       </p>
       <TermCallout term={structure.name} definition={structure.rule} />
 
       <section>
         <h2>Run the conflict</h2>
         <p>
-          Alice and Bob act before either receives the other operation. Carol
-          stays connected as the third replica and confirms the converged view.
+          Alice and Bob act before either receives the other's slip. Carol
+          receives their notes too and checks that all three copies agree.
         </p>
       </section>
 

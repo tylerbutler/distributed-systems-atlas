@@ -72,62 +72,62 @@ export const registerCollectionTerm: GlossaryTerm = {
 
 export const sharedMapTerm: GlossaryTerm = {
   term: "SharedMap",
-  definition: "A sequenced key-value map that uses the highest server sequence number for each key.",
+  definition: "A map of named entries where a service numbers each accepted change. The highest number for each name decides what everyone sees.",
 };
 
 export const lwwMapTerm: GlossaryTerm = {
   term: "LWWMap",
-  definition: "A replicated map where each key keeps the value or tombstone with the greatest timestamp and writer tie-breaker.",
+  definition: "A map where each named entry keeps the answer or removal with the latest time. At equal times, removal wins; the writer ID breaks a tie between answers.",
 };
 
 export const orMapTerm: GlossaryTerm = {
   term: "OR-map",
-  definition: "An observed-remove map whose key identities let a concurrent update survive removal.",
+  definition: "A map where removing a named entry affects only the version someone has seen. A new change made at the same time can keep the entry present.",
 };
 
 export const sharedDirectoryTerm: GlossaryTerm = {
   term: "SharedDirectory",
-  definition: "A sequenced hierarchical map whose folders retain stable identities across concurrent create, delete, and recreate operations.",
+  definition: "A shared folder tree where a service numbers changes. A new folder stays distinct from an old folder with the same name.",
 };
 
 export const sharedSequenceTerm: GlossaryTerm = {
   term: "SharedSequence",
-  definition: "A replicated ordered list whose items keep stable identities while clients insert, move, replace, or delete by index.",
+  definition: "A shared ordered list where each item has its own mark. People can add, move, replace, or remove items without losing track of which one they mean.",
 };
 
 export const sharedTextTerm: GlossaryTerm = {
   term: "SharedText",
-  definition: "A collaborative string whose graphemes keep stable identities across concurrent insertion, deletion, and replacement.",
+  definition: "A shared text where each written symbol has its own mark. People can add, remove, or replace text at the same time without splitting a symbol.",
 };
 
 export const claimsTerm: GlossaryTerm = {
   term: "Claims",
-  definition: "A sequenced write-once key collection where the first accepted claim becomes the committed owner.",
+  definition: "A list of named responsibilities where the first accepted, numbered claim picks an owner who cannot be replaced.",
 };
 
 export const orderedCollectionTerm: GlossaryTerm = {
   term: "OrderedCollection",
-  definition: "A sequenced work queue that grants each item to one accepted acquire operation.",
+  definition: "A shared work queue where a service numbers requests and gives each job to one requester.",
 };
 
 export const taskManagerTerm: GlossaryTerm = {
   term: "TaskManager",
-  definition: "A coordination structure that assigns one client per named task and keeps a FIFO volunteer queue for failover.",
+  definition: "A duty roster with one person assigned to each task. Volunteers wait in order so the next connected person can take over.",
 };
 
 export const pactMapTerm: GlossaryTerm = {
   term: "PactMap",
-  definition: "A coordinated map whose proposed value becomes accepted only after the expected connected clients sign off.",
+  definition: "A list of proposed changes where every station on the connected roster must sign off before anyone uses the new answer.",
 };
 
 export const jsonOtTerm: GlossaryTerm = {
   term: "JsonOt",
-  definition: "A collaborative JSON document that transforms concurrent path operations before it applies them.",
+  definition: "A shared JSON report that adjusts edits made at the same time so changes to separate fields can both remain.",
 };
 
 export const sharedRichTextTerm: GlossaryTerm = {
   term: "SharedRichText",
-  definition: "A collaborative rich-text document that transforms concurrent retain, insert, delete, and formatting deltas.",
+  definition: "A shared report that adjusts simultaneous text and formatting edits so both hikers' changes can remain.",
 };
 
 export const standaloneTerms = [
