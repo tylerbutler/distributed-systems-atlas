@@ -17,8 +17,8 @@ const path = Astro.url.pathname.replace(/\/$/, "");
     <ol class="observation-context">
       <li>
         {path === "/atlas"
-          ? <span aria-current="page">Atlas</span>
-          : <a href="/atlas/">Atlas</a>}
+          ? <span aria-current="page">Reference atlas</span>
+          : <a href="/atlas/">Reference atlas</a>}
       </li>
       {territory && <li>{territory}</li>}
       {sheetTitle && <li aria-current="page">{sheetTitle}</li>}

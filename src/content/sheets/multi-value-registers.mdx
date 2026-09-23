@@ -187,7 +187,7 @@ It delivers the authored deltas rather than replaying a user's write at the
 receiver. Replaying the write would allocate a new local event and claim
 different causal knowledge.
 
-Atlas retains immutable trace frames and authored version records for
+The lab retains immutable trace frames and authored version records for
 inspection. Those records are teaching overhead in addition to the kernel's
 current register state. The lab has no durable storage, replica retirement,
 or membership protocol. Eventual agreement still requires communication of
@@ -199,12 +199,13 @@ the relevant updates.
 
 ## Field notes
 
-This lab runs **Watershed**, through Atlas's Gleam toolkit, at commit
+This lab runs **Watershed**, through the site's Gleam toolkit, at commit
 `4a8739323ee491f353fcaa8ccfb0488419c1cd43`. You do not need Gleam or
 Watershed knowledge to use it. The implementation boundary is the public
-[`watershed/mv_register_kernel` source](/bibliography/#watershed-pinned-mv-register);
-Atlas imports the stable `@atlas/toolkit` entry point. The toolkit uses
-ack-free kernel operations. Atlas owns message scheduling and trace history;
+[`watershed/mv_register_kernel` source](/bibliography/#watershed-pinned-mv-register).
+The lab imports the stable `@atlas/toolkit` entry point. The toolkit uses
+ack-free kernel operations. The lab runtime owns message scheduling and trace
+history;
 Watershed decides writes and merges.
 
 The following pseudocode describes the tag-and-context rule used by the

@@ -56,7 +56,7 @@ instructional diagrams and interactive labs remain unchanged.
 ## Local development
 
 Use a Node.js version supported by Astro 7 and the pnpm version in
-`package.json` (`pnpm@11.13.1`). Atlas also requires Gleam 1.18.1 and Git.
+`package.json` (`pnpm@11.13.1`). The site also requires Gleam 1.18.1 and Git.
 `mise.toml` pins Gleam; use `mise install` or install that version directly.
 The first toolkit build fetches its Git and Hex dependencies.
 
@@ -207,7 +207,7 @@ Unpublished topics remain labeled as planned without placeholder routes.
 | --- | --- |
 | Content | `src/content/sheets/` contains MDX articles and metadata. `src/content.config.ts` defines the schema; `src/lib/atlas/graph.ts` validates sheet and scenario references. Pages and layouts build the publication and link published sheets. |
 | Scenario | `src/lib/lab/scenarios.ts` names the available lessons and returns cloned engine configurations with shared immutable presentation rules. Those rules own lesson controls, labels, comparisons, announcements, and completion criteria. Unknown scenario IDs are errors. A scenario does not maintain a second simulation state. |
-| Engine | `src/lib/lab/engine-registry.ts` selects `dots`, `ordering`, `mv-register`, or `or-set` from the scenario's `kind`. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. Atlas owns scheduling, messages, partitions, and trace history. The reference engines own their algorithm state; the register and OR-set adapters use Watershed for state and merges. Unknown kinds fail explicitly. |
+| Engine | `src/lib/lab/engine-registry.ts` selects `dots`, `ordering`, `mv-register`, or `or-set` from the scenario's `kind`. `contract.ts` defines actions, tagged observations, immutable trace views, and errors. The lab runtime owns scheduling, messages, partitions, and trace history. The reference engines own their algorithm state; the register and OR-set adapters use Watershed for state and merges. Unknown kinds fail explicitly. |
 | Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
 | Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its rule. Structure demos use at least three clients. The G-counter, PN-counter, and SharedCounter lessons add per-client updates and animated delivery over the real `watershed/sluice_js` transport without using the broad causal console. |
@@ -278,9 +278,9 @@ engine or renderer. The shared contract and renderer support those observation
 shapes. The Watershed adapters replay the register and OR-set fixtures through
 the public package API.
 
-### Atlas-side Gleam toolkit and Watershed adapters
+### Gleam toolkit and Watershed adapters
 
-`toolkit/` is Atlas's JavaScript-target Gleam package. Its `gleam.toml` enables
+`toolkit/` is the site's JavaScript-target Gleam package. Its `gleam.toml` enables
 TypeScript declarations and depends
 on Watershed through Git:
 
@@ -333,16 +333,16 @@ The shared initial state uses package operations at the first sorted replica
 and package merges into its peers. A register accepts at most one distinct
 initial value; use concurrent writes to create siblings.
 
-Atlas queues the exact operation returned by the package for each peer.
+The adapter queues the exact operation returned by the package for each peer.
 Delivery calls `merge` with that operation, including for stale or duplicate
 messages. Healing only opens a link. Toolkit errors become `LabError` records
 with the error tag and diagnostic message; rejected actions retain the last
 frame, queue, and history.
 
 The adapters derive visible values and live tags from package state.
-For register siblings, Atlas records each authored delta's clock as its birth
+For register siblings, the adapter records each authored delta's clock as its birth
 version. A merged clock cannot supply that version. For OR-set tombstones,
-Atlas retains the authored tag-to-value labels so it can name removed members.
+The adapter retains the authored tag-to-value labels so it can name removed members.
 These records support presentation only; the package decides which versions
 or additions survive. Reset clears the authored records and rebuilds the seed.
 The adapters freeze cloned trace data without freezing caller actions.

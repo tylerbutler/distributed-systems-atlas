@@ -103,16 +103,23 @@ test("the observation rail shows route context without JavaScript", async ({ bro
     const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
     for (const route of ["/", "/atlas/"]) {
       await page.goto(route);
-      await expect(rail.getByRole("listitem")).toHaveText(["Atlas"]);
+      await expect(rail.getByRole("listitem")).toHaveText(["Reference atlas"]);
     }
     await page.goto("/atlas/dots-and-causal-context/");
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Atlas", "Mechanisms", "Dots and causal context", "Trail 3 of 7",
+      "Reference atlas", "Mechanisms", "Dots and causal context", "Trail 3 of 7",
     ]);
     await expect(rail.locator('[aria-current="page"]')).toHaveText("Dots and causal context");
   } finally {
     await context.close();
   }
+});
+
+test("the model guide uses the site as a description, not a product name", async ({ page }) => {
+  await page.goto("/structures/models/");
+  await expect(page.locator("main").first()).toContainText("The lessons cover three approaches");
+  await expect(page.getByRole("heading", { name: "Structure lessons" })).toHaveCount(3);
+  await expect(page.locator("main").first()).not.toContainText(/\bAtlas\b/);
 });
 
 test("the observation rail shell links public reference pages", async ({ page }) => {
@@ -702,13 +709,13 @@ import VectorComparison from "../components/VectorComparison.astro";
     await page.setContent(await readFile(path.join(root, "dist/atlas/local-history/index.html"), "utf8"));
     const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Atlas", "Mechanisms", "Local history", "Trail 4 of 7",
+      "Reference atlas", "Mechanisms", "Local history", "Trail 4 of 7",
     ]);
     await expect(page.getByText("No supporting sheet required", { exact: true })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toContainText("Partial order");
     await page.setContent(await readFile(path.join(root, "dist/atlas/replicated-log/index.html"), "utf8"));
     await expect(page.locator(".sheet-header")).toContainText("3 min read");
-    await expect(rail.getByRole("listitem")).toHaveText(["Atlas", "Systems", "Replicated log"]);
+    await expect(rail.getByRole("listitem")).toHaveText(["Reference atlas", "Systems", "Replicated log"]);
     await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toHaveCount(0);
 
     const glossary = await readFile(path.join(root, "dist/glossary/index.html"), "utf8");

@@ -1,4 +1,4 @@
-//// Pure, ack-free operations for Atlas and later Gleam examples.
+//// Pure, ack-free operations for this site's demos and later Gleam examples.
 //// The kernels own state transitions. Snapshot records expose metadata only.
 
 import gleam/dict

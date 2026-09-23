@@ -171,7 +171,7 @@ still queued. A working connection alone is not convergence.
 
 The removal delta retracts `A:1` at B but leaves `B:2`. The new-add delta
 then supplies `B:2` to A. Before the stale replay, the replicas already have
-matching set metadata, but the queue still contains the duplicate. Atlas's
+matching set metadata, but the queue still contains the duplicate. The lab's
 **Converged** check requires matching metadata and an empty queue.
 
 When the duplicate is delivered, the merge finds `A:1` in B's tombstones and
@@ -247,12 +247,12 @@ does not choose a safe business meaning for a concurrent add and remove.
 ## Field notes
 
 This lab runs **Watershed** at commit
-`4a8739323ee491f353fcaa8ccfb0488419c1cd43` through Atlas's Gleam toolkit.
+`4a8739323ee491f353fcaa8ccfb0488419c1cd43` through the site's Gleam toolkit.
 No Watershed knowledge is a prerequisite. The public
 [`watershed/or_set_kernel` source](/bibliography/#watershed-pinned-or-set)
-is the implementation reference. Atlas imports the stable `@atlas/toolkit`
+is the implementation reference. The lab imports the stable `@atlas/toolkit`
 entry point and calls ack-free operations. The kernel allocates and merges
-dots; Atlas schedules authored deltas and records immutable frames.
+dots; the lab runtime schedules authored deltas and records immutable frames.
 
 This pseudocode describes the explicit-tombstone subset used by the lab,
 without pruning or replica retirement. `live[value]` is a set of dots;

@@ -103,7 +103,7 @@ demos, plus compact rule models for SharedSequence, SharedText, Claims,
 OrderedCollection, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
 engines cover ordering, clocks, and Dots. Focused structure demos use at least
 three clients. Counter, set, register, and map lessons run pinned Watershed
-semantics through Atlas's Gleam toolkit and its stable `@atlas/toolkit` entry
+semantics through the site's Gleam toolkit and its stable `@atlas/toolkit` entry
 point. Later-family demos model the authored races documented by Watershed's
 public examples without importing private build paths.
 
@@ -114,7 +114,7 @@ those rows for the shared total. A worked example shows Carol receiving older
 and newer notes in different orders without changing the final result.
 Auto-deliver is on by default, so each note reaches the other hikers
 immediately. Readers can turn it off to hold several notes, then turn it back on
-to share them. Atlas animates notes between hikers and checkpoints at a
+to share them. The demo animates notes between hikers and checkpoints at a
 reader-controlled speed. Guided observations explain pairwise maximum and add
 timed callouts and signal-colored marks to the local values and checkpoint.
 
@@ -143,10 +143,10 @@ message loss and recovery remain article-only examples. Direct controls remain
 active while earlier notes are in transit.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
-engines from scenario metadata. Atlas owns schedules, queues, partitions, and
-trace history. The toolkit calls public Watershed kernels at Git commit
+engines from scenario metadata. The lab runtime owns schedules, queues, partitions,
+and trace history. The toolkit calls public Watershed kernels at Git commit
 `4a8739323ee491f353fcaa8ccfb0488419c1cd43`; those kernels decide local updates
-and merge results. Atlas builds the toolkit's JavaScript and TypeScript
+and merge results. The build produces the toolkit's JavaScript and TypeScript
 declarations from Gleam source. No sibling checkout or Watershed npm artifact
 is required.
 
