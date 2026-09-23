@@ -150,11 +150,9 @@ test("RegisterCollection distinguishes seen and assigned sequence numbers", asyn
   await expect(rows.nth(2).locator("th, td")).toHaveText([
     "Carol: Inspect bridge", "2", "3", "Inspect bridge", "Inspect bridge",
   ]);
-  const perspective = page.getByRole("complementary", { name: "Alternative perspective" });
-  await expect(perspective).toContainText("not dots");
+  await expect(page.getByRole("complementary", { name: "Alternative perspective" })).toHaveCount(0);
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await expect(perspective).toBeVisible();
     expect(await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )).toBe(0);

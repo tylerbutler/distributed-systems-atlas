@@ -84,17 +84,6 @@ import "../../styles/set-lesson.css";
         assigns her report <code>3</code> and removes the older versions she
         saw, so both reads return her report.
       </p>
-      <aside class="term-callout perspective-note" aria-labelledby="register-perspective-title">
-        <h3 class="term-callout-label" id="register-perspective-title">Alternative perspective</h3>
-        <p>
-          A <dfn><a href="/glossary/#dot">dot</a></dfn> identifies one event
-          with a replica ID and a local counter. Here, the ranger assigns a
-          sequence number to each committed report. A writer also records the
-          last sequence number they saw. Carol can use that number to tell
-          how far through the ranger's ledger the writer had read. These are
-          not dots: the ranger must assign one shared order.
-        </p>
-      </aside>
     </section>
 
     <RegisterStructureDemo

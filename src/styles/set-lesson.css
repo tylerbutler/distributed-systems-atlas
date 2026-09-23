@@ -18,7 +18,7 @@
   font-size: 1.2rem;
 }
 
-:is(.set-lesson, .register-lesson) .perspective-note {
+.set-lesson .perspective-note {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--space-3);
@@ -29,7 +29,7 @@
   font-family: var(--font-ui);
 }
 
-:is(.set-lesson, .register-lesson) .perspective-note h3 {
+.set-lesson .perspective-note h3 {
   margin: 0;
   padding: var(--space-1) var(--space-2);
   color: var(--instrument-deep);
@@ -38,7 +38,7 @@
   line-height: 1.4;
 }
 
-:is(.set-lesson, .register-lesson) .perspective-note p {
+.set-lesson .perspective-note p {
   margin: 0;
 }
 
@@ -116,11 +116,11 @@
     overflow-x: auto;
   }
 
-  :is(.set-lesson, .register-lesson) .perspective-note {
+  .set-lesson .perspective-note {
     grid-template-columns: 1fr;
   }
 
-  :is(.set-lesson, .register-lesson) .perspective-note h3 {
+  .set-lesson .perspective-note h3 {
     justify-self: start;
   }
 }
