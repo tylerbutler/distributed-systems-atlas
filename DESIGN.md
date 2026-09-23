@@ -205,7 +205,7 @@ the terms rail replaces duplicate inline callouts.
 
 The root content field is 72rem wide with fluid horizontal padding. The landing signal gives one direct entry to Counters and one secondary route to the full structure index. The atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
 
-The observation rail persists below primary navigation. It presents Reference atlas, territory, sheet, and trail position as ordinary text, followed by a thin trace and a sulfur current point. Below 48rem, its text and trace share a compact band; the primary navigation wraps into two visible rows rather than hiding behind a menu.
+The observation rail persists below primary navigation. It links Atlas to the reference index, structure territories to the learning path, and sheet territories to their reference sections. Structure lessons also link their family page. The current page and trail position remain text, followed by a thin trace and a sulfur current point. Below 48rem, the rail wraps; the primary navigation stays visible rather than hiding behind a menu.
 
 The territory chart uses a fixed 14rem index column beside connected sheet stops. At 64rem and below, the territory summary moves above the chart field. Below 40rem, connectors simplify into a vertical station list; order and status remain explicit.
 
@@ -263,7 +263,7 @@ Small curved geometry appears only where the territory connector physically turn
 
 ### Observation Rail
 
-One broad Mineral Instrument band contains wrapping location text and a separate trace. It is navigation, not decoration: `Reference atlas`, territory, sheet, and trail count remain selectable text. The sulfur endpoint marks current position, while `aria-current` and weight provide redundant state.
+One broad Mineral Instrument band contains wrapping location text and a separate trace. It is navigation, not decoration: `Atlas`, territory, family, sheet, and trail count remain selectable text, with links on ancestor crumbs. The sulfur endpoint marks current position, while `aria-current` and weight provide redundant state.
 
 ### Territory Chart
 

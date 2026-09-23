@@ -1,4 +1,6 @@
 ---
+import { structureGroups } from "../lib/structure-demo/structure-navigation";
+
 interface Props {
   territory?: string;
   sheetTitle?: string;
@@ -10,6 +12,25 @@ interface Props {
 
 const { territory, sheetTitle, trailStep } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "");
+const structureSlug = path.match(/^\/structures\/([^/]+)$/)?.[1];
+const group = structureGroups.find(({ href, lessons }) =>
+  href === `/structures/${structureSlug}/` || lessons.some(([, slug]) => slug === structureSlug)
+);
+const lesson = group?.lessons.find(([, slug]) => slug === structureSlug);
+const currentTitle = sheetTitle ?? lesson?.[0] ?? (group?.href === `/structures/${structureSlug}/` ? group?.title : undefined);
+const currentTerritory = territory ?? (group ? "Structures" : undefined);
+const territoryAnchors: Record<string, string> = {
+  Structures: "structures",
+  Mechanisms: "mechanisms",
+  "Failure modes": "failures",
+  Systems: "systems",
+};
+if (currentTerritory && !territoryAnchors[currentTerritory]) {
+  throw new Error(`Unknown breadcrumb territory: ${currentTerritory}`);
+}
+const territoryHref = path.startsWith("/structures/")
+  ? "/structures/"
+  : `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
 ---
 
 <nav class="observation-rail instrument-panel" aria-label="Sheet position">
@@ -17,11 +38,18 @@ const path = Astro.url.pathname.replace(/\/$/, "");
     <ol class="observation-context">
       <li>
         {path === "/atlas"
-          ? <span aria-current="page">Reference atlas</span>
-          : <a href="/atlas/">Reference atlas</a>}
+          ? <span aria-current="page">Atlas</span>
+          : <a href="/atlas/">Atlas</a>}
       </li>
-      {territory && <li>{territory}</li>}
-      {sheetTitle && <li aria-current="page">{sheetTitle}</li>}
+      {currentTerritory && (
+        <li>
+          {path === "/structures"
+            ? <span aria-current="page">{currentTerritory}</span>
+            : <a href={territoryHref}>{currentTerritory}</a>}
+        </li>
+      )}
+      {group && lesson && <li><a href={group.href}>{group.title}</a></li>}
+      {currentTitle && <li aria-current="page">{currentTitle}</li>}
       {trailStep && (
         <li>
           Trail <span class="observation-data">{trailStep.current}</span> of <span class="observation-data">{trailStep.total}</span>

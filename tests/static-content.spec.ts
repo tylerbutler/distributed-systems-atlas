@@ -103,16 +103,43 @@ test("the observation rail shows route context without JavaScript", async ({ bro
     const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
     for (const route of ["/", "/atlas/"]) {
       await page.goto(route);
-      await expect(rail.getByRole("listitem")).toHaveText(["Reference atlas"]);
+      await expect(rail.getByRole("listitem")).toHaveText(["Atlas"]);
     }
     await page.goto("/atlas/dots-and-causal-context/");
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Reference atlas", "Mechanisms", "Dots and causal context", "Trail 3 of 7",
+      "Atlas", "Mechanisms", "Dots and causal context", "Trail 3 of 7",
     ]);
     await expect(rail.locator('[aria-current="page"]')).toHaveText("Dots and causal context");
+    await expect(rail.getByRole("link", { name: "Mechanisms" })).toHaveAttribute("href", "/atlas/#mechanisms");
   } finally {
     await context.close();
   }
+});
+
+test("breadcrumbs link to the relevant structure and reference indexes", async ({ page }) => {
+  const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+  for (const [route, family] of [
+    ["/structures/g-counter/", "Counters"],
+    ["/structures/observed-remove-set/", "Sets"],
+    ["/structures/register-collection/", "Registers"],
+    ["/structures/shared-directory/", "Maps"],
+    ["/structures/shared-sequence/", "Sequences"],
+    ["/structures/claims/", "Coordination"],
+    ["/structures/json-ot/", "Transforms"],
+  ] as const) {
+    await page.goto(route);
+    await expect(rail.getByRole("link", { name: "Atlas" })).toHaveAttribute("href", "/atlas/");
+    await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/structures/");
+    await expect(rail.getByRole("link", { name: family })).toHaveAttribute(
+      "href", `/structures/${family.toLowerCase()}/`,
+    );
+    await expect(rail.locator('[aria-current="page"]')).toHaveCount(1);
+  }
+  await page.goto("/atlas/multi-value-registers/");
+  await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/atlas/#structures");
+  await page.goto("/structures/coordination/");
+  await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/structures/");
+  await expect(rail.locator('[aria-current="page"]')).toHaveText("Coordination");
 });
 
 test("the model guide uses the site as a description, not a product name", async ({ page }) => {
@@ -709,13 +736,13 @@ import VectorComparison from "../components/VectorComparison.astro";
     await page.setContent(await readFile(path.join(root, "dist/atlas/local-history/index.html"), "utf8"));
     const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
     await expect(rail.getByRole("listitem")).toHaveText([
-      "Reference atlas", "Mechanisms", "Local history", "Trail 4 of 7",
+      "Atlas", "Mechanisms", "Local history", "Trail 4 of 7",
     ]);
     await expect(page.getByText("No supporting sheet required", { exact: true })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toContainText("Partial order");
     await page.setContent(await readFile(path.join(root, "dist/atlas/replicated-log/index.html"), "utf8"));
     await expect(page.locator(".sheet-header")).toContainText("3 min read");
-    await expect(rail.getByRole("listitem")).toHaveText(["Reference atlas", "Systems", "Replicated log"]);
+    await expect(rail.getByRole("listitem")).toHaveText(["Atlas", "Systems", "Replicated log"]);
     await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toHaveCount(0);
 
     const glossary = await readFile(path.join(root, "dist/glossary/index.html"), "utf8");

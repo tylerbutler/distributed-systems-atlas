@@ -1,51 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { remainingFamilies, structuresForFamily } from "../lib/structure-demo/remaining-structures";
-
-const structureGroups = [
-  {
-    title: "Counters",
-    href: "/structures/counters/",
-    lessons: [
-      ["G-counter", "g-counter"],
-      ["PN-counter", "pn-counter"],
-      ["SharedCounter", "shared-counter"],
-    ],
-  },
-  {
-    title: "Sets",
-    href: "/structures/sets/",
-    lessons: [
-      ["GSet", "g-set"],
-      ["TwoPSet", "two-p-set"],
-      ["Observed-remove set", "observed-remove-set"],
-    ],
-  },
-  {
-    title: "Registers",
-    href: "/structures/registers/",
-    lessons: [
-      ["LWWRegister", "lww-register"],
-      ["MvRegister", "multi-value-register"],
-      ["RegisterCollection", "register-collection"],
-    ],
-  },
-  {
-    title: "Maps",
-    href: "/structures/maps/",
-    lessons: [
-      ["SharedMap", "shared-map"],
-      ["LWWMap", "lww-map"],
-      ["OR-map", "or-map"],
-      ["SharedDirectory", "shared-directory"],
-    ],
-  },
-  ...(["sequences", "coordination", "transforms"] as const).map((family) => ({
-    title: remainingFamilies[family].name,
-    href: `/structures/${family}/`,
-    lessons: structuresForFamily(family).map(({ name, id }) => [name, id]),
-  })),
-];
+import { structureGroups } from "../lib/structure-demo/structure-navigation";
 
 const sheets = (await getCollection("sheet", ({ data }) => data.status === "published"))
   .sort((a, b) => a.data.title.localeCompare(b.data.title));
