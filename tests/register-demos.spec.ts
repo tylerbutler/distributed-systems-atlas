@@ -103,6 +103,25 @@ test("register lessons remain useful without JavaScript", async ({ browser }) =>
   }
 });
 
+test("register facts leave room for the demo", async ({ page }) => {
+  for (const [path, testId] of [
+    ["/structures/lww-register/", "lww-register-demo"],
+    ["/structures/multi-value-register/", "mv-register-demo"],
+    ["/structures/register-collection/", "register-collection-demo"],
+  ]) {
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(path);
+      const facts = (await page.locator(".register-lesson > .structure-facts").boundingBox())!;
+      const demo = (await page.getByTestId(testId).boundingBox())!;
+      expect(demo.y).toBeGreaterThanOrEqual(facts.y + facts.height);
+      expect(await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )).toBe(0);
+    }
+  }
+});
+
 test("the register family links every dedicated lesson", async ({ page }) => {
   await page.goto("/structures/registers/");
   await expect(page.getByRole("link", { name: "Open the LWWRegister lesson" }))

@@ -4,6 +4,12 @@
   margin-inline: auto;
 }
 
+@media (min-width: 80rem) {
+  .register-lesson > register-structure-demo {
+    clear: left;
+  }
+}
+
 :is(.set-lesson, .register-lesson) > section {
   margin-top: var(--space-7);
 }
