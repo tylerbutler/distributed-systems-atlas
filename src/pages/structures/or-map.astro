@@ -15,7 +15,17 @@ import "../../styles/set-lesson.css";
     <section aria-labelledby="identity-title"><h2 id="identity-title">Removal targets an observed key identity</h2><p>An <dfn><a href="/glossary/#or-map">OR-map</a></dfn> applies observed-remove semantics to keys. Alice can remove the stockpile identity she saw. Bob's concurrent tally update includes unseen identity evidence, so the key remains.</p><TermCallout {...orMapTerm} /><figure><table aria-label="OR-map stockpile race"><thead><tr><th scope="col">Replica</th><th scope="col">Operation</th><th scope="col">Outcome</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Remove observed 5-crate row</td><td>Observed identity retired</td></tr><tr><th scope="row">Bob</th><td>Add 3 crates concurrently</td><td>Unseen update retained</td></tr><tr><th scope="row">All</th><td>Merge</td><td>Eagle Creek · 8</td></tr></tbody></table><figcaption>The retained tally includes all logged crates even though the row was concurrently struck.</figcaption></figure></section>
     <MapStructureDemo kind="or-map" title="Protect a concurrent stockpile update" description="Start with 5 crates. Alice removes the observed row while Bob logs 3 more. Merge the identities and tally state." rule="Observed removal loses to an unseen concurrent update." raceLabel="Race removal against the 3-crate delivery" />
     <section aria-labelledby="modes-title"><h2 id="modes-title">The nested value still needs a rule</h2><p>Watershed OR-maps can hold tallies, last-writer registers, multi-value registers, or string sets. One channel uses one fixed mode. The map protects key identity; the nested CRDT decides how values combine.</p></section>
-    <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo uses the tally mode of Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/or_map_kernel.gleam">OR-map kernel</a>.</p></section>
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        <strong>Sources:</strong> Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/or_map_kernel.gleam">OR-map kernel</a>.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls the kernel's tally mode
+        through its toolkit to merge the three clients' stockpile updates.
+      </p>
+    </section>
     <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/lww-map/">Back to LWWMap</a><a href="/structures/maps/">Browse map family</a><a href="/structures/shared-directory/">Continue to SharedDirectory</a></nav>
   </article>
 </BaseLayout>

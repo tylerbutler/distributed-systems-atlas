@@ -67,10 +67,18 @@ const family = remainingFamilies[structure.family];
       <section>
         <h2>Read the result</h2>
         <p>{structure.result}</p>
+      </section>
+
+      <section aria-labelledby="source-title">
+        <h2 id="source-title">Sources and implementation</h2>
         <p>
-          The demo models the authored race from Watershed's public structure
-          examples. The lesson keeps the conflict rule visible before exposing
-          its metadata or protocol.
+          <strong>Sources:</strong> Atlas's{" "}
+          <a href="https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/remaining-structures.ts">scenario definitions</a>
+          {" "}specify this example and its expected result.
+        </p>
+        <p>
+          <strong>Implementation:</strong> The shared three-client demo plays
+          back that result in the browser. It does not call a Watershed kernel.
         </p>
       </section>
 

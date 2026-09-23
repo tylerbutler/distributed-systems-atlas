@@ -216,14 +216,15 @@ import {
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>
       <p>
-        This lesson calls Watershed's public{" "}
+        <strong>Sources:</strong> Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/g_counter_kernel.gleam">G-counter kernel</a>.
-        The G-counter merge rule keeps the largest cumulative count for each
-        hiker.
+        The state-based grow-only counter is described in{" "}
+        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
       </p>
       <p>
-        The merge rule is the state-based grow-only counter described in{" "}
-        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
+        <strong>Implementation:</strong> Atlas calls the kernel through its toolkit
+        for the three-client demo. Each hiker's largest cumulative count
+        determines the merged value.
       </p>
     </section>
 

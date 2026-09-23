@@ -281,9 +281,13 @@ const notebookCheckpoints: Array<{
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>
       <p>
-        The interactive lesson calls Watershed's{" "}
-        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/or_set_kernel.gleam">OR-set kernel</a>
-        {" "}through the stable Atlas toolkit.
+        <strong>Sources:</strong> Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/or_set_kernel.gleam">OR-set kernel</a>.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls the kernel through its
+        toolkit. The three-client demo keeps removal records so old notes
+        cannot restore an installation Alice removed.
       </p>
     </section>
 

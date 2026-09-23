@@ -15,7 +15,18 @@ import "../../styles/set-lesson.css";
     <section aria-labelledby="folder-title"><h2 id="folder-title">A path name is not enough identity</h2><p>A <dfn><a href="/glossary/#shareddirectory">SharedDirectory</a></dfn> gives each folder instance stable identity. Concurrent creates of the same name converge on one folder. If that folder is deleted and recreated, stale operations for the old instance do not attach to the replacement.</p><TermCallout {...sharedDirectoryTerm} /><figure><table aria-label="SharedDirectory concurrent folder creation"><thead><tr><th scope="col">Hiker</th><th scope="col">Operation</th><th scope="col">Merged tree</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Create /eagle-creek</td><td rowspan="2">One /eagle-creek folder</td></tr><tr><th scope="row">Bob</th><td>Create /eagle-creek</td></tr></tbody></table><figcaption>The shared path resolves to one folder identity on every replica.</figcaption></figure></section>
     <MapStructureDemo kind="shared-directory" title="Merge two creates of the same folder" description="Alice and Bob create /eagle-creek concurrently. The sequenced directory resolves both operations to one shared path." rule="Retain stable folder identities across concurrent create, delete, and recreate operations." raceLabel="Race the Eagle Creek folder creates" />
     <section aria-labelledby="stale-title"><h2 id="stale-title">Reusing a name does not reuse an instance</h2><p>A later folder may use the same path text, but it has a different identity. This prevents a delayed key write for a deleted folder from appearing inside its replacement.</p></section>
-    <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo runs Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/directory_kernel.gleam">SharedDirectory kernel</a> through a three-client <a href="/glossary/#sluice">Sluice</a> room.</p></section>
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        <strong>Sources:</strong> Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/directory_kernel.gleam">SharedDirectory kernel</a>.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls Watershed through its toolkit
+        and connects three clients in a <a href="/glossary/#sluice">Sluice</a> room
+        to resolve folder identities.
+      </p>
+    </section>
     <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/or-map/">Back to OR-map</a><a href="/structures/maps/">Browse map family</a><a href="/structures/sequences/">Continue to Sequences</a></nav>
   </article>
 </BaseLayout>

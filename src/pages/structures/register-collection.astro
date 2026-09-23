@@ -85,10 +85,13 @@ import "../../styles/set-lesson.css";
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>
-        This lesson calls Watershed's{" "}
+        <strong>Sources:</strong> Watershed's{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/register_collection_kernel.gleam">RegisterCollection kernel</a>
-        {" "}for sequenced writes, remote application, atomic and latest
-        reads, and version inspection.
+        {" "}defines sequenced writes and atomic and latest read policies.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls the kernel through its toolkit
+        to sequence three clients' writes, apply remote changes, and inspect versions.
       </p>
     </section>
 

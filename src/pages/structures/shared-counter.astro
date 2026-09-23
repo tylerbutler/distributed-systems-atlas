@@ -169,15 +169,16 @@ import {
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>
       <p>
-        This lesson calls Watershed's public{" "}
+        <strong>Sources:</strong> Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed.gleam#L1626-L1674">SharedCounter API</a>
-        {" "}and runs three connected documents through{" "}
-        <a href="/glossary/#sluice">Sluice</a>.
+        {" "}and{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/counter_kernel.gleam">counter kernel</a>.
       </p>
       <p>
-        The signed operation, optimistic state, acknowledgement, rollback, and
-        integer summary are defined by Watershed's{" "}
-        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/counter_kernel.gleam">counter kernel</a>.
+        <strong>Implementation:</strong> Atlas calls the API through its toolkit
+        and connects three documents through <a href="/glossary/#sluice">Sluice</a>.
+        The kernel handles signed operations, optimistic state, acknowledgement,
+        rollback, and integer summaries.
       </p>
     </section>
 

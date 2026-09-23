@@ -178,18 +178,18 @@ import {
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>
       <p>
-        This lesson calls Watershed's public{" "}
+        <strong>Sources:</strong> Watershed's public{" "}
         <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/pn_counter_kernel.gleam">PN-counter kernel</a>
-        {" "}and sends the three hikers' notes through{" "}
+        {" "}implements the positive-negative counter described in{" "}
+        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls the kernel through its toolkit
+        and sends the three hikers' notes through{" "}
         <dfn><a href="/glossary/#sluice">Sluice</a></dfn>, Watershed's in-memory
         server for a collaborative document.
       </p>
       <TermCallout {...sluiceTerm} />
-      <p>
-        The merge rule follows the state-based positive-negative counter
-        described in{" "}
-        <a href="https://inria.hal.science/inria-00555588/document">A comprehensive study of Convergent and Commutative Replicated Data Types</a>.
-      </p>
     </section>
 
     <nav class="structure-next" aria-label="Continue through structures">

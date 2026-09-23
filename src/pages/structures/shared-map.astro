@@ -33,7 +33,18 @@ import "../../styles/set-lesson.css";
     </section>
     <MapStructureDemo kind="shared-map" title="Sequence two writes to one key" description="Alice and Bob edit gate-status inside one delay window. The ranger's numbered stream selects Bob's later operation." rule="Use the greatest server sequence number per key." raceLabel="Race the two gate-status writes" />
     <section aria-labelledby="limit-title"><h2 id="limit-title">One value survives</h2><p>The rule is simple and useful, but the losing value disappears. If offline clocks should choose the winner, use LWWMap. If a concurrent update must survive deletion, use OR-map.</p></section>
-    <section aria-labelledby="source-title"><h2 id="source-title">Sources and implementation</h2><p>The demo runs Watershed's <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/map_kernel.gleam">SharedMap kernel</a> through a three-client <a href="/glossary/#sluice">Sluice</a> room.</p></section>
+    <section aria-labelledby="source-title">
+      <h2 id="source-title">Sources and implementation</h2>
+      <p>
+        <strong>Sources:</strong> Watershed's{" "}
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/map_kernel.gleam">SharedMap kernel</a>.
+      </p>
+      <p>
+        <strong>Implementation:</strong> Atlas calls Watershed through its toolkit
+        and connects three clients in a <a href="/glossary/#sluice">Sluice</a> room.
+        The server sequence selects the value for each key.
+      </p>
+    </section>
     <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/maps/">Back to map family</a><a href="/structures/lww-map/">Continue to LWWMap</a></nav>
   </article>
 </BaseLayout>
