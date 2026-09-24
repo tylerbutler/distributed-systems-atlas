@@ -188,16 +188,23 @@ const operationNames = structure.operations.length === 1
     min-width: 36rem;
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.875rem;
+    line-height: 1.5;
   }
 
   .route-notebooks :is(th, td) {
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border-block: var(--rule-width) solid var(--line);
     text-align: left;
   }
 
   .route-notebooks th {
     font-family: var(--font-ui);
+  }
+
+  .route-notebooks th:first-child {
+    width: 6rem;
+    white-space: nowrap;
   }
 
   .route-notebooks figcaption {

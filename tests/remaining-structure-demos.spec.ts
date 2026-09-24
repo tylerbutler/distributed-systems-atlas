@@ -153,6 +153,11 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(article.getByRole("heading", { name: "Quick facts" })).toBeVisible();
     await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
       .toBeVisible();
+    const notebook = article.locator(".route-notebooks");
+    await expect(notebook.locator("table")).toHaveCSS("font-size", "14px");
+    const hikerColumn = notebook.locator("tbody th").first();
+    expect((await hikerColumn.boundingBox())!.width).toBeGreaterThanOrEqual(90);
+    await expect(hikerColumn).toHaveCSS("white-space", "nowrap");
   }
   await page.goto("/structures/shared-text/");
   await expect(page.locator(".page-intro .structure-kind-tag")).toHaveCount(1);
