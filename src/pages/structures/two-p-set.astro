@@ -1,8 +1,6 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { twoPSetTerm } from "../../lib/atlas/standalone-terms";
@@ -14,23 +12,17 @@ const tombstoneTerm = {
 };
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="TwoPSet"
   description="Alice retires the old Eagle Creek beacon, but its permanent removal record blocks Bob's replacement."
-  territory="Structures"
-  sheetTitle="TwoPSet"
+  articleClass="set-lesson"
+  illustrationId="structures-two-p-set"
 >
-  <article class="set-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>TwoPSet</h1>
-      <p class="structure-summary">
-        A GSet can record every beacon the hikers find, but it cannot remove
-        one. The hikers add a second GSet for permanent removals. Together,
-        those two grow-only sets form a TwoPSet.
-      </p>
-      <LessonIllustration id="structures-two-p-set" />
-    </header>
+    <Fragment slot="summary">
+      A GSet can record every beacon the hikers find, but it cannot remove
+      one. The hikers add a second GSet for permanent removals. Together,
+      those two grow-only sets form a TwoPSet.
+    </Fragment>
 
     <section aria-labelledby="notebook-setup-title">
       <h2 id="notebook-setup-title">Each hiker carries the same two-page notebook</h2>
@@ -203,6 +195,4 @@ const tombstoneTerm = {
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

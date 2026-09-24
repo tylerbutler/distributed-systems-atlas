@@ -1,27 +1,19 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { sharedDirectoryTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="SharedDirectory" description="Alice and Bob concurrently create one stable Eagle Creek folder." territory="Structures" sheetTitle="SharedDirectory">
-  <article class="register-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>SharedDirectory</h1>
-      <p class="structure-summary">
-        The ranger's trail report began as one flat table of named lines.
-        Alice wants a folder for the Eagle Creek gate and bridge notes.
-        Bob makes a folder by the same name before he sees Alice's work,
-        while Carol has notes from another trail to file.
-      </p>
-      <LessonIllustration id="structures-shared-directory" />
-    </header>
+<StructureLessonLayout title="SharedDirectory" description="Alice and Bob concurrently create one stable Eagle Creek folder." articleClass="register-lesson" illustrationId="structures-shared-directory">
+    <Fragment slot="summary">
+      The ranger's trail report began as one flat table of named lines.
+      Alice wants a folder for the Eagle Creek gate and bridge notes.
+      Bob makes a folder by the same name before he sees Alice's work,
+      while Carol has notes from another trail to file.
+    </Fragment>
     <StructureFacts structure="SharedDirectory" family="DDS" model="Sequenced hierarchical map" updates="Make or remove folders; add or remove their notes" merge="Keep old notes with the old folder, even if its name is reused." delivery="One server-ordered operation stream" bestFor="Shared folders whose names can be reused" cost="A distinct mark for each folder and its entries" />
     <section aria-labelledby="folder-title">
       <h2 id="folder-title">Give each trail its own folder</h2>
@@ -78,6 +70,4 @@ import "../../styles/set-lesson.css";
         to resolve folder identities.
       </p>
     </section>
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

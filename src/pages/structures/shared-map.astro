@@ -1,27 +1,19 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { sharedMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="SharedMap" description="The ranger numbers changes to named lines in each hiker's trail report table." territory="Structures" sheetTitle="SharedMap">
-  <article class="register-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>SharedMap</h1>
-      <p class="structure-summary">
-        Each hiker copies the ranger's trail report table into a notebook.
-        One line says "gate-status: Report pending"; another says
-        "bridge-status: Inspection due." Alice and Bob change the gate line
-        before either sees the other's note. The bridge line stays as it was.
-      </p>
-      <LessonIllustration id="structures-shared-map" />
-    </header>
+<StructureLessonLayout title="SharedMap" description="The ranger numbers changes to named lines in each hiker's trail report table." articleClass="register-lesson" illustrationId="structures-shared-map">
+    <Fragment slot="summary">
+      Each hiker copies the ranger's trail report table into a notebook.
+      One line says "gate-status: Report pending"; another says
+      "bridge-status: Inspection due." Alice and Bob change the gate line
+      before either sees the other's note. The bridge line stays as it was.
+    </Fragment>
     <StructureFacts structure="SharedMap" family="DDS" model="Sequenced operation-based map" updates="Write, cross out, or clear named entries" merge="Use the last numbered change for each name." delivery="One server-ordered operation stream" bestFor="Shared JSON settings with one service to number changes" cost="Accepted entries plus notes awaiting a number" />
     <section aria-labelledby="order-title">
       <h2 id="order-title">The ranger numbers each change</h2>
@@ -55,6 +47,4 @@ import "../../styles/set-lesson.css";
         Each client uses the last numbered change for each key.
       </p>
     </section>
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

@@ -1,17 +1,14 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { orMapTerm, pnCounterTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="OR-map" description="Alice crosses out a stockpile entry while Bob records a new crate delivery." territory="Structures" sheetTitle="OR-map">
-  <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>OR-map</h1><p class="structure-summary">Alice, Bob, and Carol each have a copy of the Eagle Creek stockpile list. Alice crosses out the old listing while Bob records a new delivery. Neither has seen the other's note.</p><LessonIllustration id="structures-or-map" /></header>
+<StructureLessonLayout title="OR-map" description="Alice crosses out a stockpile entry while Bob records a new crate delivery." articleClass="register-lesson" illustrationId="structures-or-map">
+    <Fragment slot="summary">Alice, Bob, and Carol each have a copy of the Eagle Creek stockpile list. Alice crosses out the old listing while Bob records a new delivery. Neither has seen the other's note.</Fragment>
     <StructureFacts structure="OR-map" family="CRDT" model="Observed-remove map with nested CRDT values" updates="Change a tally or remove a named entry" merge="Remove what was seen; keep unseen changes made at the same time." delivery="Safe under repeated and out-of-order delivery" bestFor="Named ledgers that retain unseen updates after a removal" cost="Entry identities, tally state, and a record of removals" />
     <section aria-labelledby="identity-title">
       <h2 id="identity-title">Cross out only what you have seen</h2>
@@ -120,6 +117,4 @@ import "../../styles/set-lesson.css";
         through the Gleam toolkit to merge the three clients' stockpile updates.
       </p>
     </section>
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

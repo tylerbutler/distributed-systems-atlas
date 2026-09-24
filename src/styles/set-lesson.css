@@ -1,22 +1,8 @@
-.set-lesson,
-.register-lesson {
-  max-width: var(--measure-reading);
-  margin-inline: auto;
-}
-
 @media (min-width: 80rem) {
   .set-lesson > set-structure-demo,
   .register-lesson > :is(register-structure-demo, map-structure-demo) {
     clear: both;
   }
-}
-
-:is(.set-lesson, .register-lesson) > section {
-  margin-top: var(--space-7);
-}
-
-:is(.set-lesson, .register-lesson) .structure-summary {
-  font-size: 1.2rem;
 }
 
 :is(.set-lesson, .register-lesson) .perspective-note {

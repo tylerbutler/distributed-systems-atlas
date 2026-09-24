@@ -1,32 +1,24 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { registerCollectionTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="RegisterCollection"
   description="The ranger retains sequenced trail-status versions and chooses an atomic or latest read."
-  territory="Structures"
-  sheetTitle="RegisterCollection"
+  articleClass="register-lesson"
+  illustrationId="structures-register-collection"
 >
-  <article class="register-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>RegisterCollection</h1>
-      <p class="structure-summary">
-        Alice reports the trail open while Bob reports it closed. Neither has
-        seen the other's note. The ranger records Alice's report as number 1
-        and Bob's as number 2, then keeps both. Carol can ask for the atomic
-        winner or the latest report.
-      </p>
-      <LessonIllustration id="structures-register-collection" />
-    </header>
+    <Fragment slot="summary">
+      Alice reports the trail open while Bob reports it closed. Neither has
+      seen the other's note. The ranger records Alice's report as number 1
+      and Bob's as number 2, then keeps both. Carol can ask for the atomic
+      winner or the latest report.
+    </Fragment>
 
     <StructureFacts
       structure="RegisterCollection"
@@ -123,9 +115,7 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
   .sequence-example {

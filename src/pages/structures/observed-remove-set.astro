@@ -1,9 +1,7 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
 import { pairedSheets } from "../../lib/atlas/trail";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import "../../styles/set-lesson.css";
@@ -113,24 +111,18 @@ const notebookCheckpoints: Array<{
 ];
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="Observed-remove set"
   description="Alice removes an old beacon while Bob concurrently adds its replacement under a fresh identity."
-  territory="Structures"
-  sheetTitle="Observed-remove set"
+  articleClass="set-lesson"
+  illustrationId="structures-observed-remove-set"
 >
-  <article class="set-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>Observed-remove set</h1>
-      <p class="structure-summary">
-        Alice must remove the old Eagle Creek beacon while Bob reports its
-        replacement from another trail. Carol still has an older notebook and
-        may receive their records in either order. The ranger needs the
-        replacement to remain without restoring the old installation.
-      </p>
-      <LessonIllustration id="structures-observed-remove-set" />
-    </header>
+    <Fragment slot="summary">
+      Alice must remove the old Eagle Creek beacon while Bob reports its
+      replacement from another trail. Carol still has an older notebook and
+      may receive their records in either order. The ranger needs the
+      replacement to remain without restoring the old installation.
+    </Fragment>
 
     <StructureFacts
       structure="Observed-remove set"
@@ -293,9 +285,7 @@ const notebookCheckpoints: Array<{
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
   .notebook-checkpoints {

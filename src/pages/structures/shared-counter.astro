@@ -1,10 +1,8 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import CounterIllustration from "../../components/CounterIllustration.astro";
 import SharedCounterDemo from "../../components/SharedCounterDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   sequencerTerm,
@@ -12,23 +10,17 @@ import {
 } from "../../lib/atlas/standalone-terms";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="SharedCounter"
   description="A ranger sequencer numbers signed bird-count changes and broadcasts each operation to Alice, Bob, and Carol."
-  territory="Structures"
-  sheetTitle="SharedCounter"
+  articleClass="structure-page"
+  illustrationId="structures-shared-counter"
 >
-  <article class="structure-page">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>SharedCounter</h1>
-      <p class="structure-summary">
-        Alice, Bob, and Carol still need to combine new sightings with
-        corrections. This time, they send each change to a ranger who keeps one
-        numbered station log.
-      </p>
-      <LessonIllustration id="structures-shared-counter" />
-    </header>
+    <Fragment slot="summary">
+      Alice, Bob, and Carol still need to combine new sightings with
+      corrections. This time, they send each change to a ranger who keeps one
+      numbered station log.
+    </Fragment>
 
     <StructureFacts
       structure="SharedCounter"
@@ -183,24 +175,9 @@ import {
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
-  .structure-page {
-    max-width: var(--measure-reading);
-    margin-inline: auto;
-  }
-
-  .structure-page > section {
-    margin-top: var(--space-7);
-  }
-
-  .structure-summary {
-    font-size: 1.2rem;
-  }
-
   pre {
     padding: var(--space-4);
     overflow-x: auto;

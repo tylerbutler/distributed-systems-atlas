@@ -1,9 +1,7 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   remainingFamilies,
@@ -27,15 +25,14 @@ const operationNames = structure.operations.length === 1
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
 ---
 
-<BaseLayout title={structure.name} description={structure.tagline} territory="Structures" sheetTitle={structure.name}>
-  <div id="main-content">
-    <article class:list={["structure-lesson", { "structure-page": isSharedSequence }]}>
-      <header class="page-intro">
-        <p class="territory-label">Structures · {family.name}</p>
-        <h1>{structure.name}</h1>
-        <p class="structure-summary">{structure.tagline}</p>
-        <LessonIllustration id={`structures-${structure.id}`} />
-      </header>
+<StructureLessonLayout
+  title={structure.name}
+  description={structure.tagline}
+  articleClass={`structure-lesson${isSharedSequence ? " structure-page" : ""}`}
+  illustrationId={`structures-${structure.id}`}
+  territoryLabel={`Structures · ${family.name}`}
+>
+      <Fragment slot="summary">{structure.tagline}</Fragment>
 
       {isSharedSequence && (
         <nav class="lesson-map" aria-label="SharedSequence lesson map">
@@ -156,21 +153,9 @@ const operationNames = structure.operations.length === 1
         </p>
       </section>
 
-      <StructureNext />
-    </article>
-  </div>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
-  .structure-lesson {
-    max-width: var(--measure-reading);
-    margin-inline: auto;
-  }
-
-  .structure-lesson > section {
-    margin-top: var(--space-7);
-  }
-
   .lesson-map {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

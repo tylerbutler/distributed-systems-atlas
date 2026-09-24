@@ -1,31 +1,23 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { gSetTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="GSet"
   description="Alice starts the ranger's trail-beacon survey with an add-only replicated set."
-  territory="Structures"
-  sheetTitle="GSet"
+  articleClass="set-lesson"
+  illustrationId="structures-g-set"
 >
-  <article class="set-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>GSet</h1>
-      <p class="structure-summary">
-        The ranger sends Alice, Bob, and Carol onto separate trails to list
-        every beacon they find. Their first rule is simple: they can add names
-        to the survey, but they cannot remove them.
-      </p>
-      <LessonIllustration id="structures-g-set" />
-    </header>
+    <Fragment slot="summary">
+      The ranger sends Alice, Bob, and Carol onto separate trails to list
+      every beacon they find. Their first rule is simple: they can add names
+      to the survey, but they cannot remove them.
+    </Fragment>
 
     <StructureFacts
       structure="GSet"
@@ -106,6 +98,4 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

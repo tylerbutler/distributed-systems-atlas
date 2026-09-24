@@ -1,31 +1,23 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { lwwRegisterTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="LWWRegister"
   description="Alice and Bob race trail-status reports, and timestamp metadata selects one winner."
-  territory="Structures"
-  sheetTitle="LWWRegister"
+  articleClass="register-lesson"
+  illustrationId="structures-lww-register"
 >
-  <article class="register-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>LWWRegister</h1>
-      <p class="structure-summary">
-        The ranger needs one trail status before the morning bulletin. Alice
-        reports open while Bob reports closed. Carol may receive either report
-        first, but every notebook must choose the same answer.
-      </p>
-      <LessonIllustration id="structures-lww-register" />
-    </header>
+    <Fragment slot="summary">
+      The ranger needs one trail status before the morning bulletin. Alice
+      reports open while Bob reports closed. Carol may receive either report
+      first, but every notebook must choose the same answer.
+    </Fragment>
 
     <StructureFacts
       structure="LWWRegister"
@@ -110,6 +102,4 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>

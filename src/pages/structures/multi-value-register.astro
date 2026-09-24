@@ -1,32 +1,24 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
 import { pairedSheets } from "../../lib/atlas/trail";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="MvRegister"
   description="Alice and Bob keep concurrent trail-status reports until Carol can inspect and resolve them."
-  territory="Structures"
-  sheetTitle="MvRegister"
+  articleClass="register-lesson"
+  illustrationId="structures-multi-value-register"
 >
-  <article class="register-lesson">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>MvRegister</h1>
-      <p class="structure-summary">
-        The ranger needs one trail status for the morning bulletin. Alice
-        reports that Eagle Creek is open while Bob reports that it is closed.
-        Neither hiker has seen the other's note, so the ranger cannot treat
-        either report as a correction.
-      </p>
-      <LessonIllustration id="structures-multi-value-register" />
-    </header>
+    <Fragment slot="summary">
+      The ranger needs one trail status for the morning bulletin. Alice
+      reports that Eagle Creek is open while Bob reports that it is closed.
+      Neither hiker has seen the other's note, so the ranger cannot treat
+      either report as a correction.
+    </Fragment>
 
     <StructureFacts
       structure="MvRegister"
@@ -141,9 +133,7 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
   .lesson-entry {

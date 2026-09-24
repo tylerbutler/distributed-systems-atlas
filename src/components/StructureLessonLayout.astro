@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import LessonIllustration from "./LessonIllustration.astro";
+import StructureNext from "./StructureNext.astro";
+
+interface Props {
+  articleClass: string;
+  description: string;
+  illustrationId: string;
+  territoryLabel?: string;
+  title: string;
+}
+
+const {
+  articleClass,
+  description,
+  illustrationId,
+  territoryLabel = "Structures",
+  title,
+} = Astro.props;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  territory="Structures"
+  sheetTitle={title}
+>
+  <article class={articleClass}>
+    <header class="page-intro">
+      <p class="territory-label">{territoryLabel}</p>
+      <h1>{title}</h1>
+      <p class="structure-summary"><slot name="summary" /></p>
+      <LessonIllustration id={illustrationId} />
+    </header>
+
+    <slot />
+    <StructureNext />
+  </article>
+</BaseLayout>
+
+<style>
+  article {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  article > :global(section) {
+    margin-top: var(--space-7);
+  }
+
+  .structure-summary {
+    font-size: 1.2rem;
+  }
+</style>

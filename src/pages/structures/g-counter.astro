@@ -1,10 +1,8 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import CounterIllustration from "../../components/CounterIllustration.astro";
 import GCounterDemo from "../../components/GCounterDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   eventualConsistencyTerm,
@@ -13,25 +11,19 @@ import {
 } from "../../lib/atlas/standalone-terms";
 ---
 
-<BaseLayout
+<StructureLessonLayout
   title="G-counter"
   description="Alice, Bob, and Carol count birds on separate trails. A G-counter preserves their independent sightings despite late, repeated, or reordered notes."
-  territory="Structures"
-  sheetTitle="G-counter"
+  articleClass="structure-page"
+  illustrationId="structures-g-counter"
 >
-  <article class="structure-page">
-    <header class="page-intro">
-      <p class="territory-label">Structures</p>
-      <h1>G-counter</h1>
-      <p class="structure-summary">
-        The ranger asks Alice, Bob, and Carol to count birds on three trails.
-        Each hiker tracks their own sightings in a shared three-row format,
-        then leaves notes with their name and running count. The notes may
-        arrive late, out of order, or more than once. By the end of the hike,
-        all three notebooks must show the same total.
-      </p>
-      <LessonIllustration id="structures-g-counter" />
-    </header>
+    <Fragment slot="summary">
+      The ranger asks Alice, Bob, and Carol to count birds on three trails.
+      Each hiker tracks their own sightings in a shared three-row format,
+      then leaves notes with their name and running count. The notes may
+      arrive late, out of order, or more than once. By the end of the hike,
+      all three notebooks must show the same total.
+    </Fragment>
 
     <nav class="lesson-map" aria-label="G-counter lesson map">
       <a href="#notebook-setup-title">Understand the notebooks</a>
@@ -229,20 +221,9 @@ import {
       </p>
     </section>
 
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
 
 <style>
-  .structure-page {
-    max-width: var(--measure-reading);
-    margin-inline: auto;
-  }
-
-  .structure-page > section {
-    margin-top: var(--space-7);
-  }
-
   .lesson-map {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -261,10 +242,6 @@ import {
 
   .lesson-map a + a {
     border-inline-start: var(--rule-width) solid var(--line);
-  }
-
-  .structure-summary {
-    font-size: 1.2rem;
   }
 
   pre {

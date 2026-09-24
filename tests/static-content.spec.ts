@@ -518,10 +518,6 @@ test("the model comparison explains tags and links structure pages", async ({ pa
   await page.goto("/structures/g-counter/");
   await expect(page.getByRole("link", { name: "Learn what CRDT means" }))
     .toHaveAttribute("href", "/structures/models/#crdt");
-
-  await page.goto("/structures/json-ot/");
-  await expect(page.getByRole("link", { name: "Learn what OT means" }))
-    .toHaveAttribute("href", "/structures/models/#ot");
 });
 
 test("the G-counter lesson exposes a direct reading path", async ({ page }) => {

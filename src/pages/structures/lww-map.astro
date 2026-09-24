@@ -1,17 +1,14 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import StructureNext from "../../components/StructureNext.astro";
-import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
+import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { lwwMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="LWWMap" description="The hikers compare timestamps to choose an answer for each line in their trail report table." territory="Structures" sheetTitle="LWWMap">
-  <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>LWWMap</h1><p class="structure-summary">Alice and Bob still have copies of the trail report table. They change the gate-status line while they are apart. Can Carol settle their disagreement without asking the ranger to number the notes?</p><LessonIllustration id="structures-lww-map" /></header>
+<StructureLessonLayout title="LWWMap" description="The hikers compare timestamps to choose an answer for each line in their trail report table." articleClass="register-lesson" illustrationId="structures-lww-map">
+    <Fragment slot="summary">Alice and Bob still have copies of the trail report table. They change the gate-status line while they are apart. Can Carol settle their disagreement without asking the ranger to number the notes?</Fragment>
     <StructureFacts structure="LWWMap" family="CRDT" model="Per-key last-writer-wins map" updates="Write or cross out a text entry" merge="Use the latest time; at equal time, keep the removal, then use the writer ID to break a tie between writes." delivery="Safe under repeated and out-of-order delivery" bestFor="Offline string settings with a trusted clock policy" cost="Time and writer for each answer or removal" />
     <section aria-labelledby="clock-title">
       <h2 id="clock-title">A time beside each line</h2>
@@ -110,6 +107,4 @@ import "../../styles/set-lesson.css";
         times and advances each line's clock past the times it has observed.
       </p>
     </section>
-    <StructureNext />
-  </article>
-</BaseLayout>
+</StructureLessonLayout>
