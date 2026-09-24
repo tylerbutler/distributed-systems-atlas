@@ -75,12 +75,12 @@ const operationNames = structure.operations.length === 1
             <table aria-label="Each hiker's inspection route before and after sharing">
               <thead><tr><th scope="col">Hiker</th><th scope="col">Before sharing</th><th scope="col">After sharing</th></tr></thead>
               <tbody>
-                <tr><th scope="row">Alice</th><td>Bridge · Falls · Weir · North gate</td><td>Bridge · Falls · <ins>Marsh</ins> · Weir · North gate</td></tr>
-                <tr><th scope="row">Bob</th><td>Bridge · Marsh · Weir · North gate</td><td>Bridge · <ins>Falls</ins> · Marsh · Weir · North gate</td></tr>
+                <tr><th scope="row">Alice</th><td>Bridge · <ins>Falls</ins> · Weir · North gate</td><td>Bridge · Falls · <ins>Marsh</ins> · Weir · North gate</td></tr>
+                <tr><th scope="row">Bob</th><td>Bridge · <ins>Marsh</ins> · Weir · North gate</td><td>Bridge · <ins>Falls</ins> · Marsh · Weir · North gate</td></tr>
                 <tr><th scope="row">Carol</th><td>Bridge · Weir · North gate</td><td>Bridge · <ins>Falls</ins> · <ins>Marsh</ins> · Weir · North gate</td></tr>
               </tbody>
             </table>
-            <figcaption>Highlighted stops are new to each notebook after the notes arrive.</figcaption>
+            <figcaption>Highlighted stops show what each hiker adds before sharing, then what arrives from another notebook.</figcaption>
           </figure>
           <p>
             Alice marks Falls as <code>A:1</code>. Bob marks Marsh as <code>B:1</code>.

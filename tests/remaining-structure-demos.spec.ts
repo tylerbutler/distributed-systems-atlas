@@ -77,7 +77,7 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
           name: "Each hiker's inspection route before and after sharing",
         });
         await expect(notebook).toContainText("Bridge · Falls · Marsh · Weir · North gate");
-        await expect(notebook.locator("ins")).toHaveCount(4);
+        await expect(notebook.locator("ins")).toHaveCount(6);
         await expect(notebook.locator("ins").first()).toHaveCSS("background-color", "oklch(0.84 0.18 100)");
         await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
       }
@@ -157,11 +157,13 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
       .toBeVisible();
     const notebook = article.locator(".route-notebooks");
+    await expect(notebook.locator("tbody tr").nth(0).locator("td").first().locator("ins")).toHaveText(["Falls"]);
+    await expect(notebook.locator("tbody tr").nth(1).locator("td").first().locator("ins")).toHaveText(["Marsh"]);
+    await expect(notebook.locator("tbody tr").nth(2).locator("td").first().locator("ins")).toHaveCount(0);
     await expect(notebook.locator("tbody tr").nth(0).locator("td").nth(1).locator("ins")).toHaveText(["Marsh"]);
     await expect(notebook.locator("tbody tr").nth(1).locator("td").nth(1).locator("ins")).toHaveText(["Falls"]);
     await expect(notebook.locator("tbody tr").nth(2).locator("td").nth(1).locator("ins")).toHaveText(["Falls", "Marsh"]);
-    await expect(notebook.locator("tbody td:first-of-type ins")).toHaveCount(0);
-    await expect(notebook.locator("figcaption")).toContainText("Highlighted stops are new");
+    await expect(notebook.locator("figcaption")).toContainText("Highlighted stops show what each hiker adds before sharing");
     await expect(notebook.locator("table")).toHaveCSS("font-size", "14px");
     const hikerColumn = notebook.locator("tbody th").first();
     expect((await hikerColumn.boundingBox())!.width).toBeGreaterThanOrEqual(90);
