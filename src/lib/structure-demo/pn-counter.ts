@@ -9,8 +9,13 @@ import {
   type Result,
   type TransportDelivery,
 } from "@atlas/toolkit";
+import {
+  demoReplicaName,
+  REPLICA_IDS as DEMO_REPLICA_IDS,
+  type DemoReplicaId,
+} from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type PNCounterDemoPhase = "initial" | "queued" | "delivered";
 export type PNCounterComponent = {
   replicaId: string;
@@ -26,16 +31,10 @@ type QueuedUpdate = {
   amount: number;
 };
 
-const REPLICA_IDS: readonly ReplicaId[] = ["A", "B", "C"];
+const REPLICA_IDS: readonly ReplicaId[] = DEMO_REPLICA_IDS;
 const STARTING_COUNT_ID = "starting-count";
 const STARTING_COUNT = 10;
 const MAX_RECORDED_DELIVERIES = 36;
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
-
 export type PNCounterDemoState = {
   phase: PNCounterDemoPhase;
   room: PNCounterRoom;
@@ -79,7 +78,7 @@ function value<T>(result: Result<T>): T {
 }
 
 export function pnCounterUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 export function createPNCounterDemo(): PNCounterDemoState {

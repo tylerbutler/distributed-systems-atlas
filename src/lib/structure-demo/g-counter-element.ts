@@ -15,6 +15,8 @@ import {
   autoDeliveryChangeEvent,
   DemoTransportControlsElement,
 } from "./demo-transport-controls";
+import { animateDemoOperation } from "./demo-operation-flight";
+import { isDemoReplicaId } from "./replicas";
 
 type Action = "race" | "resend" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -27,10 +29,6 @@ function node<K extends keyof HTMLElementTagNameMap>(
   const element = document.createElement(tag);
   element.textContent = text;
   return element;
-}
-
-function isReplicaId(value: string): value is ReplicaId {
-  return value === "A" || value === "B" || value === "C";
 }
 
 class GCounterDemoElement extends HTMLElement {
@@ -291,7 +289,7 @@ class GCounterDemoElement extends HTMLElement {
     }
     for (const [sequenceNumber, operationDeliveries] of operations) {
       const author = operationDeliveries[0]?.author;
-      if (!isReplicaId(author)) continue;
+      if (!isDemoReplicaId(author)) continue;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
         `${gCounterUserName(author)}'s checkpoint note is being delivered to the other hikers.`;
       this.showGuidedObservation(
@@ -308,7 +306,7 @@ class GCounterDemoElement extends HTMLElement {
         );
         if (
           generation === this.generation &&
-          isReplicaId(delivery.to)
+          isDemoReplicaId(delivery.to)
         ) {
           this.renderReplica(view, delivery.to);
         }
@@ -323,36 +321,18 @@ class GCounterDemoElement extends HTMLElement {
     leg: "outbound" | "sequenced",
     duration = this.transport.nextDuration(HOP_LATENCY_MS),
   ): Promise<void> {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
-    const root = layer.getBoundingClientRect();
-    const start = from.getBoundingClientRect();
-    const end = to.getBoundingClientRect();
-    const dot = node("span", "");
-    dot.className = `operation-pulse ${leg}`;
-    dot.dataset.leg = leg;
-    dot.ariaHidden = "true";
-    const dotLabel = node("span", `${label} · ${Math.round(duration)} ms`);
-    dotLabel.className = "operation-pulse-label";
-    dot.append(dotLabel);
-    layer.append(dot);
-    const animation = dot.animate([
-      {
-        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
-        opacity: 0.3,
-      },
-      {
-        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
-        opacity: 1,
-      },
-    ], {
-      duration: Math.max(1, duration),
-      easing: "ease-in-out",
+    await animateDemoOperation({
+      activeAnimations: this.activeAnimations,
+      className: "operation-pulse",
+      duration,
+      from,
+      label: `${label} · ${Math.round(duration)} ms`,
+      labelClassName: "operation-pulse-label",
+      layer: this.querySelector<HTMLElement>("[data-operation-layer]")!,
+      leg,
+      startOpacity: 0.3,
+      to,
     });
-    this.activeAnimations.add(animation);
-    await animation.finished.catch(() => undefined);
-    this.activeAnimations.delete(animation);
-    dot.remove();
   }
 
   private resetFlow(): void {
@@ -434,7 +414,7 @@ class GCounterDemoElement extends HTMLElement {
     }
     const operations = new Map<number, { author: ReplicaId; destinations: ReplicaId[] }>();
     for (const delivery of view.deliveries) {
-      if (!isReplicaId(delivery.author) || !isReplicaId(delivery.to)) continue;
+      if (!isDemoReplicaId(delivery.author) || !isDemoReplicaId(delivery.to)) continue;
       const operation = operations.get(delivery.sequenceNumber) ?? {
         author: delivery.author,
         destinations: [],

@@ -7,9 +7,11 @@ import {
   pnCounterUserName,
   presentPNCounterDemo,
 } from "../lib/structure-demo/pn-counter";
+import { REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/structure-demo-shell.css";
 
 const initial = presentPNCounterDemo(createPNCounterDemo());
-const replicas = ["A", "B", "C"] as const;
+const replicas = REPLICA_IDS;
 const componentLabels = {
   "starting-count": "Agreed starting count",
   A: "Alice",
@@ -18,9 +20,9 @@ const componentLabels = {
 };
 ---
 
-<pn-counter-demo data-testid="pn-counter-demo">
-  <section class="pn-instrument" aria-labelledby="pn-counter-demo-title">
-    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+<pn-counter-demo class="structure-demo-root" data-testid="pn-counter-demo">
+  <section class="pn-instrument structure-demo-instrument" aria-labelledby="pn-counter-demo-title">
+    <div class="operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="pn-heading">
       <div>
         <h2 id="pn-counter-demo-title">Correct the shared bird count</h2>
@@ -191,33 +193,6 @@ const componentLabels = {
 </script>
 
 <style>
-  pn-counter-demo {
-    display: block;
-    width: min(calc(100vw - 2rem), var(--content));
-    max-width: none;
-    margin-block: var(--space-7);
-    margin-inline: 50%;
-    font-variant-numeric: tabular-nums;
-    transform: translateX(-50%);
-  }
-
-  .pn-instrument {
-    position: relative;
-    padding: clamp(1rem, 3vw, 2rem);
-    border: var(--rule-width) solid var(--instrument-deep);
-    color: var(--clear);
-    background: var(--instrument);
-    --focus-color: var(--signal);
-    --link-color: var(--clear);
-  }
-
-  .operation-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-
   :global(.pn-operation-pulse) {
     position: absolute;
     top: 0;

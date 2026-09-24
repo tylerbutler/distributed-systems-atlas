@@ -10,8 +10,9 @@ import {
   type Result,
   type TransportDelivery,
 } from "@atlas/toolkit";
+import { demoReplicaName, type DemoReplicaId } from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type MapKind = MapRoomKind;
 export type MapOperation = {
   author: ReplicaId;
@@ -34,12 +35,6 @@ export type MapDemoState = {
 export type MapDemoResult =
   | { ok: true; state: MapDemoState }
   | { ok: false; state: MapDemoState; error: string };
-
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
 
 const RACES: Record<MapKind, readonly MapOperation[]> = {
   "shared-map": [
@@ -66,7 +61,7 @@ function value<T>(result: Result<T>): T {
 }
 
 export function mapUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 export function mapRaceOperations(kind: MapKind): readonly MapOperation[] {

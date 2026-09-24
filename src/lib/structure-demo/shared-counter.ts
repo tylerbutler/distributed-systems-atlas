@@ -8,8 +8,13 @@ import {
   type SharedCounterRoomView,
   type TransportDelivery,
 } from "@atlas/toolkit";
+import {
+  demoReplicaName,
+  REPLICA_IDS as DEMO_REPLICA_IDS,
+  type DemoReplicaId,
+} from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type SharedCounterDemoPhase = "initial" | "queued" | "delivered";
 export type SharedCounterOperation = {
   sequenceNumber: number;
@@ -25,15 +30,9 @@ type QueuedUpdate = {
   amount: number;
 };
 
-const REPLICA_IDS: readonly ReplicaId[] = ["A", "B", "C"];
+const REPLICA_IDS: readonly ReplicaId[] = DEMO_REPLICA_IDS;
 const MAX_RECORDED_DELIVERIES = 36;
 const MAX_RECORDED_OPERATIONS = 12;
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
-
 export type SharedCounterDemoState = {
   phase: SharedCounterDemoPhase;
   room: SharedCounterRoom;
@@ -72,7 +71,7 @@ function value<T>(result: Result<T>): T {
 }
 
 export function sharedCounterUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 export function createSharedCounterDemo(): SharedCounterDemoState {

@@ -1,8 +1,10 @@
 ---
 import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
+import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
 import type { RemainingStructure } from "../lib/structure-demo/remaining-structures";
 import "../styles/remaining-structure-demo.css";
+import "../styles/structure-demo-shell.css";
 
 interface Props {
   structure: RemainingStructure;
@@ -13,11 +15,12 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
 ---
 
 <remaining-structure-demo
+  class="structure-demo-root"
   data-testid={`${structure.id}-demo`}
   data-kind={structure.id}
 >
-  <section class="remaining-demo instrument-panel" aria-labelledby={`${structure.id}-demo-title`}>
-    {structure.id === "shared-sequence" && <div class="remaining-operation-layer" data-operation-layer aria-hidden="true"></div>}
+  <section class="remaining-demo instrument-panel structure-demo-instrument" aria-labelledby={`${structure.id}-demo-title`}>
+    {structure.id === "shared-sequence" && <div class="remaining-operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>}
     <header>
       <div>
         <h2 id={`${structure.id}-demo-title`}>
@@ -32,10 +35,10 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       <p class="remaining-rule"><span>Merge rule</span><strong>{structure.rule}</strong></p>
     </header>
     <div class:list={["remaining-clients", { "sequence-clients": structure.id === "shared-sequence" }]}>
-      {(["A", "B", "C"] as const).map((id, index) => (
+      {REPLICA_IDS.map((id, index) => (
         <Fragment>
-          <section data-client={id} aria-label={`${["Alice", "Bob", "Carol"][index]}'s replica`}>
-            <header><StationMark station={id} size="lg" /><h3>{["Alice", "Bob", "Carol"][index]}</h3></header>
+          <section data-client={id} aria-label={`${demoReplicaName(id)}'s replica`}>
+            <header><StationMark station={id} size="lg" /><h3>{demoReplicaName(id)}</h3></header>
             <p class="remaining-local-record">
               <span>{structure.id === "shared-sequence" ? "Route in this notebook" : structure.recordLabel}</span>
               <strong data-local-record>{structure.initialRecord[id]}</strong>
@@ -46,7 +49,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
               <small data-client-evidence>{structure.id === "shared-sequence" ? "Each trail stop gets a unique ID." : structure.evidence[id]}</small>
             </p>
             {structure.id === "shared-sequence" ? (
-              <form class="remaining-insert-controls" data-sequence-insert aria-label={`Insert a trail stop for ${["Alice", "Bob", "Carol"][index]}`}>
+              <form class="remaining-insert-controls" data-sequence-insert aria-label={`Insert a trail stop for ${demoReplicaName(id)}`}>
                 <label>Trail stop name
                   <select data-insert-name required disabled>
                     <option value="" selected disabled>Choose a trail stop</option>
@@ -120,6 +123,8 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     autoDeliveryChangeEvent,
     DemoTransportControlsElement,
   } from "../lib/structure-demo/demo-transport-controls";
+  import { animateDemoOperation } from "../lib/structure-demo/demo-operation-flight";
+  import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
   import { sequenceStopMarks } from "../lib/structure-demo/remaining-structures";
 
   class RemainingStructureDemo extends HTMLElement {
@@ -163,7 +168,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
             this.setSequenceSlip(client, description);
             nameInput.value = "";
             this.clearError();
-            const hiker = { A: "Alice", B: "Bob", C: "Carol" }[client];
+            const hiker = demoReplicaName(client);
             this.render(`Queued ${hiker}'s insertion note.`);
             this.queueOutbound(client, name);
             if (this.transport.autoDeliver) void this.deliver(form.querySelector<HTMLButtonElement>("button") ?? form);
@@ -197,7 +202,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
         this.resetFlow();
         try {
           this.state = stageRemainingRace(this.state);
-          this.acted = new Set(["A", "B", "C"]);
+          this.acted = new Set(REPLICA_IDS);
           if (this.kind === "shared-sequence") {
             if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
             this.sequenceNotes = [
@@ -274,10 +279,10 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
           if (!relay) throw new Error("Missing trail exchange relay");
           const pendingNotes = [...this.sequenceNotes].reverse().filter(({ delivered }) => !delivered);
           await Promise.all(pendingNotes.flatMap((note) =>
-            (["A", "B", "C"] as const).map((id) => {
+            REPLICA_IDS.map((id) => {
               const recipient = this.querySelector<HTMLElement>(`[data-client="${id}"]`);
               if (!recipient) throw new Error(`Missing ${id} notebook`);
-              const name = { A: "Alice", B: "Bob", C: "Carol" }[note.author];
+              const name = demoReplicaName(note.author);
               return this.animateHop(relay, recipient, `${name} note`, "shared");
             })
           ));
@@ -322,42 +327,20 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       label: string,
       leg: "outbound" | "shared",
     ): Promise<void> {
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const layer = this.querySelector<HTMLElement>("[data-operation-layer]");
       if (!layer) throw new Error("Missing insertion animation layer");
-      const root = layer.getBoundingClientRect();
-      const start = from.getBoundingClientRect();
-      const end = to.getBoundingClientRect();
-      const dot = document.createElement("span");
-      dot.className = `remaining-operation-pulse ${leg}`;
-      dot.ariaHidden = "true";
-      const caption = document.createElement("span");
-      caption.className = "remaining-operation-label";
-      caption.textContent = label;
-      dot.append(caption);
-      layer.append(dot);
-      const animation = dot.animate([
-        {
-          transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
-          opacity: 0.25,
-        },
-        {
-          transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
-          opacity: 1,
-        },
-      ], {
+      await animateDemoOperation({
+        activeAnimations: this.activeAnimations,
+        className: "remaining-operation-pulse",
         duration: this.transport.nextDuration(650),
         easing: "linear",
+        from,
+        label,
+        labelClassName: "remaining-operation-label",
+        layer,
+        leg,
+        to,
       });
-      this.activeAnimations.add(animation);
-      try {
-        await animation.finished;
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
-      } finally {
-        this.activeAnimations.delete(animation);
-        dot.remove();
-      }
     }
 
     private resetFlow(): void {
@@ -372,7 +355,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
       this.state = createRemainingDemo(this.kind);
       if (this.kind === "shared-sequence") {
-        for (const id of ["A", "B", "C"] as const) this.setSequenceSlip(id, "No trail stop inserted yet.");
+        for (const id of REPLICA_IDS) this.setSequenceSlip(id, "No trail stop inserted yet.");
       }
     }
 
@@ -421,7 +404,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       log.replaceChildren(...(this.sequenceNotes.length
         ? this.sequenceNotes.map((note) => {
           const item = document.createElement("li");
-          const name = { A: "Alice", B: "Bob", C: "Carol" }[note.author];
+          const name = demoReplicaName(note.author);
           item.textContent = `${name}: ${note.description} — ${note.delivered ? "delivered" : "waiting"}`;
           return item;
         })

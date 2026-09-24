@@ -6,13 +6,15 @@ import {
   gCounterUserName,
   presentGCounterDemo,
 } from "../lib/structure-demo/g-counter";
+import { REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/structure-demo-shell.css";
 
 const initial = presentGCounterDemo(createGCounterDemo());
 ---
 
-<g-counter-demo data-testid="g-counter-demo">
-  <section class="gcounter-instrument" aria-labelledby="gcounter-demo-title">
-    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+<g-counter-demo class="structure-demo-root" data-testid="g-counter-demo">
+  <section class="gcounter-instrument structure-demo-instrument" aria-labelledby="gcounter-demo-title">
+    <div class="operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="gcounter-heading">
       <div>
         <h2 id="gcounter-demo-title">Record sightings on three hikes</h2>
@@ -165,10 +167,10 @@ const initial = presentGCounterDemo(createGCounterDemo());
             </tr>
           </thead>
           <tbody>
-            {(["A", "B", "C"] as const).map((user) => (
+            {REPLICA_IDS.map((user) => (
               <tr>
                 <th scope="row">{gCounterUserName(user)}</th>
-                {(["A", "B", "C"] as const).map((replica) => (
+                {REPLICA_IDS.map((replica) => (
                   <td class="observation-data" data-user-count={`${replica}-${user}`}>0</td>
                 ))}
               </tr>
@@ -189,33 +191,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
 </script>
 
 <style>
-  g-counter-demo {
-    display: block;
-    width: min(calc(100vw - 2rem), var(--content));
-    max-width: none;
-    margin-block: var(--space-7);
-    margin-inline: 50%;
-    font-variant-numeric: tabular-nums;
-    transform: translateX(-50%);
-  }
-
-  .gcounter-instrument {
-    position: relative;
-    padding: clamp(1rem, 3vw, 2rem);
-    border: var(--rule-width) solid var(--instrument-deep);
-    color: var(--clear);
-    background: var(--instrument);
-    --focus-color: var(--signal);
-    --link-color: var(--clear);
-  }
-
-  .operation-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-
   :global(.operation-pulse) {
     position: absolute;
     top: 0;

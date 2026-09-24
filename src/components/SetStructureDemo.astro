@@ -8,6 +8,8 @@ import {
   type ReplicaId,
   type SetDemoKind,
 } from "../lib/structure-demo/set-demo";
+import { REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/structure-demo-shell.css";
 
 interface Props {
   kind: SetDemoKind;
@@ -19,7 +21,7 @@ interface Props {
 
 const { kind, title, description, rule, raceLabel } = Astro.props;
 const initial = presentSetDemo(createSetDemo(kind));
-const replicaIds = ["A", "B", "C"] as const;
+const replicaIds = REPLICA_IDS;
 const beaconByReplica: Record<ReplicaId, string> = {
   A: "Eagle Creek",
   B: "Ridge Pass",
@@ -50,9 +52,9 @@ function raceNote(replica: ReplicaId): string {
 }
 ---
 
-<set-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
-  <section class="set-instrument" aria-labelledby={`${kind}-demo-title`}>
-    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+<set-structure-demo class="structure-demo-root" data-kind={kind} data-testid={`${kind}-demo`}>
+  <section class="set-instrument structure-demo-instrument" aria-labelledby={`${kind}-demo-title`}>
+    <div class="operation-layer structure-demo-operation-layer" style="--demo-operation-layer-z: 3" data-operation-layer aria-hidden="true"></div>
     <header class="set-heading">
       <div>
         <p class="instrument-kicker">Three field notebooks</p>
@@ -201,32 +203,6 @@ function raceNote(replica: ReplicaId): string {
 </script>
 
 <style>
-  set-structure-demo {
-    display: block;
-    width: min(calc(100vw - 2rem), var(--content));
-    max-width: none;
-    margin-block: var(--space-7);
-    margin-inline: 50%;
-    transform: translateX(-50%);
-  }
-
-  .set-instrument {
-    position: relative;
-    padding: clamp(1rem, 3vw, 2rem);
-    border: var(--rule-width) solid var(--instrument-deep);
-    color: var(--clear);
-    background: var(--instrument);
-    --focus-color: var(--signal);
-    --link-color: var(--clear);
-  }
-
-  .operation-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-  }
-
   :global(.set-operation-pulse) {
     position: absolute;
     top: 0;

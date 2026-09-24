@@ -15,6 +15,7 @@ import {
   autoDeliveryChangeEvent,
   DemoTransportControlsElement,
 } from "./demo-transport-controls";
+import { animateDemoOperation } from "./demo-operation-flight";
 
 type Action = "race" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -190,37 +191,19 @@ class SharedCounterDemoElement extends HTMLElement {
     label: string,
     leg: "outbound" | "sequenced",
   ): Promise<void> {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
-    const root = layer.getBoundingClientRect();
-    const start = from.getBoundingClientRect();
-    const end = to.getBoundingClientRect();
-    const dot = node("span", "");
-    dot.className = `shared-operation-pulse ${leg}`;
-    dot.dataset.leg = leg;
-    dot.ariaHidden = "true";
     const duration = this.transport.nextDuration(HOP_LATENCY_MS);
-    const dotLabel = node("span", `${label} · ${Math.round(duration)} ms`);
-    dotLabel.className = "shared-operation-label";
-    dot.append(dotLabel);
-    layer.append(dot);
-    const animation = dot.animate([
-      {
-        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
-        opacity: 0.3,
-      },
-      {
-        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
-        opacity: 1,
-      },
-    ], {
+    await animateDemoOperation({
+      activeAnimations: this.activeAnimations,
+      className: "shared-operation-pulse",
       duration,
-      easing: "ease-in-out",
+      from,
+      label: `${label} · ${Math.round(duration)} ms`,
+      labelClassName: "shared-operation-label",
+      layer: this.querySelector<HTMLElement>("[data-operation-layer]")!,
+      leg,
+      startOpacity: 0.3,
+      to,
     });
-    this.activeAnimations.add(animation);
-    await animation.finished.catch(() => undefined);
-    this.activeAnimations.delete(animation);
-    dot.remove();
   }
 
   private resetFlow(): void {

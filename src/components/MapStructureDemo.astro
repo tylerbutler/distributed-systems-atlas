@@ -9,6 +9,7 @@ import {
   type ReplicaId,
 } from "../lib/structure-demo/map-demo";
 import "../styles/map-demo.css";
+import "../styles/structure-demo-shell.css";
 
 interface Props {
   kind: MapKind;
@@ -75,9 +76,9 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
 }
 ---
 
-<map-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
-  <section class="map-instrument" aria-labelledby={`${kind}-demo-title`}>
-    <div class="map-operation-layer" data-operation-layer aria-hidden="true"></div>
+<map-structure-demo class="structure-demo-root" data-kind={kind} data-testid={`${kind}-demo`}>
+  <section class="map-instrument structure-demo-instrument" aria-labelledby={`${kind}-demo-title`}>
+    <div class="map-operation-layer structure-demo-operation-layer" style="--demo-operation-layer-z: 3" data-operation-layer aria-hidden="true"></div>
     <header class="map-heading">
       <div>
         <p class="instrument-kicker">Three hikers' notebooks</p>

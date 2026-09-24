@@ -8,8 +8,9 @@ import {
   type RegisterDemoView,
   type Result,
 } from "@atlas/toolkit";
+import { demoReplicaName, type DemoReplicaId } from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type RegisterKind = RegisterDemoKind;
 export type RegisterOperation = {
   author: ReplicaId;
@@ -29,12 +30,6 @@ export type RegisterDemoResult =
   | { ok: true; state: RegisterDemoState }
   | { ok: false; state: RegisterDemoState; error: string };
 
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
-
 const RACE_OPERATIONS: readonly RegisterOperation[] = [
   { author: "A", value: "Trail open" },
   { author: "B", value: "Trail closed" },
@@ -46,7 +41,7 @@ function value<T>(result: Result<T>): T {
 }
 
 export function registerUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 export function registerRaceOperations(): readonly RegisterOperation[] {

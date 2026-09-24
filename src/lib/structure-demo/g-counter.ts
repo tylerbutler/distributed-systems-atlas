@@ -10,17 +10,12 @@ import {
   type Result,
   type TransportDelivery,
 } from "@atlas/toolkit";
+import { demoReplicaName, REPLICA_IDS, type DemoReplicaId } from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type GCounterDemoPhase = "initial" | "queued" | "delivered" | "resent";
 type Counts = Record<ReplicaId, number>;
 const MAX_RECORDED_DELIVERIES = 36;
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
-
 export type GCounterDemoState = {
   phase: GCounterDemoPhase;
   room: GCounterRoom;
@@ -60,7 +55,7 @@ export type GCounterDemoResult =
 const zeroCounts = (): Counts => ({ A: 0, B: 0, C: 0 });
 
 export function gCounterUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 function value<T>(result: Result<T>): T {
@@ -233,7 +228,7 @@ function userCounts(
   state: GCounterDemoState,
   replica: ReplicaId,
 ): Array<{ replicaId: ReplicaId; count: number }> {
-  return (["A", "B", "C"] as const).map((author) => ({
+  return REPLICA_IDS.map((author) => ({
     replicaId: author,
     count: author === replica ? state.authoredCounts[author] : state.deliveredCounts[author],
   }));

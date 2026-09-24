@@ -15,6 +15,7 @@ import {
   autoDeliveryChangeEvent,
   DemoTransportControlsElement,
 } from "./demo-transport-controls";
+import { animateDemoOperation } from "./demo-operation-flight";
 
 const HOP_LATENCY_MS = 800;
 
@@ -205,35 +206,17 @@ class MapStructureDemoElement extends HTMLElement {
     label: string,
     leg: "outbound" | "shared",
   ): Promise<void> {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const layer = this.querySelector<HTMLElement>("[data-operation-layer]")!;
-    const root = layer.getBoundingClientRect();
-    const start = from.getBoundingClientRect();
-    const end = to.getBoundingClientRect();
-    const dot = node("span", "");
-    dot.className = `map-operation-pulse ${leg}`;
-    dot.ariaHidden = "true";
-    const dotLabel = node("span", label);
-    dotLabel.className = "map-operation-label";
-    dot.append(dotLabel);
-    layer.append(dot);
-    const animation = dot.animate([
-      {
-        transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
-        opacity: 0.25,
-      },
-      {
-        transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
-        opacity: 1,
-      },
-    ], {
+    await animateDemoOperation({
+      activeAnimations: this.activeAnimations,
+      className: "map-operation-pulse",
       duration: this.transport.nextDuration(HOP_LATENCY_MS),
-      easing: "ease-in-out",
+      from,
+      label,
+      labelClassName: "map-operation-label",
+      layer: this.querySelector<HTMLElement>("[data-operation-layer]")!,
+      leg,
+      to,
     });
-    this.activeAnimations.add(animation);
-    await animation.finished.catch(() => undefined);
-    this.activeAnimations.delete(animation);
-    dot.remove();
   }
 
   private resetFlow(): void {

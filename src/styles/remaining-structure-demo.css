@@ -1,28 +1,3 @@
-remaining-structure-demo {
-  display: block;
-  width: min(calc(100vw - 2rem), var(--content));
-  max-width: none;
-  margin-block: var(--space-7);
-  margin-inline: 50%;
-  font-variant-numeric: tabular-nums;
-  transform: translateX(-50%);
-  clear: both;
-}
-
-.remaining-demo {
-  position: relative;
-  padding: clamp(1rem, 3vw, 2rem);
-  --focus-color: var(--signal);
-  --link-color: var(--clear);
-}
-
-.remaining-operation-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
 .remaining-operation-pulse {
   position: absolute;
   top: 0;

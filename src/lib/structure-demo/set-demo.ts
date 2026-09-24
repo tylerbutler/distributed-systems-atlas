@@ -11,8 +11,9 @@ import {
   type SetTransportResult,
   type TransportDelivery,
 } from "@atlas/toolkit";
+import { demoReplicaName, type DemoReplicaId } from "./replicas";
 
-export type ReplicaId = "A" | "B" | "C";
+export type ReplicaId = DemoReplicaId;
 export type SetDemoKind = SetRoomKind;
 export type SetDemoPhase = "initial" | "queued" | "delivered";
 export type SetDemoOperation = {
@@ -57,12 +58,6 @@ export type SetDemoResult =
   | { ok: true; state: SetDemoState }
   | { ok: false; state: SetDemoState; error: string };
 
-const USER_NAMES: Record<ReplicaId, string> = {
-  A: "Alice",
-  B: "Bob",
-  C: "Carol",
-};
-
 const RACE_OPERATIONS: Record<SetDemoKind, SetDemoOperation[]> = {
   "g-set": [
     { author: "A", action: "add", element: "Eagle Creek" },
@@ -93,7 +88,7 @@ function initialResult(kind: SetDemoKind): string {
 }
 
 export function setDemoUserName(replica: ReplicaId): string {
-  return USER_NAMES[replica];
+  return demoReplicaName(replica);
 }
 
 export function createSetDemo(kind: SetDemoKind): SetDemoState {

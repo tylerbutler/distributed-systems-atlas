@@ -7,6 +7,7 @@ import {
   type RegisterKind,
   type ReplicaId,
 } from "../lib/structure-demo/register-demo";
+import "../styles/structure-demo-shell.css";
 
 interface Props {
   kind: RegisterKind;
@@ -46,9 +47,9 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
 }
 ---
 
-<register-structure-demo data-kind={kind} data-testid={`${kind}-demo`}>
-  <section class="register-instrument" aria-labelledby={`${kind}-demo-title`}>
-    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+<register-structure-demo class="structure-demo-root" data-kind={kind} data-testid={`${kind}-demo`}>
+  <section class="register-instrument structure-demo-instrument" aria-labelledby={`${kind}-demo-title`}>
+    <div class="operation-layer structure-demo-operation-layer" style="--demo-operation-layer-z: 3" data-operation-layer aria-hidden="true"></div>
     <header class="register-heading">
       <div>
         <p class="instrument-kicker">One trail-status field</p>
@@ -149,31 +150,6 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
 </script>
 
 <style>
-  register-structure-demo {
-    display: block;
-    width: min(calc(100vw - 2rem), var(--content));
-    max-width: none;
-    margin-block: var(--space-7);
-    margin-inline: 50%;
-    transform: translateX(-50%);
-  }
-
-  .register-instrument {
-    position: relative;
-    padding: clamp(1rem, 3vw, 2rem);
-    border: var(--rule-width) solid var(--instrument-deep);
-    color: var(--clear);
-    background: var(--instrument);
-    --focus-color: var(--signal);
-  }
-
-  .operation-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-  }
-
   :global(.register-operation-pulse) {
     position: absolute;
     top: 0;

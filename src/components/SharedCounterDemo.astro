@@ -6,13 +6,14 @@ import {
   presentSharedCounterDemo,
   sharedCounterUserName,
 } from "../lib/structure-demo/shared-counter";
+import "../styles/structure-demo-shell.css";
 
 const initial = presentSharedCounterDemo(createSharedCounterDemo());
 ---
 
-<shared-counter-demo data-testid="shared-counter-demo">
-  <section class="shared-instrument" aria-labelledby="shared-counter-demo-title">
-    <div class="operation-layer" data-operation-layer aria-hidden="true"></div>
+<shared-counter-demo class="structure-demo-root" data-testid="shared-counter-demo">
+  <section class="shared-instrument structure-demo-instrument" aria-labelledby="shared-counter-demo-title">
+    <div class="operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
     <header class="shared-heading">
       <div>
         <h2 id="shared-counter-demo-title">Send signed changes through the ranger</h2>
@@ -147,33 +148,6 @@ seen SN → ignore duplicate</code></pre>
 </script>
 
 <style>
-  shared-counter-demo {
-    display: block;
-    width: min(calc(100vw - 2rem), var(--content));
-    max-width: none;
-    margin-block: var(--space-7);
-    margin-inline: 50%;
-    font-variant-numeric: tabular-nums;
-    transform: translateX(-50%);
-  }
-
-  .shared-instrument {
-    position: relative;
-    padding: clamp(1rem, 3vw, 2rem);
-    border: var(--rule-width) solid var(--instrument-deep);
-    color: var(--clear);
-    background: var(--instrument);
-    --focus-color: var(--signal);
-    --link-color: var(--clear);
-  }
-
-  .operation-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-
   :global(.shared-operation-pulse) {
     position: absolute;
     top: 0;

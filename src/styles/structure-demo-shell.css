@@ -1,0 +1,27 @@
+.structure-demo-root {
+  display: block;
+  width: min(calc(100vw - 2rem), var(--content));
+  max-width: none;
+  margin-block: var(--space-7);
+  margin-inline: 50%;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  clear: both;
+}
+
+.structure-demo-instrument {
+  position: relative;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: var(--rule-width) solid var(--instrument-deep);
+  color: var(--clear);
+  background: var(--instrument);
+  --focus-color: var(--signal);
+  --link-color: var(--clear);
+}
+
+.structure-demo-operation-layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--demo-operation-layer-z, 2);
+  pointer-events: none;
+}
