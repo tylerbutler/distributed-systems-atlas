@@ -291,9 +291,10 @@ Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
 
 SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
-comparison before its sandbox. Alice and Bob insert stops before the same
-route stop; Carol observes their local routes and the insertion notes in the
-trail exchange. The route readout names Carol's current view until both notes
+comparison before its sandbox. The comparison highlights stops that arrive
+from another notebook in each after-sharing route. Alice and Bob insert stops
+before the same route stop; Carol observes their local routes and the insertion
+notes in the trail exchange. The route readout names Carol's current view until both notes
 arrive. The other later-family lessons use the same reading width and dark
 instrument field, but keep their own kernel-supported client actions.
 
