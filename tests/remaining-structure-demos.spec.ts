@@ -207,9 +207,13 @@ test("SharedSequence animates notes to the relay and then to the notebooks", asy
   const path = await outbound.evaluate((element) => {
     const effect = element.getAnimations()[0]?.effect;
     if (!(effect instanceof KeyframeEffect)) throw new Error("Missing operation flight");
-    return effect.getKeyframes().map(({ transform }) => transform);
+    return {
+      easing: effect.getTiming().easing,
+      transforms: effect.getKeyframes().map(({ transform }) => transform),
+    };
   });
-  expect(path[0]).not.toBe(path[1]);
+  expect(path.easing).toBe("linear");
+  expect(path.transforms[0]).not.toBe(path.transforms[1]);
   await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
   await expect(demo.locator("[data-state] li")).toHaveText(["Bridge", "Weir", "North gate"]);
   await demo.locator("[data-transport-auto-deliver]").check();
