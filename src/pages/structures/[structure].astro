@@ -86,18 +86,17 @@ const operationNames = structure.operations.length === 1
             <figcaption>
               <span class="route-key" data-stop="falls">Yellow: Falls (Alice)</span>{" "}
               <span class="route-key" data-stop="marsh">Blue: Marsh (Bob)</span>
-              <span>Each highlight shows a stop new to that notebook.</span>
+              <span>Each highlight shows a trail stop new to that notebook.</span>
             </figcaption>
           </figure>
           <p>
-            The starting stops already have IDs. Alice's new Falls gets <code>{sequenceStopMarks.Falls}</code>,
+            The starting trail stops already have IDs. Alice's new Falls gets <code>{sequenceStopMarks.Falls}</code>,
             and Bob's new Marsh gets <code>{sequenceStopMarks.Marsh}</code>. These IDs have the same
             replica-and-counter form as a <dfn><a href="/glossary/#dot">dot</a></dfn>.
-            Here they identify route stops, not set additions.
           </p>
           <TermCallout
             term="dot"
-            definition="A unique replica-and-counter pair. In this sequence, the pair identifies a stop."
+            definition="A unique replica-and-counter pair. Here, the pair identifies a trail stop."
           />
         </section>
       )}
@@ -107,11 +106,11 @@ const operationNames = structure.operations.length === 1
           structure="SharedSequence"
           family="CRDT"
           model="Replicated sequence with stable item identities"
-          updates="Insert stops into an ordered route"
-          merge="Keep both concurrent inserts before the same stop."
+          updates="Insert trail stops into an ordered route"
+          merge="Keep both concurrent inserts before the same trail stop."
           delivery="The hikers can exchange insertion notes later"
           bestFor="Routes and ordered lists edited on separate copies"
-          cost="An identity and ordering mark for each stop"
+          cost="An identity and ordering mark for each trail stop"
         />
       )}
 

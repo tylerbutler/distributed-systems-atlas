@@ -42,9 +42,9 @@ export const remainingStructures: RemainingStructure[] = [
     kind: "CRDT",
     name: "SharedSequence",
     module: "sequence_kernel",
-    tagline: "Alice and Bob add stops to the same route without losing either one.",
-    rule: "Give each stop its own mark, so adding or moving other stops does not change which one a note means.",
-    story: "Alice and Bob revise the ranger's ordered inspection route before either receives the other edit.",
+    tagline: "Alice and Bob add trail stops to the same route without losing either one.",
+    rule: "Give each trail stop its own mark, so adding or moving other trail stops does not change which one a note means.",
+    story: "Alice and Bob revise the ranger's inspection route, an ordered list of trail stops, before either receives the other's edit.",
     raceLabel: "Race the route insertions",
     recordLabel: "Trail stop list",
     messageLabel: "Insertion slip",
@@ -62,11 +62,11 @@ export const remainingStructures: RemainingStructure[] = [
     },
     local: { A: "Insert Falls before Weir", B: "Insert Marsh before Weir", C: "Observe the route" },
     evidence: {
-      A: "Stop ID",
-      B: "Stop ID",
+      A: "Trail stop ID",
+      B: "Trail stop ID",
       C: "No slip in this race",
     },
-    result: "Both new stops appear before Weir. The hikers use their marks to put the stops in the same order.",
+    result: "Both new trail stops appear before Weir. The hikers use their marks to put them in the same order.",
   },
   {
     id: "shared-text",
@@ -324,8 +324,8 @@ export const remainingFamilies: Record<RemainingFamily, {
 }> = {
   sequences: {
     name: "Sequences",
-    tagline: "Keep everyone's route stops and written notes in order.",
-    intro: "Alice and Bob each have a copy of the ranger's trail stop list and field notes. Before they compare changes, both add a stop at the same place on the list. How can they keep both stops in order?",
+    tagline: "Keep everyone's trail stops and written notes in order.",
+    intro: "Alice and Bob each have a copy of the ranger's trail stop list and field notes. Before they compare changes, both add a trail stop at the same place on the list. How can they keep both trail stops in order?",
   },
   coordination: {
     name: "Coordination",
