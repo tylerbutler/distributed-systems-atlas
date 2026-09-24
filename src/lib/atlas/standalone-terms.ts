@@ -77,7 +77,7 @@ export const sharedMapTerm: GlossaryTerm = {
 
 export const lwwMapTerm: GlossaryTerm = {
   term: "LWWMap",
-  definition: "A map where each named entry keeps the answer or removal with the latest time. At equal times, keep the removal; compare writer IDs to break a tie between answers.",
+  definition: "A last-writer-wins map of named entries. For each name, keep the answer or removal with the greatest timestamp. At equal times, keep the removal; compare writer IDs to break a tie between answers. Clock skew means the greatest timestamp may not mark the last edit in real time.",
 };
 
 export const orMapTerm: GlossaryTerm = {

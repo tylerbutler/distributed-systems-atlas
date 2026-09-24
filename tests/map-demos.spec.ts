@@ -124,6 +124,22 @@ test("the map family links every dedicated lesson", async ({ page }) => {
   }
 });
 
+test("LWWMap explains its name and timestamp rule without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/structures/lww-map/");
+    await expect(page.getByRole("region", { name: "A time beside each line" }))
+      .toContainText('LWW stands for "last writer wins."');
+    await expect(page.getByLabel("LWWMap definition"))
+      .toContainText("Clock skew means the greatest timestamp may not mark the last edit in real time.");
+    await expect(page.locator("dfn").first().getByRole("link", { name: "LWWMap" }))
+      .toHaveAttribute("href", "/glossary/#lwwmap");
+  } finally {
+    await context.close();
+  }
+});
+
 test("reset restores a new map room", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-map/");
