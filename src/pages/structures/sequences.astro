@@ -3,13 +3,34 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 import { remainingFamilies, structuresForFamily } from "../../lib/structure-demo/remaining-structures";
+import "../../styles/remaining-family.css";
+
 const family = remainingFamilies.sequences;
 const structures = structuresForFamily("sequences");
 ---
-<BaseLayout title="Sequences | Distributed Systems Atlas" description={family.tagline}>
-  <main id="main-content" tabindex="-1"><article class="structure-family">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>{family.name}</h1><p class="structure-summary">{family.intro}</p><LessonIllustration id="structures-sequences" /></header>
-    {structures.map((structure) => <section aria-label={structure.name}><StructureKindTag kind={structure.kind} /><h2>{structure.name}</h2><p>{structure.tagline}</p><p><strong>Rule:</strong> {structure.rule}</p><a class="structure-link" href={`/structures/${structure.id}/`}>Open the {structure.name} lesson</a></section>)}
+
+<BaseLayout title="Sequences" description={family.tagline} territory="Structures" sheetTitle="Sequences">
+  <article class="structure-family">
+    <header class="page-intro">
+      <p class="territory-label">Structure family</p>
+      <h1>{family.name}</h1>
+      <p>{family.intro}</p>
+      <LessonIllustration id="structures-sequences" />
+    </header>
+    {structures.map((structure) => (
+      <section aria-labelledby={`${structure.id}-title`}>
+        <header>
+          <div>
+            <StructureKindTag kind={structure.kind} />
+            <h2 id={`${structure.id}-title`}>{structure.name}</h2>
+            <p>{structure.tagline}</p>
+          </div>
+          <code>{structure.module}</code>
+        </header>
+        <p class="structure-rule"><strong>Rule:</strong> {structure.rule}</p>
+        <a class="structure-link" href={`/structures/${structure.id}/`}>Open the {structure.name} lesson</a>
+      </section>
+    ))}
     <nav class="structure-next" aria-label="Continue through structure families"><a href="/structures/maps/">Back to Maps</a><a href="/structures/shared-sequence/">Start the sequence lessons</a><a href="/structures/coordination/">Continue to Coordination</a></nav>
-  </article></main>
+  </article>
 </BaseLayout>

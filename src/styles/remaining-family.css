@@ -1,0 +1,74 @@
+.structure-family {
+  max-width: var(--measure-reading);
+  margin-inline: auto;
+}
+
+.structure-family .page-intro {
+  margin-bottom: var(--space-7);
+}
+
+.structure-family .page-intro > p:last-of-type {
+  font-size: 1.2rem;
+}
+
+.structure-family > section {
+  margin-top: var(--space-7);
+  padding: var(--space-5);
+  border: var(--rule-width) solid var(--line);
+  background: var(--clear);
+}
+
+.structure-family > section > header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: var(--rule-width) solid var(--line);
+}
+
+.structure-family > section > header :is(h2, p) {
+  margin: 0;
+}
+
+.structure-family > section > header h2 {
+  margin-block: var(--space-1);
+}
+
+.structure-family > section > header code {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.structure-family .structure-rule {
+  margin-block: var(--space-5);
+}
+
+.structure-family .structure-link {
+  font-family: var(--font-ui);
+  font-weight: 700;
+}
+
+.structure-family .structure-next {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-7);
+  padding-block: var(--space-5);
+  border-top: var(--rule-width) solid var(--line);
+  font-family: var(--font-ui);
+  font-weight: 650;
+}
+
+@media (width < 42rem) {
+  .structure-family > section {
+    padding: var(--space-4);
+  }
+
+  .structure-family > section > header {
+    display: grid;
+    gap: var(--space-2);
+  }
+}

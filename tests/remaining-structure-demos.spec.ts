@@ -41,12 +41,18 @@ for (const [slug, name, race, initial, final] of examples) {
 }
 
 test("remaining family pages link every dedicated lesson", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   for (const [family, names] of [
     ["sequences", ["SharedSequence", "SharedText"]],
     ["coordination", ["Claims", "OrderedCollection", "TaskManager", "PactMap"]],
     ["transforms", ["JsonOt", "SharedRichText"]],
   ] as const) {
     await page.goto(`/structures/${family}/`);
+    await expect(page.locator("main")).toHaveCount(1);
+    await expect(page.locator(".page-intro .territory-label")).toHaveText("Structure family");
+    expect(await page.locator(".page-intro").evaluate((element) => element.getBoundingClientRect().width))
+      .toBeLessThanOrEqual(700);
+    await expect(page.locator(".structure-family > section")).toHaveCount(names.length);
     for (const name of names) {
       await expect(page.getByRole("link", { name: `Open the ${name} lesson` })).toBeVisible();
     }
