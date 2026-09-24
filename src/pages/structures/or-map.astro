@@ -4,7 +4,7 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import TermCallout from "../../components/TermCallout.astro";
-import { orMapTerm } from "../../lib/atlas/standalone-terms";
+import { orMapTerm, pnCounterTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
@@ -75,21 +75,27 @@ import "../../styles/set-lesson.css";
     </section>
     <MapStructureDemo kind="or-map" title="Keep a new stockpile note" description="Start with 5 crates. Alice crosses out the line she saw while Bob logs 3 more. Compare their notebooks." rule="Crossing out an entry does not remove a new note you have not seen." raceLabel="Race removal against the 3-crate delivery" />
     <section aria-labelledby="modes-title">
-      <h2 id="modes-title">A list of names, with more inside</h2>
+      <h2 id="modes-title">A merge rule inside each line</h2>
       <p>
-        Alice, Bob, and Carol have two things to settle: whether the Eagle
-        Creek line remains, and how many crates to record on it. They compare
-        the notes behind the line to settle its removal, then combine Bob's
-        delivery with the tally already there. The demo uses tallies, but
-        Watershed OR-maps can instead hold dated answers, competing answers,
-        or lists of text. The hikers use one of these kinds throughout a
-        given notebook.
+        The Eagle Creek line has two parts. Alice crosses out the version
+        she has seen in the outer OR-map. Under that name, each notebook
+        holds a <dfn><a href="/glossary/#pn-counter">PN-counter</a></dfn>
+        for the crates. Bob records 3 more crates alongside the starting 5.
+        When the hikers exchange notes, they keep Bob's unseen change to
+        the line and merge the counter values. The result is 8. If two
+        hikers add crates without seeing each other's notes, both
+        additions count after merging.
       </p>
+      <TermCallout {...pnCounterTerm} />
       <p>
-        An OR-map gives each named line a structure with its own rule for
-        combining changes. That makes it one of the most flexible structures
-        here: the hikers can cross out a line without discarding an unseen
-        change to its contents.
+        Watershed calls this <code>TallyMode</code>. One mode applies to
+        every named entry in the map. In <code>RegisterMode</code>, the
+        value is a last-writer-wins text register. In
+        <code>MvRegisterMode</code>, a multi-value register retains
+        concurrent text answers. In <code>OrSetMode</code>, the value is
+        a set of text members. All four modes use observed removal for
+        names; the nested value has its own merge rule. This demo uses
+        only <code>TallyMode</code>.
       </p>
     </section>
     <section aria-labelledby="source-title">

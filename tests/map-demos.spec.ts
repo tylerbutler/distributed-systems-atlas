@@ -289,8 +289,14 @@ test("OR-map shows each hiker's notebook before and after the removal", async ({
       "Eagle Creek · 5 crates",
       "Eagle Creek · 8 crates",
     ]);
-    const modes = page.getByRole("region", { name: "A list of names, with more inside" });
-    await expect(modes).toContainText("each named line a structure with its own rule");
+    const modes = page.getByRole("region", { name: "A merge rule inside each line" });
+    await expect(modes).toContainText("they keep Bob's unseen change to the line");
+    await expect(modes).toContainText("both additions count after merging");
+    await expect(modes.locator("code")).toHaveText([
+      "TallyMode", "RegisterMode", "MvRegisterMode", "OrSetMode", "TallyMode",
+    ]);
+    await expect(modes.getByRole("link", { name: "PN-counter" }).first())
+      .toHaveAttribute("href", "/glossary/#pn-counter");
   } finally {
     await context.close();
   }
