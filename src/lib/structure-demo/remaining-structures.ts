@@ -66,7 +66,7 @@ export const remainingStructures: RemainingStructure[] = [
       B: "Trail stop ID",
       C: "No slip in this race",
     },
-    result: "Both new trail stops appear before Weir. The hikers use their marks to put them in the same order.",
+    result: "Both new trail stops target the gap before Weir. Falls has ID A:4, and Marsh has ID B:4. Every notebook compares those IDs the same way, placing Falls before Marsh.",
   },
   {
     id: "shared-text",
