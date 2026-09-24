@@ -334,7 +334,7 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     const hero = page.getByRole("region", { name: "Start with a structure you already know" });
     const headline = page.getByRole("heading", { level: 1 });
     const recommended = page.getByText(/Begin with additions that merge without a winner/);
-    const primary = page.getByRole("link", { name: "Start the learning path", exact: true });
+    const primary = page.getByRole("link", { name: "Start with counters", exact: true });
     const secondary = page.getByRole("link", { name: "Open the reference atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
@@ -399,7 +399,7 @@ test("working navigation stays visible in a broad publication band", async ({ pa
     const atlas = nav.getByRole("link", { name: "Reference atlas", exact: true });
     await expect(atlas).toBeInViewport();
     await expect(nav.getByRole("button")).toHaveCount(0);
-    for (const label of ["Learning path", "Reference atlas", "Glossary", "Bibliography"]) {
+    for (const label of ["Structures", "Reference atlas", "Glossary", "Bibliography"]) {
       await expect(nav.getByText(label, { exact: true })).toBeInViewport();
     }
     if (width < 768) {

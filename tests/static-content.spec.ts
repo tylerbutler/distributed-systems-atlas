@@ -80,7 +80,7 @@ test("the shell exposes only working navigation", async ({ page }) => {
 
   const nav = page.getByRole("navigation", { name: "Primary", exact: true });
   await expect(nav.getByRole("link")).toHaveCount(4);
-  await expect(nav.getByRole("link", { name: "Learning path", exact: true })).toHaveAttribute(
+  await expect(nav.getByRole("link", { name: "Structures", exact: true })).toHaveAttribute(
     "href",
     "/structures/",
   );
@@ -374,7 +374,7 @@ test("the landing page leads with data structures", async ({ page }) => {
     "Start with a structure you already know",
   );
   await expect(
-    page.getByRole("link", { name: "Start the learning path", exact: true }),
+    page.getByRole("link", { name: "Start with counters", exact: true }),
   ).toHaveAttribute("href", "/structures/counters/");
   await expect(page.getByRole("link", {
     name: "Open the reference atlas",
@@ -515,7 +515,7 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Start with a structure you already know",
   );
-  await expect(page.getByRole("link", { name: "Start the learning path", exact: true }))
+  await expect(page.getByRole("link", { name: "Start with counters", exact: true }))
     .toBeVisible();
   await expect(page.getByRole("link", { name: "Open the reference atlas" })).toBeVisible();
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /.+/);
@@ -531,7 +531,7 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/structures\/counters\/$/);
   await page.goto("/");
-  await page.getByRole("link", { name: "Start the learning path", exact: true }).click();
+  await page.getByRole("link", { name: "Start with counters", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Counters", level: 1 })).toBeVisible();
   await context.close();
 });
@@ -546,7 +546,7 @@ test("atlas exposes four territories and seven published sheets without dead lin
   }
   const nav = page.getByRole("navigation", { name: "Primary" });
   await expect(nav.getByRole("link")).toHaveCount(4);
-  await expect(nav.getByRole("link", { name: "Learning path", exact: true })).toHaveAttribute(
+  await expect(nav.getByRole("link", { name: "Structures", exact: true })).toHaveAttribute(
     "href",
     "/structures/",
   );
