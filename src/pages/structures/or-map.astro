@@ -54,7 +54,28 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
     <MapStructureDemo kind="or-map" title="Keep a new stockpile note" description="Start with 5 crates. Alice crosses out the line she saw while Bob logs 3 more. Compare their notebooks." rule="Crossing out an entry does not remove a new note you have not seen." raceLabel="Race removal against the 3-crate delivery" />
-    <section aria-labelledby="modes-title"><h2 id="modes-title">Each line still needs a rule</h2><p>Watershed OR-maps can hold tallies, single answers chosen by time, multiple answers, or lists of text. Each shared notebook uses one of these kinds. The hikers compare entry identities to determine whether a line stays. They use the rule for the answer on that line to combine its changes.</p></section>
+    <section aria-labelledby="modes-title">
+      <h2 id="modes-title">A list of names, with more inside</h2>
+      <p>
+        Alice, Bob, and Carol have two things to settle: whether the Eagle
+        Creek line remains, and how many crates to record on it. They compare
+        the notes behind the line to settle its removal, then combine Bob's
+        delivery with the tally already there. The demo uses tallies, but
+        Watershed OR-maps can instead hold dated answers, competing answers,
+        or lists of text. The hikers use one of these kinds throughout a
+        given notebook.
+      </p>
+      <p>
+        An <a href="/structures/observed-remove-set/">observed-remove set</a>
+        {" "}helps the hikers agree on which names belong on a list. An
+        OR-set that accepts a tally as a member can track whether the tally
+        belongs on that list. The hikers would still need another rule to
+        combine changes to its count. An OR-map gives each named line a
+        structure with its own rule for combining changes. That makes it
+        one of the most flexible structures here: the hikers can cross out
+        a line without discarding an unseen change to its contents.
+      </p>
+    </section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>
