@@ -273,20 +273,31 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       const generation = this.generation;
       try {
         if (this.kind === "shared-sequence") {
-          await Promise.all(this.outboundArrivals.splice(0));
-          if (generation !== this.generation) return;
           const relay = this.querySelector<HTMLElement>("[data-relay-node]");
           if (!relay) throw new Error("Missing trail exchange relay");
-          const pendingNotes = [...this.sequenceNotes].reverse().filter(({ delivered }) => !delivered);
-          await Promise.all(pendingNotes.flatMap((note) =>
-            REPLICA_IDS.map((id) => {
-              const recipient = this.querySelector<HTMLElement>(`[data-client="${id}"]`);
-              if (!recipient) throw new Error(`Missing ${id} notebook`);
-              const name = demoReplicaName(note.author);
-              return this.animateHop(relay, recipient, `${name} note`, "shared");
-            })
-          ));
-          if (generation !== this.generation) return;
+          const broadcastNotes = new Set<(typeof this.sequenceNotes)[number]>();
+          while (true) {
+            await Promise.all(this.outboundArrivals.splice(0));
+            if (generation !== this.generation) return;
+            const pendingNotes = [...this.sequenceNotes].reverse().filter(
+              (note) => !note.delivered && !broadcastNotes.has(note),
+            );
+            for (const note of pendingNotes) broadcastNotes.add(note);
+            await Promise.all(pendingNotes.flatMap((note) =>
+              REPLICA_IDS.map((id) => {
+                const recipient = this.querySelector<HTMLElement>(`[data-client="${id}"]`);
+                if (!recipient) throw new Error(`Missing ${id} notebook`);
+                return this.animateHop(
+                  relay,
+                  recipient,
+                  `${demoReplicaName(note.author)} note`,
+                  "shared",
+                );
+              })
+            ));
+            if (generation !== this.generation) return;
+            if (this.outboundArrivals.length === 0) break;
+          }
         } else {
           await new Promise((resolve) =>
             window.setTimeout(resolve, this.transport.nextDuration(800))
@@ -469,14 +480,14 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     private renderControls(): void {
       this.querySelectorAll<HTMLSelectElement | HTMLButtonElement>(
         "[data-insert-name], [data-insert-position], [data-insert-submit]",
-      ).forEach((control) => { control.disabled = this.delivering; });
+      ).forEach((control) => { control.disabled = false; });
       for (const button of this.querySelectorAll<HTMLButtonElement>(
         "[data-client-action]",
       )) {
         const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
         button.disabled = client ? this.acted.has(client) : true;
       }
-      this.race.disabled = this.delivering;
+      this.race.disabled = this.kind === "shared-sequence" ? false : this.delivering;
       const reset = this.querySelector<HTMLButtonElement>('[data-action="reset"]');
       if (reset) reset.disabled = false;
     }

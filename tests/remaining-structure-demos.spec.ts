@@ -141,6 +141,27 @@ test("direct controls remain active after another client queues work", async ({ 
   await expect(demo.locator('[data-client="C"] [data-local-record]')).toContainText("Marsh");
 });
 
+test("SharedSequence controls stay active while notes are in flight", async ({ page }) => {
+  await page.goto("/structures/shared-sequence/");
+  const demo = page.getByTestId("shared-sequence-demo");
+  const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
+  const bob = demo.locator('[data-client="B"] [data-sequence-insert]');
+  await alice.getByLabel("Trail stop name").selectOption("Ridge");
+  await alice.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(demo.locator(".remaining-operation-pulse.outbound")).toBeVisible();
+  for (const control of await demo.locator(
+    "[data-sequence-insert] select, [data-insert-submit]",
+  ).all()) {
+    await expect(control).toBeEnabled();
+  }
+  await expect(demo.getByRole("button", { name: "Race the route insertions" })).toBeEnabled();
+  await bob.getByLabel("Trail stop name").selectOption("Lookout");
+  await bob.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
+  await expect(demo.locator("[data-state]")).toContainText("Ridge");
+  await expect(demo.locator("[data-state]")).toContainText("Lookout");
+});
+
 test("SharedSequence shows each local route and the insertion notes in transit", async ({ page }) => {
   await page.goto("/structures/shared-sequence/");
   const demo = page.getByTestId("shared-sequence-demo");
