@@ -135,6 +135,8 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     const article = page.locator(".structure-lesson");
     const demo = page.getByTestId("shared-sequence-demo");
     const facts = page.locator(".structure-facts");
+    await expect(article.locator(".page-intro .structure-kind-tag")).toHaveCount(0);
+    await expect(facts.locator(".structure-kind-tag")).toHaveCount(1);
     const articleBox = await article.boundingBox();
     const demoBox = await demo.boundingBox();
     const factsBox = await facts.boundingBox();
@@ -152,6 +154,8 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
       .toBeVisible();
   }
+  await page.goto("/structures/shared-text/");
+  await expect(page.locator(".page-intro .structure-kind-tag")).toHaveCount(1);
 });
 
 test("reset cancels an in-flight kernel delivery", async ({ page }) => {

@@ -34,7 +34,7 @@ const operationNames = structure.operations.length === 1
         <p class="territory-label">Structures · {family.name}</p>
         <h1>{structure.name}</h1>
         <p class="structure-summary">{structure.tagline}</p>
-        <StructureKindTag kind={structure.kind} />
+        {!isSharedSequence && <StructureKindTag kind={structure.kind} />}
         <LessonIllustration id={`structures-${structure.id}`} />
       </header>
 
