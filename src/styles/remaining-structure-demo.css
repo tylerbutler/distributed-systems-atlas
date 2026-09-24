@@ -1,19 +1,27 @@
 remaining-structure-demo {
   display: block;
-  margin-block: var(--space-2xl);
+  width: min(calc(100vw - 2rem), var(--content));
+  max-width: none;
+  margin-block: var(--space-7);
+  margin-inline: 50%;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  clear: both;
 }
 
 .remaining-demo {
   padding: clamp(1rem, 3vw, 2rem);
-  color: var(--color-clear);
-  background: var(--color-instrument);
-  border: 1px solid var(--color-deep-instrument);
+  --focus-color: var(--signal);
+  --link-color: var(--clear);
 }
 
 .remaining-demo > header {
   display: grid;
-  gap: 0.75rem;
-  max-width: 72ch;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.6fr);
+  gap: var(--space-6);
+  align-items: end;
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
 }
 
 .remaining-demo h2,
@@ -22,98 +30,231 @@ remaining-structure-demo {
   margin: 0;
 }
 
-.remaining-rule {
-  display: grid;
-  gap: 0.25rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+.remaining-demo > header p:not(.remaining-rule) {
+  margin-top: var(--space-3);
 }
 
-.remaining-rule span,
-.remaining-state > span {
-  font: var(--font-label);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.remaining-rule {
+  padding: var(--space-4);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 45%, var(--instrument));
+  font-family: var(--font-ui);
+}
+
+.remaining-rule strong {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--signal);
 }
 
 .remaining-clients {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-block: 1.5rem;
+  gap: var(--space-6);
+  align-items: start;
+  padding-block: var(--space-6);
 }
 
-.remaining-clients > section,
-.remaining-state {
-  padding: 1rem;
-  color: var(--color-graphite);
-  background: var(--color-sky-sheet);
-  border: 1px solid var(--color-chart-line);
+.sequence-clients {
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.45fr) minmax(0, 1fr);
+  grid-template-areas: "a exchange b" "c c c";
+}
+
+.sequence-clients [data-client="A"] { grid-area: a; }
+.sequence-clients [data-client="B"] { grid-area: b; }
+.sequence-clients [data-client="C"] {
+  grid-area: c;
+  justify-self: center;
+  width: min(100%, 24rem);
+}
+
+.remaining-clients > [data-client] {
+  min-width: 0;
+  padding: var(--space-5);
+  border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  background: color-mix(in oklch, var(--clear) 3%, var(--instrument));
 }
 
 .remaining-clients header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .remaining-local-record,
 .remaining-paper-note {
   display: grid;
-  gap: 0.25rem;
-  margin-top: 1rem !important;
-  padding: 0.75rem;
-  border-block: 1px solid color-mix(in oklch, var(--graphite) 30%, transparent);
+  gap: var(--space-2);
+  margin-top: var(--space-5) !important;
+  padding-block: var(--space-4);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
 }
 
 .remaining-local-record span,
 .remaining-paper-note span,
 .remaining-paper-note small {
-  font: var(--font-label);
+  color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+  font: 0.825rem / 1.5 var(--font-ui);
 }
 
 .remaining-local-record strong,
 .remaining-paper-note strong {
   font-family: var(--font-data);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
 }
 
 .remaining-paper-note strong {
-  color: var(--instrument);
+  color: var(--signal);
 }
 
-.remaining-clients button,
-.remaining-controls button {
-  min-height: 44px;
-  margin-top: 1rem;
+.remaining-exchange {
+  grid-area: exchange;
+  min-width: 0;
+  padding-block: var(--space-5);
+  text-align: center;
+}
+
+.remaining-exchange h3 {
+  color: var(--signal);
+  font: 650 1rem / 1.4 var(--font-ui);
+}
+
+.remaining-exchange output {
+  display: block;
+  margin-block: var(--space-2) var(--space-4);
+  font-family: var(--font-data);
+}
+
+.remaining-exchange ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remaining-exchange li {
+  padding-block: var(--space-3);
+  border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  font: 0.8rem / 1.5 var(--font-ui);
+}
+
+.remaining-state {
+  padding: var(--space-4) 0 var(--space-5);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+}
+
+.remaining-state > span {
+  color: var(--signal);
+  font: 650 1rem / 1.4 var(--font-ui);
 }
 
 .remaining-state ul {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
-  margin-bottom: 0;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.remaining-state li {
+  padding: var(--space-2) var(--space-3);
+  border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  font-family: var(--font-data);
+  font-size: 0.875rem;
+}
+
+.remaining-clients button,
+.remaining-controls button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: var(--rule-width) solid currentColor;
+  border-radius: 0;
+  color: var(--clear);
+  background: transparent;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.remaining-clients button {
+  margin-top: var(--space-4);
+  color: var(--signal);
 }
 
 .remaining-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: var(--space-3);
+  padding-block: var(--space-5);
 }
 
-.remaining-controls p {
+.remaining-controls > div,
+.remaining-controls > p {
   flex-basis: 100%;
 }
 
-.remaining-demo [role="status"] {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid color-mix(in oklch, currentColor 30%, transparent);
+.remaining-controls h3 {
+  font-size: 1.4rem;
 }
 
-@media (max-width: 42rem) {
+.remaining-controls > div p {
+  margin-top: var(--space-2);
+  color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+}
+
+.remaining-clients button:hover:not(:disabled),
+.remaining-controls button:hover:not(:disabled) {
+  color: var(--instrument-deep);
+  background: var(--signal);
+}
+
+.remaining-clients button:disabled,
+.remaining-controls button:disabled {
+  border-style: dashed;
+  color: color-mix(in oklch, var(--clear) 58%, var(--instrument));
+  cursor: not-allowed;
+}
+
+.remaining-demo [role="status"] {
+  padding: var(--space-4);
+  color: var(--instrument-deep);
+  background: var(--signal);
+  font-family: var(--font-ui);
+  font-weight: 650;
+}
+
+.remaining-demo [role="alert"]:not([hidden]) {
+  margin-block: var(--space-4);
+  padding: var(--space-4);
+  border: var(--rule-width) solid var(--interference);
+}
+
+@media (width < 64rem) {
+  .remaining-demo > header {
+    grid-template-columns: 1fr;
+  }
+
+  .sequence-clients {
+    grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.55fr) minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+}
+
+@media (width < 48rem) {
   .remaining-clients {
     grid-template-columns: 1fr;
+  }
+
+  .sequence-clients {
+    grid-template-areas: "a" "exchange" "b" "c";
+  }
+
+  .remaining-exchange {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .sequence-clients [data-client="C"] {
+    width: 100%;
   }
 }

@@ -15,37 +15,63 @@ const { structure } = Astro.props;
   data-testid={`${structure.id}-demo`}
   data-kind={structure.id}
 >
-  <section class="remaining-demo" aria-labelledby={`${structure.id}-demo-title`}>
+  <section class="remaining-demo instrument-panel" aria-labelledby={`${structure.id}-demo-title`}>
     <header>
-      <p class="instrument-kicker">Three Eagle Creek hikers</p>
-      <h2 id={`${structure.id}-demo-title`}>{structure.name} at Eagle Creek</h2>
-      <p>{structure.story}</p>
-      <p class="remaining-rule"><span>How they agree</span><strong>{structure.rule}</strong></p>
+      <div>
+        <h2 id={`${structure.id}-demo-title`}>
+          {structure.id === "shared-sequence" ? "Edit the inspection route" : `${structure.name} at Eagle Creek`}
+        </h2>
+        <p>
+          {structure.id === "shared-sequence"
+            ? "Alice and Bob add stops before Weir. Turn off Broadcast to see each notebook before their insertion notes arrive."
+            : structure.story}
+        </p>
+      </div>
+      <p class="remaining-rule"><span>Merge rule</span><strong>{structure.rule}</strong></p>
     </header>
-    <div class="remaining-clients">
+    <div class:list={["remaining-clients", { "sequence-clients": structure.id === "shared-sequence" }]}>
       {(["A", "B", "C"] as const).map((id, index) => (
-        <section data-client={id} aria-label={`Replica ${id}`}>
-          <header><StationMark station={id} size="lg" /><h3>{["Alice", "Bob", "Carol"][index]}</h3></header>
-          <p class="remaining-local-record">
-            <span>{structure.recordLabel}</span>
-            <strong data-local-record>{structure.initialRecord[id]}</strong>
-          </p>
-          <p class="remaining-paper-note">
-            <span>{structure.messageLabel}</span>
-            <strong>{structure.local[id]}</strong>
-            <small>{structure.evidence[id]}</small>
-          </p>
-          <button type="button" data-client-action disabled>Send note</button>
-        </section>
+        <Fragment>
+          <section data-client={id} aria-label={`${["Alice", "Bob", "Carol"][index]}'s replica`}>
+            <header><StationMark station={id} size="lg" /><h3>{["Alice", "Bob", "Carol"][index]}</h3></header>
+            <p class="remaining-local-record">
+              <span>{structure.id === "shared-sequence" ? "Route in this notebook" : structure.recordLabel}</span>
+              <strong data-local-record>{structure.initialRecord[id]}</strong>
+            </p>
+            <p class="remaining-paper-note">
+              <span>{structure.id === "shared-sequence" && id === "C" ? "Observation" : structure.messageLabel}</span>
+              <strong>{structure.local[id]}</strong>
+              <small>{structure.evidence[id]}</small>
+            </p>
+            {(structure.id !== "shared-sequence" || id !== "C") && (
+              <button type="button" data-client-action disabled>
+                {structure.id === "shared-sequence" ? `Insert ${id === "A" ? "Falls" : "Marsh"}` : "Send note"}
+              </button>
+            )}
+          </section>
+          {structure.id === "shared-sequence" && index === 0 && (
+            <section class="remaining-exchange" aria-label="Trail exchange">
+              <h3>Trail exchange</h3>
+              <output data-pending>0 notes waiting</output>
+              <ol data-note-log aria-label="Insertion note log" reversed>
+                <li>No insertion notes yet.</li>
+              </ol>
+            </section>
+          )}
+        </Fragment>
       ))}
     </div>
-    <section class="remaining-state" aria-label="Shared result">
-      <span>What everyone sees</span>
+    <section class="remaining-state" aria-label={structure.id === "shared-sequence" ? "Carol's current route" : "Carol's current view"}>
+      <span>{structure.id === "shared-sequence" ? "Carol's current route" : "Carol's current view"}</span>
       <ul data-state>{structure.initial.map((item) => <li>{item}</li>)}</ul>
     </section>
     <DemoTransportControls />
 
     <div class="remaining-controls">
+      <div>
+        <h3>Run the worked example</h3>
+        <p>Queue the hikers' notes together, or reset and send one at a time.</p>
+      </div>
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>Enable JavaScript to run the race. The expected result remains in the lesson.</p>
@@ -73,6 +99,7 @@ const { structure } = Astro.props;
     private delivering = false;
     private generation = 0;
     private acted = new Set<string>();
+    private sequenceNotes: Array<"A" | "B"> = [];
 
     connectedCallback() {
       if (this.dataset.ready) return;
@@ -88,10 +115,17 @@ const { structure } = Astro.props;
             return;
           }
           try {
+            const pendingBefore = this.state.view.pending;
             this.state = actInRemainingDemo(this.state, client);
+            if (this.kind === "shared-sequence" && this.state.view.pending > pendingBefore) {
+              if (client !== "A" && client !== "B") throw new Error("Unexpected sequence note author");
+              this.sequenceNotes.unshift(client);
+            }
             this.acted.add(client);
             this.clearError();
-            this.render(`Queued ${client}'s note. The other hikers can still send theirs.`);
+            this.render(this.state.view.pending > pendingBefore
+              ? `Queued ${client}'s note. The other hikers can still send theirs.`
+              : `${client} checked their notebook. No note was sent.`);
             if (this.transport.autoDeliver) void this.deliver(button);
           } catch (error) {
             this.showError(error);
@@ -103,6 +137,10 @@ const { structure } = Astro.props;
         try {
           this.state = stageRemainingRace(this.state);
           this.acted = new Set(["A", "B", "C"]);
+          if (this.kind === "shared-sequence") {
+            if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
+            this.sequenceNotes = ["B", "A"];
+          }
           this.clearError();
           this.render("Notes queued for delivery.");
           if (this.transport.autoDeliver) void this.deliver(this.race);
@@ -185,6 +223,7 @@ const { structure } = Astro.props;
       this.generation += 1;
       this.delivering = false;
       this.acted.clear();
+      this.sequenceNotes = [];
       this.state = createRemainingDemo(this.kind);
     }
 
@@ -201,6 +240,7 @@ const { structure } = Astro.props;
         );
         if (record) record.textContent = replica.values.join(" · ");
       }
+      this.renderSequenceNotes();
       this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
       const status = this.querySelector<HTMLElement>("[data-status]");
       if (status) {
@@ -208,6 +248,26 @@ const { structure } = Astro.props;
           ?? `Ready: ${(shared?.values ?? []).join(" · ")}`;
       }
       this.renderControls();
+    }
+
+    private renderSequenceNotes(): void {
+      if (this.kind !== "shared-sequence") return;
+      const pending = this.querySelector<HTMLOutputElement>("[data-pending]");
+      const log = this.querySelector<HTMLOListElement>("[data-note-log]");
+      if (!pending || !log) throw new Error("Missing trail exchange");
+      const count = this.state.view.pending;
+      pending.textContent = `${count} ${count === 1 ? "note" : "notes"} waiting`;
+      log.replaceChildren(...(this.sequenceNotes.length
+        ? this.sequenceNotes.map((id) => {
+          const description = this.querySelector<HTMLElement>(
+            `[data-client="${id}"] .remaining-paper-note strong`,
+          )?.textContent;
+          if (!description) throw new Error(`Missing ${id} insertion note`);
+          const item = document.createElement("li");
+          item.textContent = `${id === "A" ? "Alice" : "Bob"}: ${description} — ${count ? "waiting" : "delivered"}`;
+          return item;
+        })
+        : [Object.assign(document.createElement("li"), { textContent: "No insertion notes yet." })]));
     }
 
     private renderValues(target: HTMLElement | null, values: string[]): void {

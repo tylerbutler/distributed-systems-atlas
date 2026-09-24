@@ -281,12 +281,21 @@ The console anatomy is fixed: lesson controls, replica stations, message lane, v
 
 ### Focused Structure Demo
 
-A structure lesson uses one broad instrument field with the merge question,
-at least three client values, direct controls on each client, one authored race,
+A structure lesson keeps prose within the reading measure and expands only the
+sandbox to the instrument width. It uses one broad instrument field with the
+merge question, at least three client values, direct controls where the kernel
+supports an action, one authored race,
 any resolution action needed by the rule, reset, and a literal result sentence.
 The familiar value stays larger than its metadata.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure.
+
+SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
+comparison before its sandbox. Alice and Bob insert stops before the same
+route stop; Carol observes their local routes and the insertion notes in the
+trail exchange. The route readout names Carol's current view until both notes
+arrive. The other later-family lessons use the same reading width and dark
+instrument field, but keep their own kernel-supported client actions.
 
 The G-counter demo is the first instance. Alice, Bob, and Carol count birds on
 separate hikes and leave cumulative notes at known trail checkpoints. Three

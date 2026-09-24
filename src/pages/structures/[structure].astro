@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
+import StructureFacts from "../../components/StructureFacts.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
@@ -20,6 +21,7 @@ export function getStaticPaths() {
 const structure = structureById(Astro.params.structure ?? "");
 if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
+const isSharedSequence = structure.id === "shared-sequence";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -27,7 +29,7 @@ const operationNames = structure.operations.length === 1
 
 <BaseLayout title={structure.name} description={structure.tagline} territory="Structures" sheetTitle={structure.name}>
   <div id="main-content">
-    <article class="structure-lesson">
+    <article class:list={["structure-lesson", { "structure-page": isSharedSequence }]}>
       <header class="page-intro">
         <p class="territory-label">Structures · {family.name}</p>
         <h1>{structure.name}</h1>
@@ -36,21 +38,70 @@ const operationNames = structure.operations.length === 1
         <LessonIllustration id={`structures-${structure.id}`} />
       </header>
 
+      {isSharedSequence && (
+        <nav class="lesson-map" aria-label="SharedSequence lesson map">
+          <a href="#route-setup">Compare the notebooks</a>
+          <a href="#shared-sequence-demo-title">Try the route sandbox</a>
+          <a href="#route-result">Read the result</a>
+        </nav>
+      )}
+
       <section class="structure-story">
-        <h2>At Eagle Creek</h2>
+        <h2>{isSharedSequence ? "Two hikers edit the route" : "At Eagle Creek"}</h2>
         <p>{structure.story}</p>
-        <p>
+        {isSharedSequence ? (
+          <p>
+            The ranger's route begins Bridge, Weir, North gate. Alice adds Falls
+            before Weir in her notebook. Bob adds Marsh before Weir in his.
+            Carol has not received either insertion slip, so her route is unchanged.
+          </p>
+        ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
-        </p>
+        </p>}
         <p>
           Another hiker may act before the slip arrives. Each hiker uses the
           rule to record the other's work when they receive it.
         </p>
         {structure.localVisibility && <p>{structure.localVisibility}</p>}
       </section>
+
+      {isSharedSequence && (
+        <section id="route-setup" aria-labelledby="route-setup-title">
+          <h2 id="route-setup-title">Three notebooks before the notes arrive</h2>
+          <figure class="route-notebooks">
+            <table aria-label="Each hiker's inspection route before and after sharing">
+              <thead><tr><th scope="col">Hiker</th><th scope="col">Before sharing</th><th scope="col">After sharing</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Alice</th><td>Bridge · Falls · Weir · North gate</td><td>Bridge · Falls · Marsh · Weir · North gate</td></tr>
+                <tr><th scope="row">Bob</th><td>Bridge · Marsh · Weir · North gate</td><td>Bridge · Falls · Marsh · Weir · North gate</td></tr>
+                <tr><th scope="row">Carol</th><td>Bridge · Weir · North gate</td><td>Bridge · Falls · Marsh · Weir · North gate</td></tr>
+              </tbody>
+            </table>
+            <figcaption>Alice and Bob see their own new stops first. Carol sees both after the notes arrive.</figcaption>
+          </figure>
+          <p>
+            Alice marks Falls as <code>A:1</code>. Bob marks Marsh as <code>B:1</code>.
+            The marks identify the stops even if their positions change when
+            the hikers exchange notes.
+          </p>
+        </section>
+      )}
+
+      {isSharedSequence && (
+        <StructureFacts
+          structure="SharedSequence"
+          family="CRDT"
+          model="Replicated sequence with stable item identities"
+          updates="Insert stops into an ordered route"
+          merge="Keep both concurrent inserts before the same stop."
+          delivery="The hikers can exchange insertion notes later"
+          bestFor="Routes and ordered lists edited on separate copies"
+          cost="An identity and ordering mark for each stop"
+        />
+      )}
 
       <p>
         A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
@@ -68,8 +119,8 @@ const operationNames = structure.operations.length === 1
 
       <RemainingStructureDemo structure={structure} />
 
-      <section>
-        <h2>Read the result</h2>
+      <section aria-labelledby="route-result">
+        <h2 id="route-result">Read the result</h2>
         <p>{structure.result}</p>
       </section>
 
@@ -97,3 +148,72 @@ const operationNames = structure.operations.length === 1
     </article>
   </div>
 </BaseLayout>
+
+<style>
+  .structure-lesson {
+    max-width: var(--measure-reading);
+    margin-inline: auto;
+  }
+
+  .structure-lesson > section {
+    margin-top: var(--space-7);
+  }
+
+  .lesson-map {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-block: var(--space-5) var(--space-7);
+    border-block: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .lesson-map a {
+    display: flex;
+    min-height: 44px;
+    padding: var(--space-3);
+    align-items: center;
+  }
+
+  .lesson-map a + a {
+    border-inline-start: var(--rule-width) solid var(--line);
+  }
+
+  .route-notebooks {
+    margin-block: var(--space-5);
+    overflow-x: auto;
+  }
+
+  .route-notebooks table {
+    min-width: 36rem;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .route-notebooks :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+  }
+
+  .route-notebooks th {
+    font-family: var(--font-ui);
+  }
+
+  .route-notebooks figcaption {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  @media (width < 40rem) {
+    .lesson-map {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-map a + a {
+      border-top: var(--rule-width) solid var(--line);
+      border-inline-start: 0;
+    }
+  }
+</style>

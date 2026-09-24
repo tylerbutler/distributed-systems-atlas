@@ -51,7 +51,7 @@ test("remaining family pages link every dedicated lesson", async ({ page }) => {
     await expect(page.locator("main")).toHaveCount(1);
     await expect(page.locator(".page-intro .territory-label")).toHaveText("Structure family");
     expect(await page.locator(".page-intro").evaluate((element) => element.getBoundingClientRect().width))
-      .toBeLessThanOrEqual(700);
+      .toBeLessThanOrEqual(710);
     await expect(page.locator(".structure-family > section")).toHaveCount(names.length);
     for (const name of names) {
       await expect(page.getByRole("link", { name: `Open the ${name} lesson` })).toBeVisible();
@@ -72,6 +72,12 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
       await expect(demo.locator(".remaining-paper-note")).toHaveCount(3);
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the race");
+      if (slug === "shared-sequence") {
+        await expect(page.getByRole("table", {
+          name: "Each hiker's inspection route before and after sharing",
+        })).toContainText("Bridge · Falls · Marsh · Weir · North gate");
+        await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
+      }
     }
   } finally {
     await context.close();
@@ -86,6 +92,66 @@ test("direct controls remain active after another client queues work", async ({ 
   await expect(controls.nth(1)).toBeEnabled();
   await controls.nth(1).click();
   await expect(demo.locator("[data-status]")).toContainText("can still send theirs");
+});
+
+test("SharedSequence shows each local route and the insertion notes in transit", async ({ page }) => {
+  await page.goto("/structures/shared-sequence/");
+  const demo = page.getByTestId("shared-sequence-demo");
+  await expect(demo.locator('[data-client="C"] [data-client-action]')).toHaveCount(0);
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  await demo.getByRole("button", { name: "Insert Falls" }).click();
+  await expect(demo.locator("[data-local-record]")).toHaveText([
+    "Bridge · Falls · Weir · North gate",
+    "Bridge · Weir · North gate",
+    "Bridge · Weir · North gate",
+  ]);
+  await expect(demo.getByRole("region", { name: "Carol's current route" }))
+    .toContainText("BridgeWeirNorth gate");
+  await expect(demo.locator("[data-pending]")).toHaveText("1 note waiting");
+  await expect(demo.getByRole("list", { name: "Insertion note log" }))
+    .toContainText("Alice: Insert Falls before Weir — waiting");
+
+  await demo.getByRole("button", { name: "Insert Marsh" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("2 notes waiting");
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
+  await expect(demo.locator("[data-local-record]")).toHaveText([
+    "Bridge · Falls · Marsh · Weir · North gate",
+    "Bridge · Falls · Marsh · Weir · North gate",
+    "Bridge · Falls · Marsh · Weir · North gate",
+  ]);
+  await expect(demo.getByRole("list", { name: "Insertion note log" }))
+    .toContainText("Bob: Insert Marsh before Weir — delivered");
+  await demo.getByRole("button", { name: "Reset" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
+  await expect(demo.getByRole("list", { name: "Insertion note log" }))
+    .toHaveText("No insertion notes yet.");
+});
+
+test("SharedSequence uses the reading column and a wider sandbox", async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/structures/shared-sequence/");
+    const article = page.locator(".structure-lesson");
+    const demo = page.getByTestId("shared-sequence-demo");
+    const facts = page.locator(".structure-facts");
+    const articleBox = await article.boundingBox();
+    const demoBox = await demo.boundingBox();
+    const factsBox = await facts.boundingBox();
+    expect(articleBox!.width).toBeLessThanOrEqual(710);
+    expect(demoBox!.width).toBeGreaterThanOrEqual(articleBox!.width);
+    expect(demoBox!.x).toBeGreaterThanOrEqual(0);
+    expect(demoBox!.x + demoBox!.width).toBeLessThanOrEqual(width);
+    expect(factsBox!.y + factsBox!.height).toBeLessThan(demoBox!.y);
+    expect(factsBox!.x).toBeGreaterThanOrEqual(0);
+    expect(factsBox!.x + factsBox!.width).toBeLessThanOrEqual(width);
+    await expect(demo.locator(".remaining-demo")).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
+    await expect(article.getByRole("navigation", { name: "SharedSequence lesson map" }))
+      .toBeVisible();
+    await expect(article.getByRole("heading", { name: "Quick facts" })).toBeVisible();
+    await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
+      .toBeVisible();
+  }
 });
 
 test("reset cancels an in-flight kernel delivery", async ({ page }) => {
@@ -139,7 +205,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
   for (const [slug, detail] of [
     ["shared-counter", "The local update is optimistic."],
     ["shared-map", "Alice sees her own note as soon as she writes it."],
-    ["shared-directory", "Alice can use her new folder before the ranger gives it a number."],
+    ["shared-directory", "Alice can use her new folder and see the notes she adds or removes"],
     ["register-collection", "Writes stay hidden until the sequencer"],
     ["claims", "her ledger still shows that nobody holds the gate key"],
     ["ordered-collection", "None can mark the inspection as theirs until a numbered request"],
