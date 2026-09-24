@@ -48,10 +48,16 @@ class MapStructureDemoElement extends HTMLElement {
     this.state = createMapDemo(this.kind);
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-map-action]")) {
       button.addEventListener("click", () => {
+        const folderName = button.closest(".map-replica")
+          ?.querySelector<HTMLInputElement>("[data-folder-name]");
+        if (this.kind === "shared-directory" && !folderName) {
+          throw new Error("Missing directory folder name control");
+        }
+        if (folderName && !folderName.reportValidity()) return;
         const operation: MapOperation = {
           author: button.dataset.replica as ReplicaId,
           action: button.dataset.mapAction as MapOperation["action"],
-          key: button.dataset.mapKey ?? "",
+          key: folderName?.value ?? button.dataset.mapKey ?? "",
           value: button.dataset.mapValue ?? "",
         };
         const result = updateMapReplica(this.state, operation);
@@ -243,6 +249,9 @@ class MapStructureDemoElement extends HTMLElement {
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-map-action]")) {
       button.disabled = false;
     }
+    for (const input of this.querySelectorAll<HTMLInputElement>("[data-folder-name]")) {
+      input.disabled = false;
+    }
     this.button("race").disabled = this.delivering;
     this.button("reset").disabled = false;
   }
@@ -259,11 +268,21 @@ class MapStructureDemoElement extends HTMLElement {
         return row;
       })
       : [Object.assign(node("div", ""), { className: "empty-entry" })]));
-    if (!replica.entries.length) entries.lastElementChild!.append(node("dd", "No entries"));
+    if (!replica.entries.length) {
+      entries.lastElementChild!.append(node("dd", this.kind === "shared-directory" ? "No folders" : "No entries"));
+    }
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       this.state.view.pending
         ? "Local view · operation in transit"
-        : replica.entries.length ? "Matches the other notebooks" : "No notes yet";
+        : replica.entries.length ? "Matches the other notebooks" : this.kind === "shared-directory"
+          ? "No folders in this notebook" : "No notes yet";
+  }
+
+  private directoryEvidence(): string {
+    const directory = this.state.view.replicas[0];
+    if (!directory) throw new Error("Missing directory replica");
+    const count = directory.entries.length;
+    return `Ledger ${this.state.view.sequenceNumber}: ${count} ${count === 1 ? "folder name" : "folder names"} in each notebook.`;
   }
 
   private render(renderReplicas = true): void {
@@ -303,7 +322,7 @@ class MapStructureDemoElement extends HTMLElement {
             ? "Alice crossed out the entry she saw; Bob's new note of 3 crates remains."
             : "The baseline tally is 5 crates."
           : this.state.deliveries.length
-            ? "Alice and Bob's two notes now refer to one eagle-creek folder."
+            ? this.directoryEvidence()
             : "No folder has been made yet.";
     const operationCount = new Set(
       this.state.deliveries.map(({ sequenceNumber }) => sequenceNumber),

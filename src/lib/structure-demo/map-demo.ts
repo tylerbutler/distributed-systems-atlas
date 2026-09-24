@@ -81,6 +81,14 @@ function sharedMapResult(state: MapDemoState, view: MapRoomView): string {
   return `The ranger numbered ${mapUserName(operation.author)}'s ${operation.key} note last. Every hiker sees ${value ?? "no answer"} on that line.`;
 }
 
+function directoryResult(view: MapRoomView): string {
+  const folders = view.replicas[0]?.entries;
+  if (!folders) throw new Error("Missing directory replica");
+  return folders.length
+    ? `All three hikers now list ${folders.map(({ key }) => `/${key}`).join(", ")}.`
+    : "All three hikers now have empty folder lists.";
+}
+
 export function createMapDemo(kind: MapKind): MapDemoState {
   const created = value(createMapRoom(kind));
   return {
@@ -111,6 +119,17 @@ export function updateMapReplica(
   state: MapDemoState,
   operation: MapOperation,
 ): MapDemoResult {
+  if (state.kind === "shared-directory") {
+    const replica = state.view.replicas.find(({ id }) => id === operation.author);
+    if (!replica) return failure(state, "Directory update", "the hiker's notebook is missing");
+    const exists = replica.entries.some(({ key }) => key === operation.key);
+    if (operation.action === "mkdir" && exists) {
+      return failure(state, "Directory update", `/${operation.key} is already in ${mapUserName(operation.author)}'s notebook`);
+    }
+    if (operation.action === "rmdir" && !exists) {
+      return failure(state, "Directory update", `/${operation.key} is not in ${mapUserName(operation.author)}'s notebook`);
+    }
+  }
   try {
     const updated = value(updateMapRoom(
       state.room,
@@ -127,7 +146,9 @@ export function updateMapReplica(
         deliveries: state.deliveries,
         latestDeliveries: [],
         queuedOperations: [...state.queuedOperations, operation],
-        result: `${mapUserName(operation.author)} changed ${operation.key} in their notebook. The note is on its way.`,
+        result: state.kind === "shared-directory"
+          ? `${mapUserName(operation.author)} wrote a note to ${operation.action === "mkdir" ? "create" : "remove"} /${operation.key}. The note is on its way.`
+          : `${mapUserName(operation.author)} changed ${operation.key} in their notebook. The note is on its way.`,
       },
     };
   } catch (error) {
@@ -190,7 +211,7 @@ export function deliverMapDemoOperations(state: MapDemoState): MapDemoResult {
         ? "Bob's note has the later time. Every hiker reads Trail closed."
         : state.kind === "or-map"
           ? "Alice crossed out the old line. All three hikers keep Bob's new note and count 8 crates."
-          : "Alice and Bob's two notes refer to one Eagle Creek folder.";
+          : directoryResult(delivered.view);
     return {
       ok: true,
       state: {

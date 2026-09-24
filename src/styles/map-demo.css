@@ -187,6 +187,44 @@ map-structure-demo {
   font-size: 0.8rem;
 }
 
+.map-directory-controls {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.map-directory-controls label {
+  display: grid;
+  gap: var(--space-1);
+  font: 0.75rem/1.35 var(--font-ui);
+}
+
+.map-directory-controls input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: var(--space-2);
+  border: var(--rule-width) solid var(--clear);
+  border-radius: 0;
+  color: var(--instrument-deep);
+  background: var(--clear);
+  font: 0.8rem/1.35 var(--font-data);
+}
+
+.map-directory-controls input:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.map-directory-controls > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.map-directory-controls button {
+  flex: 1;
+}
+
 .map-instrument button {
   min-height: 2.75rem;
   border: var(--rule-width) solid var(--clear);

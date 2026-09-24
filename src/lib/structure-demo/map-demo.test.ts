@@ -53,3 +53,30 @@ test("accepts another map write while delivery is pending", () => {
     ]);
   expect(delivered.result).toContain("Every hiker sees Bridge clear on that line.");
 });
+
+test("directory changes from any hiker merge without inventing missing folders", () => {
+  let current = createMapDemo("shared-directory");
+  for (const [author, key] of [["A", "eagle-creek"], ["B", "eagle-creek"], ["C", "ridge-pass"]] as const) {
+    current = state(updateMapReplica(current, { author, action: "mkdir", key, value: "" }));
+  }
+  expect(current.view.replicas.map(({ entries }) => entries.map(({ key }) => key)))
+    .toEqual([["eagle-creek"], ["eagle-creek"], ["ridge-pass"]]);
+  current = state(deliverMapDemoOperations(current));
+  expect(current.view.replicas.map(({ entries }) => entries.map(({ key }) => key)))
+    .toEqual(Array(3).fill(["eagle-creek", "ridge-pass"]));
+
+  current = state(updateMapReplica(current, { author: "C", action: "rmdir", key: "eagle-creek", value: "" }));
+  current = state(deliverMapDemoOperations(current));
+  expect(current.view.replicas.map(({ entries }) => entries.map(({ key }) => key)))
+    .toEqual(Array(3).fill(["ridge-pass"]));
+  expect(current.result).toContain("/ridge-pass");
+  expect(current.result).not.toContain("/eagle-creek");
+
+  const missing = updateMapReplica(current, { author: "A", action: "rmdir", key: "eagle-creek", value: "" });
+  expect(missing.ok).toBe(false);
+  expect(missing.state).toBe(current);
+  current = state(updateMapReplica(current, { author: "B", action: "mkdir", key: "eagle-creek", value: "" }));
+  current = state(deliverMapDemoOperations(current));
+  expect(current.view.replicas.map(({ entries }) => entries.map(({ key }) => key)))
+    .toEqual(Array(3).fill(["ridge-pass", "eagle-creek"]));
+});

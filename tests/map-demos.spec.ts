@@ -31,7 +31,7 @@ for (const example of [
     heading: "SharedDirectory",
     race: "Race the Eagle Creek folder creates",
     entries: ["eagle-creekfolder"],
-    evidence: "Alice and Bob's two notes now refer to one eagle-creek folder.",
+    evidence: /^Ledger \d+: 1 folder name in each notebook\.$/,
   },
 ]) {
   test(`${example.testId} runs its three-client authored race`, async ({ page }) => {
@@ -41,10 +41,12 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
-    await expect(demo.getByText("Note to share", { exact: true })).toHaveCount(3);
-    await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
-      "No slip in this race",
-    );
+    if (example.testId !== "shared-directory-demo") {
+      await expect(demo.getByText("Note to share", { exact: true })).toHaveCount(3);
+      await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
+        "No slip in this race",
+      );
+    }
     await race.click();
     for (const entries of await demo.locator("[data-map-entries]").all()) {
       await expect(entries.locator("div")).toHaveText(example.entries);
@@ -89,6 +91,50 @@ test("map controls stay active while operations travel", async ({ page }) => {
     .toContainText("bridge-status uses the last numbered note.");
   await expect(demo.locator('[role="status"]'))
     .toContainText("Every hiker sees Bridge clear on that line.");
+});
+
+test("every directory client can create and remove named folders", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/structures/shared-directory/");
+  const demo = page.getByTestId("shared-directory-demo");
+  const clients = ["A", "B", "C"].map((id) => demo.locator(`[data-client="${id}"]`));
+  for (const client of clients) {
+    await expect(client.getByRole("textbox", { name: "Folder name" })).toHaveValue("eagle-creek");
+    await expect(client.getByRole("button", { name: "Create folder" })).toBeEnabled();
+    await expect(client.getByRole("button", { name: "Remove folder" })).toBeEnabled();
+  }
+
+  await demo.getByRole("checkbox", { name: "Broadcast" }).uncheck();
+  await clients[0]!.getByRole("button", { name: "Create folder" }).click();
+  await clients[1]!.getByRole("button", { name: "Create folder" }).click();
+  await expect(clients[0]!.locator("[data-map-entries] div")).toHaveText(["eagle-creekfolder"]);
+  await expect(clients[1]!.locator("[data-map-entries] div")).toHaveText(["eagle-creekfolder"]);
+  await expect(clients[2]!.locator("[data-map-entries] div")).toHaveText(["No folders"]);
+  await demo.getByRole("checkbox", { name: "Broadcast" }).check();
+  for (const client of clients) {
+    await expect(client.locator("[data-map-entries] div")).toHaveText(["eagle-creekfolder"]);
+  }
+
+  await clients[2]!.getByRole("textbox", { name: "Folder name" }).fill("ridge-pass");
+  await clients[2]!.getByRole("button", { name: "Create folder" }).click();
+  for (const client of clients) {
+    await expect(client.locator("[data-map-entries] div"))
+      .toHaveText(["eagle-creekfolder", "ridge-passfolder"]);
+  }
+  await clients[0]!.getByRole("button", { name: "Remove folder" }).click();
+  for (const client of clients) {
+    await expect(client.locator("[data-map-entries] div")).toHaveText(["ridge-passfolder"]);
+  }
+  await clients[1]!.getByRole("button", { name: "Create folder" }).click();
+  for (const client of clients) {
+    await expect(client.locator("[data-map-entries] div"))
+      .toHaveText(["ridge-passfolder", "eagle-creekfolder"]);
+  }
+  await clients[2]!.getByRole("textbox", { name: "Folder name" }).fill("missing-folder");
+  await clients[2]!.getByRole("button", { name: "Remove folder" }).click();
+  await expect(demo.getByRole("alert")).toContainText("not in Carol's notebook");
+  await expect(clients[2]!.locator("[data-map-entries] div"))
+    .toHaveText(["ridge-passfolder", "eagle-creekfolder"]);
 });
 
 test("map replicas update after the shared operation arrives", async ({ page }) => {

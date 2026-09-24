@@ -20,11 +20,6 @@ interface Props {
 
 const { kind, title, description, rule, raceLabel } = Astro.props;
 const initial = createMapDemo(kind);
-const folderByReplica: Record<ReplicaId, string> = {
-  A: "eagle-creek",
-  B: "ridge-pass",
-  C: "marsh-loop",
-};
 const statusByReplica: Record<ReplicaId, string> = {
   A: "Trail open",
   B: "Trail closed",
@@ -43,12 +38,7 @@ function operationFor(replica: ReplicaId): MapOperation {
       };
   }
   if (kind === "shared-directory") {
-    return {
-      author: replica,
-      action: "mkdir",
-      key: folderByReplica[replica],
-      value: "",
-    };
+    return { author: replica, action: "mkdir", key: "eagle-creek", value: "" };
   }
   if (kind === "shared-map" && replica === "C") {
     return { author: replica, action: "set", key: "bridge-status", value: "Bridge clear" };
@@ -64,7 +54,6 @@ function operationFor(replica: ReplicaId): MapOperation {
 function buttonLabel(operation: MapOperation): string {
   if (operation.action === "remove") return "Remove Eagle Creek";
   if (operation.action === "increment") return `Add ${operation.value} crates`;
-  if (operation.action === "mkdir") return `Create ${operation.key}`;
   return `Write ${operation.value}`;
 }
 
@@ -78,12 +67,6 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
     return replica === "A"
       ? { body: "Cross out Eagle Creek", evidence: "the stockpile entry Alice saw" }
       : { body: "Eagle Creek tally: +3", evidence: "Bob's new crate count" };
-  }
-  if (kind === "shared-directory") {
-    return {
-      body: "Create /eagle-creek",
-      evidence: `folder ${replica}:eagle-creek stays distinct if the name is reused`,
-    };
   }
   const body = `gate-status: ${statusByReplica[replica]}`;
   return kind === "lww-map"
@@ -128,23 +111,47 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
                 ? replica.entries.map((entry) => (
                     <div><dt>{entry.key}</dt><dd>{entry.value}</dd></div>
                   ))
-                : <div class="empty-entry"><dd>No entries</dd></div>}
+                : <div class="empty-entry"><dd>{kind === "shared-directory" ? "No folders" : "No entries"}</dd></div>}
             </dl>
-            <p class="map-edit-slip">
-              <span>Note to share</span>
-              <strong>{raceSlip(replica.id).body}</strong>
-              <small>{raceSlip(replica.id).evidence}</small>
-            </p>
-            <button
-              type="button"
-              data-replica={replica.id}
-              data-map-action={operation.action}
-              data-map-key={operation.key}
-              data-map-value={operation.value}
-              disabled
-            >
-              {buttonLabel(operation)}
-            </button>
+            {kind !== "shared-directory" && (
+              <p class="map-edit-slip">
+                <span>Note to share</span>
+                <strong>{raceSlip(replica.id).body}</strong>
+                <small>{raceSlip(replica.id).evidence}</small>
+              </p>
+            )}
+            {kind === "shared-directory" ? (
+              <div class="map-directory-controls">
+                <label>
+                  Folder name
+                  <input
+                    type="text"
+                    data-folder-name
+                    value="eagle-creek"
+                    pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                    title="Use lowercase letters, numbers, and hyphens."
+                    maxlength={40}
+                    required
+                    disabled
+                  />
+                </label>
+                <div>
+                  <button type="button" data-replica={replica.id} data-map-action="mkdir" disabled>Create folder</button>
+                  <button type="button" data-replica={replica.id} data-map-action="rmdir" disabled>Remove folder</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                data-replica={replica.id}
+                data-map-action={operation.action}
+                data-map-key={operation.key}
+                data-map-value={operation.value}
+                disabled
+              >
+                {buttonLabel(operation)}
+              </button>
+            )}
           </section>
         );
       })}
@@ -159,7 +166,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
                 ? "Compare the times beside each line"
                 : kind === "or-map"
                   ? "New stockpile notes stay"
-                  : "Old folder notes stay with the old folder"}
+                  : "Ranger numbers folder changes"}
           </strong>
           <output data-message-count>0 operations shared</output>
         </section>

@@ -24,7 +24,7 @@ import "../../styles/set-lesson.css";
       </p>
       <figure><table aria-label="SharedDirectory concurrent folder creation"><thead><tr><th scope="col">Hiker</th><th scope="col">Action</th><th scope="col">After sharing</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Make /eagle-creek</td><td rowspan="2">One shared /eagle-creek folder</td></tr><tr><th scope="row">Bob</th><td>Make /eagle-creek</td></tr></tbody></table><figcaption>Both hikers' notebooks refer to the same folder.</figcaption></figure>
     </section>
-    <MapStructureDemo kind="shared-directory" title="Make one shared folder" description="Alice and Bob each make /eagle-creek before they see the other's work. The ranger's ledger lets them agree on one folder." rule="Keep old notes with the old folder, even if a new folder uses its name." raceLabel="Race the Eagle Creek folder creates" />
+    <MapStructureDemo kind="shared-directory" title="Make one shared folder" description="Create or remove a folder from any notebook. Try Alice and Bob making /eagle-creek before sharing their notes." rule="The ranger numbers folder changes. A new folder can reuse an old name without reusing its identity." raceLabel="Race the Eagle Creek folder creates" />
     <section aria-labelledby="stale-title"><h2 id="stale-title">A new folder can reuse an old name</h2><p>A new folder may have the same name as a removed one. A delayed note for the old folder must not appear in the new one.</p></section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
