@@ -168,10 +168,8 @@ test("OR-map shows each hiker's notebook before and after the removal", async ({
     await expect(checkpoints.nth(1).locator("del")).toHaveText("Eagle Creek · 5 crates");
     await expect(checkpoints.nth(2).locator("td"))
       .toHaveText(["Eagle Creek · 8 crates", "Eagle Creek · 8 crates", "Eagle Creek · 8 crates"]);
-    const comparison = page.getByRole("region", { name: "A list of names, with more inside" });
-    await expect(comparison).toContainText("another rule to combine changes to its count");
-    await expect(comparison.getByRole("link", { name: "observed-remove set" }))
-      .toHaveAttribute("href", "/structures/observed-remove-set/");
+    const modes = page.getByRole("region", { name: "A list of names, with more inside" });
+    await expect(modes).toContainText("each named line a structure with its own rule");
   } finally {
     await context.close();
   }
