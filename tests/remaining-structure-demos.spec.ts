@@ -84,7 +84,9 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
         ]);
         await expect(notebook.locator("ins")).toHaveCount(6);
         await expect(notebook.locator("ins").first()).toHaveCSS("background-color", "oklch(0.84 0.18 100)");
+        await expect(notebook.locator("ins").first()).toHaveCSS("text-decoration-line", "none");
         await expect(notebook.locator('ins[data-stop="marsh"]').first()).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
+        await expect(notebook.locator('ins[data-stop="marsh"]').first()).toHaveCSS("text-decoration-line", "none");
         await expect(notebook.locator('ins[data-stop="marsh"]').first()).toHaveCSS("color", "oklch(0.99 0.006 220)");
         await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
       }
