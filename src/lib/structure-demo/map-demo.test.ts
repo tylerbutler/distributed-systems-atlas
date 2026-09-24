@@ -51,5 +51,5 @@ test("accepts another map write while delivery is pending", () => {
       { key: "bridge-status", value: "Bridge clear" },
       { key: "gate-status", value: "Trail open" },
     ]);
-  expect(delivered.result).toContain("Every notebook reads Bridge clear on that line.");
+  expect(delivered.result).toContain("Every hiker sees Bridge clear on that line.");
 });

@@ -296,7 +296,7 @@ class MapStructureDemoElement extends HTMLElement {
         : "No race delivered yet."
       : this.kind === "lww-map"
         ? this.state.deliveries.length
-          ? "The time beside gate-status selects Trail closed, even if notes arrive out of order."
+          ? "Carol compares the times beside gate-status and reads Trail closed, regardless of delivery order."
           : "No timestamped race delivered yet."
         : this.kind === "or-map"
           ? this.state.deliveries.length

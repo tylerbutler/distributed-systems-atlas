@@ -78,7 +78,7 @@ function sharedMapResult(state: MapDemoState, view: MapRoomView): string {
   const entries = view.replicas[0]?.entries;
   if (!operation || !entries) throw new Error("Missing shared map result");
   const value = entries.find(({ key }) => key === operation.key)?.value;
-  return `The ranger numbered ${mapUserName(operation.author)}'s ${operation.key} note last. Every notebook ${value === undefined ? "has no answer" : `reads ${value}`} on that line.`;
+  return `The ranger numbered ${mapUserName(operation.author)}'s ${operation.key} note last. Every hiker sees ${value ?? "no answer"} on that line.`;
 }
 
 export function createMapDemo(kind: MapKind): MapDemoState {
@@ -187,9 +187,9 @@ export function deliverMapDemoOperations(state: MapDemoState): MapDemoResult {
     const result = state.kind === "shared-map"
       ? sharedMapResult(state, delivered.view)
       : state.kind === "lww-map"
-        ? "The time on Bob's note wins. Every notebook reads Trail closed."
+        ? "Bob's note has the later time. Every hiker reads Trail closed."
         : state.kind === "or-map"
-          ? "Bob's new note survives Alice's crossed-out line. Every tally shows 8 crates."
+          ? "Alice crossed out the old line. All three hikers keep Bob's new note and count 8 crates."
           : "Alice and Bob's two notes refer to one Eagle Creek folder.";
     return {
       ok: true,

@@ -24,7 +24,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </header>
 
     <section aria-labelledby="shared-map-title">
-      <header><div><StructureKindTag kind="DDS" /><h2 id="shared-map-title">SharedMap</h2><p>One shared order chooses a value for each name.</p></div><code>map_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><h2 id="shared-map-title">SharedMap</h2><p>Use one shared order to select a value for each name.</p></div><code>map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -42,12 +42,12 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </section>
 
     <section aria-labelledby="lww-map-title">
-      <header><div><StructureKindTag kind="CRDT" /><h2 id="lww-map-title">LWWMap</h2><p>The time on each change chooses the value.</p></div><code>lww_map_kernel</code></header>
+      <header><div><StructureKindTag kind="CRDT" /><h2 id="lww-map-title">LWWMap</h2><p>Compare the times beside each line to select a value.</p></div><code>lww_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
-            Each hiker dates the change beside a named line. The latest date
-            decides what that line says, even if an older note arrives later.
+            Each hiker dates the change beside a named line. They use the
+            latest date for that line, even if an older note arrives later.
             They keep the date and writer's name with the answer or crossed-out line.
           </p>
           <h3>Best for</h3>
@@ -65,8 +65,8 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
           <p>
             Alice crosses out the Eagle Creek stockpile line after she sees
             5 crates. Bob records 3 more before he sees her change. When they
-            compare notebooks, Bob's new note keeps the line in place with
-            all 8 crates.
+            compare notebooks, they keep the line and count all 8 crates
+            because Bob added a new note.
           </p>
           <h3>Best for</h3>
           <ul><li>Named tallies and lists that combine new notes</li><li>Records where new work must survive a crossed-out line</li></ul>
@@ -77,7 +77,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </section>
 
     <section aria-labelledby="directory-title">
-      <header><div><StructureKindTag kind="DDS" /><h2 id="directory-title">SharedDirectory</h2><p>A folder tree that knows when a folder is replaced.</p></div><code>directory_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><h2 id="directory-title">SharedDirectory</h2><p>Track each folder separately when a name is reused.</p></div><code>directory_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -99,7 +99,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
         <thead><tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Main cost</th></tr></thead>
         <tbody>
           <tr><th scope="row">One service orders JSON changes</th><td>SharedMap</td><td>The service must stay available</td></tr>
-          <tr><th scope="row">Clocks choose text values</th><td>LWWMap</td><td>Remember clocks and removals</td></tr>
+          <tr><th scope="row">Use clock times to select text values</th><td>LWWMap</td><td>Remember clocks and removals</td></tr>
           <tr><th scope="row">New work survives removal</th><td>OR-map</td><td>Remember which work each person saw</td></tr>
           <tr><th scope="row">Folders can reuse names</th><td>SharedDirectory</td><td>Track each folder separately</td></tr>
         </tbody>

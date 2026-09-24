@@ -128,9 +128,8 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       <summary>Open the sequence-number rule</summary>
       <div>
         <p>
-          A network can repeat a stamped copy. A replica remembers the
-          sequence numbers it has applied, so the repeated copy does not
-          change the total again.
+          A network can repeat a stamped copy. Each hiker records the
+          sequence numbers they have applied and ignores repeated copies.
         </p>
         <pre aria-label="SharedCounter sequence-number rule"><code>new SN → apply signed delta
 seen SN → ignore duplicate</code></pre>

@@ -15,7 +15,7 @@ for (const example of [
     heading: "LWWMap",
     race: "Race the dated gate-status notes",
     entries: ["gate-statusTrail closed"],
-    evidence: "The time beside gate-status selects Trail closed, even if notes arrive out of order.",
+    evidence: "Carol compares the times beside gate-status and reads Trail closed, regardless of delivery order.",
   },
   {
     path: "/structures/or-map/",
@@ -88,7 +88,7 @@ test("map controls stay active while operations travel", async ({ page }) => {
   await expect(demo.locator("[data-evidence]"))
     .toContainText("bridge-status uses the last numbered note.");
   await expect(demo.locator('[role="status"]'))
-    .toContainText("Every notebook reads Bridge clear on that line.");
+    .toContainText("Every hiker sees Bridge clear on that line.");
 });
 
 test("map replicas update after the shared operation arrives", async ({ page }) => {

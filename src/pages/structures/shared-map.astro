@@ -28,8 +28,8 @@ import "../../styles/set-lesson.css";
         In a <dfn><a href="/glossary/#sharedmap">SharedMap</a></dfn>, the ranger
         numbers every accepted change. Each named line has its own answer:
         changing gate-status does not erase bridge-status. When two hikers
-        change the same line, the higher number decides what all three
-        notebooks show on that line.
+        change the same line, all three hikers copy the answer from the
+        higher-numbered note after delivery.
       </p>
       <p>
         Alice sees her own note as soon as she writes it. She keeps it in her
@@ -38,10 +38,10 @@ import "../../styles/set-lesson.css";
         back the numbered changes.
       </p>
       <TermCallout {...sharedMapTerm} />
-      <figure><table aria-label="SharedMap trail report table after the gate-status race"><thead><tr><th scope="col">Line</th><th scope="col">Before</th><th scope="col">After Alice and Bob's notes</th></tr></thead><tbody><tr><th scope="row">gate-status</th><td>Report pending</td><td>Trail closed</td></tr><tr><th scope="row">bridge-status</th><td>Inspection due</td><td>Inspection due</td></tr></tbody></table><figcaption>The ranger numbers Alice's gate note before Bob's. Bob's answer wins on the gate line; neither note changes the bridge line.</figcaption></figure>
+      <figure><table aria-label="SharedMap trail report table after the gate-status race"><thead><tr><th scope="col">Line</th><th scope="col">Before</th><th scope="col">After Alice and Bob's notes</th></tr></thead><tbody><tr><th scope="row">gate-status</th><td>Report pending</td><td>Trail closed</td></tr><tr><th scope="row">bridge-status</th><td>Inspection due</td><td>Inspection due</td></tr></tbody></table><figcaption>The ranger numbers Alice's gate note before Bob's. All three hikers record Bob's answer on the gate line; neither note changes the bridge line.</figcaption></figure>
     </section>
     <MapStructureDemo kind="shared-map" title="Update a shared trail report table" description="Alice and Bob change gate-status while bridge-status stays put. Carol can change the bridge line separately." rule="Use the highest ledger number for each line." raceLabel="Race the two gate-status notes" />
-    <section aria-labelledby="limit-title"><h2 id="limit-title">One answer per line survives</h2><p>The ranger's rule leaves one answer on each line. Alice's gate answer disappears when Bob's numbered note arrives; the bridge line is unchanged. If dates on offline notes should choose the answer, use LWWMap. If a new note must survive a crossed-out line, use OR-map.</p></section>
+    <section aria-labelledby="limit-title"><h2 id="limit-title">One answer remains on each line</h2><p>Each hiker keeps the last numbered answer on each line. They replace Alice's gate answer when Bob's numbered note arrives; the bridge line is unchanged. If hikers should compare the dates on offline notes instead, use LWWMap. If they must keep a new note after crossing out an older line, use OR-map.</p></section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>
@@ -51,7 +51,7 @@ import "../../styles/set-lesson.css";
       <p>
         <strong>Implementation:</strong> The demo calls Watershed through the Gleam toolkit
         and connects three clients in a <a href="/glossary/#sluice">Sluice</a> room.
-        The server sequence selects the value for each key.
+        Each client uses the last numbered change for each key.
       </p>
     </section>
     <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/maps/">Back to map family</a><a href="/structures/lww-map/">Continue to LWWMap</a></nav>

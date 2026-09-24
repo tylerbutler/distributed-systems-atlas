@@ -65,7 +65,7 @@ export const remainingStructures: RemainingStructure[] = [
       B: "Marsh mark B:1 · before Weir",
       C: "No slip in this race",
     },
-    result: "Both new stops appear before Weir. Their marks decide which comes first.",
+    result: "Both new stops appear before Weir. The hikers use their marks to put the stops in the same order.",
     next: "shared-text",
   },
   {
@@ -99,7 +99,7 @@ export const remainingStructures: RemainingStructure[] = [
       B: "calm mark B:1 · before weir",
       C: "No slip in this race",
     },
-    result: "Both words remain. The rule keeps each written symbol intact.",
+    result: "Both words remain, and each written symbol stays intact.",
   },
   {
     id: "claims",
@@ -109,7 +109,7 @@ export const remainingStructures: RemainingStructure[] = [
     name: "Claims",
     module: "claims_kernel",
     tagline: "Choose one permanent claimant for a named responsibility.",
-    rule: "The ranger numbers the claim slips. The first accepted claim wins, and no one can replace it.",
+    rule: "The ranger numbers the claim slips. He assigns the first accepted claimant and does not replace them.",
     story: "Alice, Bob, and Carol all volunteer to hold the only gate key.",
     localVisibility: "Alice can send her claim at once, but her ledger still shows that nobody holds the gate key. The ranger numbers the claims; only then does the winner appear in anyone's ledger.",
     raceLabel: "Race the gate-key claims",

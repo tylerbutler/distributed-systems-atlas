@@ -88,7 +88,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
   const body = `gate-status: ${statusByReplica[replica]}`;
   return kind === "lww-map"
     ? { body, evidence: `time on writer ${replica}'s note` }
-    : { body, evidence: "ranger's ledger number decides" };
+    : { body, evidence: "ranger numbers each accepted change" };
 }
 ---
 
@@ -154,9 +154,9 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
           <span>{kind === "shared-map" ? "Ranger sequencer" : "Trail exchange"}</span>
           <strong>
             {kind === "shared-map"
-              ? "Ranger's ledger numbers decide"
+              ? "Ranger numbers each accepted change"
               : kind === "lww-map"
-                ? "The time beside each line decides"
+                ? "Compare the times beside each line"
                 : kind === "or-map"
                   ? "New stockpile notes stay"
                   : "Old folder notes stay with the old folder"}

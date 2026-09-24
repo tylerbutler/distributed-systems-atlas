@@ -22,7 +22,7 @@ export const otTerm: GlossaryTerm = {
 
 export const eventualConsistencyTerm: GlossaryTerm = {
   term: "eventual consistency",
-  definition: "Each replica sees only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
+  definition: "Each replica has only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
 };
 
 export const gCounterTerm: GlossaryTerm = {
@@ -72,12 +72,12 @@ export const registerCollectionTerm: GlossaryTerm = {
 
 export const sharedMapTerm: GlossaryTerm = {
   term: "SharedMap",
-  definition: "A map of named entries where a service numbers each accepted change. The highest number for each name decides what everyone sees.",
+  definition: "A map of named entries where a service numbers each accepted change. For each name, everyone uses the answer from the highest-numbered change.",
 };
 
 export const lwwMapTerm: GlossaryTerm = {
   term: "LWWMap",
-  definition: "A map where each named entry keeps the answer or removal with the latest time. At equal times, removal wins; the writer ID breaks a tie between answers.",
+  definition: "A map where each named entry keeps the answer or removal with the latest time. At equal times, keep the removal; compare writer IDs to break a tie between answers.",
 };
 
 export const orMapTerm: GlossaryTerm = {
@@ -102,7 +102,7 @@ export const sharedTextTerm: GlossaryTerm = {
 
 export const claimsTerm: GlossaryTerm = {
   term: "Claims",
-  definition: "A list of named responsibilities where the first accepted, numbered claim picks an owner who cannot be replaced.",
+  definition: "A list of named responsibilities where a service numbers claims and assigns the first accepted claimant as the permanent owner.",
 };
 
 export const orderedCollectionTerm: GlossaryTerm = {

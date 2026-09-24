@@ -36,8 +36,8 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
           <p>
             Alice reports <code>Trail open</code> while Bob reports
             <code>Trail closed</code>. A last-writer-wins register keeps one
-            value. The later time wins. If the times match, the author's name
-            breaks the tie.
+            value. The hikers keep the value with the later time. If the
+            times match, they compare the authors' names.
           </p>
           <p>
             Carol can receive the reports in either order and still choose the
@@ -47,7 +47,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
           <h3>Best for</h3>
           <ul>
             <li>Small settings that need one predictable answer</li>
-            <li>Values where trusted clocks can decide which answer wins</li>
+            <li>Values where people trust timestamps to select one answer</li>
           </ul>
         </div>
         <dl>
@@ -144,7 +144,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
           <tr><th scope="col">Need</th><th scope="col">Choose</th><th scope="col">Trade-off</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">Let time choose one answer</th><td>LWWRegister</td><td>Discard the losing answer</td></tr>
+          <tr><th scope="row">Use time to select one answer</th><td>LWWRegister</td><td>Discard the other answer</td></tr>
           <tr><th scope="row">Keep competing answers</th><td>MvRegister</td><td>Someone must resolve them later</td></tr>
           <tr><th scope="row">Choose from numbered answers</th><td>RegisterCollection</td><td>One service must order them</td></tr>
         </tbody>

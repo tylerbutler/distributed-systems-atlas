@@ -106,8 +106,8 @@ import {
         The numbers also show relative order. If <code>SN 2</code> appears
         before <code>SN 1</code>, the replica can detect a gap instead of
         losing an operation without warning. The sequence number exposes the
-        gap. The replica must ask the runtime to replay the missing operation
-        or send a snapshot.
+        gap. Carol must ask the ranger to resend the missing operation, or
+        the runtime must supply a current snapshot.
       </p>
     </section>
 

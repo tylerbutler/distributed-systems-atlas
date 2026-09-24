@@ -201,7 +201,7 @@ test("generated glossary and bibliography expose published metadata", async ({ p
   await expect(page.locator("#causal-context")).toContainText("A compact record");
   await expect(page.locator("#replica")).toContainText("A local copy of shared data");
   await expect(page.locator("#eventual-consistency")).toContainText(
-    "Each replica sees only the updates it has received",
+    "Each replica has only the updates it has received",
   );
   await expect(page.locator("#g-counter")).toContainText(
     "gives each replica its own nondecreasing component",
