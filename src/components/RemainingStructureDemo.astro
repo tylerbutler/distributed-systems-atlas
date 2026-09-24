@@ -17,6 +17,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
   data-kind={structure.id}
 >
   <section class="remaining-demo instrument-panel" aria-labelledby={`${structure.id}-demo-title`}>
+    {structure.id === "shared-sequence" && <div class="remaining-operation-layer" data-operation-layer aria-hidden="true"></div>}
     <header>
       <div>
         <h2 id={`${structure.id}-demo-title`}>
@@ -71,7 +72,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
           </section>
           {structure.id === "shared-sequence" && index === 0 && (
             <section class="remaining-exchange" aria-label="Trail exchange">
-              <div class="remaining-relay">
+              <div class="remaining-relay" data-relay-node>
                 <h3>Trail exchange</h3>
                 <p>Insertion notes travel to all three hikers</p>
                 <output data-pending>0 notes waiting</output>
@@ -128,6 +129,8 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     private acted = new Set<string>();
     private sequenceNotes: Array<{ author: "A" | "B" | "C"; description: string; delivered: boolean }> = [];
     private markedExampleStops = new Set(["Falls", "Marsh"]);
+    private outboundArrivals: Promise<void>[] = [];
+    private activeAnimations = new Set<Animation>();
 
     connectedCallback() {
       if (this.dataset.ready) return;
@@ -162,6 +165,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
             this.clearError();
             const hiker = { A: "Alice", B: "Bob", C: "Carol" }[client];
             this.render(`Queued ${hiker}'s insertion note.`);
+            this.queueOutbound(client, name);
             if (this.transport.autoDeliver) void this.deliver(form.querySelector<HTMLButtonElement>("button") ?? form);
           } catch (error) {
             this.showError(error);
@@ -205,6 +209,10 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
           }
           this.clearError();
           this.render("Notes queued for delivery.");
+          if (this.kind === "shared-sequence") {
+            this.queueOutbound("A", "Falls");
+            this.queueOutbound("B", "Marsh");
+          }
           if (this.transport.autoDeliver) void this.deliver(this.race);
         } catch (error) {
           this.showError(error);
@@ -258,11 +266,27 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.delivering = true;
       this.renderControls();
       const generation = this.generation;
-      await new Promise((resolve) =>
-        window.setTimeout(resolve, this.transport.nextDuration(800))
-      );
-      if (generation !== this.generation) return;
       try {
+        if (this.kind === "shared-sequence") {
+          await Promise.all(this.outboundArrivals.splice(0));
+          if (generation !== this.generation) return;
+          const relay = this.querySelector<HTMLElement>("[data-relay-node]");
+          if (!relay) throw new Error("Missing trail exchange relay");
+          for (const note of [...this.sequenceNotes].reverse().filter(({ delivered }) => !delivered)) {
+            await Promise.all((["A", "B", "C"] as const).map((id) => {
+              const recipient = this.querySelector<HTMLElement>(`[data-client="${id}"]`);
+              if (!recipient) throw new Error(`Missing ${id} notebook`);
+              const name = { A: "Alice", B: "Bob", C: "Carol" }[note.author];
+              return this.animateHop(relay, recipient, `${name} note`, "shared");
+            }));
+            if (generation !== this.generation) return;
+          }
+        } else {
+          await new Promise((resolve) =>
+            window.setTimeout(resolve, this.transport.nextDuration(800))
+          );
+        }
+        if (generation !== this.generation) return;
         this.state = deliverRemainingRace(this.state);
         if (this.kind === "shared-sequence") {
           for (const note of this.sequenceNotes) note.delivered = true;
@@ -284,12 +308,67 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       }
     }
 
+    private queueOutbound(client: "A" | "B" | "C", label: string): void {
+      const from = this.querySelector<HTMLElement>(`[data-client="${client}"]`);
+      const relay = this.querySelector<HTMLElement>("[data-relay-node]");
+      if (!from || !relay) throw new Error("Missing insertion note route");
+      this.outboundArrivals.push(this.animateHop(from, relay, label, "outbound"));
+    }
+
+    private async animateHop(
+      from: HTMLElement,
+      to: HTMLElement,
+      label: string,
+      leg: "outbound" | "shared",
+    ): Promise<void> {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const layer = this.querySelector<HTMLElement>("[data-operation-layer]");
+      if (!layer) throw new Error("Missing insertion animation layer");
+      const root = layer.getBoundingClientRect();
+      const start = from.getBoundingClientRect();
+      const end = to.getBoundingClientRect();
+      const dot = document.createElement("span");
+      dot.className = `remaining-operation-pulse ${leg}`;
+      dot.ariaHidden = "true";
+      const caption = document.createElement("span");
+      caption.className = "remaining-operation-label";
+      caption.textContent = label;
+      dot.append(caption);
+      layer.append(dot);
+      const animation = dot.animate([
+        {
+          transform: `translate(${start.left + start.width / 2 - root.left - 5}px, ${start.top + start.height / 2 - root.top - 5}px)`,
+          opacity: 0.25,
+        },
+        {
+          transform: `translate(${end.left + end.width / 2 - root.left - 5}px, ${end.top + end.height / 2 - root.top - 5}px)`,
+          opacity: 1,
+        },
+      ], {
+        duration: this.transport.nextDuration(650),
+        easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+      });
+      this.activeAnimations.add(animation);
+      try {
+        await animation.finished;
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) throw error;
+      } finally {
+        this.activeAnimations.delete(animation);
+        dot.remove();
+      }
+    }
+
     private resetFlow(): void {
       this.generation += 1;
       this.delivering = false;
       this.acted.clear();
       this.sequenceNotes = [];
       this.markedExampleStops = new Set(["Falls", "Marsh"]);
+      this.outboundArrivals = [];
+      for (const animation of this.activeAnimations) animation.cancel();
+      this.activeAnimations.clear();
+      this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
       this.state = createRemainingDemo(this.kind);
       if (this.kind === "shared-sequence") {
         for (const id of ["A", "B", "C"] as const) this.setSequenceSlip(id, "No trail stop inserted yet.");
@@ -406,7 +485,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     private renderControls(): void {
       this.querySelectorAll<HTMLSelectElement | HTMLButtonElement>(
         "[data-insert-name], [data-insert-position], [data-insert-submit]",
-      ).forEach((control) => { control.disabled = false; });
+      ).forEach((control) => { control.disabled = this.delivering; });
       for (const button of this.querySelectorAll<HTMLButtonElement>(
         "[data-client-action]",
       )) {

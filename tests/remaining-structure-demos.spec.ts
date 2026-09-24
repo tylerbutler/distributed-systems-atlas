@@ -195,6 +195,44 @@ test("SharedSequence shows each local route and the insertion notes in transit",
     .toHaveText("No insertion notes yet.");
 });
 
+test("SharedSequence animates notes to the relay and then to the notebooks", async ({ page }) => {
+  await page.goto("/structures/shared-sequence/");
+  const demo = page.getByTestId("shared-sequence-demo");
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
+  await alice.getByLabel("Trail stop name").selectOption("Ridge");
+  await alice.getByRole("button", { name: "Insert trail stop" }).click();
+  const outbound = demo.locator(".remaining-operation-pulse.outbound");
+  await expect(outbound).toBeVisible();
+  const path = await outbound.evaluate((element) => {
+    const effect = element.getAnimations()[0]?.effect;
+    if (!(effect instanceof KeyframeEffect)) throw new Error("Missing operation flight");
+    return effect.getKeyframes().map(({ transform }) => transform);
+  });
+  expect(path[0]).not.toBe(path[1]);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+  await expect(demo.locator("[data-state] li")).toHaveText(["Bridge", "Weir", "North gate"]);
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator(".remaining-operation-pulse.shared").first()).toBeVisible();
+  await expect(demo.locator("[data-state] li")).toHaveText(["Bridge", "Ridge", "Weir", "North gate"]);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+});
+
+test("SharedSequence delivers without spatial motion when reduced motion is requested", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/structures/shared-sequence/");
+  const demo = page.getByTestId("shared-sequence-demo");
+  const carol = demo.locator('[data-client="C"] [data-sequence-insert]');
+  await carol.getByLabel("Trail stop name").selectOption("Lookout");
+  await carol.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(demo.locator("[data-local-record]")).toHaveText([
+    "Bridge · Lookout · Weir · North gate",
+    "Bridge · Lookout · Weir · North gate",
+    "Bridge · Lookout · Weir · North gate",
+  ]);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+});
+
 test("SharedSequence uses the reading column and a wider sandbox", async ({ page }) => {
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
@@ -258,8 +296,10 @@ test("reset cancels an in-flight kernel delivery", async ({ page }) => {
   await page.goto("/structures/shared-sequence/");
   const demo = page.getByTestId("shared-sequence-demo");
   await demo.getByRole("button", { name: "Race the route insertions" }).click();
+  await expect(demo.locator(".remaining-operation-pulse.outbound").first()).toBeVisible();
   await demo.getByRole("button", { name: "Reset" }).click();
-  await page.waitForTimeout(1_000);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+  await page.waitForTimeout(2_100);
   await expect(demo.locator("[data-state] li")).toHaveText([
     "Bridge",
     "Weir",

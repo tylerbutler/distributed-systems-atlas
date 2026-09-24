@@ -299,7 +299,9 @@ manual insertions keep their kernel-assigned IDs without inventing visible marks
 The sequence uses the IDs as insertion anchors and to order concurrent
 inserts. All three notebooks have the same trail-stop and position dropdowns;
 each hiker can insert repeatedly. The center trail exchange shows a relay above
-a tall newest-first insertion log. The worked race still inserts Alice's Falls
+a tall newest-first insertion log. Insertion notes travel from the author to
+the relay, then copies travel to the notebooks; reset cancels those flights.
+The worked race still inserts Alice's Falls
 and Bob's Marsh before Weir while Carol observes. The route readout names
 Carol's current view until the notes arrive. The other later-family lessons
 use the same reading width and dark instrument field, but keep their own

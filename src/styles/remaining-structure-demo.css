@@ -10,9 +10,47 @@ remaining-structure-demo {
 }
 
 .remaining-demo {
+  position: relative;
   padding: clamp(1rem, 3vw, 2rem);
   --focus-color: var(--signal);
   --link-color: var(--clear);
+}
+
+.remaining-operation-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.remaining-operation-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+.remaining-operation-pulse.shared {
+  background: var(--clear);
+}
+
+.remaining-operation-label {
+  position: absolute;
+  bottom: calc(100% + var(--space-1));
+  left: 50%;
+  padding: 2px 5px;
+  color: var(--instrument-deep);
+  background: var(--signal);
+  font: 600 0.6875rem / 1 var(--font-data);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.remaining-operation-pulse.shared .remaining-operation-label {
+  background: var(--clear);
 }
 
 .remaining-demo > header {
