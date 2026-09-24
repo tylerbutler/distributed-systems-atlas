@@ -1,5 +1,19 @@
 import { expect, test } from "@playwright/test";
 
+test("the SharedMap facts rail stays clear of the demo on wide views", async ({ page }) => {
+  for (const width of [1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/structures/shared-map/");
+    const facts = await page.locator(".structure-facts").boundingBox();
+    const demo = await page.getByTestId("shared-map-demo").boundingBox();
+    expect(facts).not.toBeNull();
+    expect(demo).not.toBeNull();
+    expect(facts!.x).toBeGreaterThanOrEqual(0);
+    expect(facts!.x + facts!.width).toBeLessThanOrEqual(width);
+    expect(facts!.y + facts!.height).toBeLessThanOrEqual(demo!.y);
+  }
+});
+
 for (const example of [
   {
     path: "/structures/shared-map/",

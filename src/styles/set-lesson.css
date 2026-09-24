@@ -5,7 +5,8 @@
 }
 
 @media (min-width: 80rem) {
-  .register-lesson > register-structure-demo {
+  .set-lesson > set-structure-demo,
+  .register-lesson > :is(register-structure-demo, map-structure-demo) {
     clear: both;
   }
 }
