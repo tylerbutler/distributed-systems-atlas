@@ -91,6 +91,20 @@ export function actRemainingDemo(current, replica) {
   return update(current, (room) => core.remaining_demo_act(room, replica));
 }
 
+export function insertRemainingSequenceStop(current, replica, index, stop) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  if (!Number.isSafeInteger(index) || index < 0) {
+    return failure("invalid-input", "insertion position must be a nonnegative integer");
+  }
+  if (typeof stop !== "string" || !stop.trim() || stop.trim().length > 40) {
+    return failure("invalid-input", "trail stop name must contain 1 to 40 characters");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_insert(room, replica, index, stop.trim()));
+}
+
 export function stageRemainingDemoRace(current) {
   return update(current, core.remaining_demo_stage_race);
 }

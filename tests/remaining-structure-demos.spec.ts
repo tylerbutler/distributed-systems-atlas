@@ -33,6 +33,22 @@ for (const [slug, name, race, initial, final] of examples) {
       displayed.join(" · "),
       displayed.join(" · "),
     ]);
+    if (slug === "shared-sequence") {
+      await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
+      await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
+      await expect(demo.locator("[data-note-log] li")).toHaveText([
+        "Bob: Insert Marsh before Weir — delivered",
+        "Alice: Insert Falls before Weir — delivered",
+      ]);
+      await demo.locator("[data-transport-auto-deliver]").uncheck();
+      const carol = demo.locator('[data-client="C"] [data-sequence-insert]');
+      await carol.getByLabel("Trail stop name").selectOption("Ridge");
+      await carol.getByRole("button", { name: "Insert trail stop" }).click();
+      await expect(demo.locator('[data-client="C"] [data-local-record] sup')).toHaveText(["A:4", "B:4"]);
+      await carol.getByLabel("Trail stop name").selectOption("Falls");
+      await carol.getByRole("button", { name: "Insert trail stop" }).click();
+      await expect(demo.locator('[data-client="C"] [data-local-record] sup')).toHaveText(["B:4"]);
+    }
     await demo.getByRole("button", { name: "Reset" }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
     await expect(demo.locator("[data-local-record]")).toHaveText([
@@ -76,6 +92,8 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the race");
       if (slug === "shared-sequence") {
+        await expect(demo.locator("[data-sequence-insert]")).toHaveCount(3);
+        await expect(demo.locator("[data-insert-submit]").first()).toBeDisabled();
         const notebook = page.getByRole("table", {
           name: "Each hiker's inspection route before and after sharing",
         });
@@ -99,44 +117,81 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
 test("direct controls remain active after another client queues work", async ({ page }) => {
   await page.goto("/structures/shared-sequence/");
   const demo = page.getByTestId("shared-sequence-demo");
-  const controls = demo.locator("[data-client-action]");
-  await controls.first().click();
-  await expect(controls.nth(1)).toBeEnabled();
-  await controls.nth(1).click();
-  await expect(demo.locator("[data-status]")).toContainText("can still send theirs");
+  const controls = demo.locator("[data-sequence-insert]");
+  await expect(controls).toHaveCount(3);
+  for (const form of await controls.all()) {
+    const names = form.locator("select[data-insert-name]");
+    await expect(names).toBeEnabled();
+    await expect(names).toHaveValue("");
+    await expect(names.locator("option")).toHaveText([
+      "Choose a trail stop", "Falls", "Marsh", "Ridge", "Lookout",
+    ]);
+    await expect(form.getByLabel("Position")).toBeEnabled();
+    await expect(form.getByRole("button", { name: "Insert trail stop" })).toBeEnabled();
+  }
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  await controls.nth(0).getByLabel("Trail stop name").selectOption("Ridge");
+  await controls.nth(0).getByRole("button", { name: "Insert trail stop" }).click();
+  await controls.nth(0).getByLabel("Trail stop name").selectOption("Lookout");
+  await controls.nth(0).getByRole("button", { name: "Insert trail stop" }).click();
+  await controls.nth(2).getByLabel("Trail stop name").selectOption("Marsh");
+  await controls.nth(2).getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("3 notes waiting");
+  await expect(demo.locator('[data-client="A"] [data-local-record]')).toContainText("Lookout");
+  await expect(demo.locator('[data-client="C"] [data-local-record]')).toContainText("Marsh");
 });
 
 test("SharedSequence shows each local route and the insertion notes in transit", async ({ page }) => {
   await page.goto("/structures/shared-sequence/");
   const demo = page.getByTestId("shared-sequence-demo");
-  await expect(demo.locator('[data-client="C"] [data-client-action]')).toHaveCount(0);
   await demo.locator("[data-transport-auto-deliver]").uncheck();
-  await demo.getByRole("button", { name: "Insert Falls" }).click();
+  const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
+  const bob = demo.locator('[data-client="B"] [data-sequence-insert]');
+  const carol = demo.locator('[data-client="C"] [data-sequence-insert]');
+  await alice.getByLabel("Trail stop name").selectOption("Falls");
+  await alice.getByLabel("Position").selectOption({ label: "Before Weir (position 2)" });
+  await alice.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(alice.getByLabel("Position").locator("option:checked")).toHaveText("Before Weir (position 3)");
+  await expect(demo.locator('[data-client="A"] [data-local-record] sup')).toHaveCount(0);
   await expect(demo.locator("[data-local-record]")).toHaveText([
-    "Bridge · FallsA:4 · Weir · North gate",
+    "Bridge · Falls · Weir · North gate",
     "Bridge · Weir · North gate",
     "Bridge · Weir · North gate",
   ]);
   await expect(demo.getByRole("region", { name: "Carol's current route" }))
     .toContainText("BridgeWeirNorth gate");
   await expect(demo.locator("[data-pending]")).toHaveText("1 note waiting");
-  await expect(demo.getByRole("list", { name: "Insertion note log" }))
+  await expect(demo.getByRole("list", { name: "Insertion note log, newest first" }))
     .toContainText("Alice: Insert Falls before Weir — waiting");
 
-  await demo.getByRole("button", { name: "Insert Marsh" }).click();
-  await expect(demo.locator("[data-pending]")).toHaveText("2 notes waiting");
+  await bob.getByLabel("Trail stop name").selectOption("Marsh");
+  await bob.getByRole("button", { name: "Insert trail stop" }).click();
+  await carol.getByLabel("Trail stop name").selectOption("Falls");
+  await carol.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("3 notes waiting");
+  await expect(demo.locator("[data-note-log] li")).toHaveText([
+    "Carol: Insert Falls before Weir — waiting",
+    "Bob: Insert Marsh before Weir — waiting",
+    "Alice: Insert Falls before Weir — waiting",
+  ]);
   await demo.locator("[data-transport-auto-deliver]").check();
   await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
-  await expect(demo.locator("[data-local-record]")).toHaveText([
-    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
-    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
-    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
-  ]);
-  await expect(demo.getByRole("list", { name: "Insertion note log" }))
-    .toContainText("Bob: Insert Marsh before Weir — delivered");
+  const routes = await demo.locator("[data-local-record]").allTextContents();
+  expect(routes).toEqual([routes[0], routes[0], routes[0]]);
+  expect(routes[0].match(/Falls/g)).toHaveLength(2);
+  await expect(demo.locator("[data-note-log] li").first())
+    .toHaveText("Carol: Insert Falls before Weir — delivered");
+  await carol.getByLabel("Trail stop name").selectOption("Ridge");
+  await carol.getByLabel("Position").selectOption({ label: "At end" });
+  await carol.getByRole("button", { name: "Insert trail stop" }).click();
+  await expect(carol.getByLabel("Position").locator("option:checked")).toHaveText("At end");
+  await expect(demo.locator("[data-note-log] li").first())
+    .toHaveText("Carol: Insert Ridge at the end — waiting");
+  await expect(demo.locator("[data-note-log] li").nth(1))
+    .toHaveText("Carol: Insert Falls before Weir — delivered");
   await demo.getByRole("button", { name: "Reset" }).click();
   await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
-  await expect(demo.getByRole("list", { name: "Insertion note log" }))
+  await expect(demo.getByRole("list", { name: "Insertion note log, newest first" }))
     .toHaveText("No insertion notes yet.");
 });
 
@@ -183,8 +238,9 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
       expect(captionBox!.x).toBeGreaterThanOrEqual(0);
       expect(captionBox!.x + captionBox!.width).toBeLessThanOrEqual(width);
     }
-    await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
-    await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
+    await expect(demo.locator("[data-sequence-insert]")).toHaveCount(3);
+    const relay = demo.locator(".remaining-exchange");
+    await expect(relay.locator("[data-note-log]")).toHaveCSS("min-height", "160px");
     await expect(notebook.locator("figcaption")).toContainText("Each highlight shows a trail stop new to that notebook.");
     await expect(article.locator("#route-setup")).not.toContainText("not set additions");
     await expect(article.locator("#route-setup > p")).toContainText("a unique name");

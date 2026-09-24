@@ -1,7 +1,7 @@
 ---
 import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
-import { sequenceStopMarks, type RemainingStructure } from "../lib/structure-demo/remaining-structures";
+import type { RemainingStructure } from "../lib/structure-demo/remaining-structures";
 import "../styles/remaining-structure-demo.css";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
 }
 
 const { structure } = Astro.props;
+const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
 ---
 
 <remaining-structure-demo
@@ -23,7 +24,7 @@ const { structure } = Astro.props;
         </h2>
         <p>
           {structure.id === "shared-sequence"
-            ? "Alice and Bob add trail stops before Weir. Turn off Broadcast to see each notebook before their insertion notes arrive."
+            ? "Each hiker can add trail stops to their notebook. Turn off Broadcast to see their routes before insertion notes arrive."
             : structure.story}
         </p>
       </div>
@@ -39,25 +40,43 @@ const { structure } = Astro.props;
               <strong data-local-record>{structure.initialRecord[id]}</strong>
             </p>
             <p class="remaining-paper-note">
-              <span>{structure.id === "shared-sequence" && id === "C" ? "Observation" : structure.messageLabel}</span>
-              <strong>{structure.local[id]}</strong>
-              <small>
-                {structure.id === "shared-sequence" && id !== "C"
-                  ? <>{structure.evidence[id]}: <span class="dotted-value">{id === "A" ? "Falls" : "Marsh"}<sup>{id === "A" ? sequenceStopMarks.Falls : sequenceStopMarks.Marsh}</sup></span></>
-                  : structure.evidence[id]}
-              </small>
+              <span>{structure.id === "shared-sequence" ? "Latest insertion" : structure.messageLabel}</span>
+              <strong data-client-note>{structure.id === "shared-sequence" ? "No trail stop inserted yet." : structure.local[id]}</strong>
+              <small data-client-evidence>{structure.id === "shared-sequence" ? "Each trail stop gets a unique ID." : structure.evidence[id]}</small>
             </p>
-            {(structure.id !== "shared-sequence" || id !== "C") && (
+            {structure.id === "shared-sequence" ? (
+              <form class="remaining-insert-controls" data-sequence-insert aria-label={`Insert a trail stop for ${["Alice", "Bob", "Carol"][index]}`}>
+                <label>Trail stop name
+                  <select data-insert-name required disabled>
+                    <option value="" selected disabled>Choose a trail stop</option>
+                    {trailStopChoices.map((stop) => <option value={stop}>{stop}</option>)}
+                  </select>
+                </label>
+                <label>Position
+                  <select data-insert-position disabled>
+                    <option value="0">At start</option>
+                    {structure.initial.slice(1).map((stop, position) => (
+                      <option value={position + 1} data-before={stop} selected={position === 0}>Before {stop} (position {position + 2})</option>
+                    ))}
+                    <option value={structure.initial.length}>At end</option>
+                  </select>
+                </label>
+                <button type="submit" data-insert-submit disabled>Insert trail stop</button>
+              </form>
+            ) : (
               <button type="button" data-client-action disabled>
-                {structure.id === "shared-sequence" ? `Insert ${id === "A" ? "Falls" : "Marsh"}` : "Send note"}
+                Send note
               </button>
             )}
           </section>
           {structure.id === "shared-sequence" && index === 0 && (
             <section class="remaining-exchange" aria-label="Trail exchange">
-              <h3>Trail exchange</h3>
-              <output data-pending>0 notes waiting</output>
-              <ol data-note-log aria-label="Insertion note log" reversed>
+              <div class="remaining-relay">
+                <h3>Trail exchange</h3>
+                <p>Insertion notes travel to all three hikers</p>
+                <output data-pending>0 notes waiting</output>
+              </div>
+              <ol data-note-log aria-label="Insertion note log, newest first" aria-live="polite" reversed>
                 <li>No insertion notes yet.</li>
               </ol>
             </section>
@@ -74,7 +93,9 @@ const { structure } = Astro.props;
     <div class="remaining-controls">
       <div>
         <h3>Run the worked example</h3>
-        <p>Queue the hikers' notes together, or reset and send one at a time.</p>
+        <p>{structure.id === "shared-sequence"
+          ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
+          : "Queue the hikers' notes together, or reset and send one at a time."}</p>
       </div>
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
       <button type="button" data-action="reset" disabled>Reset</button>
@@ -90,6 +111,7 @@ const { structure } = Astro.props;
     actInRemainingDemo,
     createRemainingDemo,
     deliverRemainingRace,
+    insertSequenceStop,
     stageRemainingRace,
     type RemainingDemoState,
   } from "../lib/structure-demo/remaining-structure-demo";
@@ -104,7 +126,8 @@ const { structure } = Astro.props;
     private delivering = false;
     private generation = 0;
     private acted = new Set<string>();
-    private sequenceNotes: Array<"A" | "B"> = [];
+    private sequenceNotes: Array<{ author: "A" | "B" | "C"; description: string; delivered: boolean }> = [];
+    private markedExampleStops = new Set(["Falls", "Marsh"]);
 
     connectedCallback() {
       if (this.dataset.ready) return;
@@ -112,6 +135,39 @@ const { structure } = Astro.props;
       const note = this.querySelector("[data-enhancement-note]");
       if (note instanceof HTMLElement) note.hidden = true;
       this.state = createRemainingDemo(this.kind);
+      this.querySelectorAll<HTMLFormElement>("[data-sequence-insert]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
+          try {
+            const client = form.closest<HTMLElement>("[data-client]")?.dataset.client;
+            const nameInput = form.querySelector<HTMLSelectElement>("[data-insert-name]");
+            const positionInput = form.querySelector<HTMLSelectElement>("[data-insert-position]");
+            if ((client !== "A" && client !== "B" && client !== "C") || !nameInput || !positionInput) {
+              throw new Error("Missing trail stop controls.");
+            }
+            const name = nameInput.value.trim();
+            if (!name) throw new Error("Enter a trail stop name.");
+            const position = Number(positionInput.value);
+            const current = this.state.view.replicas.find(({ id }) => id === client);
+            if (!current) throw new Error("Missing client route.");
+            const place = position === current.values.length
+              ? "at the end"
+              : `before ${current.values[position]}`;
+            this.state = insertSequenceStop(this.state, client, position, name);
+            this.markedExampleStops.delete(name);
+            const description = `Insert ${name} ${place}`;
+            this.sequenceNotes.unshift({ author: client, description, delivered: false });
+            this.setSequenceSlip(client, description);
+            nameInput.value = "";
+            this.clearError();
+            const hiker = { A: "Alice", B: "Bob", C: "Carol" }[client];
+            this.render(`Queued ${hiker}'s insertion note.`);
+            if (this.transport.autoDeliver) void this.deliver(form.querySelector<HTMLButtonElement>("button") ?? form);
+          } catch (error) {
+            this.showError(error);
+          }
+        });
+      });
       this.querySelectorAll<HTMLButtonElement>("[data-client-action]").forEach((button) => {
         button.addEventListener("click", () => {
           const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
@@ -122,10 +178,6 @@ const { structure } = Astro.props;
           try {
             const pendingBefore = this.state.view.pending;
             this.state = actInRemainingDemo(this.state, client);
-            if (this.kind === "shared-sequence" && this.state.view.pending > pendingBefore) {
-              if (client !== "A" && client !== "B") throw new Error("Unexpected sequence note author");
-              this.sequenceNotes.unshift(client);
-            }
             this.acted.add(client);
             this.clearError();
             this.render(this.state.view.pending > pendingBefore
@@ -144,7 +196,12 @@ const { structure } = Astro.props;
           this.acted = new Set(["A", "B", "C"]);
           if (this.kind === "shared-sequence") {
             if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
-            this.sequenceNotes = ["B", "A"];
+            this.sequenceNotes = [
+              { author: "B", description: "Insert Marsh before Weir", delivered: false },
+              { author: "A", description: "Insert Falls before Weir", delivered: false },
+            ];
+            this.setSequenceSlip("A", "Insert Falls before Weir", "Falls");
+            this.setSequenceSlip("B", "Insert Marsh before Weir", "Marsh");
           }
           this.clearError();
           this.render("Notes queued for delivery.");
@@ -207,6 +264,9 @@ const { structure } = Astro.props;
       if (generation !== this.generation) return;
       try {
         this.state = deliverRemainingRace(this.state);
+        if (this.kind === "shared-sequence") {
+          for (const note of this.sequenceNotes) note.delivered = true;
+        }
         this.clearError();
         this.render(this.state.view.pending > 0
           ? "Some notes still await delivery."
@@ -229,7 +289,11 @@ const { structure } = Astro.props;
       this.delivering = false;
       this.acted.clear();
       this.sequenceNotes = [];
+      this.markedExampleStops = new Set(["Falls", "Marsh"]);
       this.state = createRemainingDemo(this.kind);
+      if (this.kind === "shared-sequence") {
+        for (const id of ["A", "B", "C"] as const) this.setSequenceSlip(id, "No trail stop inserted yet.");
+      }
     }
 
     private render(statusText?: string): void {
@@ -255,6 +319,7 @@ const { structure } = Astro.props;
             record.textContent = replica.values.join(" · ");
           }
         }
+        if (this.kind === "shared-sequence") this.renderSequencePositions(replica.id, replica.values);
       }
       this.renderSequenceNotes();
       this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
@@ -274,16 +339,45 @@ const { structure } = Astro.props;
       const count = this.state.view.pending;
       pending.textContent = `${count} ${count === 1 ? "note" : "notes"} waiting`;
       log.replaceChildren(...(this.sequenceNotes.length
-        ? this.sequenceNotes.map((id) => {
-          const description = this.querySelector<HTMLElement>(
-            `[data-client="${id}"] .remaining-paper-note strong`,
-          )?.textContent;
-          if (!description) throw new Error(`Missing ${id} insertion note`);
+        ? this.sequenceNotes.map((note) => {
           const item = document.createElement("li");
-          item.textContent = `${id === "A" ? "Alice" : "Bob"}: ${description} — ${count ? "waiting" : "delivered"}`;
+          const name = { A: "Alice", B: "Bob", C: "Carol" }[note.author];
+          item.textContent = `${name}: ${note.description} — ${note.delivered ? "delivered" : "waiting"}`;
           return item;
         })
         : [Object.assign(document.createElement("li"), { textContent: "No insertion notes yet." })]));
+    }
+
+    private renderSequencePositions(client: string, values: string[]): void {
+      const select = this.querySelector<HTMLSelectElement>(`[data-client="${client}"] [data-insert-position]`);
+      if (!select) throw new Error(`Missing ${client} insertion position`);
+      const selected = select.value || "1";
+      const selectedOption = select.selectedOptions[0];
+      const selectedStop = selectedOption?.dataset.before;
+      const atEnd = selectedOption?.textContent === "At end";
+      const options = values.map((value, index) => {
+        const option = new Option(index === 0 ? "At start" : `Before ${value} (position ${index + 1})`, String(index));
+        if (index > 0) option.dataset.before = value;
+        return option;
+      });
+      options.push(new Option("At end", String(values.length)));
+      select.replaceChildren(...options);
+      const matching = options.filter((option) => option.dataset.before === selectedStop);
+      select.value = atEnd
+        ? String(values.length)
+        : selectedStop && matching.length === 1
+          ? matching[0].value
+          : options.some(({ value }) => value === selected) ? selected : String(values.length);
+    }
+
+    private setSequenceSlip(client: "A" | "B" | "C", description: string, example?: "Falls" | "Marsh"): void {
+      const note = this.querySelector<HTMLElement>(`[data-client="${client}"] [data-client-note]`);
+      const evidence = this.querySelector<HTMLElement>(`[data-client="${client}"] [data-client-evidence]`);
+      if (!note || !evidence) throw new Error(`Missing ${client} insertion slip`);
+      note.textContent = description;
+      evidence.replaceChildren(...(example
+        ? ["Trail stop ID: ", this.sequenceValue(example)]
+        : ["Each trail stop gets a unique ID."]));
     }
 
     private renderValues(target: HTMLElement | null, values: string[]): void {
@@ -296,7 +390,7 @@ const { structure } = Astro.props;
     }
 
     private sequenceValue(value: string): Node {
-      const mark = value === "Falls"
+      const mark = !this.markedExampleStops.has(value) ? null : value === "Falls"
         ? sequenceStopMarks.Falls
         : value === "Marsh" ? sequenceStopMarks.Marsh : null;
       if (!mark) return document.createTextNode(value);
@@ -310,6 +404,9 @@ const { structure } = Astro.props;
     }
 
     private renderControls(): void {
+      this.querySelectorAll<HTMLSelectElement | HTMLButtonElement>(
+        "[data-insert-name], [data-insert-position], [data-insert-submit]",
+      ).forEach((control) => { control.disabled = false; });
       for (const button of this.querySelectorAll<HTMLButtonElement>(
         "[data-client-action]",
       )) {

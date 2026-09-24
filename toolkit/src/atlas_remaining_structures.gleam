@@ -177,32 +177,20 @@ pub fn remaining_demo_act(
     SequenceRoom(a, b, c, pending, acted) -> {
       use acted <- result.try(mark_acted(acted, replica))
       case replica {
-        "A" -> {
-          use #(a, _, operation) <- result.try(
-            sequence_kernel.p2p_insert(a, 1, json.string("Falls"))
-            |> result.map_error(fn(_) { "SharedSequence insertion failed" }),
+        "A" ->
+          remaining_demo_insert(
+            SequenceRoom(a, b, c, pending, acted),
+            "A",
+            1,
+            "Falls",
           )
-          Ok(SequenceRoom(
-            a,
-            b,
-            c,
-            list.append(pending, [Authored("A", operation)]),
-            acted,
-          ))
-        }
-        "B" -> {
-          use #(b, _, operation) <- result.try(
-            sequence_kernel.p2p_insert(b, 1, json.string("Marsh"))
-            |> result.map_error(fn(_) { "SharedSequence insertion failed" }),
+        "B" ->
+          remaining_demo_insert(
+            SequenceRoom(a, b, c, pending, acted),
+            "B",
+            1,
+            "Marsh",
           )
-          Ok(SequenceRoom(
-            a,
-            b,
-            c,
-            list.append(pending, [Authored("B", operation)]),
-            acted,
-          ))
-        }
         _ -> Ok(SequenceRoom(a, b, c, pending, acted))
       }
     }
@@ -469,6 +457,49 @@ pub fn remaining_demo_act(
         _ -> Ok(RichTextRoom(a, b, c, pending, acted, sequence_number))
       }
     }
+  }
+}
+
+pub fn remaining_demo_insert(
+  room: RemainingDemoRoom,
+  replica: String,
+  index: Int,
+  stop: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    SequenceRoom(a, b, c, pending, acted) -> {
+      case string.trim(stop) {
+        "" -> Error("trail stop name must not be empty")
+        name -> {
+          let state = case replica {
+            "A" -> a
+            "B" -> b
+            _ -> c
+          }
+          use #(state, _, operation) <- result.try(
+            sequence_kernel.p2p_insert(state, index, json.string(name))
+            |> result.map_error(fn(error) {
+              "SharedSequence insertion failed: "
+              <> sequence_kernel.edit_error_detail(error)
+            }),
+          )
+          let #(a, b, c) = case replica {
+            "A" -> #(state, b, c)
+            "B" -> #(a, state, c)
+            _ -> #(a, b, state)
+          }
+          Ok(SequenceRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [Authored(replica, operation)]),
+            acted,
+          ))
+        }
+      }
+    }
+    _ -> Error("trail stop insertion requires SharedSequence")
   }
 }
 

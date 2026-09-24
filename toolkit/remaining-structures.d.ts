@@ -43,6 +43,13 @@ export function actRemainingDemo(
   replica: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
+export function insertRemainingSequenceStop(
+  current: unknown,
+  replica: unknown,
+  index: unknown,
+  stop: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
 export function stageRemainingDemoRace(
   current: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;

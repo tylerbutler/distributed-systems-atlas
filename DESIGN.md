@@ -294,13 +294,16 @@ SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
 and newly received trail stops after sharing. Yellow identifies Alice's Falls and
 dark blue identifies Bob's Marsh; the table caption names both colors.
-The new trail stops carry replica-and-counter superscripts that give them unique
-IDs. The sequence uses the IDs as insertion anchors and to order concurrent
-inserts. Alice and Bob each insert a trail stop before Weir;
-Carol observes their local routes and the insertion
-notes in the trail exchange. The route readout names Carol's current view until both notes
-arrive. The other later-family lessons use the same reading width and dark
-instrument field, but keep their own kernel-supported client actions.
+The worked race shows replica-and-counter superscripts for its new trail stops;
+manual insertions keep their kernel-assigned IDs without inventing visible marks.
+The sequence uses the IDs as insertion anchors and to order concurrent
+inserts. All three notebooks have the same trail-stop and position dropdowns;
+each hiker can insert repeatedly. The center trail exchange shows a relay above
+a tall newest-first insertion log. The worked race still inserts Alice's Falls
+and Bob's Marsh before Weir while Carol observes. The route readout names
+Carol's current view until the notes arrive. The other later-family lessons
+use the same reading width and dark instrument field, but keep their own
+kernel-supported client actions.
 
 The G-counter demo is the first instance. Alice, Bob, and Carol count birds on
 separate hikes and leave cumulative notes at known trail checkpoints. Three

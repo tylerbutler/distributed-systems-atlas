@@ -2,6 +2,7 @@ import {
   actRemainingDemo,
   createRemainingDemoRoom,
   deliverRemainingDemo,
+  insertRemainingSequenceStop,
   stageRemainingDemoRace,
   type RemainingDemoKind,
   type RemainingDemoRoom,
@@ -32,6 +33,15 @@ export function actInRemainingDemo(
   replica: "A" | "B" | "C",
 ): RemainingDemoState {
   return { kind: state.kind, ...value(actRemainingDemo(state.room, replica)) };
+}
+
+export function insertSequenceStop(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+  index: number,
+  stop: string,
+): RemainingDemoState {
+  return { kind: state.kind, ...value(insertRemainingSequenceStop(state.room, replica, index, stop)) };
 }
 
 export function stageRemainingRace(state: RemainingDemoState): RemainingDemoState {

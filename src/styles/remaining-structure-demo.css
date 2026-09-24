@@ -116,10 +116,50 @@ remaining-structure-demo {
   font: inherit;
 }
 
+.remaining-insert-controls {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.remaining-insert-controls label {
+  display: grid;
+  gap: var(--space-1);
+  font: 0.825rem / 1.5 var(--font-ui);
+}
+
+.remaining-insert-controls select {
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: var(--rule-width) solid color-mix(in oklch, var(--clear) 55%, var(--instrument));
+  border-radius: 0;
+  color: var(--clear);
+  background: var(--instrument-deep);
+  font: 0.875rem / 1.5 var(--font-ui);
+}
+
+.remaining-insert-controls button {
+  margin-top: 0;
+}
+
 .remaining-exchange {
   grid-area: exchange;
+  display: flex;
   min-width: 0;
-  padding-block: var(--space-5);
+  align-self: stretch;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-4);
+}
+
+.remaining-relay {
+  display: grid;
+  min-height: 9rem;
+  padding: var(--space-4);
+  border: var(--rule-width) dashed var(--signal);
+  place-content: center;
+  gap: var(--space-2);
   text-align: center;
 }
 
@@ -128,15 +168,22 @@ remaining-structure-demo {
   font: 650 1rem / 1.4 var(--font-ui);
 }
 
+.remaining-relay p {
+  font: 0.8rem / 1.5 var(--font-ui);
+}
+
 .remaining-exchange output {
   display: block;
-  margin-block: var(--space-2) var(--space-4);
   font-family: var(--font-data);
 }
 
 .remaining-exchange ol {
+  flex: 1;
+  min-height: 10rem;
+  max-height: 28rem;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
   list-style: none;
 }
 

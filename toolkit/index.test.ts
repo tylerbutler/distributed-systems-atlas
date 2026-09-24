@@ -8,6 +8,7 @@ import {
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
   deliverRemainingDemo,
+  insertRemainingSequenceStop,
   stageMapRace,
   stageRegisterDemoRace,
   stageRemainingDemoRace,
@@ -59,6 +60,34 @@ test.each([
 
   const reset = unwrapRemaining(createRemainingDemoRoom(kind));
   expect(reset.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+});
+
+test("SharedSequence accepts repeated inserts from every hiker and merges equal names", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("shared-sequence")).room;
+  unwrapRemaining(insertRemainingSequenceStop(room, "A", 1, "Falls"));
+  unwrapRemaining(insertRemainingSequenceStop(room, "C", 1, "Falls"));
+  unwrapRemaining(insertRemainingSequenceStop(room, "B", 3, "Marsh"));
+  unwrapRemaining(insertRemainingSequenceStop(room, "C", 2, "Ridge"));
+
+  const staged = unwrapRemaining(insertRemainingSequenceStop(room, "A", 0, "Lookout"));
+  expect(staged.view.pending).toBe(5);
+  expect(staged.view.replicas[0].values[0]).toBe("Lookout");
+  expect(staged.view.replicas[2].values).toContain("Ridge");
+  expect(insertRemainingSequenceStop(room, "B", 0, "  ")).toMatchObject({
+    ok: false, error: { tag: "invalid-input" },
+  });
+  expect(insertRemainingSequenceStop(room, "B", 99, "Summit")).toMatchObject({
+    ok: false, error: { tag: "invalid-state" },
+  });
+  const delivered = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(delivered.pending).toBe(0);
+  expect(delivered.replicas.map(({ values }) => values)).toEqual([
+    delivered.replicas[0].values,
+    delivered.replicas[0].values,
+    delivered.replicas[0].values,
+  ]);
+  expect(delivered.replicas[0].values.filter((value) => value === "Falls")).toHaveLength(2);
+  expect(delivered.replicas[0].values).toHaveLength(8);
 });
 
 test("the public facade returns plain JSON data and does not mutate its inputs", () => {
