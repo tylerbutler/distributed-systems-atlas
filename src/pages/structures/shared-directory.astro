@@ -10,22 +10,61 @@ import "../../styles/set-lesson.css";
 
 <BaseLayout title="SharedDirectory" description="Alice and Bob concurrently create one stable Eagle Creek folder." territory="Structures" sheetTitle="SharedDirectory">
   <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>SharedDirectory</h1><p class="structure-summary">The hikers now keep their trail notes in folders. Alice and Bob each make an Eagle Creek folder before either sees the other's work.</p><LessonIllustration id="structures-shared-directory" /></header>
+    <header class="page-intro">
+      <p class="territory-label">Structures</p>
+      <h1>SharedDirectory</h1>
+      <p class="structure-summary">
+        The ranger's trail report began as one flat table of named lines.
+        Alice wants a folder for the Eagle Creek gate and bridge notes.
+        Bob makes a folder by the same name before he sees Alice's work,
+        while Carol has notes from another trail to file.
+      </p>
+      <LessonIllustration id="structures-shared-directory" />
+    </header>
     <StructureFacts structure="SharedDirectory" family="DDS" model="Sequenced hierarchical map" updates="Make or remove folders; add or remove their notes" merge="Keep old notes with the old folder, even if its name is reused." delivery="One server-ordered operation stream" bestFor="Shared folders whose names can be reused" cost="A distinct mark for each folder and its entries" />
     <section aria-labelledby="folder-title">
-      <h2 id="folder-title">The same name can belong to a new folder</h2>
-      <p>A <dfn><a href="/glossary/#shareddirectory">SharedDirectory</a></dfn> lets Alice and Bob use one shared folder when they both make one called Eagle Creek. If they later remove it and make another with the same name, notes meant for the old folder do not appear in the new one.</p>
+      <h2 id="folder-title">Give each trail its own folder</h2>
+      <p>
+        A <dfn><a href="/glossary/#shareddirectory">SharedDirectory</a></dfn>
+        keeps the ranger's numbered change stream from{" "}
+        <a href="/structures/shared-map/">SharedMap</a>, but adds structure.
+        Each folder has its own map of named entries and can hold more
+        folders. Alice makes <code>/eagle-creek</code> and files
+        <code>gate-status: Report pending</code> inside it. She can put
+        <code>bridge-status: Inspection due</code> in a child folder at
+        <code>/eagle-creek/bridge</code>. Carol can make a
+        <code>/ridge-pass</code> folder for notes from that trail. Any
+        hiker can add or remove a named note, or remove a folder when the
+        survey no longer needs it.
+      </p>
       <TermCallout {...sharedDirectoryTerm} />
       <p>
-        Alice can use her new folder before the ranger gives it a number.
-        She also sees the notes she adds or removes while she waits. The
-        ranger's numbered ledger helps Alice and Bob agree on which folder
-        they share.
+        Alice can use her new folder and see the notes she adds or removes
+        while she waits for the ranger's number. Bob also makes
+        <code>/eagle-creek</code> before he sees Alice's folder. The
+        ranger numbers both creates, so all three hikers end up with one
+        shared folder. He also numbers changes to the entries inside it,
+        just as he did for the flat table.
       </p>
       <figure><table aria-label="SharedDirectory concurrent folder creation"><thead><tr><th scope="col">Hiker</th><th scope="col">Action</th><th scope="col">After sharing</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Make /eagle-creek</td><td rowspan="2">One shared /eagle-creek folder</td></tr><tr><th scope="row">Bob</th><td>Make /eagle-creek</td></tr></tbody></table><figcaption>Both hikers' notebooks refer to the same folder.</figcaption></figure>
+      <p>
+        The simulation below shows creating and removing folders at the
+        root. SharedDirectory also supports notes inside folders and
+        folders inside other folders.
+      </p>
     </section>
     <MapStructureDemo kind="shared-directory" title="Make one shared folder" description="Create or remove a folder from any notebook. Try Alice and Bob making /eagle-creek before sharing their notes." rule="The ranger numbers folder changes. A new folder can reuse an old name without reusing its identity." raceLabel="Race the Eagle Creek folder creates" />
-    <section aria-labelledby="stale-title"><h2 id="stale-title">A new folder can reuse an old name</h2><p>A new folder may have the same name as a removed one. A delayed note for the old folder must not appear in the new one.</p></section>
+    <section aria-labelledby="stale-title">
+      <h2 id="stale-title">A new folder can reuse an old name</h2>
+      <p>
+        Later, Alice removes <code>/eagle-creek</code> when that survey
+        ends. Bob still has a delayed change to a note in the old folder.
+        Carol makes a fresh <code>/eagle-creek</code> for a new survey.
+        The ranger gives the new folder its own identity even though its
+        path is the same. When Bob's note arrives, it cannot change
+        Carol's new folder. She does not find an old survey note in it.
+      </p>
+    </section>
     <section aria-labelledby="source-title">
       <h2 id="source-title">Sources and implementation</h2>
       <p>

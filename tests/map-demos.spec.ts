@@ -199,6 +199,25 @@ test("every directory client can create and remove named folders", async ({ page
     .toHaveText(["ridge-passfolder", "eagle-creekfolder"]);
 });
 
+test("SharedDirectory explains folder entries and reused names", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/structures/shared-directory/");
+    const folders = page.getByRole("region", { name: "Give each trail its own folder" });
+    await expect(folders.getByRole("link", { name: "SharedMap" }))
+      .toHaveAttribute("href", "/structures/shared-map/");
+    await expect(folders).toContainText("Each folder has its own map of named entries");
+    await expect(folders).toContainText("/eagle-creek/bridge");
+    await expect(folders).toContainText("Any hiker can add or remove a named note");
+    await expect(folders).toContainText("The simulation below shows creating and removing folders at the root.");
+    const reused = page.getByRole("region", { name: "A new folder can reuse an old name" });
+    await expect(reused).toContainText("it cannot change Carol's new folder");
+  } finally {
+    await context.close();
+  }
+});
+
 test("map replicas update after the shared operation arrives", async ({ page }) => {
   await page.goto("/structures/shared-map/");
   const demo = page.getByTestId("shared-map-demo");
