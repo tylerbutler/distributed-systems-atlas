@@ -325,8 +325,10 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     expect((await hikerColumn.boundingBox())!.width).toBeGreaterThanOrEqual(90);
     await expect(hikerColumn).toHaveCSS("white-space", "nowrap");
   }
-  await page.goto("/structures/shared-text/");
-  await expect(page.locator(".page-intro .structure-kind-tag")).toHaveCount(1);
+  for (const [slug] of examples) {
+    await page.goto(`/structures/${slug}/`);
+    await expect(page.locator(".page-intro .structure-kind-tag")).toHaveCount(0);
+  }
 });
 
 test("reset cancels an in-flight kernel delivery", async ({ page }) => {

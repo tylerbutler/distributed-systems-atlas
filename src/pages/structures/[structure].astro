@@ -4,7 +4,6 @@ import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
-import StructureKindTag from "../../components/StructureKindTag.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import {
   remainingFamilies,
@@ -35,7 +34,6 @@ const operationNames = structure.operations.length === 1
         <p class="territory-label">Structures · {family.name}</p>
         <h1>{structure.name}</h1>
         <p class="structure-summary">{structure.tagline}</p>
-        {!isSharedSequence && <StructureKindTag kind={structure.kind} />}
         <LessonIllustration id={`structures-${structure.id}`} />
       </header>
 
