@@ -297,6 +297,15 @@ test("OR-map shows each hiker's notebook before and after the removal", async ({
     ]);
     await expect(modes.getByRole("link", { name: "PN-counter" }).first())
       .toHaveAttribute("href", "/glossary/#pn-counter");
+    const perspective = modes.getByRole("complementary", { name: "Alternative perspective" });
+    await expect(perspective).toContainText("Alice's cross-out names the Eagle Creek entry she has seen");
+    await expect(perspective).toContainText("Bob's version remains");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const aside = await perspective.boundingBox();
+    const source = await page.getByRole("heading", { name: "Sources and implementation" }).boundingBox();
+    expect(aside).not.toBeNull();
+    expect(source).not.toBeNull();
+    expect(aside!.y + aside!.height).toBeLessThan(source!.y);
   } finally {
     await context.close();
   }
