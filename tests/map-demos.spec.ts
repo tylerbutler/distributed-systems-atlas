@@ -265,17 +265,30 @@ test("OR-map shows each hiker's notebook before and after the removal", async ({
     await page.goto("/structures/or-map/");
     await expect(page.getByRole("region", { name: "Cross out only what you have seen" }))
       .toContainText("Alice had not seen Bob's update");
-    const checkpoints = page.getByRole("table", { name: "OR-map notebooks at three checkpoints" })
-      .locator("tbody tr");
-    await expect(checkpoints).toHaveCount(3);
-    await expect(checkpoints.nth(1).locator("td")).toHaveText([
+    const notebooks = page.getByRole("table", { name: "OR-map notebooks at three checkpoints" });
+    await expect(notebooks.locator("thead th")).toHaveText([
+      "Hiker", "Before either note", "Notes not yet shared", "After sharing",
+    ]);
+    await expect(notebooks.locator("thead th").first()).toHaveCSS("white-space", "nowrap");
+    const rows = notebooks.locator("tbody tr");
+    await expect(rows.locator("th")).toHaveText(["Alice", "Bob", "Carol"]);
+    await expect(rows.locator("th").first()).toHaveCSS("white-space", "nowrap");
+    await expect(rows.nth(0).locator("td")).toHaveText([
+      "Eagle Creek · 5 crates",
+      "Eagle Creek · 5 crates",
+      "Eagle Creek · 8 crates",
+    ]);
+    await expect(rows.nth(0).locator("del")).toHaveText("Eagle Creek · 5 crates");
+    await expect(rows.nth(1).locator("td")).toHaveText([
       "Eagle Creek · 5 crates",
       "Eagle Creek · 8 crates (5 + 3)",
-      "Eagle Creek · 5 crates",
+      "Eagle Creek · 8 crates",
     ]);
-    await expect(checkpoints.nth(1).locator("del")).toHaveText("Eagle Creek · 5 crates");
-    await expect(checkpoints.nth(2).locator("td"))
-      .toHaveText(["Eagle Creek · 8 crates", "Eagle Creek · 8 crates", "Eagle Creek · 8 crates"]);
+    await expect(rows.nth(2).locator("td")).toHaveText([
+      "Eagle Creek · 5 crates",
+      "Eagle Creek · 5 crates",
+      "Eagle Creek · 8 crates",
+    ]);
     const modes = page.getByRole("region", { name: "A list of names, with more inside" });
     await expect(modes).toContainText("each named line a structure with its own rule");
   } finally {

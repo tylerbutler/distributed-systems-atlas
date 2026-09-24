@@ -112,6 +112,10 @@
   min-width: 42rem;
 }
 
+.register-lesson .notebook-comparison-wide tr > th:first-child {
+  white-space: nowrap;
+}
+
 @media (min-width: 48rem) {
   .notebook-scroll-hint {
     display: none;
