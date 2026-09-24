@@ -25,6 +25,11 @@ const statusByReplica: Record<ReplicaId, string> = {
   B: "Trail closed",
   C: "Inspect bridge",
 };
+const sharedMapOperations: Pick<MapOperation, "action" | "key" | "value">[] = [
+  { action: "set", key: "gate-status", value: "Trail open" },
+  { action: "set", key: "gate-status", value: "Trail closed" },
+  { action: "set", key: "bridge-status", value: "Bridge clear" },
+];
 
 function operationFor(replica: ReplicaId): MapOperation {
   if (kind === "or-map") {
@@ -39,9 +44,6 @@ function operationFor(replica: ReplicaId): MapOperation {
   }
   if (kind === "shared-directory") {
     return { author: replica, action: "mkdir", key: "eagle-creek", value: "" };
-  }
-  if (kind === "shared-map" && replica === "C") {
-    return { author: replica, action: "set", key: "bridge-status", value: "Bridge clear" };
   }
   return {
     author: replica,
@@ -89,7 +91,9 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
 
     <div class="map-network">
       {initial.view.replicas.map((replica) => {
-        const operation = operationFor(replica.id);
+        const operations = kind === "shared-map"
+          ? sharedMapOperations.map((operation) => ({ ...operation, author: replica.id }))
+          : [operationFor(replica.id)];
         return (
           <section
             class={`map-replica replica-${replica.id.toLowerCase()}`}
@@ -115,7 +119,7 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
             </dl>
             {kind !== "shared-directory" && (
               <p class="map-edit-slip">
-                <span>Note to share</span>
+                <span>{kind === "shared-map" ? "Example note" : "Note to share"}</span>
                 <strong>{raceSlip(replica.id).body}</strong>
                 <small>{raceSlip(replica.id).evidence}</small>
               </p>
@@ -141,16 +145,20 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
                 </div>
               </div>
             ) : (
-              <button
-                type="button"
-                data-replica={replica.id}
-                data-map-action={operation.action}
-                data-map-key={operation.key}
-                data-map-value={operation.value}
-                disabled
-              >
-                {buttonLabel(operation)}
-              </button>
+              <div class="map-direct-controls">
+                {operations.map((operation) => (
+                  <button
+                    type="button"
+                    data-replica={replica.id}
+                    data-map-action={operation.action}
+                    data-map-key={operation.key}
+                    data-map-value={operation.value}
+                    disabled
+                  >
+                    {buttonLabel(operation)}
+                  </button>
+                ))}
+              </div>
             )}
           </section>
         );

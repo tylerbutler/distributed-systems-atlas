@@ -56,7 +56,10 @@ for (const example of [
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
     if (example.testId !== "shared-directory-demo") {
-      await expect(demo.getByText("Note to share", { exact: true })).toHaveCount(3);
+      await expect(demo.getByText(
+        example.testId === "shared-map-demo" ? "Example note" : "Note to share",
+        { exact: true },
+      )).toHaveCount(3);
       await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
         "No slip in this race",
       );
@@ -88,8 +91,8 @@ for (const example of [
 test("map controls stay active while operations travel", async ({ page }) => {
   await page.goto("/structures/shared-map/");
   const demo = page.getByTestId("shared-map-demo");
-  const alice = demo.getByRole("button", { name: "Write Trail open" });
-  const carol = demo.getByRole("button", { name: "Write Bridge clear" });
+  const alice = demo.locator('[data-client="A"]').getByRole("button", { name: "Write Trail open" });
+  const carol = demo.locator('[data-client="C"]').getByRole("button", { name: "Write Bridge clear" });
 
   await alice.click();
   await expect(demo.locator(".map-operation-pulse")).toContainText("Trail open");
@@ -105,6 +108,39 @@ test("map controls stay active while operations travel", async ({ page }) => {
     .toContainText("bridge-status uses the last numbered note.");
   await expect(demo.locator('[role="status"]'))
     .toContainText("Every hiker sees Bridge clear on that line.");
+});
+
+test("every SharedMap client can change either line", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/structures/shared-map/");
+  const demo = page.getByTestId("shared-map-demo");
+  const clients = ["A", "B", "C"].map((id) => demo.locator(`[data-client="${id}"]`));
+
+  for (const client of clients) {
+    await expect(client.locator(".map-direct-controls button")).toHaveText([
+      "Write Trail open",
+      "Write Trail closed",
+      "Write Bridge clear",
+    ]);
+  }
+
+  await demo.getByRole("checkbox", { name: "Broadcast" }).uncheck();
+  await clients[1]!.getByRole("button", { name: "Write Trail open" }).click();
+  await clients[2]!.getByRole("button", { name: "Write Trail closed" }).click();
+  await clients[0]!.getByRole("button", { name: "Write Bridge clear" }).click();
+
+  await expect(clients[0]!.locator("[data-map-entries] div:not(.map-entry-heading)"))
+    .toHaveText(["bridge-statusBridge clear", "gate-statusReport pending"]);
+  await expect(clients[1]!.locator("[data-map-entries] div:not(.map-entry-heading)"))
+    .toHaveText(["bridge-statusInspection due", "gate-statusTrail open"]);
+  await expect(clients[2]!.locator("[data-map-entries] div:not(.map-entry-heading)"))
+    .toHaveText(["bridge-statusInspection due", "gate-statusTrail closed"]);
+
+  await demo.getByRole("checkbox", { name: "Broadcast" }).check();
+  for (const client of clients) {
+    await expect(client.locator("[data-map-entries] div:not(.map-entry-heading)"))
+      .toHaveText(["bridge-statusBridge clear", "gate-statusTrail closed"]);
+  }
 });
 
 test("every directory client can create and remove named folders", async ({ page }) => {
@@ -155,7 +191,7 @@ test("map replicas update after the shared operation arrives", async ({ page }) 
   await page.goto("/structures/shared-map/");
   const demo = page.getByTestId("shared-map-demo");
 
-  await demo.getByRole("button", { name: "Write Trail open" }).click();
+  await demo.locator('[data-client="A"]').getByRole("button", { name: "Write Trail open" }).click();
   await expect(demo.locator(".map-operation-pulse.shared").first()).toBeVisible();
   await expect(demo.locator('[data-client="A"] [data-map-entries] div:not(.map-entry-heading)'))
     .toHaveText(["bridge-statusInspection due", "gate-statusTrail open"]);
