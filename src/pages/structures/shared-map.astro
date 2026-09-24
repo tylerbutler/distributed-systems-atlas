@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -54,6 +55,6 @@ import "../../styles/set-lesson.css";
         Each client uses the last numbered change for each key.
       </p>
     </section>
-    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/maps/">Back to map family</a><a href="/structures/lww-map/">Continue to LWWMap</a></nav>
+    <StructureNext />
   </article>
 </BaseLayout>

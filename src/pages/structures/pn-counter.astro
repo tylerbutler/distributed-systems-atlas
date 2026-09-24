@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import CounterIllustration from "../../components/CounterIllustration.astro";
 import PNCounterDemo from "../../components/PNCounterDemo.astro";
@@ -193,11 +194,7 @@ import {
       <TermCallout {...sluiceTerm} />
     </section>
 
-    <nav class="structure-next" aria-label="Continue through structures">
-      <a href="/structures/g-counter/">Back to G-counter</a>
-      <a href="/structures/counters/">Browse counter family</a>
-      <a href="/structures/shared-counter/">Continue to SharedCounter</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
@@ -297,15 +294,4 @@ import {
     line-height: 1;
   }
 
-  .structure-next {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    font-family: var(--font-ui);
-    font-weight: 650;
-  }
 </style>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 
 const models = [
@@ -224,10 +225,7 @@ const rows = [
       </ol>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through structures">
-      <a href="/structures/">Browse structure families</a>
-      <a href="/structures/counters/">Start with counters</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
@@ -382,18 +380,6 @@ const rows = [
     display: grid;
     gap: var(--space-4);
     padding-left: 1.4rem;
-  }
-
-  .structure-next {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    font-family: var(--font-ui);
-    font-weight: 650;
   }
 
   .visually-hidden {

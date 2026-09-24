@@ -4,7 +4,7 @@ import BaseLayout from "./BaseLayout.astro";
 import LessonIllustration from "../components/LessonIllustration.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
-import { firstTrail, trailPosition } from "../lib/atlas/trail";
+import { firstTrail, pairedLessonForSheet, trailPosition } from "../lib/atlas/trail";
 import type { MarkdownHeading } from "astro";
 
 interface Props {
@@ -42,6 +42,7 @@ const nextStep = position >= 0 ? firstTrail[position + 1] : undefined;
 const next = nextStep
   ? byId.get(nextStep.id) ?? { id: nextStep.id, title: nextStep.title, status: "planned" as const }
   : undefined;
+const pairedLesson = pairedLessonForSheet(entry.id);
 ---
 
 <BaseLayout
@@ -68,7 +69,7 @@ const next = nextStep
         {position >= 0 && <span>Structure-first trail · {position + 1} of {firstTrail.length}</span>}
       </p>
       {entry.data.requires.length > 0
-        ? <SheetLinks heading="Ideas used on this sheet" sheets={entry.data.requires.map(resolve)} />
+        ? <SheetLinks heading="Background, if needed" sheets={entry.data.requires.map(resolve)} />
         : <p class="sheet-prerequisites">No supporting sheet required</p>}
       <LessonIllustration id={`atlas-${entry.id}`} />
     </header>
@@ -100,6 +101,14 @@ const next = nextStep
     )}
     <div class="sheet-body"><slot /></div>
     <footer class="sheet-end">
+      {pairedLesson && (
+        <p>
+          Prefer a focused simulation?{" "}
+          <a href={`/structures/${pairedLesson[0]}/`}>
+            Open the {pairedLesson[1].lesson} lesson and simulation
+          </a>.
+        </p>
+      )}
       {entry.data.references.length > 0 && (
         <section class="sheet-references" aria-labelledby="sheet-references">
           <h2 id="sheet-references">References</h2>

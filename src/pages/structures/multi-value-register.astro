@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
+import { pairedSheets } from "../../lib/atlas/trail";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -123,7 +125,7 @@ import "../../styles/set-lesson.css";
         messages, and observed resolution step.
       </p>
       <p class="lesson-entry">
-        <a href="/atlas/multi-value-registers/">Open the causal MvRegister lab</a>
+        <a href={`/atlas/${pairedSheets["multi-value-register"].sheet}/`}>Open the in-depth MvRegister sheet and lab</a>
       </p>
     </section>
 
@@ -139,11 +141,7 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through register structures">
-      <a href="/structures/lww-register/">Back to LWWRegister</a>
-      <a href="/structures/registers/">Browse register family</a>
-      <a href="/structures/register-collection/">Continue to RegisterCollection</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 

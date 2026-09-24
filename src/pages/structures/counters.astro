@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 ---
@@ -116,10 +117,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
       <a class="structure-link" href="/structures/shared-counter/">Read the SharedCounter lesson</a>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through structures">
-      <a href="/structures/">Browse all structure families</a>
-      <a href="/structures/sets/">Continue to sets</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
@@ -218,18 +216,6 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     display: inline-block;
     font-family: var(--font-ui);
     font-weight: 700;
-  }
-
-  .structure-next {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    font-family: var(--font-ui);
-    font-weight: 650;
   }
 
   @media (width < 42rem) {

@@ -30,7 +30,6 @@ export type RemainingStructure = {
   local: Record<"A" | "B" | "C", string>;
   evidence: Record<"A" | "B" | "C", string>;
   result: string;
-  next?: RemainingStructureId;
 };
 
 export const remainingStructures: RemainingStructure[] = [
@@ -66,7 +65,6 @@ export const remainingStructures: RemainingStructure[] = [
       C: "No slip in this race",
     },
     result: "Both new stops appear before Weir. The hikers use their marks to put the stops in the same order.",
-    next: "shared-text",
   },
   {
     id: "shared-text",
@@ -135,7 +133,6 @@ export const remainingStructures: RemainingStructure[] = [
       C: "Carol's claim · awaits a number",
     },
     result: "The ranger numbers Alice's claim first. Every station records Alice as the owner.",
-    next: "ordered-collection",
   },
   {
     id: "ordered-collection",
@@ -174,7 +171,6 @@ export const remainingStructures: RemainingStructure[] = [
       C: "Carol's request · awaits a number",
     },
     result: "The ranger accepts Alice's request. Bob and Carol do not get the same job.",
-    next: "task-manager",
   },
   {
     id: "task-manager",
@@ -210,7 +206,6 @@ export const remainingStructures: RemainingStructure[] = [
       C: "volunteer Carol · place in line pending",
     },
     result: "Alice is the dispatcher. Bob is next in line if she leaves.",
-    next: "pact-map",
   },
   {
     id: "pact-map",
@@ -281,7 +276,6 @@ export const remainingStructures: RemainingStructure[] = [
       C: "No slip in this race",
     },
     result: "The shared report has Alice's title and Bob's revision number.",
-    next: "shared-rich-text",
   },
   {
     id: "shared-rich-text",

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 ---
@@ -150,11 +151,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
       </table>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through structures">
-      <a href="/structures/counters/">Back to counters</a>
-      <a href="/structures/g-set/">Start the set lessons</a>
-      <a href="/atlas/multi-value-registers/">Continue to registers</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
@@ -274,18 +271,6 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
 
   th {
     font-family: var(--font-ui);
-  }
-
-  .structure-next {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    font-family: var(--font-ui);
-    font-weight: 650;
   }
 
   @media (width < 42rem) {

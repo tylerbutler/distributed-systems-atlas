@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -122,11 +123,7 @@ import "../../styles/set-lesson.css";
       </p>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through register structures">
-      <a href="/structures/multi-value-register/">Back to MvRegister</a>
-      <a href="/structures/registers/">Browse register family</a>
-      <a href="/structures/maps/">Continue to maps</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 

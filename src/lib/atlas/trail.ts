@@ -16,6 +16,15 @@ export const firstTrail = [
   { id: "vector-clocks", title: "Vector clocks", territory: "mechanisms" },
 ] as const satisfies readonly TrailStep[];
 
+export const pairedSheets = {
+  "multi-value-register": { sheet: "multi-value-registers", lesson: "MvRegister" },
+  "observed-remove-set": { sheet: "observed-remove-sets", lesson: "Observed-remove set" },
+} as const;
+
+export function pairedLessonForSheet(id: string) {
+  return Object.entries(pairedSheets).find(([, pair]) => pair.sheet === id);
+}
+
 export type TrailEntry = Pick<
   SheetMeta,
   "id" | "title" | "summary" | "territory" | "status" | "requires"

@@ -150,7 +150,7 @@ for (const lesson of lessons) {
       if (["local-history", "dots-and-causal-context"].includes(lesson.id)) {
         await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
       } else {
-        expect(await page.getByRole("navigation", { name: "Ideas used on this sheet", exact: true })
+        expect(await page.getByRole("navigation", { name: "Background, if needed", exact: true })
           .getByRole("link").count()).toBeGreaterThan(0);
       }
       expect(await page.getByRole("navigation", { name: "Related sheets", exact: true })

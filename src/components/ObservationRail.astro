@@ -1,5 +1,5 @@
 ---
-import { structureGroups } from "../lib/structure-demo/structure-navigation";
+import { structureLocation } from "../lib/structure-demo/structure-navigation";
 
 interface Props {
   territory?: string;
@@ -12,13 +12,10 @@ interface Props {
 
 const { territory, sheetTitle, trailStep } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "");
-const structureSlug = path.match(/^\/structures\/([^/]+)$/)?.[1];
-const group = structureGroups.find(({ href, lessons }) =>
-  href === `/structures/${structureSlug}/` || lessons.some(([, slug]) => slug === structureSlug)
-);
-const lesson = group?.lessons.find(([, slug]) => slug === structureSlug);
-const currentTitle = sheetTitle ?? lesson?.[0] ?? (group?.href === `/structures/${structureSlug}/` ? group?.title : undefined);
-const currentTerritory = territory ?? (group ? "Structures" : undefined);
+const structure = structureLocation(path);
+const group = structure && "group" in structure ? structure.group : undefined;
+const currentTitle = sheetTitle ?? structure?.title ?? (group?.href === `${path}/` ? group.title : undefined);
+const currentTerritory = territory ?? (path.startsWith("/structures") ? "Structures" : undefined);
 const territoryAnchors: Record<string, string> = {
   Structures: "structures",
   Mechanisms: "mechanisms",
@@ -28,28 +25,27 @@ const territoryAnchors: Record<string, string> = {
 if (currentTerritory && !territoryAnchors[currentTerritory]) {
   throw new Error(`Unknown breadcrumb territory: ${currentTerritory}`);
 }
-const territoryHref = path.startsWith("/structures/")
-  ? "/structures/"
-  : `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
+const isStructure = path === "/structures" || path.startsWith("/structures/");
+const rootTitle = isStructure ? "Structures" : path === "/atlas" || currentTerritory ? "Reference atlas" : path === "/glossary" ? "Glossary" : path === "/bibliography" ? "Bibliography" : "Home";
+const rootHref = isStructure ? "/structures/" : path === "/atlas" || currentTerritory ? "/atlas/" : "/";
+const territoryHref = `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
 ---
 
 <nav class="observation-rail instrument-panel" aria-label="Sheet position">
   <div class="observation-rail-inner">
     <ol class="observation-context">
       <li>
-        {path === "/atlas"
-          ? <span aria-current="page">Atlas</span>
-          : <a href="/atlas/">Atlas</a>}
+        {path === "/" || path === "/atlas" || path === "/structures" || (!isStructure && !currentTerritory)
+          ? <span aria-current="page">{rootTitle}</span>
+          : <a href={rootHref}>{rootTitle}</a>}
       </li>
-      {currentTerritory && (
+      {currentTerritory && !isStructure && (
         <li>
-          {path === "/structures"
-            ? <span aria-current="page">{currentTerritory}</span>
-            : <a href={territoryHref}>{currentTerritory}</a>}
+          <a href={territoryHref}>{currentTerritory}</a>
         </li>
       )}
-      {group && lesson && <li><a href={group.href}>{group.title}</a></li>}
-      {currentTitle && <li aria-current="page">{currentTitle}</li>}
+      {group && group.href !== `${path}/` && <li><a href={group.href}>{group.title}</a></li>}
+      {currentTitle && currentTitle !== rootTitle && <li aria-current="page">{currentTitle}</li>}
       {trailStep && (
         <li>
           Trail <span class="observation-data">{trailStep.current}</span> of <span class="observation-data">{trailStep.total}</span>

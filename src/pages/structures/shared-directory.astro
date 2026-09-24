@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -77,6 +78,6 @@ import "../../styles/set-lesson.css";
         to resolve folder identities.
       </p>
     </section>
-    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/or-map/">Back to OR-map</a><a href="/structures/maps/">Browse map family</a><a href="/structures/sequences/">Continue to Sequences</a></nav>
+    <StructureNext />
   </article>
 </BaseLayout>

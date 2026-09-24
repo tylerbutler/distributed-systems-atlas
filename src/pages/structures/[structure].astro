@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
@@ -24,8 +25,8 @@ const operationNames = structure.operations.length === 1
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
 ---
 
-<BaseLayout title={`${structure.name} | Distributed Systems Atlas`} description={structure.tagline}>
-  <main id="main-content" tabindex="-1">
+<BaseLayout title={structure.name} description={structure.tagline} territory="Structures" sheetTitle={structure.name}>
+  <div id="main-content">
     <article class="structure-lesson">
       <header class="page-intro">
         <p class="territory-label">Structures · {family.name}</p>
@@ -92,16 +93,7 @@ const operationNames = structure.operations.length === 1
         </p>
       </section>
 
-      <nav class="structure-next" aria-label={`Continue through ${family.name}`}>
-        <a href={`/structures/${structure.family}/`}>Browse {family.name}</a>
-        {structure.next
-          ? <a href={`/structures/${structure.next}/`}>Continue to {structureById(structure.next)?.name}</a>
-          : structure.family === "sequences"
-            ? <a href="/structures/coordination/">Continue to Coordination</a>
-            : structure.family === "coordination"
-              ? <a href="/structures/transforms/">Continue to Transforms</a>
-              : <a href="/structures/">Return to structures</a>}
-      </nav>
+      <StructureNext />
     </article>
-  </main>
+  </div>
 </BaseLayout>

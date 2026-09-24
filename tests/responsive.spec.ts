@@ -416,3 +416,29 @@ test("working navigation stays visible in a broad publication band", async ({ pa
     await expect(atlas).toHaveCSS("outline-color", "oklch(0.84 0.18 100)");
   }
 });
+
+test("structure chooser and atlas trail fit narrow and wide screens", async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [route, navName] of [
+      ["/structures/", "Choose by need"],
+      ["/atlas/", "Causal evidence trail"],
+      ["/structures/g-counter/", "Continue through structures"],
+      ["/structures/json-ot/", "Continue through structures"],
+    ]) {
+      await page.goto(route);
+      const nav = page.getByRole("navigation", { name: navName });
+      await expect(nav).toBeVisible();
+      if (navName === "Continue through structures") {
+        await expect(nav).toHaveCSS("display", "flex");
+      }
+      for (const link of await nav.getByRole("link").all()) {
+        const box = await link.boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.x).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
+  }
+});

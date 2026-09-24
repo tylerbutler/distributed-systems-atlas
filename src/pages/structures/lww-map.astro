@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import MapStructureDemo from "../../components/MapStructureDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -109,6 +110,6 @@ import "../../styles/set-lesson.css";
         times and advances each line's clock past the times it has observed.
       </p>
     </section>
-    <nav class="structure-next" aria-label="Continue through map structures"><a href="/structures/shared-map/">Back to SharedMap</a><a href="/structures/maps/">Browse map family</a><a href="/structures/or-map/">Continue to OR-map</a></nav>
+    <StructureNext />
   </article>
 </BaseLayout>

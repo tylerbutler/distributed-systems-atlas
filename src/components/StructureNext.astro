@@ -1,0 +1,29 @@
+---
+import { structureNextLinks } from "../lib/structure-demo/structure-navigation";
+
+const links = structureNextLinks(Astro.url.pathname);
+---
+
+<nav class="structure-next" aria-label="Continue through structures">
+  {links.map(({ href, label }) => <a {href}>{label}</a>)}
+</nav>
+
+<style>
+  .structure-next {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    padding-block: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  .structure-next a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+</style>

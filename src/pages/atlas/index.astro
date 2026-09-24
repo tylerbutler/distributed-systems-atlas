@@ -8,7 +8,7 @@ import {
   type SheetMeta,
   type Territory,
 } from "../../lib/atlas/graph";
-import { buildAtlasEntries } from "../../lib/atlas/trail";
+import { buildAtlasEntries, buildTrail } from "../../lib/atlas/trail";
 import { scenarioIds } from "../../lib/lab/scenarios";
 
 const sheets = await getCollection("sheet");
@@ -23,6 +23,7 @@ if (issues.length > 0) {
 }
 
 const entries = buildAtlasEntries(metadata);
+const trail = buildTrail(metadata);
 const territories = [
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
   ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
@@ -37,12 +38,20 @@ const territories = [
     <p>Use this map to find a structure, mechanism, failure mode, or system by topic.</p>
     <p>New to the subject? <a href="/structures/">Explore the structure lessons.</a></p>
   </header>
-  <nav class="first-trail" aria-labelledby="first-trail-title">
+  <nav class="first-trail" id="trail" aria-labelledby="first-trail-title">
     <h2 id="first-trail-title">Causal evidence trail</h2>
     <p>
-      Seven sheets connect merge behavior to causal evidence in a fixed sequence.
+      Begin with two structures, then inspect the causal evidence behind them.
+      Open the background links on each sheet when you need more detail.
     </p>
-    <a class="trail-overview" href="#territories">Find a trail sheet in the map</a>
+    <ol class="first-trail-steps">
+      {trail.map((step) => (
+        <li>{step.status === "published"
+          ? <a href={`/atlas/${step.id}/`}>{step.title}</a>
+          : <>{step.title} <span class="status">Planned</span></>}</li>
+      ))}
+    </ol>
+    <a class="trail-overview" href="#territories">Browse topics by territory</a>
   </nav>
   <div class="territory-chart" id="territories" data-testid="territory-chart">
     {territories.map(([id, title, summary]) => (
@@ -76,6 +85,17 @@ const territories = [
 
   .first-trail p {
     margin-bottom: var(--space-3);
+  }
+
+  .first-trail-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-3) var(--space-6);
+    padding-inline-start: 1.5rem;
+  }
+
+  .first-trail-steps li {
+    padding-inline-start: var(--space-2);
   }
 
   .first-trail a {

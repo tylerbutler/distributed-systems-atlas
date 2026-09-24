@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
@@ -202,10 +203,6 @@ const tombstoneTerm = {
       </p>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through set structures">
-      <a href="/structures/g-set/">Back to GSet</a>
-      <a href="/structures/sets/">Browse set family</a>
-      <a href="/structures/observed-remove-set/">Continue to observed-remove set</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { structureGroup, structureGroups } from "../../lib/structure-demo/structure-navigation";
 ---
 
 <BaseLayout
@@ -18,58 +19,40 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
     </a>
   </header>
 
+  <nav class="structure-guide" aria-label="Choose by need">
+    <h2>Not sure where to start?</h2>
+    <p>A changing total? <a href={structureGroup("counters").href}>Compare counters</a>.
+      Membership with removals? <a href={structureGroup("sets").href}>Compare sets</a>.
+      Several answers to one question? <a href={structureGroup("registers").href}>Compare registers</a>.</p>
+  </nav>
+
   <ol class="structure-index" aria-label="Structure lessons">
-    <li>
-      <a href="/structures/counters/">
-        <h2>Counters</h2>
-        <p>Count up, count down, or put every change in one shared order.</p>
-        <span class="status">Start here</span>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/sets/">
-        <h2>Sets</h2>
-        <p>Choose whether items stay forever, leave forever, or can return.</p>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/registers/">
-        <h2>Registers</h2>
-        <p>Choose one answer or keep several answers until someone resolves them.</p>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/maps/">
-        <h2>Maps</h2>
-        <p>Store named values and decide what happens when people change the same one.</p>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/sequences/">
-        <h2>Sequences</h2>
-        <p>Keep lists and text in order while several people edit them.</p>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/coordination/">
-        <h2>Coordination</h2>
-        <p>Choose one owner, worker, assignee, or accepted value.</p>
-      </a>
-    </li>
-    <li>
-      <a href="/structures/transforms/">
-        <h2>Transforms</h2>
-        <p>Keep JSON and formatted text changes when they happen at the same time.</p>
-      </a>
-    </li>
+    {structureGroups.map((group, index) => (
+      <li><a href={group.href}>
+        <h2>{group.title}</h2>
+        <p>{group.summary}</p>
+        {index === 0 && <span class="status">Start here</span>}
+      </a></li>
+    ))}
   </ol>
 </BaseLayout>
 
 <style>
   .page-intro,
+  .structure-guide,
   .structure-index {
     max-width: var(--measure-reading);
     margin-inline: auto;
+  }
+
+  .structure-guide {
+    padding-block: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  .structure-guide h2,
+  .structure-guide p {
+    margin-block: 0 var(--space-2);
   }
 
   .structure-index {

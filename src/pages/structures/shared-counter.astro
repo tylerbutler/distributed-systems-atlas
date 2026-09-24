@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import CounterIllustration from "../../components/CounterIllustration.astro";
 import SharedCounterDemo from "../../components/SharedCounterDemo.astro";
@@ -182,11 +183,7 @@ import {
       </p>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through structures">
-      <a href="/structures/pn-counter/">Back to PN-counter</a>
-      <a href="/structures/counters/">Browse counter family</a>
-      <a href="/structures/sets/">Continue to sets</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
@@ -233,15 +230,4 @@ import {
     font-variant-numeric: tabular-nums;
   }
 
-  .structure-next {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-4);
-    margin-top: var(--space-7);
-    padding-block: var(--space-5);
-    border-top: var(--rule-width) solid var(--line);
-    font-family: var(--font-ui);
-    font-weight: 650;
-  }
 </style>

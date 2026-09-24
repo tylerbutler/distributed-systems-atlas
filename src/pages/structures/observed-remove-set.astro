@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import StructureNext from "../../components/StructureNext.astro";
+import { pairedSheets } from "../../lib/atlas/trail";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
@@ -269,12 +271,12 @@ const notebookCheckpoints: Array<{
         {" "}explains the storage cost and what safe cleanup requires.
       </p>
       <p>
-        The full reference lesson lets you temporarily block notes between
+        The in-depth sheet and lab let you temporarily block notes between
         Alice and Bob, preserve a stale copy, exchange the conflicting deltas,
         and inspect the live dots and tombstones.
       </p>
       <p class="lesson-entry">
-        <a href="/atlas/observed-remove-sets/">Open the interactive observed-remove set lesson</a>
+        <a href={`/atlas/${pairedSheets["observed-remove-set"].sheet}/`}>Open the in-depth observed-remove set sheet and lab</a>
       </p>
     </section>
 
@@ -291,11 +293,7 @@ const notebookCheckpoints: Array<{
       </p>
     </section>
 
-    <nav class="structure-next" aria-label="Continue through set structures">
-      <a href="/structures/two-p-set/">Back to TwoPSet</a>
-      <a href="/structures/sets/">Browse set family</a>
-      <a href="/structures/registers/">Continue to registers</a>
-    </nav>
+    <StructureNext />
   </article>
 </BaseLayout>
 
