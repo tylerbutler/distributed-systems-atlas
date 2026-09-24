@@ -135,8 +135,59 @@ test("LWWMap explains its name and timestamp rule without JavaScript", async ({ 
       .toContainText("Clock skew means the greatest timestamp may not mark the last edit in real time.");
     await expect(page.locator("dfn").first().getByRole("link", { name: "LWWMap" }))
       .toHaveAttribute("href", "/glossary/#lwwmap");
+    const notebooks = page.getByRole("table", {
+      name: "LWWMap notebook lines before gate notes are shared",
+    });
+    await expect(notebooks.locator("tbody tr")).toHaveCount(3);
+    await expect(notebooks.locator("tbody tr td:nth-child(2) time"))
+      .toHaveText(["11:40 a.m.", "11:42 a.m.", "11:20 a.m."]);
+    await expect(notebooks.locator("tbody tr td:last-child strong"))
+      .toHaveText(["Inspection due", "Inspection due", "Inspection due"]);
+    await expect(page.getByRole("region", { name: "A time beside each line" }))
+      .toContainText("all three hikers record");
   } finally {
     await context.close();
+  }
+});
+
+test("OR-map shows each hiker's notebook before and after the removal", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/structures/or-map/");
+    await expect(page.getByRole("region", { name: "Cross out only what you have seen" }))
+      .toContainText("Alice had not seen Bob's update");
+    const checkpoints = page.getByRole("table", { name: "OR-map notebooks at three checkpoints" })
+      .locator("tbody tr");
+    await expect(checkpoints).toHaveCount(3);
+    await expect(checkpoints.nth(1).locator("td")).toHaveText([
+      "Eagle Creek · 5 crates",
+      "Eagle Creek · 8 crates (5 + 3)",
+      "Eagle Creek · 5 crates",
+    ]);
+    await expect(checkpoints.nth(1).locator("del")).toHaveText("Eagle Creek · 5 crates");
+    await expect(checkpoints.nth(2).locator("td"))
+      .toHaveText(["Eagle Creek · 8 crates", "Eagle Creek · 8 crates", "Eagle Creek · 8 crates"]);
+  } finally {
+    await context.close();
+  }
+});
+
+test("worked map notebooks remain readable and keyboard-scrollable on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const [path, name] of [
+    ["/structures/lww-map/", "LWWMap notebook lines before gate notes are shared"],
+    ["/structures/or-map/", "OR-map notebooks at three checkpoints"],
+  ]) {
+    await page.goto(path);
+    const figure = page.getByRole("table", { name }).locator("..");
+    await expect(figure).toContainText("Scroll sideways to read every notebook.");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+    expect(await figure.evaluate((element) => element.scrollWidth - element.clientWidth))
+      .toBeGreaterThan(0);
+    await figure.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => figure.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
   }
 });
 

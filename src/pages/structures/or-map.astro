@@ -8,11 +8,51 @@ import { orMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
-<BaseLayout title="OR-map" description="Alice removes an observed stockpile while the map retains Bob's concurrent tally update." territory="Structures" sheetTitle="OR-map">
+<BaseLayout title="OR-map" description="Alice crosses out a stockpile entry while Bob records a new crate delivery." territory="Structures" sheetTitle="OR-map">
   <article class="register-lesson">
-    <header class="page-intro"><p class="territory-label">Structures</p><h1>OR-map</h1><p class="structure-summary">Each hiker has an Eagle Creek stockpile line in their notebook. Alice crosses out the line she saw while Bob records a delivery that she has not seen.</p><LessonIllustration id="structures-or-map" /></header>
-    <StructureFacts structure="OR-map" family="CRDT" model="Observed-remove map with nested CRDT values" updates="Change a tally or remove a named entry" merge="Remove what was seen; keep unseen changes made at the same time." delivery="Safe under repeated and out-of-order delivery" bestFor="Named ledgers where new work must survive deletion" cost="Entry identities, tally state, and a record of removals" />
-    <section aria-labelledby="identity-title"><h2 id="identity-title">Cross out only what you have seen</h2><p>In an <dfn><a href="/glossary/#or-map">OR-map</a></dfn>, Alice's crossed-out line applies to the stockpile entry she saw. Bob adds 3 crates to his own copy before he sees her change. His new note was not part of Alice's removal, so the stockpile line remains.</p><TermCallout {...orMapTerm} /><figure><table aria-label="OR-map stockpile race"><thead><tr><th scope="col">Hiker</th><th scope="col">Note</th><th scope="col">Result</th></tr></thead><tbody><tr><th scope="row">Alice</th><td>Cross out the 5-crate line she saw</td><td>Her old entry is removed</td></tr><tr><th scope="row">Bob</th><td>Add 3 crates before he sees Alice's note</td><td>His new note remains</td></tr><tr><th scope="row">All</th><td>Compare notebooks</td><td>Eagle Creek · 8</td></tr></tbody></table><figcaption>The hikers count all 8 crates because they keep Bob's new note after Alice crosses out the old line.</figcaption></figure></section>
+    <header class="page-intro"><p class="territory-label">Structures</p><h1>OR-map</h1><p class="structure-summary">Alice, Bob, and Carol each have a copy of the Eagle Creek stockpile list. Alice crosses out the old listing while Bob records a new delivery. Neither has seen the other's note.</p><LessonIllustration id="structures-or-map" /></header>
+    <StructureFacts structure="OR-map" family="CRDT" model="Observed-remove map with nested CRDT values" updates="Change a tally or remove a named entry" merge="Remove what was seen; keep unseen changes made at the same time." delivery="Safe under repeated and out-of-order delivery" bestFor="Named ledgers that retain unseen updates after a removal" cost="Entry identities, tally state, and a record of removals" />
+    <section aria-labelledby="identity-title">
+      <h2 id="identity-title">Cross out only what you have seen</h2>
+      <p>
+        All three hikers start with <code>Eagle Creek · 5 crates</code> in
+        their notebooks. Alice thinks the old stockpile listing is no longer
+        needed, so she crosses out her line. She has not removed any physical
+        crates. Bob has not seen her note. He records a delivery of 3 more
+        crates and changes his own total from 5 to 8. Carol still has the
+        earlier 5-crate report.
+      </p>
+      <p>
+        An <dfn><a href="/glossary/#or-map">OR-map</a></dfn> is an
+        observed-remove map: Alice can remove the entry she saw, but she
+        cannot remove Bob's update before she receives it.
+      </p>
+      <TermCallout {...orMapTerm} />
+      <figure class="notebook-comparison notebook-comparison-wide" tabindex="0">
+        <table aria-label="OR-map notebooks at three checkpoints">
+          <thead>
+            <tr><th scope="col">Checkpoint</th><th scope="col">Alice's notebook</th><th scope="col">Bob's notebook</th><th scope="col">Carol's notebook</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Before either note</th><td>Eagle Creek · 5 crates</td><td>Eagle Creek · 5 crates</td><td>Eagle Creek · 5 crates</td></tr>
+            <tr><th scope="row">Notes not yet shared</th><td><del>Eagle Creek · 5 crates</del></td><td>Eagle Creek · 8 crates (5 + 3)</td><td>Eagle Creek · 5 crates</td></tr>
+            <tr><th scope="row">After sharing</th><td>Eagle Creek · 8 crates</td><td>Eagle Creek · 8 crates</td><td>Eagle Creek · 8 crates</td></tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Before sharing, Bob's update has not reached Alice, and Carol has
+          received neither note.
+          <span class="notebook-scroll-hint">Scroll sideways to read every notebook.</span>
+        </figcaption>
+      </figure>
+      <p>
+        When the hikers exchange notes, they keep the Eagle Creek line
+        because Alice had not seen Bob's update when she crossed it out.
+        Bob's tally includes the original 5 crates and the 3 he added, so
+        all three notebooks show 8. If Alice had seen Bob's update before
+        crossing out the line, she could have removed that entry too.
+      </p>
+    </section>
     <MapStructureDemo kind="or-map" title="Keep a new stockpile note" description="Start with 5 crates. Alice crosses out the line she saw while Bob logs 3 more. Compare their notebooks." rule="Crossing out an entry does not remove a new note you have not seen." raceLabel="Race removal against the 3-crate delivery" />
     <section aria-labelledby="modes-title"><h2 id="modes-title">Each line still needs a rule</h2><p>Watershed OR-maps can hold tallies, single answers chosen by time, multiple answers, or lists of text. Each shared notebook uses one of these kinds. The hikers compare entry identities to determine whether a line stays. They use the rule for the answer on that line to combine its changes.</p></section>
     <section aria-labelledby="source-title">

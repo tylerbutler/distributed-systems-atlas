@@ -99,6 +99,24 @@
   font-size: 0.875rem;
 }
 
+.register-lesson .notebook-comparison {
+  overflow-x: auto;
+}
+
+.register-lesson .notebook-comparison table {
+  min-width: 33rem;
+}
+
+.register-lesson .notebook-comparison-wide table {
+  min-width: 42rem;
+}
+
+@media (min-width: 48rem) {
+  .notebook-scroll-hint {
+    display: none;
+  }
+}
+
 :is(.set-lesson, .register-lesson) .structure-next {
   display: flex;
   flex-wrap: wrap;

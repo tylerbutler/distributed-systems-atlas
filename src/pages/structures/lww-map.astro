@@ -23,16 +23,53 @@ import "../../styles/set-lesson.css";
       </p>
       <TermCallout {...lwwMapTerm} />
       <p>
-        Suppose Bob's "Trail closed" note has time 11, and Alice's "Trail open"
-        note has time 10. The ranger accepts Bob's note first and Alice's
-        second. For SharedMap, Carol records Alice's answer because the ranger
-        numbered it last. For LWWMap, she records Bob's answer because 11 is
-        later than 10. The ranger still delivers both notes, but his delivery
-        order does not determine the LWWMap answer.
+        Before they exchange gate notes, each hiker has a different local
+        view. Carol wrote the bridge report earlier, and all three hikers
+        copied it before they separated. Each line records an answer, a
+        time, and a writer:
+      </p>
+      <figure class="notebook-comparison" tabindex="0">
+        <table aria-label="LWWMap notebook lines before gate notes are shared">
+          <thead>
+            <tr><th scope="col">Notebook</th><th scope="col">gate-status</th><th scope="col">bridge-status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Alice</th>
+              <td><strong>Trail open</strong><br /><time datetime="11:40">11:40 a.m.</time> · Alice</td>
+              <td><strong>Inspection due</strong><br /><time datetime="11:30">11:30 a.m.</time> · Carol</td>
+            </tr>
+            <tr>
+              <th scope="row">Bob</th>
+              <td><strong>Trail closed</strong><br /><time datetime="11:42">11:42 a.m.</time> · Bob</td>
+              <td><strong>Inspection due</strong><br /><time datetime="11:30">11:30 a.m.</time> · Carol</td>
+            </tr>
+            <tr>
+              <th scope="row">Carol</th>
+              <td><strong>Report pending</strong><br /><time datetime="11:20">11:20 a.m.</time> · Carol</td>
+              <td><strong>Inspection due</strong><br /><time datetime="11:30">11:30 a.m.</time> · Carol</td>
+            </tr>
+          </tbody>
+        </table>
+        <figcaption>
+          Alice and Bob changed only the gate line. Carol still has the earlier
+          gate report; the bridge line is the same in all three notebooks.
+          <span class="notebook-scroll-hint">Scroll sideways to read every notebook.</span>
+        </figcaption>
+      </figure>
+      <p>
+        The ranger accepts Bob's note first and Alice's second. For SharedMap,
+        Carol records Alice's answer because the ranger numbered it last. For
+        LWWMap, she records Bob's answer because 11:42 a.m. is later than
+        11:40 a.m. After both notes arrive, all three hikers record
+        "Trail closed" on the gate line and keep the bridge line unchanged.
+        The ranger still delivers both notes, but his delivery order does not
+        determine the LWWMap answer.
       </p>
       <p>
         If the ranger supplied his ledger numbers as timestamps, both rules
-        would give the same answer. This demo does not do that. Watershed's
+        would give the same answer. This table is a paper example; the demo
+        starts with empty notebooks and races only the gate line. Watershed's
         runtime on each hiker's client starts with local wall-clock time and
         advances it past any time that client has already seen for that line.
       </p>
@@ -52,7 +89,7 @@ import "../../styles/set-lesson.css";
       <h2 id="clock-risk-title">"Last" depends on the clock</h2>
       <p>
         If Bob's watch is fast, his earlier gate note can have a later time
-        than Alice's newer note. Every notebook will agree on Bob's answer,
+        than Alice's newer note. All three hikers will record Bob's answer,
         but it will not be the last answer written in real time. Advancing a
         client's clock past times it has seen cannot fix a fast clock on
         another client. Use LWWMap only when the clock policy and the risk of
