@@ -1,0 +1,4 @@
+/.agents/** linguist-vendored
+/.claude/skills/** linguist-vendored
+/.claude/hooks/** linguist-vendored
+/.github/hooks/** linguist-vendored
