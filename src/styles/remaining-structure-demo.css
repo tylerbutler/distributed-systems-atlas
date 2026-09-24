@@ -107,6 +107,15 @@ remaining-structure-demo {
   color: var(--signal);
 }
 
+.remaining-demo .dotted-value sup {
+  color: var(--signal);
+}
+
+.remaining-local-record strong > .dotted-value {
+  color: inherit;
+  font: inherit;
+}
+
 .remaining-exchange {
   grid-area: exchange;
   min-width: 0;

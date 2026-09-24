@@ -1,7 +1,7 @@
 ---
 import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
-import type { RemainingStructure } from "../lib/structure-demo/remaining-structures";
+import { sequenceStopMarks, type RemainingStructure } from "../lib/structure-demo/remaining-structures";
 import "../styles/remaining-structure-demo.css";
 
 interface Props {
@@ -41,7 +41,11 @@ const { structure } = Astro.props;
             <p class="remaining-paper-note">
               <span>{structure.id === "shared-sequence" && id === "C" ? "Observation" : structure.messageLabel}</span>
               <strong>{structure.local[id]}</strong>
-              <small>{structure.evidence[id]}</small>
+              <small>
+                {structure.id === "shared-sequence" && id !== "C"
+                  ? <>{structure.evidence[id]}: <span class="dotted-value">{id === "A" ? "Falls" : "Marsh"}<sup>{id === "A" ? sequenceStopMarks.Falls : sequenceStopMarks.Marsh}</sup></span></>
+                  : structure.evidence[id]}
+              </small>
             </p>
             {(structure.id !== "shared-sequence" || id !== "C") && (
               <button type="button" data-client-action disabled>
@@ -93,6 +97,7 @@ const { structure } = Astro.props;
     autoDeliveryChangeEvent,
     DemoTransportControlsElement,
   } from "../lib/structure-demo/demo-transport-controls";
+  import { sequenceStopMarks } from "../lib/structure-demo/remaining-structures";
 
   class RemainingStructureDemo extends HTMLElement {
     private state!: RemainingDemoState;
@@ -238,7 +243,18 @@ const { structure } = Astro.props;
         const record = this.querySelector<HTMLElement>(
           `[data-client="${replica.id}"] [data-local-record]`,
         );
-        if (record) record.textContent = replica.values.join(" · ");
+        if (record) {
+          if (this.kind === "shared-sequence") {
+            const nodes: Node[] = [];
+            for (const [index, value] of replica.values.entries()) {
+              if (index) nodes.push(document.createTextNode(" · "));
+              nodes.push(this.sequenceValue(value));
+            }
+            record.replaceChildren(...nodes);
+          } else {
+            record.textContent = replica.values.join(" · ");
+          }
+        }
       }
       this.renderSequenceNotes();
       this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
@@ -274,9 +290,23 @@ const { structure } = Astro.props;
       if (!target) throw new Error("Missing remaining demo state");
       target.replaceChildren(...values.map((value) => {
         const item = document.createElement("li");
-        item.textContent = value;
+        item.append(this.kind === "shared-sequence" ? this.sequenceValue(value) : value);
         return item;
       }));
+    }
+
+    private sequenceValue(value: string): Node {
+      const mark = value === "Falls"
+        ? sequenceStopMarks.Falls
+        : value === "Marsh" ? sequenceStopMarks.Marsh : null;
+      if (!mark) return document.createTextNode(value);
+      const labeled = document.createElement("span");
+      labeled.className = "dotted-value";
+      labeled.textContent = value;
+      const sup = document.createElement("sup");
+      sup.textContent = mark;
+      labeled.append(sup);
+      return labeled;
     }
 
     private renderControls(): void {

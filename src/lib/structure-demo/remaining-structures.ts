@@ -32,6 +32,8 @@ export type RemainingStructure = {
   result: string;
 };
 
+export const sequenceStopMarks = { Falls: "A:4", Marsh: "B:4" } as const;
+
 export const remainingStructures: RemainingStructure[] = [
   {
     id: "shared-sequence",
@@ -60,8 +62,8 @@ export const remainingStructures: RemainingStructure[] = [
     },
     local: { A: "Insert Falls before Weir", B: "Insert Marsh before Weir", C: "Observe the route" },
     evidence: {
-      A: "Falls mark A:1 · before Weir",
-      B: "Marsh mark B:1 · before Weir",
+      A: "Stop ID",
+      B: "Stop ID",
       C: "No slip in this race",
     },
     result: "Both new stops appear before Weir. The hikers use their marks to put the stops in the same order.",

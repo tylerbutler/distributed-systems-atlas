@@ -24,11 +24,14 @@ for (const [slug, name, race, initial, final] of examples) {
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
     await expect(demo.locator("[data-status]")).toContainText("queued");
     await demo.locator("[data-transport-auto-deliver]").check();
-    await expect(demo.locator("[data-state] li")).toHaveText(final);
+    const displayed = slug === "shared-sequence"
+      ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
+      : [...final];
+    await expect(demo.locator("[data-state] li")).toHaveText(displayed);
     await expect(demo.locator("[data-local-record]")).toHaveText([
-      final.join(" · "),
-      final.join(" · "),
-      final.join(" · "),
+      displayed.join(" · "),
+      displayed.join(" · "),
+      displayed.join(" · "),
     ]);
     await demo.getByRole("button", { name: "Reset" }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
@@ -76,7 +79,9 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
         const notebook = page.getByRole("table", {
           name: "Each hiker's inspection route before and after sharing",
         });
-        await expect(notebook).toContainText("Bridge · Falls · Marsh · Weir · North gate");
+        await expect(notebook.locator("sup")).toHaveText([
+          "A:4", "A:4", "B:4", "B:4", "A:4", "B:4", "A:4", "B:4",
+        ]);
         await expect(notebook.locator("ins")).toHaveCount(6);
         await expect(notebook.locator("ins").first()).toHaveCSS("background-color", "oklch(0.84 0.18 100)");
         await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
@@ -104,7 +109,7 @@ test("SharedSequence shows each local route and the insertion notes in transit",
   await demo.locator("[data-transport-auto-deliver]").uncheck();
   await demo.getByRole("button", { name: "Insert Falls" }).click();
   await expect(demo.locator("[data-local-record]")).toHaveText([
-    "Bridge · Falls · Weir · North gate",
+    "Bridge · FallsA:4 · Weir · North gate",
     "Bridge · Weir · North gate",
     "Bridge · Weir · North gate",
   ]);
@@ -119,9 +124,9 @@ test("SharedSequence shows each local route and the insertion notes in transit",
   await demo.locator("[data-transport-auto-deliver]").check();
   await expect(demo.locator("[data-pending]")).toHaveText("0 notes waiting");
   await expect(demo.locator("[data-local-record]")).toHaveText([
-    "Bridge · Falls · Marsh · Weir · North gate",
-    "Bridge · Falls · Marsh · Weir · North gate",
-    "Bridge · Falls · Marsh · Weir · North gate",
+    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
+    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
+    "Bridge · FallsA:4 · MarshB:4 · Weir · North gate",
   ]);
   await expect(demo.getByRole("list", { name: "Insertion note log" }))
     .toContainText("Bob: Insert Marsh before Weir — delivered");
@@ -157,12 +162,14 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
       .toBeVisible();
     const notebook = article.locator(".route-notebooks");
-    await expect(notebook.locator("tbody tr").nth(0).locator("td").first().locator("ins")).toHaveText(["Falls"]);
-    await expect(notebook.locator("tbody tr").nth(1).locator("td").first().locator("ins")).toHaveText(["Marsh"]);
+    await expect(notebook.locator("tbody tr").nth(0).locator("td").first().locator("ins")).toHaveText(["FallsA:4"]);
+    await expect(notebook.locator("tbody tr").nth(1).locator("td").first().locator("ins")).toHaveText(["MarshB:4"]);
     await expect(notebook.locator("tbody tr").nth(2).locator("td").first().locator("ins")).toHaveCount(0);
-    await expect(notebook.locator("tbody tr").nth(0).locator("td").nth(1).locator("ins")).toHaveText(["Marsh"]);
-    await expect(notebook.locator("tbody tr").nth(1).locator("td").nth(1).locator("ins")).toHaveText(["Falls"]);
-    await expect(notebook.locator("tbody tr").nth(2).locator("td").nth(1).locator("ins")).toHaveText(["Falls", "Marsh"]);
+    await expect(notebook.locator("tbody tr").nth(0).locator("td").nth(1).locator("ins")).toHaveText(["MarshB:4"]);
+    await expect(notebook.locator("tbody tr").nth(1).locator("td").nth(1).locator("ins")).toHaveText(["FallsA:4"]);
+    await expect(notebook.locator("tbody tr").nth(2).locator("td").nth(1).locator("ins")).toHaveText(["FallsA:4", "MarshB:4"]);
+    await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
+    await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
     await expect(notebook.locator("figcaption")).toContainText("Highlighted stops show what each hiker adds before sharing");
     await expect(notebook.locator("table")).toHaveCSS("font-size", "14px");
     const hikerColumn = notebook.locator("tbody th").first();

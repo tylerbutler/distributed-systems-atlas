@@ -288,11 +288,14 @@ supports an action, one authored race,
 any resolution action needed by the rule, reset, and a literal result sentence.
 The familiar value stays larger than its metadata.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
-`Explain why` disclosure.
+`Explain why` disclosure unless item identity is the lesson's merge rule.
 
 SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
-and newly received stops after sharing. Alice and Bob insert stops
+and newly received stops after sharing. The new stops use the same
+replica-and-counter superscript notation as OR-set dots; the IDs name sequence
+items rather than set additions and remain attached when notebooks converge.
+Alice and Bob insert stops
 before the same route stop; Carol observes their local routes and the insertion
 notes in the trail exchange. The route readout names Carol's current view until both notes
 arrive. The other later-family lessons use the same reading width and dark
