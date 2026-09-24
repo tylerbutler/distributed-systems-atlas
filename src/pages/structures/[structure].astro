@@ -91,8 +91,11 @@ const operationNames = structure.operations.length === 1
           </figure>
           <p>
             The starting trail stops already have IDs. Alice's new Falls gets <code>{sequenceStopMarks.Falls}</code>,
-            and Bob's new Marsh gets <code>{sequenceStopMarks.Marsh}</code>. These IDs have the same
-            replica-and-counter form as a <dfn><a href="/glossary/#dot">dot</a></dfn>.
+            and Bob's new Marsh gets <code>{sequenceStopMarks.Marsh}</code>. Each replica-and-counter
+            pair has the form of a <dfn><a href="/glossary/#dot">dot</a></dfn>. It gives a trail stop
+            a unique name, so insertion notes can refer to that stop even when others are added nearby.
+            The sequence also uses these IDs to place new stops between existing ones and put
+            concurrent insertions in the same order after the notebooks exchange notes.
           </p>
           <TermCallout
             term="dot"

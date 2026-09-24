@@ -187,6 +187,8 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
     await expect(notebook.locator("figcaption")).toContainText("Each highlight shows a trail stop new to that notebook.");
     await expect(article.locator("#route-setup")).not.toContainText("not set additions");
+    await expect(article.locator("#route-setup > p")).toContainText("a unique name");
+    await expect(article.locator("#route-setup > p")).toContainText("put concurrent insertions in the same order");
     await expect(notebook.locator("table")).toHaveCSS("font-size", "14px");
     const hikerColumn = notebook.locator("tbody th").first();
     expect((await hikerColumn.boundingBox())!.width).toBeGreaterThanOrEqual(90);

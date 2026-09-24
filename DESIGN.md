@@ -294,8 +294,9 @@ SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
 and newly received trail stops after sharing. Yellow identifies Alice's Falls and
 dark blue identifies Bob's Marsh; the table caption names both colors.
-The new trail stops carry replica-and-counter superscripts that stay attached
-when notebooks converge. Alice and Bob each insert a trail stop before Weir;
+The new trail stops carry replica-and-counter superscripts that give them unique
+IDs. The sequence uses the IDs as insertion anchors and to order concurrent
+inserts. Alice and Bob each insert a trail stop before Weir;
 Carol observes their local routes and the insertion
 notes in the trail exchange. The route readout names Carol's current view until both notes
 arrive. The other later-family lessons use the same reading width and dark
