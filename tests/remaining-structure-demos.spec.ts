@@ -84,6 +84,8 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
         ]);
         await expect(notebook.locator("ins")).toHaveCount(6);
         await expect(notebook.locator("ins").first()).toHaveCSS("background-color", "oklch(0.84 0.18 100)");
+        await expect(notebook.locator('ins[data-stop="marsh"]').first()).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
+        await expect(notebook.locator('ins[data-stop="marsh"]').first()).toHaveCSS("color", "oklch(0.99 0.006 220)");
         await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
       }
     }
@@ -168,9 +170,20 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     await expect(notebook.locator("tbody tr").nth(0).locator("td").nth(1).locator("ins")).toHaveText(["MarshB:4"]);
     await expect(notebook.locator("tbody tr").nth(1).locator("td").nth(1).locator("ins")).toHaveText(["FallsA:4"]);
     await expect(notebook.locator("tbody tr").nth(2).locator("td").nth(1).locator("ins")).toHaveText(["FallsA:4", "MarshB:4"]);
+    await expect(notebook.locator('ins[data-stop="falls"]')).toHaveCount(3);
+    await expect(notebook.locator('ins[data-stop="marsh"]')).toHaveCount(3);
+    await expect(notebook.locator(".route-key")).toHaveText(["Yellow: Falls (Alice)", "Blue: Marsh (Bob)"]);
+    if (width === 390) {
+      await notebook.locator(".route-table-scroll").evaluate((element) => {
+        element.scrollLeft = element.scrollWidth;
+      });
+      const captionBox = await notebook.locator("figcaption").boundingBox();
+      expect(captionBox!.x).toBeGreaterThanOrEqual(0);
+      expect(captionBox!.x + captionBox!.width).toBeLessThanOrEqual(width);
+    }
     await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
     await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
-    await expect(notebook.locator("figcaption")).toContainText("Highlighted stops show what each hiker adds before sharing");
+    await expect(notebook.locator("figcaption")).toContainText("Each highlight shows a stop new to that notebook.");
     await expect(notebook.locator("table")).toHaveCSS("font-size", "14px");
     const hikerColumn = notebook.locator("tbody th").first();
     expect((await hikerColumn.boundingBox())!.width).toBeGreaterThanOrEqual(90);

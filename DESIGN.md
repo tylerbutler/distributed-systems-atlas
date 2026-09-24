@@ -292,7 +292,9 @@ Per-user counts, dots, timestamps, or other bookkeeping stay in an
 
 SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
-and newly received stops after sharing. The new stops use the same
+and newly received stops after sharing. Yellow identifies Alice's Falls and
+dark blue identifies Bob's Marsh; the table caption names both colors.
+The new stops use the same
 replica-and-counter superscript notation as OR-set dots; the IDs name sequence
 items rather than set additions and remain attached when notebooks converge.
 Alice and Bob insert stops

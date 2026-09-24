@@ -73,15 +73,21 @@ const operationNames = structure.operations.length === 1
         <section id="route-setup" aria-labelledby="route-setup-title">
           <h2 id="route-setup-title">Three notebooks before the notes arrive</h2>
           <figure class="route-notebooks">
-            <table aria-label="Each hiker's inspection route before and after sharing">
-              <thead><tr><th scope="col">Hiker</th><th scope="col">Before sharing</th><th scope="col">After sharing</th></tr></thead>
-              <tbody>
-                <tr><th scope="row">Alice</th><td>Bridge · <ins><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · Weir · North gate</td><td>Bridge · <span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span> · <ins><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td></tr>
-                <tr><th scope="row">Bob</th><td>Bridge · <ins><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td><td>Bridge · <ins><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · <span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span> · Weir · North gate</td></tr>
-                <tr><th scope="row">Carol</th><td>Bridge · Weir · North gate</td><td>Bridge · <ins><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · <ins><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td></tr>
-              </tbody>
-            </table>
-            <figcaption>Highlighted stops show what each hiker adds before sharing, then what arrives from another notebook.</figcaption>
+            <div class="route-table-scroll">
+              <table aria-label="Each hiker's inspection route before and after sharing">
+                <thead><tr><th scope="col">Hiker</th><th scope="col">Before sharing</th><th scope="col">After sharing</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Alice</th><td>Bridge · <ins data-stop="falls"><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · Weir · North gate</td><td>Bridge · <span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span> · <ins data-stop="marsh"><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td></tr>
+                  <tr><th scope="row">Bob</th><td>Bridge · <ins data-stop="marsh"><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td><td>Bridge · <ins data-stop="falls"><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · <span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span> · Weir · North gate</td></tr>
+                  <tr><th scope="row">Carol</th><td>Bridge · Weir · North gate</td><td>Bridge · <ins data-stop="falls"><span class="dotted-value">Falls<sup>{sequenceStopMarks.Falls}</sup></span></ins> · <ins data-stop="marsh"><span class="dotted-value">Marsh<sup>{sequenceStopMarks.Marsh}</sup></span></ins> · Weir · North gate</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <figcaption>
+              <span class="route-key" data-stop="falls">Yellow: Falls (Alice)</span>{" "}
+              <span class="route-key" data-stop="marsh">Blue: Marsh (Bob)</span>
+              <span>Each highlight shows a stop new to that notebook.</span>
+            </figcaption>
           </figure>
           <p>
             The starting stops already have IDs. Alice's new Falls gets <code>{sequenceStopMarks.Falls}</code>,
@@ -187,6 +193,9 @@ const operationNames = structure.operations.length === 1
 
   .route-notebooks {
     margin-block: var(--space-5);
+  }
+
+  .route-table-scroll {
     overflow-x: auto;
   }
 
@@ -213,12 +222,29 @@ const operationNames = structure.operations.length === 1
     white-space: nowrap;
   }
 
-  .route-notebooks ins {
+  .route-notebooks :is(ins, .route-key) {
     padding-inline: 0.15em;
-    color: var(--instrument-deep);
-    background: var(--signal);
     font-weight: 700;
     text-underline-offset: 0.18em;
+  }
+
+  .route-notebooks [data-stop="falls"] {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  .route-notebooks [data-stop="marsh"] {
+    color: var(--clear);
+    background: var(--instrument);
+  }
+
+  .route-notebooks ins sup {
+    color: inherit;
+  }
+
+  .route-notebooks .route-key {
+    display: inline-block;
+    margin-inline-end: var(--space-2);
   }
 
   .route-notebooks figcaption {
