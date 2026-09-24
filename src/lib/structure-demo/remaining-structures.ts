@@ -45,7 +45,7 @@ export const remainingStructures: RemainingStructure[] = [
     rule: "Give each stop its own mark, so adding or moving other stops does not change which one a note means.",
     story: "Alice and Bob revise the ranger's ordered inspection route before either receives the other edit.",
     raceLabel: "Race the route insertions",
-    recordLabel: "Route card",
+    recordLabel: "Trail stop list",
     messageLabel: "Insertion slip",
     sources: [{ name: "sequence_kernel", path: "sequence_kernel.gleam" }],
     operations: [
@@ -329,7 +329,7 @@ export const remainingFamilies: Record<RemainingFamily, {
   sequences: {
     name: "Sequences",
     tagline: "Keep everyone's route stops and written notes in order.",
-    intro: "Alice and Bob each have a copy of the ranger's route card and field notes. Both add to the same place before they see the other's change. How do they keep both additions in order?",
+    intro: "Alice and Bob each have a copy of the ranger's trail stop list and field notes. Before they compare changes, both add a stop at the same place on the list. How can they keep both stops in order?",
   },
   coordination: {
     name: "Coordination",
