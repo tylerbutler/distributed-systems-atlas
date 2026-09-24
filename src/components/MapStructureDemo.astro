@@ -61,9 +61,7 @@ function buttonLabel(operation: MapOperation): string {
 
 function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
   if (replica === "C") {
-    return kind === "shared-map"
-      ? { body: "Optional: bridge-status = Bridge clear", evidence: "Carol can change this line separately" }
-      : { body: "No slip in this race", evidence: "Carol observes delivery" };
+    return { body: "No slip in this race", evidence: "Carol observes delivery" };
   }
   if (kind === "or-map") {
     return replica === "A"
@@ -117,9 +115,9 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
                   ))
                 : <div class="empty-entry"><dd>{kind === "shared-directory" ? "No folders" : "No entries"}</dd></div>}
             </dl>
-            {kind !== "shared-directory" && (
+            {kind !== "shared-directory" && kind !== "shared-map" && (
               <p class="map-edit-slip">
-                <span>{kind === "shared-map" ? "Example note" : "Note to share"}</span>
+                <span>Note to share</span>
                 <strong>{raceSlip(replica.id).body}</strong>
                 <small>{raceSlip(replica.id).evidence}</small>
               </p>
@@ -179,9 +177,13 @@ function raceSlip(replica: ReplicaId): { body: string; evidence: string } {
           <output data-message-count>0 operations shared</output>
         </section>
         <div class="map-evidence">
-          <p><span>What the notes show</span><strong data-evidence>No race delivered yet.</strong></p>
-          <ol data-history aria-label="Map operation log, newest first" reversed>
-            <li>No operations shared yet.</li>
+          <p>
+            <span>What the notes show</span>
+            <strong data-evidence>{kind === "shared-map" ? "No operations shared yet." : "No race delivered yet."}</strong>
+            {kind === "shared-map" && <small class="map-sequence-note">The starting map uses numbers through {initial.view.sequenceNumber}. This list shows new changes.</small>}
+          </p>
+          <ol class={kind === "shared-map" ? "map-sequenced-history" : undefined} data-history aria-label="Map operation log, newest first" reversed>
+            <li class="empty-history">No operations shared yet.</li>
           </ol>
         </div>
       </div>

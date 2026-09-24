@@ -21,7 +21,7 @@ for (const example of [
     heading: "SharedMap",
     race: "Race the two gate-status notes",
     entries: ["LineReport", "bridge-statusInspection due", "gate-statusTrail closed"],
-    evidence: /^Ledger number \d+: gate-status uses the last numbered note\.$/,
+    evidence: /^Change #\d+ to gate-status is the latest for that line\.$/,
   },
   {
     path: "/structures/lww-map/",
@@ -55,11 +55,11 @@ for (const example of [
     const race = demo.getByRole("button", { name: example.race });
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
-    if (example.testId !== "shared-directory-demo") {
-      await expect(demo.getByText(
-        example.testId === "shared-map-demo" ? "Example note" : "Note to share",
-        { exact: true },
-      )).toHaveCount(3);
+    if (example.testId === "shared-map-demo") {
+      await expect(demo.locator(".map-edit-slip")).toHaveCount(0);
+      await expect(demo.locator(".map-heading")).toContainText("Change either line from any notebook.");
+    } else if (example.testId !== "shared-directory-demo") {
+      await expect(demo.getByText("Note to share", { exact: true })).toHaveCount(3);
       await expect(demo.locator(".map-edit-slip").first()).not.toContainText(
         "No slip in this race",
       );
@@ -69,6 +69,18 @@ for (const example of [
       await expect(entries.locator("div")).toHaveText(example.entries);
     }
     await expect(demo.locator("[data-evidence]")).toHaveText(example.evidence);
+    if (example.testId === "shared-map-demo") {
+      const log = demo.getByRole("list", { name: "Map operation log, newest first" });
+      await expect(log).toHaveCSS("list-style-type", "decimal");
+      await expect(log.getByRole("listitem")).toHaveText([
+        "Bob · Trail closed",
+        "Alice · Trail open",
+      ]);
+      await expect(log.getByRole("listitem").first()).toHaveAttribute("value", "9");
+      await expect(log.getByRole("listitem").last()).toHaveAttribute("value", "8");
+      await expect(demo.locator(".map-sequence-note"))
+        .toHaveText("The starting map uses numbers through 7. This list shows new changes.");
+    }
     await expect(race).toBeFocused();
   });
 
@@ -105,7 +117,7 @@ test("map controls stay active while operations travel", async ({ page }) => {
     ], { timeout: 10_000 });
   }
   await expect(demo.locator("[data-evidence]"))
-    .toContainText("bridge-status uses the last numbered note.");
+  .toContainText("to bridge-status is the latest for that line.");
   await expect(demo.locator('[role="status"]'))
     .toContainText("Every hiker sees Bridge clear on that line.");
 });
@@ -301,5 +313,5 @@ test("reset restores a new map room", async ({ page }) => {
       "gate-statusReport pending",
     ]);
   }
-  await expect(demo.locator("[data-evidence]")).toHaveText("No race delivered yet.");
+  await expect(demo.locator("[data-evidence]")).toHaveText("No operations shared yet.");
 });

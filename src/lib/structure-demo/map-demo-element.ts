@@ -301,18 +301,20 @@ class MapStructureDemoElement extends HTMLElement {
       ...(grouped.size
         ? [...grouped].reverse().map(([, copies]) => {
           const operation = copies[0]!;
-          return node("li", `${mapUserName(operation.author)} · ${operationLabel(operation)}`);
+          const item = node("li", `${mapUserName(operation.author)} · ${operationLabel(operation)}`);
+          if (this.kind === "shared-map") item.value = operation.sequenceNumber;
+          return item;
         })
-        : [node("li", this.state.view.pending
+        : [Object.assign(node("li", this.state.view.pending
           ? `${this.state.queuedOperations.length} operations are in transit.`
-          : "No operations shared yet.")]),
+          : "No operations shared yet."), { className: "empty-history" })]),
     );
 
     const evidence = this.querySelector<HTMLElement>("[data-evidence]")!;
     evidence.textContent = this.kind === "shared-map"
       ? this.state.deliveries.length
-        ? `Ledger number ${this.state.view.sequenceNumber}: ${this.state.deliveries.at(-1)!.key} uses the last numbered note.`
-        : "No race delivered yet."
+        ? `Change #${this.state.deliveries.at(-1)!.sequenceNumber} to ${this.state.deliveries.at(-1)!.key} is the latest for that line.`
+        : "No operations shared yet."
       : this.kind === "lww-map"
         ? this.state.deliveries.length
           ? "Carol compares the times beside gate-status and reads Trail closed, regardless of delivery order."

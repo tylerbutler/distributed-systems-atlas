@@ -101,7 +101,7 @@ export function createMapDemo(kind: MapKind): MapDemoState {
     result: kind === "or-map"
       ? "Eagle Creek starts with 5 supply crates. Race removal against a concurrent delivery."
       : kind === "shared-map"
-        ? "Each notebook starts with gate and bridge reports. Race the gate edits or change a line yourself."
+        ? "Each notebook starts with the same two reports. Change either line from any notebook."
         : "Run the race, or let any hiker change their own notebook.",
   };
 }

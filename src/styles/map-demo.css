@@ -293,6 +293,12 @@ map-structure-demo {
   margin-top: var(--space-2);
   color: var(--signal);
 }
+.map-sequence-note {
+  display: block;
+  margin-top: var(--space-2);
+  color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+  font: 0.75rem/1.45 var(--font-ui);
+}
 .map-evidence ol {
   display: flex;
   width: 100%;
@@ -309,6 +315,19 @@ map-structure-demo {
 .map-evidence ol li {
   color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
 }
+
+.map-evidence ol.map-sequenced-history {
+  display: block;
+  max-height: 20rem;
+  padding-inline-start: 2.5rem;
+  list-style: decimal;
+  text-align: left;
+  mask-image: none;
+}
+
+.map-sequenced-history li + li { margin-top: var(--space-2); }
+.map-sequenced-history li::marker { color: var(--signal); }
+.map-sequenced-history .empty-history { list-style: none; }
 
 .map-controls {
   display: flex;
@@ -345,6 +364,7 @@ map-structure-demo {
     min-height: 6rem;
     max-height: 8rem;
   }
+  .map-evidence ol.map-sequenced-history { max-height: 8rem; }
   .map-evidence {
     flex: none;
     grid-template-rows: auto auto;
