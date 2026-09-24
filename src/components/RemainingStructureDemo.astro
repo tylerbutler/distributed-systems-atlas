@@ -272,15 +272,16 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
           if (generation !== this.generation) return;
           const relay = this.querySelector<HTMLElement>("[data-relay-node]");
           if (!relay) throw new Error("Missing trail exchange relay");
-          for (const note of [...this.sequenceNotes].reverse().filter(({ delivered }) => !delivered)) {
-            await Promise.all((["A", "B", "C"] as const).map((id) => {
+          const pendingNotes = [...this.sequenceNotes].reverse().filter(({ delivered }) => !delivered);
+          await Promise.all(pendingNotes.flatMap((note) =>
+            (["A", "B", "C"] as const).map((id) => {
               const recipient = this.querySelector<HTMLElement>(`[data-client="${id}"]`);
               if (!recipient) throw new Error(`Missing ${id} notebook`);
               const name = { A: "Alice", B: "Bob", C: "Carol" }[note.author];
               return this.animateHop(relay, recipient, `${name} note`, "shared");
-            }));
-            if (generation !== this.generation) return;
-          }
+            })
+          ));
+          if (generation !== this.generation) return;
         } else {
           await new Promise((resolve) =>
             window.setTimeout(resolve, this.transport.nextDuration(800))

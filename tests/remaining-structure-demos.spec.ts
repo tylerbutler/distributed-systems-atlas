@@ -222,6 +222,18 @@ test("SharedSequence animates notes to the relay and then to the notebooks", asy
   await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
 });
 
+test("SharedSequence broadcasts pending notes together", async ({ page }) => {
+  await page.goto("/structures/shared-sequence/");
+  const demo = page.getByTestId("shared-sequence-demo");
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  await demo.getByRole("button", { name: "Race the route insertions" }).click();
+  await expect(demo.locator(".remaining-operation-pulse.outbound")).toHaveCount(2);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator(".remaining-operation-pulse.shared")).toHaveCount(6);
+  await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
+});
+
 test("SharedSequence delivers without spatial motion when reduced motion is requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-sequence/");

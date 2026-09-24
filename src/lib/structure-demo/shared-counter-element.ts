@@ -108,6 +108,7 @@ class SharedCounterDemoElement extends HTMLElement {
     this.renderControls();
     const generation = this.generation;
     try {
+      const broadcasts: Promise<void>[] = [];
       while (
         this.transport.autoDeliver &&
         presentSharedCounterDemo(this.state).canDeliver
@@ -124,10 +125,11 @@ class SharedCounterDemoElement extends HTMLElement {
         this.state = result.state;
         const view = presentSharedCounterDemo(this.state);
         this.render(false);
-        await this.animateDeliveries(view.latestDeliveries, generation);
-        if (generation !== this.generation) return;
-        this.render(true);
+        broadcasts.push(this.animateDeliveries(view.latestDeliveries, generation));
       }
+      await Promise.all(broadcasts);
+      if (generation !== this.generation) return;
+      this.render(true);
     } finally {
       if (generation !== this.generation) return;
       this.delivering = false;

@@ -185,18 +185,18 @@ class MapStructureDemoElement extends HTMLElement {
         delivery,
       ]);
     }
-    for (const copies of operations.values()) {
+    await Promise.all([...operations.values()].flatMap((copies) => {
       const operation = copies[0];
-      if (!operation) continue;
-      await Promise.all(copies.map((delivery) =>
+      if (!operation) return [];
+      return copies.map((delivery) =>
         this.animateHop(
           this.querySelector<HTMLElement>("[data-relay-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
           operationLabel(operation),
           "shared",
-        )));
-      if (generation !== this.generation) return;
-    }
+        ));
+    }));
+    if (generation !== this.generation) return;
   }
 
   private async animateHop(

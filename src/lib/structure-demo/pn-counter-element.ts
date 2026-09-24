@@ -183,21 +183,21 @@ class PNCounterDemoElement extends HTMLElement {
         delivery,
       ]);
     }
-    for (const operationDeliveries of operations.values()) {
+    await Promise.all([...operations.values()].flatMap((operationDeliveries) => {
       const operation = operationDeliveries[0];
-      if (!operation || !isReplicaId(operation.author)) continue;
+      if (!operation || !isReplicaId(operation.author)) return [];
       const author = operation.author;
       this.querySelector<HTMLElement>('[role="status"]')!.textContent =
         `${pnCounterUserName(author)}'s ${operation.amount > 0 ? "sighting" : "correction"} note is being delivered to the other hikers.`;
-      await Promise.all(operationDeliveries.map((delivery) =>
+      return operationDeliveries.map((delivery) =>
         this.animateHop(
           this.querySelector<HTMLElement>("[data-sequencer-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${delivery.to}"]`)!,
           `${pnCounterUserName(author)} ${signed(operation.amount)}`,
           "sequenced",
-        )));
-      if (generation !== this.generation) return;
-    }
+        ));
+    }));
+    if (generation !== this.generation) return;
   }
 
   private async animateHop(

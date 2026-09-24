@@ -165,16 +165,16 @@ class RegisterStructureDemoElement extends HTMLElement {
     operations: RegisterOperation[],
     generation: number,
   ): Promise<void> {
-    for (const operation of operations) {
-      await Promise.all((["A", "B", "C"] as const).map((replica) =>
+    await Promise.all(operations.flatMap((operation) =>
+      (["A", "B", "C"] as const).map((replica) =>
         this.animateHop(
           this.querySelector<HTMLElement>("[data-relay-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${replica}"]`)!,
           operation.value,
           "shared",
-        )));
-      if (generation !== this.generation) return;
-    }
+        ))
+    ));
+    if (generation !== this.generation) return;
   }
 
   private async animateHop(
