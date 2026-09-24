@@ -12,7 +12,7 @@ test("the hikers' checkpoint notes converge and a repeated note is safe", async 
   await expect(resend).toBeDisabled();
   const pace = demo.getByRole("slider", { name: "Speed" });
   await pace.fill("2");
-  await expect(demo.locator("[data-pace-output]")).toHaveText("2×");
+  await expect(demo.locator("[data-transport-speed-output]")).toHaveText("2×");
   const guided = demo.getByRole("checkbox", { name: "Guided observations" });
   await guided.check();
   await expect(demo.getByRole("heading", { name: "How checkpoint notes merge" })).toBeVisible();
@@ -27,7 +27,7 @@ test("the hikers' checkpoint notes converge and a repeated note is safe", async 
   await expect(totals.first()).toHaveAttribute("data-guided-mark", "circle");
   await expect(resend).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "The final checkpoint note reached every hiker. All three read 10 birds.",
+    "The final checkpoint note was delivered to every hiker. All three read 10 birds.",
   );
   const log = demo.getByRole("list", { name: "Checkpoint note log" });
   await expect(log.getByRole("listitem")).toHaveCount(2);
@@ -123,11 +123,11 @@ test("notes travel to checkpoints immediately and shared copies overlap", async 
 
   await expect(demo.locator('[data-leg="outbound"]')).toHaveCount(2);
   await expect(demo.locator('[data-leg="outbound"]').first()).toContainText(
-    "Alice +1 · 1000 ms",
+    "Alice +1 · 2000 ms",
   );
   await expect(demo.locator('[data-leg="sequenced"]')).toHaveCount(6);
   await expect(demo.locator('[data-leg="sequenced"]').first()).toContainText(
-    "Alice note · 1000 ms",
+    "Alice note · 2000 ms",
   );
   const dotMotion = await demo.locator(".operation-pulse").first().evaluate((element) => {
     const animation = element.getAnimations()[0];
@@ -218,8 +218,8 @@ test("G-counter remains useful without JavaScript", async ({ browser }) => {
     await expect(eventualConsistencyDefinition.getByRole("link", {
       name: "eventual consistency",
     })).toHaveAttribute("href", "/glossary/#eventual-consistency");
-    await expect(page.getByLabel("G-counter merge and bird total rules")).toContainText(
-      "count[Alice] = max(all notes from Alice)",
+    await expect(page.getByRole("region", { name: "Every trail catches up" })).toContainText(
+      "For each hiker, merge keeps the larger count",
     );
     await expect(page.getByTestId("g-counter-demo").locator("[data-total]")).toHaveText(["0", "0", "0"]);
     await expect(page.getByText("After delivery of both checkpoint notes")).toBeVisible();

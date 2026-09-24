@@ -97,11 +97,11 @@ test("SharedCounter content remains useful without JavaScript", async ({ browser
     await expect(page.getByLabel("Bird count as SharedCounter operations are sequenced")
       .locator("tbody tr")).toHaveText([
       "Agreed count101010",
-      "Notes traveling13910",
+      "Notes in transit13910",
       "SN 1 and SN 2 applied121212",
     ]);
-    await expect(page.getByLabel("Sequenced operation application rule"))
-      .toContainText("seen SN → ignore duplicate");
+    await expect(page.getByRole("region", { name: "One number means one application" }))
+      .toContainText("ignore a number that has already been applied");
     const demo = page.getByTestId("shared-counter-demo");
     await expect(demo.locator("[data-shared-total]")).toHaveText(["10", "10", "10"]);
     await expect(demo.getByRole("button", {

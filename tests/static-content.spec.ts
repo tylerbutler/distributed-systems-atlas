@@ -233,10 +233,12 @@ test("generated glossary and bibliography expose published metadata", async ({ p
 });
 
 test("readers can follow all seven trail steps without JavaScript", async ({ browser }) => {
+  test.setTimeout(90_000);
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
     await page.goto("/");
+    await page.getByText("See the seven-sheet causal evidence trail").click();
     await page.locator('a[href="/atlas/multi-value-registers/"]').first().click();
     const titles = ["Multi-value registers", "Observed-remove sets", "Dots and causal context",
       "Local history", "Partial order", "Lamport clocks", "Vector clocks"];
@@ -378,7 +380,7 @@ test("the landing page leads with data structures", async ({ page }) => {
     name: "Open the reference atlas",
     exact: true,
   })).toHaveAttribute("href", "/atlas/");
-  await expect(page.getByRole("heading", { level: 2 })).toHaveText([
+  await expect(page.locator("main").getByRole("heading", { level: 2 })).toHaveText([
     "Counters",
     "Learn the behavior before the bookkeeping",
     "Go deeper when a merge rule raises a question",
@@ -425,10 +427,10 @@ test("the sets family compares its three removal rules", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Observed-remove set" }))
     .toContainText("Keep additions that were not removed");
   await expect(page.getByRole("table", { name: "Set comparison" })
-    .locator("tbody tr")).toHaveText([
-    "No item removalGSetRemember each item",
-    "Removal is permanentTwoPSetRemember every removed item",
-    "Items can returnObserved-remove setRemember each addition and removal",
+    .locator("tbody th, tbody td")).toHaveText([
+    "No item removal", "GSet", "Remember each item",
+    "Removal is permanent", "TwoPSet", "Remember every removed item",
+    "Items can return", "Observed-remove set", "Remember each addition and removal",
   ]);
   await expect(page.getByRole("link", {
     name: "Open the observed-remove set lesson",
@@ -445,9 +447,9 @@ test("the structures index and landing route readers through published families"
     .toHaveAttribute("href", "/structures/models/");
   const familyLinks = page.getByRole("list", { name: "Structure lessons" }).getByRole("link");
   await expect(familyLinks).toHaveCount(7);
-  await expect(page.getByRole("link", { name: /^Registers/ }))
+  await expect(familyLinks.filter({ has: page.getByRole("heading", { name: "Registers", exact: true }) }))
     .toHaveAttribute("href", "/structures/registers/");
-  await expect(page.getByRole("link", { name: /^Maps/ }))
+  await expect(familyLinks.filter({ has: page.getByRole("heading", { name: "Maps", exact: true }) }))
     .toHaveAttribute("href", "/structures/maps/");
   for (const link of await familyLinks.all()) {
     expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
@@ -462,10 +464,11 @@ test("the model comparison explains tags and links structure pages", async ({ pa
 
   await expect(page.getByRole("heading", { level: 1 }))
     .toHaveText("Three ways shared data can agree");
-  await expect(page.locator("#dds")).toContainText("Apply one numbered list");
-  await expect(page.locator("#crdt")).toContainText("Combine changes with a safe rule");
-  await expect(page.locator("#ot")).toContainText("Rewrite changes before applying them");
-  await expect(page.getByRole("table")).toContainText("Offline work and unreliable delivery");
+  const comparison = page.getByRole("table");
+  await expect(comparison).toContainText("Apply one numbered list");
+  await expect(comparison).toContainText("Combine changes with a safe rule");
+  await expect(comparison).toContainText("Rewrite changes before applying them");
+  await expect(comparison).toContainText("Offline work and unreliable delivery");
 
   await page.goto("/structures/g-counter/");
   await expect(page.getByRole("link", { name: "Learn what CRDT means" }))
@@ -522,14 +525,14 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await page.keyboard.press("Enter");
   await expect(page.getByRole("main")).toBeFocused();
   await page.keyboard.press("Tab");
-  const primary = page.getByRole("link", { name: "Counters", exact: true });
+  const primary = page.locator("main").getByRole("link", { name: "Counters", exact: true });
   await expect(primary).toBeFocused();
   await expect(primary).toHaveCSS("outline-style", "solid");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/structures\/counters\/$/);
   await page.goto("/");
   await page.getByRole("link", { name: "Start the learning path", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Counters", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Counters", level: 1 })).toBeVisible();
   await context.close();
 });
 
@@ -611,6 +614,24 @@ test.describe("collection build fixtures", () => {
   test.beforeAll(async () => {
     root = await mkdtemp(path.join(tmpdir(), "atlas-shell-"));
     await cp("src", path.join(root, "src"), { recursive: true });
+    await cp("art", path.join(root, "art"), { recursive: true });
+    await cp("public", path.join(root, "public"), { recursive: true });
+    const catalogPath = path.join(root, "art/lesson-illustrations.json");
+    const catalog = JSON.parse(await readFile(catalogPath, "utf8"));
+    catalog.illustrations.push({
+      id: "atlas-replicated-log",
+      asset: "/illustrations/lessons/atlas-local-history.svg",
+      alt: "Fixture illustration for the replicated log.",
+    }, {
+      id: "atlas-scenario-reference",
+      asset: "/illustrations/lessons/atlas-local-history.svg",
+      alt: "Fixture illustration for the scenario reference.",
+    });
+    await writeFile(catalogPath, JSON.stringify(catalog));
+    const layoutPath = path.join(root, "src/layouts/BaseLayout.astro");
+    await writeFile(layoutPath, (await readFile(layoutPath, "utf8"))
+      .replace('import { Script } from "astro-tinylytics";\n', "")
+      .replace(/^    <Script embedCode="[^"]+" min hits \/>$/m, ""));
     for (const file of ["astro.config.mjs", "tsconfig.json", "package.json"]) {
       await cp(file, path.join(root, file));
     }

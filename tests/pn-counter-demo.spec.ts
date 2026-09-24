@@ -14,7 +14,7 @@ test("the correction race converges through Sluice", async ({ page }) => {
   await expect(totals).toHaveText(["12", "12", "12"]);
   await expect(race).toBeFocused();
   await expect(demo.locator('[role="status"]')).toHaveText(
-    "Both checkpoint notes reached every hiker. All three read 12 birds.",
+    "Both checkpoint notes were delivered to every hiker. All three read 12 birds.",
   );
   await expect(demo.getByLabel("Correction notes shared")).toHaveText("2 notes");
   await expect(demo.getByRole("list", { name: "Correction note log" })
@@ -134,17 +134,17 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
     await expect(page.getByRole("group", {
       name: "PN-counter checkpoint note examples",
     }).locator("p")).toHaveText([
-      "AliceSightings page · Alice row3",
-      "BobCorrections page · Bob row1",
+      /Alice\s+Sightings page · Alice row\s+3/,
+      /Bob\s+Corrections page · Bob row\s+1/,
     ]);
     await expect(page.getByRole("heading", {
-      name: "Add a second G-counter",
+      name: "Why the notebook needs two pages",
     })).toBeVisible();
     await expect(page.getByRole("region", {
-      name: "Add a second G-counter",
+      name: "Why the notebook needs two pages",
     })).toContainText("The positive counter records sightings");
     await expect(page.getByRole("region", {
-      name: "Add a second G-counter",
+      name: "Why the notebook needs two pages",
     })).toContainText("The negative counter records corrections");
     await expect(page.getByRole("heading", {
       name: "Alice and Bob fill in different pages",
@@ -157,10 +157,8 @@ test("PN-counter content remains useful without JavaScript", async ({ browser })
       "Birds seen (P - N)13910",
     ]);
     await expect(page.getByRole("region", {
-      name: "Add a second G-counter",
-    }).getByLabel("PN-counter bird total rule")).toContainText(
-      "P = sightings G-counter N = corrections G-counter birds = P - N",
-    );
+      name: "The correction survives the merge",
+    })).toContainText("the positive G-counter totals 13");
     const sluiceDefinition = page.getByLabel("Sluice definition");
     await expect(sluiceDefinition).toContainText(
       "connects clients, sequences their operations",

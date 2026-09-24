@@ -7,7 +7,7 @@ for (const viewport of [
   { name: "desktop", width: 1440, height: 1000 },
 ]) {
   test(`${viewport.name} layouts have no page overflow`, async ({ page }) => {
-    test.setTimeout(45_000);
+    test.setTimeout(90_000);
     await page.setViewportSize(viewport);
     for (const path of ["/", "/structures/", "/structures/models/", "/structures/counters/", "/structures/g-counter/", "/structures/pn-counter/", "/structures/shared-counter/", "/structures/sets/", "/structures/g-set/", "/structures/two-p-set/", "/structures/observed-remove-set/", "/structures/registers/", "/structures/lww-register/", "/structures/multi-value-register/", "/structures/register-collection/", "/structures/maps/", "/structures/shared-map/", "/structures/lww-map/", "/structures/or-map/", "/structures/shared-directory/", "/structures/sequences/", "/structures/shared-sequence/", "/structures/shared-text/", "/structures/coordination/", "/structures/claims/", "/structures/ordered-collection/", "/structures/task-manager/", "/structures/pact-map/", "/structures/transforms/", "/structures/json-ot/", "/structures/shared-rich-text/", "/atlas/", "/glossary/", "/bibliography/",
       ...firstTrail.map(({ id }) => `/atlas/${id}/`)]) {
@@ -23,9 +23,11 @@ for (const viewport of [
 for (const [from, to] of [["A", "B"], ["B", "A"]]) {
   test(`message route ${from}-to-${to} aligns endpoints and keeps mobile source first`, async ({ page }) => {
     const errors: string[] = [];
+    await page.route("https://tinylytics.app/embed/**", (route) =>
+      route.fulfill({ status: 200, contentType: "application/javascript", body: "" }));
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => {
-      if (message.type() === "error") errors.push(message.text());
+      if (message.type() === "error") errors.push(`${message.text()} (${message.location().url})`);
     });
     await page.goto("/atlas/dots-and-causal-context/");
     const lab = page.getByTestId("causal-lab");

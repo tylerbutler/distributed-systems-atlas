@@ -229,7 +229,7 @@ export function deliverPNOperations(state: PNCounterDemoState): PNCounterDemoRes
         deliveredPositive: { ...state.authoredPositive },
         deliveredNegative: { ...state.authoredNegative },
         queuedUpdates: [],
-        result: `${deliverySubject} was delivered to every hiker. All three read ${total} birds.`,
+        result: `${deliverySubject} ${operations === 1 ? "was" : "were"} delivered to every hiker. All three read ${total} birds.`,
       },
     };
   } catch (error) {

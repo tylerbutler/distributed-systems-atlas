@@ -214,7 +214,7 @@ test("partition motion opens the route between fixed endpoints", async ({ page }
 test("Dots sheet explains the final add-wins result", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
   const continuation = page.locator(".sheet-continuation");
-  await expect(continuation.getByText(/B:1 was never observed by A['\u2019]s remove/)).toBeVisible();
+  await expect(continuation).toContainText("A had seen A:1 but had received no message about B’s new addition");
   await expect(continuation).toContainText("concurrent dot");
   await expect(continuation).toContainText("observed-remove set (OR-Set)");
   expect(await page.getByTestId("causal-lab").evaluate((lab) => {

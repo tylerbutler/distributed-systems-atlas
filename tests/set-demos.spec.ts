@@ -41,7 +41,7 @@ for (const example of [
       await expect(members).toHaveText(values);
     }
     if (example.testId === "g-set-demo") {
-      const firstMembers = demo.locator("[data-member-list]").first().locator("span");
+      const firstMembers = demo.locator("[data-member-list]").first().locator(":scope > span");
       expect(await firstMembers.first().evaluate((element) =>
         getComputedStyle(element, "::after").content
       )).toBe('","');
@@ -141,7 +141,7 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
     const page = await context.newPage();
     for (const [path, heading, testId, notebookTable] of [
       ["/structures/g-set/", "GSet", "g-set-demo", "Eagle Creek GSet delivery"],
-      ["/structures/two-p-set/", "TwoPSet", "two-p-set-demo", "TwoPSet notebooks before records meet"],
+      ["/structures/two-p-set/", "TwoPSet", "two-p-set-demo", "TwoPSet notebook contents at three checkpoints"],
       ["/structures/observed-remove-set/", "Observed-remove set", "or-set-demo", "Observed-remove notebooks before records meet"],
     ]) {
       await page.goto(path);
@@ -155,7 +155,7 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the demo");
       if (testId === "two-p-set-demo") {
-        await expect(page.getByRole("heading", { name: "Add a second GSet" }))
+        await expect(page.getByRole("heading", { name: "Each hiker carries the same two-page notebook" }))
           .toBeVisible();
         await expect(page.getByLabel("tombstone definition")).toContainText(
           "prevents an old addition from becoming live again",
@@ -170,8 +170,8 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
           "The name means two-phase set.",
           { exact: false },
         )).toBeVisible();
-        await expect(page.getByLabel("TwoPSet composition and membership rule"))
-          .toContainText("TwoPSet = additions GSet + removals GSet");
+        await expect(page.getByRole("region", { name: "Alice and Bob write on different pages" }))
+          .toContainText("A value is visible only when it appears in additions");
       } else if (testId === "or-set-demo") {
         await expect(page.getByLabel("dot definition")).toContainText(
           "replica ID and a local counter",
@@ -179,14 +179,12 @@ test("set lessons retain useful no-JavaScript states", async ({ browser }) => {
         await expect(page.getByLabel("dot definition")
           .getByRole("link", { name: "dot" }))
           .toHaveAttribute("href", "/glossary/#dot");
-        await expect(page.getByText(
-          "Carol makes no later change, so her notebook remains a stale copy of that original state.",
-          { exact: true },
-        )).toBeVisible();
-        await expect(page.getByText(
-          "The counter is shared across the dots in this set, not restarted for each writer.",
-          { exact: true },
-        )).toBeVisible();
+        await expect(page.locator("main")).toContainText(
+          /Carol makes no\s+later change, so her notebook remains a stale copy/,
+        );
+        await expect(page.locator("main")).toContainText(
+          /The counter is shared across the dots in this set, not restarted for\s+each writer/,
+        );
         const notebooks = page.getByRole("table", {
           name: "Observed-remove notebooks before records meet",
         });

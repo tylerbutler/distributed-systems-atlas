@@ -6,7 +6,7 @@ const lessons = [
   {
     id: "local-history", title: "Local history", scenario: "local-history-message-observation",
     outcome: "Delivery is not global knowledge",
-    headings: ["A message can arrive with old news", "Keep execution and observation separate",
+    headings: ["A delayed message can contain old news", "Keep execution and observation separate",
       "Hold the message while A changes", "Account for the missing event",
       "Break it: read the sender at delivery", "The cost of an explicit history", "Field notes"],
     figure: "Final local and observed histories", evidence: ["a1, a2", "a1, b1"],
@@ -36,7 +36,7 @@ const lessons = [
   {
     id: "vector-clocks", title: "Vector clocks", scenario: "vector-clock-comparisons",
     outcome: "Four vector relations",
-    headings: ["One number loses the source of progress", "Compare down the component columns",
+    headings: ["One number omits the source of progress", "Compare down the component columns",
       "Exercise all four relations", "Track both the inputs and the station state",
       "Break it: compare only the largest counter", "A component for each process", "Field notes"],
     figure: "Four vector relations", evidence: ["before", "after", "equal", "concurrent"],
@@ -59,9 +59,9 @@ const lessons = [
     headings: ["A removed signal returns in an old message", "Retain the identity after membership changes",
       "Save a stale copy before removing", "Follow live and removed dots through delivery",
       "Break it: discard the tombstone", "Removal knowledge outlives membership", "Field notes"],
-    figure: "Observed-remove tag checkpoints", evidence: ["B:2", "A:1", "Stale A:1 replayed"],
+    figure: "Observed-remove dot checkpoints", evidence: ["B:2", "A:1", "Stale A:1 replayed"],
     initial: ["Empty set", "No removed dots", "A:0, B:0"], replicas: ["A", "B"],
-    terms: ["observed-remove set", "tombstone", "add-wins"], reference: "bieniusa-optimized-set",
+    terms: ["dot", "observed-remove set", "tombstone", "add-wins"], reference: "bieniusa-optimized-set",
   },
 ] as const;
 

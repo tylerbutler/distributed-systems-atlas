@@ -34,6 +34,7 @@ describe("PN-counter correction lesson", () => {
     const staged = success(stageCorrectionRace(createPNCounterDemo())).state;
     const delivered = presentPNCounterDemo(success(deliverPNOperations(staged)).state);
     expect(delivered.replicas.map(({ value }) => value)).toEqual([12, 12, 12]);
+    expect(delivered.result).toBe("Both checkpoint notes were delivered to every hiker. All three read 12 birds.");
     expect(delivered.latestDeliveries).toHaveLength(6);
     expect(new Set(delivered.latestDeliveries.map(({ to }) => to)))
       .toEqual(new Set(["A", "B", "C"]));
@@ -49,6 +50,7 @@ describe("PN-counter correction lesson", () => {
     state = success(updatePNReplica(state, "B", -7)).state;
     const delivered = presentPNCounterDemo(success(deliverPNOperations(state)).state);
     expect(delivered.replicas.map(({ value }) => value)).toEqual([-3, -3, -3]);
+    expect(delivered.result).toBe("3 checkpoint notes were delivered to every hiker. All three read -3 birds.");
   });
 
   test("delivery without a waiting note preserves the last valid state", () => {

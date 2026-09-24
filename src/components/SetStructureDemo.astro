@@ -396,7 +396,7 @@ function raceNote(replica: ReplicaId): string {
     align-content: flex-start;
   }
 
-  .member-list > span {
+  .member-list > :global(span) {
     position: relative;
     padding: 0.25rem 0.5rem;
     border-radius: 999px;
@@ -407,19 +407,19 @@ function raceNote(replica: ReplicaId): string {
     font-weight: 700;
   }
 
-  .member-list > span:not(:last-of-type)::after {
+  .member-list > :global(span:not(:last-of-type))::after {
     position: absolute;
     left: calc(100% + var(--space-1));
     color: var(--clear);
     content: ",";
   }
 
-  .member-list em {
+  .member-list :global(em) {
     color: color-mix(in oklch, var(--clear) 58%, transparent);
     font-size: 0.875rem;
   }
 
-  .member-list sup {
+  .member-list :global(sup) {
     margin-left: 0.2rem;
     color: var(--instrument-deep);
     font-size: 0.7rem;
@@ -427,11 +427,11 @@ function raceNote(replica: ReplicaId): string {
     line-height: 0;
   }
 
-  .member-list sup + sup {
+  .member-list :global(sup + sup) {
     margin-left: 0;
   }
 
-  .member-list sup + sup::before {
+  .member-list :global(sup + sup)::before {
     content: ", ";
   }
 

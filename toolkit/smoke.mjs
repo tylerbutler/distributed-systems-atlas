@@ -157,7 +157,10 @@ assert.deepEqual(unwrap(deliverRegisterDemo(collectionRoom)).view.versions, [
 ]);
 
 for (const [kind, expected] of [
-  ["shared-map", [{ key: "gate-status", value: "Trail closed" }]],
+  ["shared-map", [
+    { key: "bridge-status", value: "Inspection due" },
+    { key: "gate-status", value: "Trail closed" },
+  ]],
   ["lww-map", [{ key: "gate-status", value: "Trail closed" }]],
   ["or-map", [{ key: "Eagle Creek", value: "8" }]],
   ["shared-directory", [{ key: "eagle-creek", value: "folder" }]],
