@@ -20,6 +20,7 @@ const structure = structureById(Astro.params.structure ?? "");
 if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
 const isSharedSequence = structure.id === "shared-sequence";
+const isSharedText = structure.id === "shared-text";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -43,7 +44,13 @@ const operationNames = structure.operations.length === 1
       )}
 
       <section class="structure-story">
-        <h2>{isSharedSequence ? "Two hikers edit the route" : "At Eagle Creek"}</h2>
+        <h2>
+          {isSharedSequence
+            ? "Two hikers edit the route"
+            : isSharedText
+              ? "SharedSequence applied to text"
+              : "At Eagle Creek"}
+        </h2>
         <p>{structure.story}</p>
         {isSharedSequence ? (
           <p>
@@ -51,16 +58,24 @@ const operationNames = structure.operations.length === 1
             before Weir in her notebook. Bob adds Marsh before Weir in his.
             Carol has not received either insertion slip, so her route is unchanged.
           </p>
+        ) : isSharedText ? (
+          <p>
+            Each written symbol is a sequence item with its own identity and
+            position. That lets every copy place concurrent edits in the same
+            order without dropping either edit.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        <p>
-          Another hiker may act before the slip arrives. Each hiker uses the
-          rule to record the other's work when they receive it.
-        </p>
+        {!isSharedText && (
+          <p>
+            Another hiker may act before the slip arrives. Each hiker uses the
+            rule to record the other's work when they receive it.
+          </p>
+        )}
         {structure.localVisibility && <p>{structure.localVisibility}</p>}
       </section>
 
