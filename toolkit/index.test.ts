@@ -15,7 +15,7 @@ import {
   stageRemainingDemoRace,
   stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
-  updateSharedCounterRoom, write,
+  updateSharedCounterRoom, write, writeRegisterMapDemo,
   type Change, type Result, type State,
   type RemainingDemoOperationResult,
 } from "@atlas/toolkit";
@@ -165,9 +165,20 @@ test("RegisterMap retains both reads after concurrent writes", () => {
   expect(unwrap(stageRegisterDemoRace(room)).view.replicas.map(({ values }) => values))
     .toEqual([[], [], []]);
   expect(unwrap(deliverRegisterDemo(room)).view).toMatchObject({
+    replicas: [
+      { id: "A", values: ["radio-channel: Channel 4", "trail-status: Trail open"] },
+      { id: "B", values: ["radio-channel: Channel 4", "trail-status: Trail open"] },
+      { id: "C", values: ["radio-channel: Channel 4", "trail-status: Trail open"] },
+    ],
     atomicValue: "Trail open",
     latestValue: "Trail closed",
     versions: ["Trail open", "Trail closed"],
+  });
+  unwrap(writeRegisterMapDemo(room, "C", "trail-status", "Inspect bridge"));
+  expect(unwrap(deliverRegisterDemo(room)).view).toMatchObject({
+    atomicValue: "Inspect bridge",
+    latestValue: "Inspect bridge",
+    versions: ["Inspect bridge"],
   });
 });
 

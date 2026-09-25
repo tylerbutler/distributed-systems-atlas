@@ -909,6 +909,36 @@ export function writeRegisterDemo(
   });
 }
 
+export function writeRegisterMapDemo(
+  current: unknown,
+  replicaId: unknown,
+  key: unknown,
+  value: unknown,
+): Result<RegisterDemoResult> {
+  return attempt(() => {
+    const room = current as RegisterDemoRoom;
+    const replica = text(replicaId, "invalid-input");
+    requireInput(
+      replica === "A" || replica === "B" || replica === "C",
+      "replicaId must be A, B, or C",
+      "invalid-input",
+    );
+    const field = text(key, "invalid-input");
+    requireInput(field.trim().length > 0, "key must be nonempty", "invalid-input");
+    const content = text(value, "invalid-input");
+    const handle = kernel(
+      core.register_demo_write_key(
+        registerDemoHandle(room),
+        replica,
+        field,
+        content,
+      ),
+    );
+    registerDemoRooms.set(room, handle);
+    return { room, view: registerDemoView(handle) };
+  });
+}
+
 export function deliverRegisterDemo(current: unknown): Result<RegisterDemoResult> {
   return attempt(() => {
     const room = current as RegisterDemoRoom;

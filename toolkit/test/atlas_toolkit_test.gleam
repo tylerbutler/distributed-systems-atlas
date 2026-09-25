@@ -280,9 +280,32 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   queued.a |> should.equal([])
   let collection = toolkit.register_demo_deliver(collection)
   let collection_view = toolkit.register_demo_snapshot(collection)
+  collection_view.a
+  |> should.equal([
+    "radio-channel: Channel 4",
+    "trail-status: Trail open",
+  ])
   collection_view.atomic_value |> should.equal("Trail open")
   collection_view.latest_value |> should.equal("Trail closed")
   collection_view.versions |> should.equal(["Trail open", "Trail closed"])
+
+  let assert Ok(collection) =
+    toolkit.register_demo_write_key(
+      collection,
+      "C",
+      "trail-status",
+      "Inspect bridge",
+    )
+  let collection =
+    collection |> toolkit.register_demo_deliver |> toolkit.register_demo_snapshot
+  collection.a
+  |> should.equal([
+    "radio-channel: Channel 4",
+    "trail-status: Inspect bridge",
+  ])
+  collection.atomic_value |> should.equal("Inspect bridge")
+  collection.latest_value |> should.equal("Inspect bridge")
+  collection.versions |> should.equal(["Inspect bridge"])
 }
 
 pub fn lww_register_demo_assigns_global_sequence_numbers_test() {

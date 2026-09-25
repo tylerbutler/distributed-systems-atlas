@@ -316,6 +316,12 @@ pub fn register_demo_stage_race(
             json.string("Trail closed"),
             sequence_number,
           ),
+          register_collection_kernel.write(
+            c,
+            "radio-channel",
+            json.string("Channel 4"),
+            sequence_number,
+          ),
         ],
         sequence_number,
       ))
@@ -325,6 +331,15 @@ pub fn register_demo_stage_race(
 pub fn register_demo_write(
   room: RegisterDemoRoom,
   replica: String,
+  value: String,
+) -> Result(RegisterDemoRoom, String) {
+  register_demo_write_key(room, replica, "trail-status", value)
+}
+
+pub fn register_demo_write_key(
+  room: RegisterDemoRoom,
+  replica: String,
+  key: String,
   value: String,
 ) -> Result(RegisterDemoRoom, String) {
   case room {
@@ -410,7 +425,7 @@ pub fn register_demo_write(
       let operation =
         register_collection_kernel.write(
           state,
-          "trail-status",
+          key,
           json.string(value),
           sequence_number,
         )
@@ -507,19 +522,33 @@ fn json_string_value(value: json.Json) -> String {
 
 fn collection_value(
   state: register_collection_kernel.RegisterState,
+  key: String,
   policy: register_collection_kernel.ReadPolicy,
 ) -> String {
-  register_collection_kernel.read(state, "trail-status", policy)
+  register_collection_kernel.read(state, key, policy)
   |> result.map(json_string_value)
   |> result.unwrap("")
 }
 
 fn collection_versions(
   state: register_collection_kernel.RegisterState,
+  key: String,
 ) -> List(String) {
-  register_collection_kernel.read_versions(state, "trail-status")
+  register_collection_kernel.read_versions(state, key)
   |> result.map(fn(values) { list.map(values, json_string_value) })
   |> result.unwrap([])
+}
+
+fn collection_values(
+  state: register_collection_kernel.RegisterState,
+) -> List(String) {
+  state
+  |> register_collection_kernel.keys
+  |> list.map(fn(key) {
+    key
+    <> ": "
+    <> collection_value(state, key, register_collection_kernel.Atomic)
+  })
 }
 
 fn visible_value(value: String) -> List(String) {
@@ -571,16 +600,16 @@ pub fn register_demo_snapshot(room: RegisterDemoRoom) -> RegisterDemoSnapshot {
       )
     RegisterMapRoom(a, b, c, pending, sequence_number) ->
       RegisterDemoSnapshot(
-        visible_value(collection_value(a, register_collection_kernel.Atomic)),
-        visible_value(collection_value(b, register_collection_kernel.Atomic)),
-        visible_value(collection_value(c, register_collection_kernel.Atomic)),
+        collection_values(a),
+        collection_values(b),
+        collection_values(c),
         list.length(pending),
         sequence_number,
         "",
         0,
-        collection_value(a, register_collection_kernel.Atomic),
-        collection_value(a, register_collection_kernel.Lww),
-        collection_versions(a),
+        collection_value(a, "trail-status", register_collection_kernel.Atomic),
+        collection_value(a, "trail-status", register_collection_kernel.Lww),
+        collection_versions(a, "trail-status"),
       )
   }
 }

@@ -45,8 +45,10 @@ class RegisterStructureDemoElement extends HTMLElement {
         event.preventDefault();
         const button = form.querySelector<HTMLButtonElement>("[data-register-write]")!;
         const input = form.querySelector<HTMLSelectElement>("[data-register-input]")!;
+        const key = form.querySelector<HTMLSelectElement>("[data-register-key]");
         const operation: RegisterOperation = {
           author: form.dataset.replica as ReplicaId,
+          key: key?.value ?? "trail-status",
           value: input.value,
         };
         const result = updateRegisterReplica(this.state, operation);
@@ -58,6 +60,8 @@ class RegisterStructureDemoElement extends HTMLElement {
       });
     }
     this.button("race").addEventListener("click", () => void this.runRace());
+    this.querySelector<HTMLButtonElement>('[data-action="follow-up"]')
+      ?.addEventListener("click", () => void this.runFollowUp());
     this.button("reset").addEventListener("click", () => {
       this.resetFlow();
       this.state = createRegisterDemo(this.kind);
@@ -83,7 +87,7 @@ class RegisterStructureDemoElement extends HTMLElement {
     throw new Error("Missing register demo kind");
   }
 
-  private button(action: "race" | "reset"): HTMLButtonElement {
+  private button(action: "race" | "reset" | "follow-up"): HTMLButtonElement {
     const button = this.querySelector<HTMLButtonElement>(`[data-action="${action}"]`);
     if (!button) throw new Error(`Missing register demo ${action} control`);
     return button;
@@ -103,10 +107,27 @@ class RegisterStructureDemoElement extends HTMLElement {
     const staged = stageRegisterRace(this.state);
     this.apply(staged, this.button("race"));
     if (!staged.ok) return;
-    for (const operation of registerRaceOperations()) this.queueOutbound(operation);
+    for (const operation of registerRaceOperations(this.kind)) {
+      this.queueOutbound(operation);
+    }
     if (this.transport.autoDeliver) {
       await this.deliverQueued(this.button("race"));
     }
+  }
+
+  private async runFollowUp(): Promise<void> {
+    const button = this.button("follow-up");
+    const operation: RegisterOperation = {
+      author: "C",
+      key: "trail-status",
+      value: "Inspect bridge",
+    };
+    const result = updateRegisterReplica(this.state, operation);
+    this.apply(result, button);
+    if (!result.ok) return;
+    this.renderReplica(operation.author);
+    this.queueOutbound(operation);
+    if (this.transport.autoDeliver) await this.deliverQueued(button);
   }
 
   private async deliverQueued(focus: HTMLElement): Promise<void> {
@@ -158,7 +179,9 @@ class RegisterStructureDemoElement extends HTMLElement {
     this.outboundArrivals.push(this.animateHop(
       this.querySelector<HTMLElement>(`[data-client="${operation.author}"]`)!,
       this.querySelector<HTMLElement>("[data-relay-node]")!,
-      operation.value,
+      this.kind === "register-map"
+        ? `${operation.key}: ${operation.value}`
+        : operation.value,
       "outbound",
     ));
   }
@@ -172,7 +195,9 @@ class RegisterStructureDemoElement extends HTMLElement {
         this.animateHop(
           this.querySelector<HTMLElement>("[data-relay-node]")!,
           this.querySelector<HTMLElement>(`[data-client="${replica}"]`)!,
-          operation.value,
+          this.kind === "register-map"
+            ? `${operation.key}: ${operation.value}`
+            : operation.value,
           "shared",
         ))
     ));
@@ -211,10 +236,20 @@ class RegisterStructureDemoElement extends HTMLElement {
     for (const input of this.querySelectorAll<HTMLSelectElement>("[data-register-input]")) {
       input.disabled = false;
     }
+    for (const input of this.querySelectorAll<HTMLSelectElement>("[data-register-key]")) {
+      input.disabled = false;
+    }
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-register-write]")) {
       button.disabled = false;
     }
     this.button("race").disabled = this.delivering;
+    const followUp = this.querySelector<HTMLButtonElement>('[data-action="follow-up"]');
+    if (followUp) {
+      followUp.disabled = this.delivering
+        || this.state.view.pending > 0
+        || this.state.view.sequenceNumber < 3
+        || this.state.view.atomicValue === "Inspect bridge";
+    }
     this.button("reset").disabled = false;
   }
 
@@ -226,14 +261,16 @@ class RegisterStructureDemoElement extends HTMLElement {
     )!;
     values.replaceChildren(...(replica.values.length
       ? replica.values.map((value) => node("span", value))
-      : [node("em", "No status")]));
+      : [node("em", this.kind === "register-map" ? "No fields" : "No status")]));
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       this.state.view.pending > 0
         ? this.kind === "register-map"
           ? "Write pending · not visible"
           : "Local view · write in transit"
         : replica.values.length > 1
-          ? `${replica.values.length} concurrent alternatives`
+          ? this.kind === "register-map"
+            ? `${replica.values.length} named fields`
+            : `${replica.values.length} concurrent alternatives`
           : replica.values.length === 1
             ? "One visible value"
             : "No status received";
@@ -246,8 +283,11 @@ class RegisterStructureDemoElement extends HTMLElement {
 
     const history = this.querySelector<HTMLOListElement>("[data-history]")!;
     history.replaceChildren(...(this.state.history.length
-      ? [...this.state.history].reverse().map((operation) =>
-        node("li", `${registerUserName(operation.author)} wrote ${operation.value}`))
+      ? [...this.state.history].reverse().map((operation, index) =>
+        node(
+          "li",
+          `SN ${this.state.view.sequenceNumber - index} · ${registerUserName(operation.author)} wrote ${operation.key}: ${operation.value}`,
+        ))
       : [node("li", this.state.view.pending > 0
         ? `${this.state.queuedOperations.length} writes are in transit.`
         : "No writes shared yet.")]));
@@ -265,8 +305,9 @@ class RegisterStructureDemoElement extends HTMLElement {
         ? `${count} ${count === 1 ? "alternative" : "concurrent alternatives"} retained.`
         : "No alternatives yet.";
     } else {
-      evidence.textContent = this.state.view.versions.length
-        ? `Atomic: ${this.state.view.atomicValue} · Latest: ${this.state.view.latestValue} · ${this.state.view.versions.length} versions retained.`
+      const count = this.state.view.versions.length;
+      evidence.textContent = count
+        ? `Atomic: ${this.state.view.atomicValue} · Latest: ${this.state.view.latestValue} · ${count} ${count === 1 ? "version" : "versions"} retained.`
         : "No sequenced versions yet.";
     }
 

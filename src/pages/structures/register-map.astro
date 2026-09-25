@@ -9,15 +9,16 @@ import "../../styles/set-lesson.css";
 
 <StructureLessonLayout
   title="RegisterMap"
-  description="The ranger retains sequenced trail-status versions and chooses an atomic or latest read."
+  description="The ranger stores several named station values and prevents stale reports from replacing accepted atomic values."
   articleClass="register-lesson"
   illustrationId="structures-register-map"
 >
     <Fragment slot="summary">
-      Alice reports the trail open while Bob reports it closed. Neither has
-      seen the other's note. The ranger records Alice's report as number 1
-      and Bob's as number 2, then keeps both. Carol can ask for the atomic
-      winner or the latest report.
+      The ranger keeps a record for each station field: trail status, radio
+      channel, gate code, and more. Alice and Bob submit conflicting trail
+      reports without seeing each other. Carol updates the radio channel at
+      the same time. The ranger sequences all three writes without letting
+      the conflict on one field disturb the others.
     </Fragment>
 
     <StructureFacts
@@ -27,31 +28,42 @@ import "../../styles/set-lesson.css";
       updates="Non-optimistic writes to named cells"
       merge="Retain sequenced versions; read as atomic or latest."
       delivery="One server-ordered operation stream"
-      bestFor="Named cells that need more than one server-ordered read policy"
-      cost="Retained competing values and sequence numbers"
+      bestFor="Named values where stale writers must not replace an accepted atomic value"
+      cost="Retained versions and sequence metadata for each active key"
     />
 
-    <section aria-labelledby="versions-title">
-      <h2 id="versions-title">The station keeps both sequenced versions</h2>
+    <section aria-labelledby="use-title">
+      <h2 id="use-title">One shared record, several independent fields</h2>
       <p>
         A <dfn><a href="/glossary/#registermap">RegisterMap</a></dfn>
-        {" "}stores named registers. Writes stay hidden until the sequencer
-        accepts them. The collection retains competing versions so an atomic
-        read and a latest read can return different answers.
+        {" "}stores a register under each key. A station application can keep
+        <code>trail-status</code>, <code>radio-channel</code>, and
+        <code>gate-code</code> in one structure while the kernel resolves
+        writes for each key separately.
       </p>
       <TermCallout {...registerMapTerm} />
       <p>
-        Alice and Bob each submit a report before either has seen a sequenced
-        write. They both put <code>0</code> on their slips as the last sequence
-        number they saw. The ranger then assigns Alice's report <code>1</code>
-        {" "}and Bob's <code>2</code>. Bob's larger number does not mean he had
-        seen Alice's report when he wrote his own.
+        This matters when a client can submit a write from an old view. A
+        normal last-writer-wins map would let any later-sequenced write replace
+        the earlier value. RegisterMap can retain that later write without
+        treating it as the atomic value. A reader can ask for the protected
+        atomic value or the most recently sequenced version.
+      </p>
+    </section>
+
+    <section aria-labelledby="versions-title">
+      <h2 id="versions-title">The sequence numbers record what a writer knew</h2>
+      <p>
+        Each write carries a reference sequence number: the last accepted
+        sequence number that the writer had observed. The sequencer then gives
+        the write its own sequence number. These two numbers let the kernel
+        distinguish a newer informed write from a later-arriving stale write.
       </p>
       <figure class="sequence-example">
         <table aria-label="RegisterMap read policies">
           <thead>
             <tr>
-              <th scope="col">Report</th>
+              <th scope="col">Write</th>
               <th scope="col">Last sequence seen at submit</th>
               <th scope="col">Assigned sequence</th>
               <th scope="col">Atomic read</th>
@@ -59,42 +71,66 @@ import "../../styles/set-lesson.css";
             </tr>
           </thead>
           <tbody>
-            <tr><th scope="row">Alice: Trail open</th><td>0</td><td>1</td><td>Trail open</td><td>Trail open</td></tr>
-            <tr><th scope="row">Bob: Trail closed</th><td>0</td><td>2</td><td>Trail open</td><td>Trail closed</td></tr>
-            <tr><th scope="row">Carol: Inspect bridge</th><td>2</td><td>3</td><td>Inspect bridge</td><td>Inspect bridge</td></tr>
+            <tr><th scope="row">Alice: trail-status = Trail open</th><td>0</td><td>1</td><td>Trail open</td><td>Trail open</td></tr>
+            <tr><th scope="row">Bob: trail-status = Trail closed</th><td>0</td><td>2</td><td>Trail open</td><td>Trail closed</td></tr>
+            <tr><th scope="row">Carol: radio-channel = Channel 4</th><td>0</td><td>3</td><td>Channel 4</td><td>Channel 4</td></tr>
+            <tr><th scope="row">Carol: trail-status = Inspect bridge</th><td>3</td><td>4</td><td>Inspect bridge</td><td>Inspect bridge</td></tr>
           </tbody>
         </table>
-        <figcaption>Carol's write is a later example, after the two-report race in the demo.</figcaption>
+        <figcaption>
+          The two read columns apply to the key in that row. A conflict on
+          <code>trail-status</code> does not affect <code>radio-channel</code>.
+        </figcaption>
       </figure>
       <p>
-        The ranger changes the atomic value only when a writer's last-seen
-        number is at least the current atomic winner's sequence number.
-        Bob's reference of <code>0</code> is less than the atomic winner's
-        sequence number, <code>1</code>. The ranger keeps Alice as the atomic
-        winner and Bob as the latest version. After Carol has seen sequence
-        <code>2</code>, she writes <code>Inspect bridge</code>. Her reference
-        of <code>2</code> lets her replace Alice's atomic value. The ranger
-        assigns her report <code>3</code> and removes the older versions she
-        saw, so both reads return her report.
+        Alice's write creates the atomic value at sequence <code>1</code>.
+        Bob's write arrives later, but its reference is still <code>0</code>.
+        It becomes the latest version at sequence <code>2</code>, but it
+        cannot replace the atomic value. Carol's radio update creates a
+        separate register under another key.
+      </p>
+      <p>
+        After Carol has observed sequence <code>3</code>, she can submit
+        <code>Inspect bridge</code> for <code>trail-status</code>. Her
+        reference covers the current atomic winner, so the write at sequence
+        <code>4</code> becomes both the atomic and latest value. The kernel
+        also removes the older versions that Carol had observed.
       </p>
     </section>
 
     <RegisterStructureDemo
       kind="register-map"
-      title="Read the atomic winner or the latest version"
-      description="Alice and Bob submit from the same reference point. The ranger sequences both, retains both, and exposes two read policies."
+      title="Protect one field while another changes"
+      description="Alice and Bob race stale trail reports while Carol updates radio-channel. Then Carol submits a caught-up trail-status write."
       rule="Atomic changes when a writer has seen its current winner; latest uses the greatest sequence number."
-      raceLabel="Race the two station submissions"
+      raceLabel="Sequence the three station writes"
     />
 
     <section aria-labelledby="choice-title">
       <h2 id="choice-title">The reader must choose a policy</h2>
       <p>
-        In the demo's two-report race, an atomic read returns Alice's report.
-        A latest read returns Bob's later report. Carol's later write shows
-        that the atomic winner can change. Neither policy merges the reports
-        or exposes causal siblings like an MvRegister.
+        After the first three writes, an atomic read of
+        <code>trail-status</code> returns Alice's accepted value. A latest
+        read returns Bob's later stale report. Both policies return
+        <code>Channel 4</code> for <code>radio-channel</code>. Use the
+        caught-up-write control to let Carol replace the atomic trail status.
       </p>
+      <p>
+        RegisterMap is closest in shape to a map of registers, but its
+        reference sequence number adds conditional-write behavior. Neither
+        read policy merges values or exposes causal siblings like an
+        MvRegister.
+      </p>
+      <aside class="term-callout" aria-labelledby="dots-title">
+        <h3 class="term-callout-label" id="dots-title">Alternative perspective</h3>
+        <p>
+          The assigned sequence number identifies one accepted version, and
+          the reference sequence number summarizes the accepted history that
+          the writer saw. Together they serve a role similar to a CRDT dot and
+          causal context. RegisterMap can use plain integers because one
+          sequencer supplies a single global order.
+        </p>
+      </aside>
       <p>
         This is a sequenced distributed data structure, not a CRDT. If the
         sequencer is unavailable, new writes cannot receive the ordering
@@ -111,7 +147,8 @@ import "../../styles/set-lesson.css";
       </p>
       <p>
         <strong>Implementation:</strong> The demo calls the kernel through the Gleam toolkit
-        to sequence three clients' writes, apply remote changes, and inspect versions.
+        to write two keys, sequence three clients' operations, apply remote
+        changes, and inspect the atomic and latest trail-status versions.
       </p>
     </section>
 

@@ -3,6 +3,7 @@ import {
   deliverRegisterDemo,
   stageRegisterDemoRace,
   writeRegisterDemo,
+  writeRegisterMapDemo,
   type RegisterDemoKind,
   type RegisterDemoRoom,
   type RegisterDemoView,
@@ -14,6 +15,7 @@ export type ReplicaId = DemoReplicaId;
 export type RegisterKind = RegisterDemoKind;
 export type RegisterOperation = {
   author: ReplicaId;
+  key: string;
   value: string;
 };
 
@@ -31,8 +33,12 @@ export type RegisterDemoResult =
   | { ok: false; state: RegisterDemoState; error: string };
 
 const RACE_OPERATIONS: readonly RegisterOperation[] = [
-  { author: "A", value: "Trail open" },
-  { author: "B", value: "Trail closed" },
+  { author: "A", key: "trail-status", value: "Trail open" },
+  { author: "B", key: "trail-status", value: "Trail closed" },
+];
+const REGISTER_MAP_RACE_OPERATIONS: readonly RegisterOperation[] = [
+  ...RACE_OPERATIONS,
+  { author: "C", key: "radio-channel", value: "Channel 4" },
 ];
 
 function value<T>(result: Result<T>): T {
@@ -44,8 +50,10 @@ export function registerUserName(replica: ReplicaId): string {
   return demoReplicaName(replica);
 }
 
-export function registerRaceOperations(): readonly RegisterOperation[] {
-  return RACE_OPERATIONS;
+export function registerRaceOperations(
+  kind: RegisterKind,
+): readonly RegisterOperation[] {
+  return kind === "register-map" ? REGISTER_MAP_RACE_OPERATIONS : RACE_OPERATIONS;
 }
 
 export function createRegisterDemo(kind: RegisterKind): RegisterDemoState {
@@ -57,7 +65,7 @@ export function createRegisterDemo(kind: RegisterKind): RegisterDemoState {
     queuedOperations: [],
     history: [],
     result: kind === "register-map"
-      ? "Race two unconfirmed reports, then compare the atomic and latest reads."
+      ? "Race two unconfirmed trail reports while Carol updates another field."
       : "Race Alice's open report against Bob's closed report.",
   };
 }
@@ -80,11 +88,18 @@ export function updateRegisterReplica(
   operation: RegisterOperation,
 ): RegisterDemoResult {
   try {
-    const updated = value(writeRegisterDemo(
-      state.room,
-      operation.author,
-      operation.value,
-    ));
+    const updated = value(state.kind === "register-map"
+      ? writeRegisterMapDemo(
+        state.room,
+        operation.author,
+        operation.key,
+        operation.value,
+      )
+      : writeRegisterDemo(
+        state.room,
+        operation.author,
+        operation.value,
+      ));
     return {
       ok: true,
       state: {
@@ -92,7 +107,7 @@ export function updateRegisterReplica(
         ...updated,
         queuedOperations: [...state.queuedOperations, operation],
         result: state.kind === "register-map"
-          ? `${registerUserName(operation.author)} submitted "${operation.value}". It stays hidden until it is sequenced.`
+          ? `${registerUserName(operation.author)} submitted ${operation.key}: "${operation.value}". It stays hidden until it is sequenced.`
           : `${registerUserName(operation.author)} wrote "${operation.value}". The write is in transit.`,
       },
     };
@@ -109,9 +124,9 @@ export function stageRegisterRace(state: RegisterDemoState): RegisterDemoResult 
       state: {
         ...state,
         ...staged,
-        queuedOperations: [...RACE_OPERATIONS],
+        queuedOperations: [...registerRaceOperations(state.kind)],
         result: state.kind === "register-map"
-          ? "Alice and Bob submitted without seeing either report. Both writes await sequence numbers."
+          ? "Alice and Bob submitted the same field from sequence 0. Carol updated radio-channel independently. All three writes await sequence numbers."
           : "Alice wrote \"Trail open\" while Bob wrote \"Trail closed\". Both writes are in transit.",
       },
     };
@@ -132,7 +147,9 @@ export function deliverRegisterOperations(
       ? `Both writes were delivered. Bob's sequence number 2 is greater than Alice's 1, so every hiker reads "${delivered.view.replicas[0]?.values[0]}".`
       : state.kind === "mv-register"
         ? "Both writes were delivered. Every hiker keeps Trail closed and Trail open as concurrent alternatives."
-        : `Both writes were delivered. Atomic reads "${delivered.view.atomicValue}"; latest reads "${delivered.view.latestValue}".`;
+        : state.queuedOperations.length === 3
+          ? `All three writes were delivered. trail-status reads "${delivered.view.atomicValue}" atomically and "${delivered.view.latestValue}" as latest. radio-channel reads "Channel 4".`
+          : `Carol referenced sequence ${delivered.view.sequenceNumber - 1}. Her write can replace the atomic trail-status, so atomic and latest both read "${delivered.view.atomicValue}".`;
     return {
       ok: true,
       state: {

@@ -7,6 +7,8 @@ for (const example of [
     race: "Sequence and share the reports",
     values: [["Trail closed"], ["Trail closed"], ["Trail closed"]],
     evidence: "Sequence 2 · Bob's write wins.",
+    inputLabel: "Trail status",
+    writeLabel: "Write status",
   },
   {
     path: "/structures/multi-value-register/",
@@ -14,13 +16,21 @@ for (const example of [
     race: "Race Alice's and Bob's reports",
     values: [["Trail closed", "Trail open"], ["Trail closed", "Trail open"], ["Trail closed", "Trail open"]],
     evidence: "2 concurrent alternatives retained.",
+    inputLabel: "Trail status",
+    writeLabel: "Write status",
   },
   {
     path: "/structures/register-map/",
     testId: "register-map-demo",
-    race: "Race the two station submissions",
-    values: [["Trail open"], ["Trail open"], ["Trail open"]],
+    race: "Sequence the three station writes",
+    values: [
+      ["radio-channel: Channel 4", "trail-status: Trail open"],
+      ["radio-channel: Channel 4", "trail-status: Trail open"],
+      ["radio-channel: Channel 4", "trail-status: Trail open"],
+    ],
     evidence: "Atomic: Trail open · Latest: Trail closed · 2 versions retained.",
+    inputLabel: "Field value",
+    writeLabel: "Submit write",
   },
 ]) {
   test(`${example.testId} runs its three-client authored race`, async ({ page }) => {
@@ -31,8 +41,8 @@ for (const example of [
 
     await expect(demo.locator("[data-client]")).toHaveCount(3);
     await expect(demo.getByText("Field note", { exact: true })).toHaveCount(3);
-    await expect(demo.getByRole("combobox", { name: "Trail status" })).toHaveCount(3);
-    await expect(demo.getByRole("button", { name: "Write status" })).toHaveCount(3);
+    await expect(demo.getByRole("combobox", { name: example.inputLabel })).toHaveCount(3);
+    await expect(demo.getByRole("button", { name: example.writeLabel })).toHaveCount(3);
     await expect(demo.locator(".paper-note").first()).toContainText(
       "trail-status: Trail open",
     );
@@ -142,21 +152,47 @@ test("RegisterMap distinguishes seen and assigned sequence numbers", async ({ pa
   const table = page.getByRole("table", { name: "RegisterMap read policies" });
   const rows = table.locator("tbody tr");
   await expect(rows.nth(0).locator("th, td")).toHaveText([
-    "Alice: Trail open", "0", "1", "Trail open", "Trail open",
+    "Alice: trail-status = Trail open", "0", "1", "Trail open", "Trail open",
   ]);
   await expect(rows.nth(1).locator("th, td")).toHaveText([
-    "Bob: Trail closed", "0", "2", "Trail open", "Trail closed",
+    "Bob: trail-status = Trail closed", "0", "2", "Trail open", "Trail closed",
   ]);
   await expect(rows.nth(2).locator("th, td")).toHaveText([
-    "Carol: Inspect bridge", "2", "3", "Inspect bridge", "Inspect bridge",
+    "Carol: radio-channel = Channel 4", "0", "3", "Channel 4", "Channel 4",
   ]);
-  await expect(page.getByRole("complementary", { name: "Alternative perspective" })).toHaveCount(0);
+  await expect(rows.nth(3).locator("th, td")).toHaveText([
+    "Carol: trail-status = Inspect bridge", "3", "4", "Inspect bridge", "Inspect bridge",
+  ]);
+  await expect(page.getByRole("complementary", { name: "Alternative perspective" }))
+    .toContainText("similar to a CRDT dot and causal context");
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     expect(await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )).toBe(0);
   }
+});
+
+test("RegisterMap lets a caught-up write replace the atomic value", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/structures/register-map/");
+  const demo = page.getByTestId("register-map-demo");
+  await demo.getByRole("button", { name: "Sequence the three station writes" }).click();
+  const followUp = demo.getByRole("button", { name: "Submit Carol's caught-up write" });
+  await expect(followUp).toBeEnabled();
+  await followUp.click();
+  await expect(demo.locator("[data-evidence]")).toHaveText(
+    "Atomic: Inspect bridge · Latest: Inspect bridge · 1 version retained.",
+  );
+  for (const replica of await demo.locator("[data-register-values]").all()) {
+    await expect(replica.locator("span")).toHaveText([
+      "radio-channel: Channel 4",
+      "trail-status: Inspect bridge",
+    ]);
+  }
+  await expect(demo.locator("[data-history] li").first()).toContainText(
+    "SN 4 · Carol wrote trail-status: Inspect bridge",
+  );
 });
 
 test("the register family links every dedicated lesson", async ({ page }) => {

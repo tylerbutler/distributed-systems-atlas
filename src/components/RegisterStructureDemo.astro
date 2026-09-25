@@ -19,18 +19,23 @@ interface Props {
 
 const { kind, title, description, rule, raceLabel } = Astro.props;
 const initial = createRegisterDemo(kind);
-const valueByReplica: Record<ReplicaId, string> = {
-  A: "Trail open",
-  B: "Trail closed",
-  C: "Inspect bridge",
+const operationByReplica: Record<ReplicaId, { key: string; value: string }> = {
+  A: { key: "trail-status", value: "Trail open" },
+  B: { key: "trail-status", value: "Trail closed" },
+  C: kind === "register-map"
+    ? { key: "radio-channel", value: "Channel 4" }
+    : { key: "trail-status", value: "Inspect bridge" },
 };
-const statusOptions = ["Trail open", "Trail closed", "Inspect bridge"];
+const valueOptions = kind === "register-map"
+  ? ["Trail open", "Trail closed", "Inspect bridge", "Channel 2", "Channel 4"]
+  : ["Trail open", "Trail closed", "Inspect bridge"];
 
 function raceNote(replica: ReplicaId): { body: string; evidence: string } {
-  if (replica === "C") {
+  if (replica === "C" && kind !== "register-map") {
     return { body: "No note in this race", evidence: "Carol observes delivery" };
   }
-  const body = `trail-status: ${valueByReplica[replica]}`;
+  const operation = operationByReplica[replica];
+  const body = `${operation.key}: ${operation.value}`;
   if (kind === "lww-register") {
     return {
       body,
@@ -43,7 +48,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
       evidence: `write identity ${replica}:1 · no other note received`,
     };
   }
-  return { body, evidence: "sequence number assigned at ranger station" };
+  return { body, evidence: "last sequence seen: 0" };
 }
 ---
 
@@ -52,7 +57,9 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
     <div class="operation-layer structure-demo-operation-layer" style="--demo-operation-layer-z: 3" data-operation-layer aria-hidden="true"></div>
     <header class="register-heading">
       <div>
-        <p class="instrument-kicker">One trail-status field</p>
+        <p class="instrument-kicker">
+          {kind === "register-map" ? "Several named station fields" : "One trail-status field"}
+        </p>
         <h2 id={`${kind}-demo-title`}>{title}</h2>
         <p>{description}</p>
       </div>
@@ -85,16 +92,28 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
             <small>{raceNote(replica.id).evidence}</small>
           </p>
           <form class="register-write" data-register-form data-replica={replica.id}>
+            {kind === "register-map" && (
+              <label>
+                <span>Field</span>
+                <select data-register-key={replica.id} disabled>
+                  <option value="trail-status">trail-status</option>
+                  <option value="radio-channel">radio-channel</option>
+                  <option value="gate-code">gate-code</option>
+                </select>
+              </label>
+            )}
             <label>
-              <span>Trail status</span>
+              <span>{kind === "register-map" ? "Field value" : "Trail status"}</span>
               <select
                 data-register-input={replica.id}
                 disabled
               >
-                {statusOptions.map((status) => <option value={status}>{status}</option>)}
+                {valueOptions.map((value) => <option value={value}>{value}</option>)}
               </select>
             </label>
-            <button type="submit" data-register-write disabled>Write status</button>
+            <button type="submit" data-register-write disabled>
+              {kind === "register-map" ? "Submit write" : "Write status"}
+            </button>
           </form>
         </section>
       ))}
@@ -131,6 +150,11 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
 
     <div class="register-controls">
       <button type="button" data-action="race" disabled>{raceLabel}</button>
+      {kind === "register-map" && (
+        <button type="button" data-action="follow-up" disabled>
+          Submit Carol's caught-up write
+        </button>
+      )}
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>
         Enable JavaScript to run the demo. The race and expected result remain
