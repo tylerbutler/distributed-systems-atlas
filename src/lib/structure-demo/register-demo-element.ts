@@ -78,7 +78,7 @@ class RegisterStructureDemoElement extends HTMLElement {
     if (
       kind === "lww-register"
       || kind === "mv-register"
-      || kind === "register-collection"
+      || kind === "register-map"
     ) return kind;
     throw new Error("Missing register demo kind");
   }
@@ -229,7 +229,7 @@ class RegisterStructureDemoElement extends HTMLElement {
       : [node("em", "No status")]));
     this.querySelector<HTMLElement>(`[data-replica-state="${replica.id}"]`)!.textContent =
       this.state.view.pending > 0
-        ? this.kind === "register-collection"
+        ? this.kind === "register-map"
           ? "Write pending · not visible"
           : "Local view · write in transit"
         : replica.values.length > 1

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="ordered-collection-title ordered-collection-desc">
-  <title id="ordered-collection-title">OrderedCollection: one acquired job</title>
-  <desc id="ordered-collection-desc">A single bridge-inspection card rests on a circle-marked field notebook outside an empty work tray. Diamond- and hexagon-marked notebooks have no acquired card. The card has no completion mark.</desc>
-  <defs><pattern id="ordered-collection-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="fifo-work-queue-title fifo-work-queue-desc">
+  <title id="fifo-work-queue-title">FifoWorkQueue: one acquired job</title>
+  <desc id="fifo-work-queue-desc">A single bridge-inspection card rests on a circle-marked field notebook outside an empty work tray. Diamond- and hexagon-marked notebooks have no acquired card. The card has no completion mark.</desc>
+  <defs><pattern id="fifo-work-queue-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
   <style>
     .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
     .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
@@ -10,7 +10,7 @@
   </style>
   <path class="fine" d="M103 464L614 515L807 461"/>
   <path class="light" d="M257 208L516 153L680 246L420 308Z"/>
-  <path d="M274 216L516 165L662 246L420 294Z" fill="url(#ordered-collection-hatch)"/>
+  <path d="M274 216L516 165L662 246L420 294Z" fill="url(#fifo-work-queue-hatch)"/>
   <path class="paper" d="M294 225L516 178L642 247L420 294Z"/>
   <path class="light" d="M257 208V265L420 361L680 298V246L657 251V282L420 335L280 254V219Z"/>
   <path class="paper" d="M420 308L680 246V298L420 361Z"/>
@@ -18,7 +18,7 @@
   <path class="fine" d="M437 344L660 291M288 263L404 330"/>
   <g transform="rotate(-10 286 399)">
     <path class="light" d="M126 329H395V481H126Z"/>
-    <path d="M130 468H395V481H126V333H130Z" fill="url(#ordered-collection-hatch)"/>
+    <path d="M130 468H395V481H126V333H130Z" fill="url(#fifo-work-queue-hatch)"/>
     <path class="paper" d="M136 317H402V466H136Z"/>
     <path class="ink" d="M157 317V466"/>
     <circle class="ink" cx="183" cy="342" r="12"/>

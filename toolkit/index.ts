@@ -89,7 +89,7 @@ export type SetTransportResult = {
   view: SetRoomView;
   deliveries: TransportDelivery[];
 };
-export type RegisterDemoKind = "lww-register" | "mv-register" | "register-collection";
+export type RegisterDemoKind = "lww-register" | "mv-register" | "register-map";
 declare const registerDemoRoomBrand: unique symbol;
 export type RegisterDemoRoom = { readonly [registerDemoRoomBrand]: true };
 export type RegisterDemoView = {
@@ -868,8 +868,8 @@ export function createRegisterDemoRoom(kind: unknown): Result<RegisterDemoResult
     requireInput(
       registerKind === "lww-register"
         || registerKind === "mv-register"
-        || registerKind === "register-collection",
-      "kind must be lww-register, mv-register, or register-collection",
+        || registerKind === "register-map",
+      "kind must be lww-register, mv-register, or register-map",
       "invalid-input",
     );
     const handle = kernel(core.new_register_demo(registerKind));

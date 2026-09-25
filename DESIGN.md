@@ -378,7 +378,7 @@ links to the deeper causal-tag lab.
 The Registers family uses one Eagle Creek trail-status field to make conflict
 policy visible. The same Alice-open and Bob-closed race runs through all three
 lessons. LWWRegister shows a timestamp-and-author winner, MvRegister keeps both
-alternatives, and RegisterCollection shows atomic and latest reads over the
+alternatives, and RegisterMap shows atomic and latest reads over the
 same retained sequence. Each focused demo keeps Alice, Bob, and Carol visible
 and leaves write controls active while records travel.
 

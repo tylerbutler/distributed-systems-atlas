@@ -274,7 +274,7 @@ pub fn register_demo_rooms_show_each_read_rule_test() {
   mv_view.b |> should.equal(["Trail closed", "Trail open"])
   mv_view.c |> should.equal(["Trail closed", "Trail open"])
 
-  let assert Ok(collection) = toolkit.new_register_demo("register-collection")
+  let assert Ok(collection) = toolkit.new_register_demo("register-map")
   let assert Ok(collection) = toolkit.register_demo_stage_race(collection)
   let queued = toolkit.register_demo_snapshot(collection)
   queued.a |> should.equal([])

@@ -45,7 +45,7 @@ pub opaque type RegisterDemoRoom {
     c: mv_register_kernel.MvRegisterState,
     pending: List(mv_register_kernel.MvRegisterState),
   )
-  RegisterCollectionRoom(
+  RegisterMapRoom(
     a: register_collection_kernel.RegisterState,
     b: register_collection_kernel.RegisterState,
     c: register_collection_kernel.RegisterState,
@@ -262,8 +262,8 @@ pub fn new_register_demo(kind: String) -> Result(RegisterDemoRoom, String) {
           [],
         ),
       )
-    "register-collection" ->
-      Ok(RegisterCollectionRoom(
+    "register-map" ->
+      Ok(RegisterMapRoom(
         register_collection_kernel.new(),
         register_collection_kernel.new(),
         register_collection_kernel.new(),
@@ -272,7 +272,7 @@ pub fn new_register_demo(kind: String) -> Result(RegisterDemoRoom, String) {
       ))
     _ ->
       Error(
-        "the register kind must be lww-register, mv-register, or register-collection",
+        "the register kind must be lww-register, mv-register, or register-map",
       )
   }
 }
@@ -298,8 +298,8 @@ pub fn register_demo_stage_race(
         ]),
       )
     }
-    RegisterCollectionRoom(a, b, c, _, sequence_number) ->
-      Ok(RegisterCollectionRoom(
+    RegisterMapRoom(a, b, c, _, sequence_number) ->
+      Ok(RegisterMapRoom(
         a,
         b,
         c,
@@ -399,7 +399,7 @@ pub fn register_demo_write(
         }
         _ -> Error("the register replica must be A, B, or C")
       }
-    RegisterCollectionRoom(a, b, c, pending, sequence_number) -> {
+    RegisterMapRoom(a, b, c, pending, sequence_number) -> {
       let state = case replica {
         "A" -> Ok(a)
         "B" -> Ok(b)
@@ -414,7 +414,7 @@ pub fn register_demo_write(
           json.string(value),
           sequence_number,
         )
-      Ok(RegisterCollectionRoom(
+      Ok(RegisterMapRoom(
         a,
         b,
         c,
@@ -451,7 +451,7 @@ pub fn register_demo_deliver(room: RegisterDemoRoom) -> RegisterDemoRoom {
         })
       MvRegisterRoom(a, b, c, [])
     }
-    RegisterCollectionRoom(a, b, c, pending, sequence_number) -> {
+    RegisterMapRoom(a, b, c, pending, sequence_number) -> {
       let #(a, b, c, sequence_number) =
         list.fold(pending, #(a, b, c, sequence_number), fn(states, operation) {
           let sequence_number = states.3 + 1
@@ -474,7 +474,7 @@ pub fn register_demo_deliver(room: RegisterDemoRoom) -> RegisterDemoRoom {
             sequence_number,
           )
         })
-      RegisterCollectionRoom(a, b, c, [], sequence_number)
+      RegisterMapRoom(a, b, c, [], sequence_number)
     }
   }
 }
@@ -569,7 +569,7 @@ pub fn register_demo_snapshot(room: RegisterDemoRoom) -> RegisterDemoSnapshot {
         "",
         [],
       )
-    RegisterCollectionRoom(a, b, c, pending, sequence_number) ->
+    RegisterMapRoom(a, b, c, pending, sequence_number) ->
       RegisterDemoSnapshot(
         visible_value(collection_value(a, register_collection_kernel.Atomic)),
         visible_value(collection_value(b, register_collection_kernel.Atomic)),

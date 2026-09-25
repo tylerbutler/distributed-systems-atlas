@@ -56,7 +56,7 @@ export function createRegisterDemo(kind: RegisterKind): RegisterDemoState {
     view: created.view,
     queuedOperations: [],
     history: [],
-    result: kind === "register-collection"
+    result: kind === "register-map"
       ? "Race two unconfirmed reports, then compare the atomic and latest reads."
       : "Race Alice's open report against Bob's closed report.",
   };
@@ -91,7 +91,7 @@ export function updateRegisterReplica(
         ...state,
         ...updated,
         queuedOperations: [...state.queuedOperations, operation],
-        result: state.kind === "register-collection"
+        result: state.kind === "register-map"
           ? `${registerUserName(operation.author)} submitted "${operation.value}". It stays hidden until it is sequenced.`
           : `${registerUserName(operation.author)} wrote "${operation.value}". The write is in transit.`,
       },
@@ -110,7 +110,7 @@ export function stageRegisterRace(state: RegisterDemoState): RegisterDemoResult 
         ...state,
         ...staged,
         queuedOperations: [...RACE_OPERATIONS],
-        result: state.kind === "register-collection"
+        result: state.kind === "register-map"
           ? "Alice and Bob submitted without seeing either report. Both writes await sequence numbers."
           : "Alice wrote \"Trail open\" while Bob wrote \"Trail closed\". Both writes are in transit.",
       },

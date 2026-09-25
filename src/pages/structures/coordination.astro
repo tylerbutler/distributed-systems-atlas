@@ -45,7 +45,7 @@ const structures = structuresForFamily("coordination");
       />
       <dl class="coordination-rules">
         <div><dt>Claims</dt><dd>The first accepted claim permanently wins.</dd></div>
-        <div><dt>OrderedCollection</dt><dd>The first accepted request receives the queued job.</dd></div>
+        <div><dt>FifoWorkQueue</dt><dd>The first accepted request receives the job at the front of the queue.</dd></div>
         <div><dt>TaskManager</dt><dd>Accepted volunteer operations determine the active worker and waiting order.</dd></div>
         <div><dt>PactMap</dt><dd>Numbered proposals and signoffs determine when a value becomes usable.</dd></div>
       </dl>

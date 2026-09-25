@@ -80,9 +80,9 @@ export const firstWriterWinsTerm: GlossaryTerm = {
   definition: "A conflict rule that keeps the first accepted write and rejects or ignores later writes to the same location. The system must define how it decides which write is first.",
 };
 
-export const registerCollectionTerm: GlossaryTerm = {
-  term: "RegisterCollection",
-  definition: "A sequenced collection of named registers that retains competing versions so readers can choose an atomic or latest-value policy.",
+export const registerMapTerm: GlossaryTerm = {
+  term: "RegisterMap",
+  definition: "A sequenced map of named registers that retains competing versions so readers can choose an atomic or latest-value policy.",
 };
 
 export const sharedMapTerm: GlossaryTerm = {
@@ -120,9 +120,9 @@ export const claimsTerm: GlossaryTerm = {
   definition: "A sequenced shared map of named, write-once entries. The first accepted claim for each key becomes permanent, and later claims for that key are rejected.",
 };
 
-export const orderedCollectionTerm: GlossaryTerm = {
-  term: "OrderedCollection",
-  definition: "A shared work queue where a service numbers requests and gives each job to one requester.",
+export const fifoWorkQueueTerm: GlossaryTerm = {
+  term: "FifoWorkQueue",
+  definition: "A sequenced first-in, first-out work queue where one worker acquires each job, then completes it or returns it to the back of the queue.",
 };
 
 export const taskManagerTerm: GlossaryTerm = {
@@ -158,13 +158,13 @@ export const standaloneTerms = [
   jsonOtTerm,
   lwwRegisterTerm,
   lwwMapTerm,
-  orderedCollectionTerm,
+  fifoWorkQueueTerm,
   otTerm,
   orMapTerm,
   pactMapTerm,
   pnCounterTerm,
   replicaTerm,
-  registerCollectionTerm,
+  registerMapTerm,
   sequencerTerm,
   sharedDirectoryTerm,
   sharedCounterTerm,

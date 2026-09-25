@@ -34,8 +34,8 @@ describe("register demos", () => {
     ]);
   });
 
-  test("RegisterCollection retains atomic and latest reads", () => {
-    const staged = state(stageRegisterRace(createRegisterDemo("register-collection")));
+  test("RegisterMap retains atomic and latest reads", () => {
+    const staged = state(stageRegisterRace(createRegisterDemo("register-map")));
     expect(staged.view.replicas.map(({ values }) => values)).toEqual([[], [], []]);
     expect(state(deliverRegisterOperations(staged)).view).toMatchObject({
       atomicValue: "Trail open",

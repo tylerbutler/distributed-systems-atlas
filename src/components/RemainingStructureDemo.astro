@@ -406,7 +406,7 @@ const hasSequencer = isSharedText || isCoordination;
         kind === "shared-sequence"
         || kind === "shared-text"
         || kind === "claims"
-        || kind === "ordered-collection"
+        || kind === "fifo-work-queue"
         || kind === "task-manager"
         || kind === "pact-map"
         || kind === "json-ot"
@@ -550,7 +550,7 @@ const hasSequencer = isSharedText || isCoordination;
 
     private get isCoordination(): boolean {
       return this.kind === "claims"
-        || this.kind === "ordered-collection"
+        || this.kind === "fifo-work-queue"
         || this.kind === "task-manager"
         || this.kind === "pact-map";
     }
@@ -570,7 +570,7 @@ const hasSequencer = isSharedText || isCoordination;
       switch (this.kind) {
         case "claims":
           return [`Claim gate-key for ${name}`];
-        case "ordered-collection":
+        case "fifo-work-queue":
           return [`Request the bridge inspection for ${name}`];
         case "task-manager":
           return [`Volunteer ${name} for dispatcher`];

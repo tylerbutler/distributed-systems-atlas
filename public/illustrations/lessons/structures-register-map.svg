@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="register-collection-title register-collection-desc">
-  <title id="register-collection-title">RegisterCollection: read retained versions</title>
-  <desc id="register-collection-desc">A shallow indexed file drawer retains two stamped gate reports in separate layers. Two bookmarks reach different reports without removing either from the archive.</desc>
-  <defs><pattern id="register-collection-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="register-map-title register-map-desc">
+  <title id="register-map-title">RegisterMap: read retained versions</title>
+  <desc id="register-map-desc">A shallow indexed file drawer retains two stamped gate reports in separate layers. Two bookmarks reach different reports without removing either from the archive.</desc>
+  <defs><pattern id="register-map-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
   <style>
     .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
     .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
@@ -10,7 +10,7 @@
   </style>
   <path class="fine" d="M105 437L590 514L803 453M626 527L754 488"/>
   <path class="light" d="M197 276L529 210L736 330L402 407Z"/>
-  <path d="M208 280L530 218L720 331L402 397Z" fill="url(#register-collection-hatch)"/>
+  <path d="M208 280L530 218L720 331L402 397Z" fill="url(#register-map-hatch)"/>
   <g transform="matrix(1 -.19 .35 .72 228 198)">
     <path class="paper" d="M0 0H309V187H0Z"/>
     <path class="ink" d="M21 18H83V40H21Z"/>
@@ -28,7 +28,7 @@
   </g>
   <path class="light" d="M197 276L222 291L224 401L399 505L736 430V330L714 335L714 410L400 480L244 390V305Z"/>
   <path class="paper" d="M399 398L736 330V430L399 505Z"/>
-  <path d="M202 291L222 305L224 401L399 505V483L244 390V316Z" fill="url(#register-collection-hatch)"/>
+  <path d="M202 291L222 305L224 401L399 505V483L244 390V316Z" fill="url(#register-map-hatch)"/>
   <path class="ink" d="M399 398V505"/>
   <path class="light" d="M521 407L621 386V424L521 445Z"/>
   <path class="ink" d="M540 413L603 400V416L541 429"/>

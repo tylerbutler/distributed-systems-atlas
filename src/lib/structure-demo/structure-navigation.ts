@@ -35,7 +35,7 @@ export const structureGroups: StructureGroup[] = [
     lessons: [
       ["LWWRegister", "lww-register"],
       ["MvRegister", "multi-value-register"],
-      ["RegisterCollection", "register-collection"],
+      ["RegisterMap", "register-map"],
     ],
   },
   {

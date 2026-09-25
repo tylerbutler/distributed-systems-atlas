@@ -16,8 +16,8 @@ for (const example of [
     evidence: "2 concurrent alternatives retained.",
   },
   {
-    path: "/structures/register-collection/",
-    testId: "register-collection-demo",
+    path: "/structures/register-map/",
+    testId: "register-map-demo",
     race: "Race the two station submissions",
     values: [["Trail open"], ["Trail open"], ["Trail open"]],
     evidence: "Atomic: Trail open · Latest: Trail closed · 2 versions retained.",
@@ -89,7 +89,7 @@ test("register lessons remain useful without JavaScript", async ({ browser }) =>
     for (const [path, heading, testId] of [
       ["/structures/lww-register/", "LWWRegister", "lww-register-demo"],
       ["/structures/multi-value-register/", "MvRegister", "mv-register-demo"],
-      ["/structures/register-collection/", "RegisterCollection", "register-collection-demo"],
+      ["/structures/register-map/", "RegisterMap", "register-map-demo"],
     ]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
@@ -107,7 +107,7 @@ test("register facts leave room for the demo", async ({ page }) => {
   for (const [path, testId] of [
     ["/structures/lww-register/", "lww-register-demo"],
     ["/structures/multi-value-register/", "mv-register-demo"],
-    ["/structures/register-collection/", "register-collection-demo"],
+    ["/structures/register-map/", "register-map-demo"],
   ]) {
     for (const width of [390, 1440]) {
       await page.setViewportSize({ width, height: 900 });
@@ -137,9 +137,9 @@ test("MvRegister notebook values show superscript write identities", async ({ pa
   await expect(table.locator("tbody td code")).toHaveCount(0);
 });
 
-test("RegisterCollection distinguishes seen and assigned sequence numbers", async ({ page }) => {
-  await page.goto("/structures/register-collection/");
-  const table = page.getByRole("table", { name: "RegisterCollection read policies" });
+test("RegisterMap distinguishes seen and assigned sequence numbers", async ({ page }) => {
+  await page.goto("/structures/register-map/");
+  const table = page.getByRole("table", { name: "RegisterMap read policies" });
   const rows = table.locator("tbody tr");
   await expect(rows.nth(0).locator("th, td")).toHaveText([
     "Alice: Trail open", "0", "1", "Trail open", "Trail open",
@@ -165,8 +165,8 @@ test("the register family links every dedicated lesson", async ({ page }) => {
     .toHaveAttribute("href", "/structures/lww-register/");
   await expect(page.getByRole("link", { name: "Open the MvRegister lesson" }))
     .toHaveAttribute("href", "/structures/multi-value-register/");
-  await expect(page.getByRole("link", { name: "Open the RegisterCollection lesson" }))
-    .toHaveAttribute("href", "/structures/register-collection/");
+  await expect(page.getByRole("link", { name: "Open the RegisterMap lesson" }))
+    .toHaveAttribute("href", "/structures/register-map/");
 });
 
 test("reset restores an empty register room", async ({ page }) => {

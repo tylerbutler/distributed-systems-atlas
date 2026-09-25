@@ -120,7 +120,7 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
         [],
         0,
       ))
-    "ordered-collection" -> {
+    "fifo-work-queue" -> {
       let initial =
         ordered_collection_kernel.from_summary(
           [json.string("inspect bridge")],

@@ -16,7 +16,7 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     ),
     #("claims", ["gate-key: unclaimed"], ["gate-key: Alice"]),
     #(
-      "ordered-collection",
+      "fifo-work-queue",
       ["Queue: inspect bridge"],
       ["Alice owns inspect bridge", "Queue empty"],
     ),

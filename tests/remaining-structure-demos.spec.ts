@@ -4,7 +4,7 @@ const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["ordered-collection", "OrderedCollection", "Race to acquire the inspection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
+  ["fifo-work-queue", "FifoWorkQueue", "Race to acquire the inspection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", "TaskManager", "Queue the dispatcher volunteers", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", "PactMap", "Propose and sign off the closure", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
@@ -13,7 +13,7 @@ const examples = [
 
 const coordinationSequenceNumbers = {
   claims: 3,
-  "ordered-collection": 3,
+  "fifo-work-queue": 3,
   "task-manager": 3,
   "pact-map": 4,
 } as const;
@@ -195,7 +195,7 @@ test("remaining family pages link every dedicated lesson", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const [family, names] of [
     ["sequences", ["SharedSequence", "SharedText"]],
-    ["coordination", ["Claims", "OrderedCollection", "TaskManager", "PactMap"]],
+    ["coordination", ["Claims", "FifoWorkQueue", "TaskManager", "PactMap"]],
     ["transforms", ["JsonOt", "SharedRichText"]],
   ] as const) {
     await page.goto(`/structures/${family}/`);
@@ -549,7 +549,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
   await page.goto("/structures/models/");
   const dds = page.locator("#dds");
   await expect(dds).toContainText("SharedCounter, SharedMap, and SharedDirectory show an author's change locally before it has a number.");
-  await expect(dds).toContainText("Claims, RegisterCollection, and OrderedCollection wait for a number");
+  await expect(dds).toContainText("Claims, RegisterMap, and FifoWorkQueue wait for a number");
   await expect(dds).toContainText("TaskManager tracks a pending volunteer locally but waits for sequencing");
   await expect(dds).toContainText("PactMap waits for sequencing to show a pending proposal");
   await expect(page.locator("#ot")).toContainText("Both show local edits before the sequencer confirms them.");
@@ -561,9 +561,9 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["shared-counter", "The local update is optimistic."],
     ["shared-map", "Alice sees her own note as soon as she writes it."],
     ["shared-directory", "Alice can use her new folder and see the notes she adds or removes"],
-    ["register-collection", "Writes stay hidden until the sequencer"],
+    ["register-map", "Writes stay hidden until the sequencer"],
     ["claims", "her ledger still shows that nobody holds the gate key"],
-    ["ordered-collection", "None can mark the inspection as theirs until a numbered request"],
+    ["fifo-work-queue", "None can mark the inspection as theirs until a numbered request"],
     ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
     ["pact-map", "Only after the required stations sign off can anyone read the new value."],
     ["json-ot", "Alice sees her title edit before the ranger gives it a number"],

@@ -3,15 +3,15 @@ import RegisterStructureDemo from "../../components/RegisterStructureDemo.astro"
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
-import { registerCollectionTerm } from "../../lib/atlas/standalone-terms";
+import { registerMapTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
 ---
 
 <StructureLessonLayout
-  title="RegisterCollection"
+  title="RegisterMap"
   description="The ranger retains sequenced trail-status versions and chooses an atomic or latest read."
   articleClass="register-lesson"
-  illustrationId="structures-register-collection"
+  illustrationId="structures-register-map"
 >
     <Fragment slot="summary">
       Alice reports the trail open while Bob reports it closed. Neither has
@@ -21,9 +21,9 @@ import "../../styles/set-lesson.css";
     </Fragment>
 
     <StructureFacts
-      structure="RegisterCollection"
+      structure="RegisterMap"
       family="DDS"
-      model="Sequenced register collection"
+      model="Sequenced map of named registers"
       updates="Non-optimistic writes to named cells"
       merge="Retain sequenced versions; read as atomic or latest."
       delivery="One server-ordered operation stream"
@@ -34,12 +34,12 @@ import "../../styles/set-lesson.css";
     <section aria-labelledby="versions-title">
       <h2 id="versions-title">The station keeps both sequenced versions</h2>
       <p>
-        A <dfn><a href="/glossary/#registercollection">RegisterCollection</a></dfn>
+        A <dfn><a href="/glossary/#registermap">RegisterMap</a></dfn>
         {" "}stores named registers. Writes stay hidden until the sequencer
         accepts them. The collection retains competing versions so an atomic
         read and a latest read can return different answers.
       </p>
-      <TermCallout {...registerCollectionTerm} />
+      <TermCallout {...registerMapTerm} />
       <p>
         Alice and Bob each submit a report before either has seen a sequenced
         write. They both put <code>0</code> on their slips as the last sequence
@@ -48,7 +48,7 @@ import "../../styles/set-lesson.css";
         seen Alice's report when he wrote his own.
       </p>
       <figure class="sequence-example">
-        <table aria-label="RegisterCollection read policies">
+        <table aria-label="RegisterMap read policies">
           <thead>
             <tr>
               <th scope="col">Report</th>
@@ -80,7 +80,7 @@ import "../../styles/set-lesson.css";
     </section>
 
     <RegisterStructureDemo
-      kind="register-collection"
+      kind="register-map"
       title="Read the atomic winner or the latest version"
       description="Alice and Bob submit from the same reference point. The ranger sequences both, retains both, and exposes two read policies."
       rule="Atomic changes when a writer has seen its current winner; latest uses the greatest sequence number."
@@ -106,7 +106,7 @@ import "../../styles/set-lesson.css";
       <h2 id="source-title">Sources and implementation</h2>
       <p>
         <strong>Sources:</strong> Watershed's{" "}
-        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/register_collection_kernel.gleam">RegisterCollection kernel</a>
+        <a href="https://github.com/tylerbutler/watershed/blob/4a8739323ee491f353fcaa8ccfb0488419c1cd43/src/watershed/register_collection_kernel.gleam"><code>register_collection_kernel</code></a>
         {" "}defines sequenced writes and atomic and latest read policies.
       </p>
       <p>

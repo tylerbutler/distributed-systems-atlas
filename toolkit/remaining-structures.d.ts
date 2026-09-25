@@ -2,7 +2,7 @@ export type RemainingDemoKind =
   | "shared-sequence"
   | "shared-text"
   | "claims"
-  | "ordered-collection"
+  | "fifo-work-queue"
   | "task-manager"
   | "pact-map"
   | "json-ot"

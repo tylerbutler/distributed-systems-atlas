@@ -149,7 +149,7 @@ for (const [kind, expected] of [
     expected,
   );
 }
-const collectionRoom = unwrap(createRegisterDemoRoom("register-collection")).room;
+const collectionRoom = unwrap(createRegisterDemoRoom("register-map")).room;
 unwrap(stageRegisterDemoRace(collectionRoom));
 assert.deepEqual(unwrap(deliverRegisterDemo(collectionRoom)).view.versions, [
   "Trail open",

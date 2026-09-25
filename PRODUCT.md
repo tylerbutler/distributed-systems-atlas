@@ -72,7 +72,7 @@ links to the deeper deterministic lab.
 
 The Registers overview continues the Eagle Creek story with one trail-status
 field. LWWRegister selects one timestamped winner, MvRegister preserves
-concurrent reports, and RegisterCollection retains sequenced versions for
+concurrent reports, and RegisterMap retains sequenced versions for
 atomic or latest reads. Each structure has a dedicated three-client demo. The
 MvRegister page also links to the deeper causal-context lab.
 
@@ -86,7 +86,7 @@ The Sequences overview follows the ordered inspection route into SharedSequence
 and SharedText. Stable item and grapheme identities explain why concurrent
 inserts can both survive even when local indexes change.
 
-The Coordination overview covers Claims, OrderedCollection, TaskManager, and
+The Coordination overview covers Claims, FifoWorkQueue, TaskManager, and
 PactMap. These structures do not merge several valid answers. They use the
 sequencer, queue order, or connected roster to choose one owner, worker,
 assignee, or accepted value.
@@ -98,9 +98,9 @@ different paths, text, and formatting can survive together.
 Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
-MvRegister, RegisterCollection, SharedMap, LWWMap, OR-map, and SharedDirectory
+MvRegister, RegisterMap, SharedMap, LWWMap, OR-map, and SharedDirectory
 demos, plus compact rule models for SharedSequence, SharedText, Claims,
-OrderedCollection, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
+FifoWorkQueue, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
 engines cover ordering, clocks, and Dots. Focused structure demos use at least
 three clients. Counter, set, register, and map lessons run pinned Watershed
 semantics through the site's Gleam toolkit and its stable `@atlas/toolkit` entry

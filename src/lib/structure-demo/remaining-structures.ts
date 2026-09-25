@@ -3,7 +3,7 @@ export type RemainingStructureId =
   | "shared-sequence"
   | "shared-text"
   | "claims"
-  | "ordered-collection"
+  | "fifo-work-queue"
   | "task-manager"
   | "pact-map"
   | "json-ot"
@@ -139,11 +139,11 @@ export const remainingStructures: RemainingStructure[] = [
     result: "The sequencer accepts Alice's claim first. Every replica records Alice as the permanent owner. Later claims for gate-key are rejected; the application must use a new key or create a new Claims state to start again.",
   },
   {
-    id: "ordered-collection",
-    glossaryId: "orderedcollection",
+    id: "fifo-work-queue",
+    glossaryId: "fifoworkqueue",
     family: "coordination",
     kind: "DDS",
-    name: "OrderedCollection",
+    name: "FifoWorkQueue",
     module: "ordered_collection_kernel",
     tagline: "Give one bridge inspection to one hiker.",
     rule: "The ranger numbers the request slips and gives each queued job to the first accepted requester.",

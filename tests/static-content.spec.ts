@@ -123,7 +123,7 @@ test("breadcrumbs link to the relevant structure and reference indexes", async (
   for (const [route, family] of [
     ["/structures/g-counter/", "Counters"],
     ["/structures/observed-remove-set/", "Sets"],
-    ["/structures/register-collection/", "Registers"],
+    ["/structures/register-map/", "Registers"],
     ["/structures/shared-directory/", "Maps"],
     ["/structures/shared-sequence/", "Sequences"],
     ["/structures/claims/", "Coordination"],

@@ -34,7 +34,7 @@ test.each([
   ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["ordered-collection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
+  ["fifo-work-queue", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
@@ -160,8 +160,8 @@ test.each([
   expect(delivered.view.replicas.map(({ values }) => values)).toEqual(expected);
 });
 
-test("RegisterCollection retains both reads after concurrent writes", () => {
-  const room = unwrap(createRegisterDemoRoom("register-collection")).room;
+test("RegisterMap retains both reads after concurrent writes", () => {
+  const room = unwrap(createRegisterDemoRoom("register-map")).room;
   expect(unwrap(stageRegisterDemoRace(room)).view.replicas.map(({ values }) => values))
     .toEqual([[], [], []]);
   expect(unwrap(deliverRegisterDemo(room)).view).toMatchObject({
