@@ -333,7 +333,7 @@ export const remainingFamilies: Record<RemainingFamily, {
   coordination: {
     name: "Coordination",
     tagline: "Choose one owner, one worker, or one accepted value.",
-    intro: "The ranger cannot give the same gate key or bridge inspection to two hikers. He numbers their requests and keeps a roster, so every station records the same decision.",
+    intro: "Every structure in this family is a distributed data structure. The ranger's sequencer numbers accepted operations, so every replica applies one shared order before it chooses an owner, worker, queue position, or agreed value.",
   },
   transforms: {
     name: "Transforms",

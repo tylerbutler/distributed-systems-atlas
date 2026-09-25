@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
+import TermCallout from "../../components/TermCallout.astro";
 import { remainingFamilies, structuresForFamily } from "../../lib/structure-demo/remaining-structures";
 import "../../styles/remaining-family.css";
 
@@ -18,6 +19,43 @@ const structures = structuresForFamily("coordination");
       <p>{family.intro}</p>
       <LessonIllustration id="structures-coordination" />
     </header>
+    <section class="coordination-model" aria-labelledby="coordination-model-title">
+      <h2 id="coordination-model-title">One shared order before one decision</h2>
+      <p>
+        A <dfn><a href="/glossary/#dds">distributed data structure</a></dfn>,
+        or DDS, keeps replicated state by applying an accepted operation stream.
+        Unlike a CRDT replica, a DDS replica does not independently settle a
+        competing claim and merge the answer later. Some decisions allow only
+        one winner.
+      </p>
+      <TermCallout
+        term="DDS"
+        definition="A distributed data structure uses one shared order of accepted operations to keep every copy in agreement."
+      />
+      <p>
+        All four coordination structures rely on a
+        <dfn><a href="/glossary/#sequencer"> sequencer</a></dfn>. A client sends
+        an operation, the sequencer assigns the next sequence number, and every
+        replica applies the numbered stream in that order. Each structure then
+        uses the order for a different rule.
+      </p>
+      <TermCallout
+        term="sequencer"
+        definition="A service that assigns ordered sequence numbers to accepted operations and broadcasts the numbered stream to replicas."
+      />
+      <dl class="coordination-rules">
+        <div><dt>Claims</dt><dd>The first accepted claim permanently wins.</dd></div>
+        <div><dt>OrderedCollection</dt><dd>The first accepted request receives the queued job.</dd></div>
+        <div><dt>TaskManager</dt><dd>Accepted volunteer operations determine the active worker and waiting order.</dd></div>
+        <div><dt>PactMap</dt><dd>Numbered proposals and signoffs determine when a value becomes usable.</dd></div>
+      </dl>
+      <p>
+        This shared order is also a dependency. A client can record or display
+        pending intent, but it cannot finalize a coordinated result while the
+        sequencer is unavailable. The individual lessons show which local state
+        appears before sequencing and which state waits for acceptance.
+      </p>
+    </section>
     {structures.map((structure) => (
       <section aria-labelledby={`${structure.id}-title`}>
         <header>
@@ -35,3 +73,42 @@ const structures = structuresForFamily("coordination");
     <StructureNext />
   </article>
 </BaseLayout>
+
+<style>
+  .coordination-model > h2 {
+    margin-top: 0;
+  }
+
+  .coordination-rules {
+    display: grid;
+    margin-block: var(--space-5);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  .coordination-rules div {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.45fr) minmax(0, 1fr);
+    gap: var(--space-4);
+    padding-block: var(--space-3);
+  }
+
+  .coordination-rules div + div {
+    border-top: var(--rule-width) solid var(--line);
+  }
+
+  .coordination-rules dt {
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+
+  .coordination-rules dd {
+    margin: 0;
+  }
+
+  @media (width < 32rem) {
+    .coordination-rules div {
+      grid-template-columns: 1fr;
+      gap: var(--space-1);
+    }
+  }
+</style>

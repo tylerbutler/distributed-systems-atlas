@@ -166,11 +166,22 @@ test("remaining family pages link every dedicated lesson", async ({ page }) => {
     await expect(page.locator(".page-intro .territory-label")).toHaveText("Structure family");
     expect(await page.locator(".page-intro").evaluate((element) => element.getBoundingClientRect().width))
       .toBeLessThanOrEqual(710);
-    await expect(page.locator(".structure-family > section")).toHaveCount(names.length);
+    await expect(page.locator(".structure-family > section:has(.structure-link)")).toHaveCount(names.length);
     for (const name of names) {
       await expect(page.getByRole("link", { name: `Open the ${name} lesson` })).toBeVisible();
     }
   }
+});
+
+test("Coordination introduces the shared DDS sequencer model", async ({ page }) => {
+  await page.goto("/structures/coordination/");
+  const article = page.locator("article").first();
+  await expect(article).toContainText("Every structure in this family is a distributed data structure.");
+  await expect(page.getByRole("heading", { name: "One shared order before one decision" })).toBeVisible();
+  await expect(article).toContainText("All four coordination structures rely on a sequencer.");
+  await expect(article).toContainText("it cannot finalize a coordinated result while the sequencer is unavailable");
+  await expect(article.getByRole("link", { name: "distributed data structure" })).toHaveAttribute("href", "/glossary/#dds");
+  await expect(article.getByRole("link", { name: "sequencer", exact: true }).first()).toHaveAttribute("href", "/glossary/#sequencer");
 });
 
 test("remaining lessons retain content without JavaScript", async ({ browser }) => {
