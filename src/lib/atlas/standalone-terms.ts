@@ -25,6 +25,16 @@ export const eventualConsistencyTerm: GlossaryTerm = {
   definition: "Each replica has only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
 };
 
+export const deltaTerm: GlossaryTerm = {
+  term: "delta",
+  definition: "The part of a CRDT state created by one change. A replica can send and merge this part instead of sending the full state.",
+};
+
+export const graphemeTerm: GlossaryTerm = {
+  term: "grapheme",
+  definition: "One visible written symbol. A grapheme can contain one or more Unicode code points.",
+};
+
 export const gCounterTerm: GlossaryTerm = {
   term: "G-counter",
   definition: "A grow-only replicated counter that gives each replica its own nondecreasing component, merges each component by maximum, and sums the components for the total.",
@@ -97,7 +107,7 @@ export const sharedSequenceTerm: GlossaryTerm = {
 
 export const sharedTextTerm: GlossaryTerm = {
   term: "SharedText",
-  definition: "A shared text where each written symbol has its own mark. People can add, remove, or replace text at the same time without splitting a symbol.",
+  definition: "A shared text built from an ordered sequence of graphemes. Each grapheme has a stable identity, so replicas merge edits without replaying stale character offsets.",
 };
 
 export const claimsTerm: GlossaryTerm = {
@@ -134,9 +144,11 @@ export const standaloneTerms = [
   claimsTerm,
   crdtTerm,
   ddsTerm,
+  deltaTerm,
   eventualConsistencyTerm,
   gCounterTerm,
   gSetTerm,
+  graphemeTerm,
   jsonOtTerm,
   lwwRegisterTerm,
   lwwMapTerm,

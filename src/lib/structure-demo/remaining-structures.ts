@@ -76,7 +76,7 @@ export const remainingStructures: RemainingStructure[] = [
     name: "SharedText",
     module: "text_kernel",
     tagline: "Alice, Bob, and Carol can type in one field note without losing concurrent edits.",
-    rule: "Treat each written symbol as a sequence item with its own mark, so concurrent edits keep the same order on every copy.",
+    rule: "Treat each grapheme as a SharedSequence item with its own identity, so replicas merge deltas instead of replaying stale character offsets.",
     story: "Alice and Bob revise the same sentence while Carol reads an older copy of the field note.",
     raceLabel: "Crowd an insert before “weir”",
     recordLabel: "Field-note page",

@@ -1,5 +1,6 @@
 ---
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
+import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
@@ -29,17 +30,23 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
       <Fragment slot="summary">{structure.tagline}</Fragment>
 
-      {isSharedSequence && (
-        <nav class="lesson-map" aria-label="SharedSequence lesson map">
-          <a href="#route-setup">Compare the notebooks</a>
-          <a href="#shared-sequence-demo-title">Try the route sandbox</a>
-          <a href="#route-result">Read the result</a>
+      {(isSharedSequence || isSharedText) && (
+        <nav class="lesson-map" aria-label={`${structure.name} lesson map`}>
+          <a href={isSharedText ? "#offset-problem" : "#route-setup"}>
+            {isSharedText ? "See why offsets fail" : "Compare the notebooks"}
+          </a>
+          <a href={isSharedText ? "#text-mechanics" : "#shared-sequence-demo-title"}>
+            {isSharedText ? "Follow the mechanics" : "Try the route sandbox"}
+          </a>
+          <a href={isSharedText ? "#shared-text-demo-title" : "#route-result"}>
+            {isSharedText ? "Try the shared editor" : "Read the result"}
+          </a>
         </nav>
       )}
 
@@ -79,6 +86,172 @@ const operationNames = structure.operations.length === 1
         )}
         {structure.localVisibility && <p>{structure.localVisibility}</p>}
       </section>
+
+      {isSharedText && (
+        <>
+          <section id="offset-problem" aria-labelledby="offset-problem-title">
+            <h2 id="offset-problem-title">A character offset is only local</h2>
+            <p>
+              A basic text editor can describe one character insertion with a
+              number: <code>insert("s", 4)</code>. The number means “put this
+              symbol before the symbol that is currently at position 4.” It
+              works while one copy owns the string.
+            </p>
+            <p>
+              The number becomes stale when separate copies change. Alice and Bob
+              both start with <code>The weir is clear.</code>. Alice inserts
+              <code>still </code> as six character operations at positions 4
+              through 9. Bob inserts <code>calm </code> as five operations at
+              positions 4 through 8. If a replica applies those raw offsets in
+              arrival order, the result depends on which message arrives first.
+            </p>
+            <figure class="text-order-example">
+              <div class="route-table-scroll">
+                <table aria-label="Different results from applying the same raw character offsets in different orders">
+                  <thead>
+                    <tr><th scope="col">Arrival order</th><th scope="col">Naive result</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Alice, then Bob</th>
+                      <td><code>The calm still weir is clear.</code></td>
+                    </tr>
+                    <tr>
+                      <th scope="row">Bob, then Alice</th>
+                      <td><code>The still calm weir is clear.</code></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <figcaption>
+                Both runs begin at position 4. Their character operations do not
+                provide a common order for two insertions into the same gap.
+              </figcaption>
+            </figure>
+            <p>
+              A stale range is more dangerous. An instruction such as
+              <code> delete(4, 8)</code> names “weir” only in the version where
+              the instruction was created. A concurrent insertion can move those
+              offsets, so another replica can remove different symbols. Sending
+              raw offsets is not enough to preserve intent or convergence.
+            </p>
+          </section>
+
+          <NaiveTextMergeDemo />
+
+          <section aria-labelledby="grapheme-title">
+            <h2 id="grapheme-title">Text is a sequence of graphemes</h2>
+            <p>
+              SharedText first divides a string into
+              <dfn><a href="/glossary/#grapheme"> graphemes</a></dfn>. A grapheme
+              is one visible written symbol. It can contain more than one Unicode
+              code point, such as a letter plus a combining accent or a family
+              emoji joined from several code points.
+            </p>
+            <p>
+              This boundary matters because an editor must not put a cursor
+              inside one visible symbol. Watershed counts graphemes, not UTF-16
+              code units. Insert, delete, and replace ranges therefore use the
+              same units that a reader sees.
+            </p>
+            <TermCallout
+              term="grapheme"
+              definition="One visible written symbol. A grapheme can contain one or more Unicode code points."
+            />
+          </section>
+
+          <section id="text-mechanics" aria-labelledby="text-mechanics-title">
+            <h2 id="text-mechanics-title">SharedText uses the SharedSequence rule</h2>
+            <p>
+              The order resolution is not merely similar. It is the same
+              sequence CRDT. Watershed's text value wraps a
+              <code> Sequence(String)</code>. Each grapheme is a sequence item
+              with a stable identity, and concurrent insertions use the same
+              deterministic order as SharedSequence.
+            </p>
+            <p>
+              SharedText adds a text layer around that sequence. The layer
+              segments strings into graphemes, joins the visible items back into
+              a string, and builds range operations for deletion and replacement.
+              It does not add a second ordering rule.
+            </p>
+            <ol class="text-mechanics">
+              <li>
+                <strong>Describe the local edit.</strong> The editor compares the
+                old and new strings and finds one insertion, deletion, or
+                replacement in local grapheme indexes. This demo sends each
+                inserted grapheme as its own operation, so inserting a word
+                creates several character operations.
+              </li>
+              <li>
+                <strong>Create a sequence delta.</strong> The text layer converts
+                each operation into a
+                <dfn><a href="/glossary/#delta"> delta</a></dfn> that names
+                stable sequence items and the new item created by this replica.
+              </li>
+              <li>
+                <strong>Update the local copy.</strong> The author sees the edit
+                at once. The operation keeps the numeric indexes for diagnostics,
+                but the delta is the authoritative payload.
+              </li>
+              <li>
+                <strong>Merge at every other copy.</strong> A recipient merges
+                the delta into its sequence state. It does not run the author's
+                old index against its current string.
+              </li>
+            </ol>
+            <TermCallout
+              term="delta"
+              definition="The part of a CRDT state created by one change. Replicas merge the delta instead of replaying a stale local offset."
+            />
+          </section>
+
+          <aside class="perspective-note text-perspective" aria-labelledby="text-perspective-title">
+            <h3 class="term-callout-label" id="text-perspective-title">Alternative perspective</h3>
+            <div>
+              <p>
+                Text makes the need for item identities easy to see. Values are
+                not identities. The word <code>letter</code> contains two
+                <code>t</code> values and two <code>e</code> values. An operation
+                that says “delete <code>t</code>” does not say which
+                <code>t</code> it means.
+              </p>
+              <div class="text-identity-example" aria-label="Conceptual identity view of the word letter">
+                <span>Visible text</span>
+                <code>l e t t e r</code>
+                <span>Identity view</span>
+                <code>{"l{id-1} e{id-2} t{id-3} t{id-4} e{id-5} r{id-6}"}</code>
+              </div>
+              <p>
+                The IDs are conceptual labels, not Watershed's wire format. If
+                Alice deletes <code>id-3</code>, every replica can remove the
+                same <code>t</code> even after another edit moves it to a new
+                visible index. SharedSequence needs IDs for the same reason:
+                equal values can still be different items.
+              </p>
+            </div>
+          </aside>
+
+          <section aria-labelledby="text-ranges-title">
+            <h2 id="text-ranges-title">Delete and replace target observed symbols</h2>
+            <p>
+              An insertion creates new sequence items. A deletion records the
+              identities of the graphemes that the author observed in the range.
+              Applying the same deletion twice has no extra effect, and a
+              recipient can identify those graphemes even if other edits changed
+              their visible indexes.
+            </p>
+            <p>
+              A replacement combines both operations: remove the observed
+              graphemes, then insert new graphemes at that place. In the demo,
+              Alice replaces “weir” with “levee” while Bob deletes “ei” from the
+              original word. Both operations refer to the original grapheme
+              identities. Every notebook therefore reaches
+              <code>The levee is clear.</code>, regardless of delivery order.
+            </p>
+          </section>
+        </>
+      )}
 
       {isSharedSequence && (
         <section id="route-setup" aria-labelledby="route-setup-title">
@@ -125,6 +298,19 @@ const operationNames = structure.operations.length === 1
           delivery="The hikers can exchange insertion notes later"
           bestFor="Routes and ordered lists edited on separate copies"
           cost="An identity and ordering mark for each trail stop"
+        />
+      )}
+
+      {isSharedText && (
+        <StructureFacts
+          structure="SharedText"
+          family="CRDT"
+          model="SharedSequence of Unicode graphemes"
+          updates="Insert, delete, replace, or append grapheme ranges"
+          merge="Merge identity-based sequence deltas, not raw character offsets"
+          delivery="Edits can arrive later or in a different order"
+          bestFor="Collaborative plain-text fields and editors"
+          cost="Sequence metadata and stable identity for each grapheme"
         />
       )}
 
@@ -255,6 +441,90 @@ const operationNames = structure.operations.length === 1
     font-size: 0.875rem;
   }
 
+  .text-order-example {
+    margin-block: var(--space-5);
+  }
+
+  .text-order-example table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+  }
+
+  .text-order-example :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .text-order-example th {
+    font-family: var(--font-ui);
+  }
+
+  .text-order-example figcaption {
+    margin-top: var(--space-2);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  .text-mechanics {
+    display: grid;
+    gap: var(--space-3);
+    padding-inline-start: 1.4rem;
+  }
+
+  .text-mechanics li {
+    padding-inline-start: var(--space-2);
+  }
+
+  .perspective-note {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-3);
+    align-items: start;
+    margin-block: var(--space-5);
+    padding-block: var(--space-4);
+    border-block: var(--rule-width) solid var(--line);
+    font-family: var(--font-ui);
+  }
+
+  .perspective-note h3,
+  .perspective-note p {
+    margin: 0;
+  }
+
+  .perspective-note h3 {
+    padding: var(--space-1) var(--space-2);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .perspective-note > div {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .text-identity-example {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-2) var(--space-3);
+    align-items: baseline;
+    padding-block: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+  }
+
+  .text-identity-example span {
+    color: var(--muted);
+    font-size: 0.8rem;
+  }
+
+  .text-identity-example code {
+    overflow-wrap: anywhere;
+  }
+
   @media (width < 40rem) {
     .lesson-map {
       grid-template-columns: 1fr;
@@ -263,6 +533,29 @@ const operationNames = structure.operations.length === 1
     .lesson-map a + a {
       border-top: var(--rule-width) solid var(--line);
       border-inline-start: 0;
+    }
+
+    .text-order-example table {
+      min-width: 0;
+      font-size: 0.875rem;
+    }
+
+    .text-order-example :is(th, td) {
+      padding-inline: var(--space-2);
+    }
+
+    .text-order-example code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .perspective-note,
+    .text-identity-example {
+      grid-template-columns: 1fr;
+    }
+
+    .perspective-note h3 {
+      justify-self: start;
     }
   }
 </style>

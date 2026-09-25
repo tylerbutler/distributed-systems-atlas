@@ -253,13 +253,15 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
             if (before === undefined) throw new Error("Missing SharedText value.");
             const edit = minimalTextEdit(before, editor.value);
             if (!edit) return;
-            this.state = editSharedText(this.state, client, edit.start, edit.end, edit.inserted);
-            const description = this.describeTextEdit(edit.start, edit.end, edit.inserted);
-            this.exchangeNotes.unshift({ author: client, description, delivered: false });
-            this.setTextSlip(client, description);
+            const labels = this.applyCharacterEdit(client, edit.start, edit.end, edit.inserted);
+            const count = labels.length;
+            this.setTextSlip(
+              client,
+              `${count} ${count === 1 ? "character operation" : "character operations"} queued`,
+            );
             this.clearError();
             this.render(`Queued ${demoReplicaName(client)}'s text edit.`);
-            this.queueOutbound(client, edit.inserted || "delete");
+            for (const label of labels) this.queueOutbound(client, label);
             if (this.transport.autoDeliver) void this.deliver(editor);
           } catch (error) {
             this.showError(error);
@@ -290,9 +292,9 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       this.race.addEventListener("click", () => {
         this.resetFlow();
         try {
-          this.state = stageRemainingRace(this.state);
-          this.acted = new Set(REPLICA_IDS);
           if (this.kind === "shared-sequence") {
+            this.state = stageRemainingRace(this.state);
+            this.acted = new Set(REPLICA_IDS);
             if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
             this.exchangeNotes = [
               { author: "B", description: "Insert Marsh before Weir", delivered: false },
@@ -301,18 +303,25 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
             this.setSequenceSlip("A", "Insert Falls before Weir", "Falls");
             this.setSequenceSlip("B", "Insert Marsh before Weir", "Marsh");
           } else if (this.kind === "shared-text") {
-            this.exchangeNotes = [
-              { author: "B", description: 'Insert “calm ” before “weir”', delivered: false },
-              { author: "A", description: 'Insert “still ” before “weir”', delivered: false },
-            ];
-            this.setTextSlip("A", 'Insert “still ” before “weir”');
-            this.setTextSlip("B", 'Insert “calm ” before “weir”');
+            const aliceLabels = this.applyCharacterEdit("A", 4, 4, "still ");
+            const bobLabels = this.applyCharacterEdit("B", 4, 4, "calm ");
+            this.setTextSlip("A", "6 character operations queued for “still ”");
+            this.setTextSlip("B", "5 character operations queued for “calm ”");
+            this.clearError();
+            this.render("Eleven concurrent character operations queued.");
+            for (const label of aliceLabels) this.queueOutbound("A", label);
+            for (const label of bobLabels) this.queueOutbound("B", label);
+            if (this.transport.autoDeliver) void this.deliver(this.race);
+            return;
+          } else {
+            this.state = stageRemainingRace(this.state);
+            this.acted = new Set(REPLICA_IDS);
           }
           this.clearError();
-          this.render(this.kind === "shared-text" ? "Concurrent text edits queued." : "Notes queued for delivery.");
-          if (this.kind === "shared-sequence" || this.kind === "shared-text") {
-            this.queueOutbound("A", this.kind === "shared-text" ? "still" : "Falls");
-            this.queueOutbound("B", this.kind === "shared-text" ? "calm" : "Marsh");
+          this.render("Notes queued for delivery.");
+          if (this.kind === "shared-sequence") {
+            this.queueOutbound("A", "Falls");
+            this.queueOutbound("B", "Marsh");
           }
           if (this.transport.autoDeliver) void this.deliver(this.race);
         } catch (error) {
@@ -322,18 +331,14 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       this.querySelector<HTMLButtonElement>('[data-action="overlap"]')?.addEventListener("click", (event) => {
         this.resetFlow();
         try {
-          this.state = editSharedText(this.state, "A", 4, 8, "levee");
-          this.state = editSharedText(this.state, "B", 5, 7, "");
-          this.exchangeNotes = [
-            { author: "B", description: 'Delete “ei” from “weir”', delivered: false },
-            { author: "A", description: 'Replace “weir” with “levee”', delivered: false },
-          ];
-          this.setTextSlip("A", 'Replace “weir” with “levee”');
-          this.setTextSlip("B", 'Delete “ei” from “weir”');
+          const aliceLabels = this.applyCharacterEdit("A", 4, 8, "levee");
+          const bobLabels = this.applyCharacterEdit("B", 5, 7, "");
+          this.setTextSlip("A", "1 deletion and 5 character insertions queued");
+          this.setTextSlip("B", "1 deletion queued");
           this.clearError();
-          this.render("Overlapping text edits queued.");
-          this.queueOutbound("A", "replace");
-          this.queueOutbound("B", "delete");
+          this.render("Seven overlapping character operations queued.");
+          for (const label of aliceLabels) this.queueOutbound("A", label);
+          for (const label of bobLabels) this.queueOutbound("B", label);
           if (this.transport.autoDeliver) void this.deliver(event.currentTarget as HTMLButtonElement);
         } catch (error) {
           this.showError(error);
@@ -596,11 +601,28 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       note.textContent = description;
     }
 
-    private describeTextEdit(start: number, end: number, inserted: string): string {
-      const clipped = inserted.length > 18 ? `${inserted.slice(0, 18)}…` : inserted;
-      if (start === end) return `Insert “${clipped}” at symbol ${start}`;
-      if (!inserted) return `Delete symbols ${start}–${end}`;
-      return `Replace symbols ${start}–${end} with “${clipped}”`;
+    private applyCharacterEdit(
+      client: "A" | "B" | "C",
+      start: number,
+      end: number,
+      inserted: string,
+    ): string[] {
+      const labels: string[] = [];
+      if (end > start) {
+        this.state = editSharedText(this.state, client, start, end, "");
+        const description = `Delete symbols ${start}–${end}`;
+        this.exchangeNotes.unshift({ author: client, description, delivered: false });
+        labels.push("delete");
+      }
+      for (const [offset, character] of graphemes(inserted).entries()) {
+        const index = start + offset;
+        this.state = editSharedText(this.state, client, index, index, character);
+        const visible = character === " " ? "space" : character;
+        const description = `Insert “${visible}” at symbol ${index}`;
+        this.exchangeNotes.unshift({ author: client, description, delivered: false });
+        labels.push(visible);
+      }
+      return labels;
     }
 
     private renderValues(target: HTMLElement | null, values: string[]): void {

@@ -23,6 +23,10 @@ for (const [slug, name, race, initial, final] of examples) {
     await demo.getByRole("button", { name: race }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
     await expect(demo.locator("[data-status]")).toContainText("queued");
+    if (slug === "shared-text") {
+      await expect(demo.locator("[data-pending]")).toHaveText("11 edits waiting");
+      await expect(demo.locator("[data-note-log] li")).toHaveCount(11);
+    }
     await demo.locator("[data-transport-auto-deliver]").check();
     const displayed = slug === "shared-sequence"
       ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
@@ -79,7 +83,7 @@ test("SharedText accepts typing while delivery is paused", async ({ page }) => {
   await editors.nth(0).fill("The weir is cloudy.");
   await expect(editors.nth(0)).toHaveValue("The weir is cloudy.");
   await expect(editors.nth(1)).toHaveValue("The weir is clear.");
-  await expect(demo.locator("[data-pending]")).toHaveText("1 edit waiting");
+  await expect(demo.locator("[data-pending]")).toHaveText("5 edits waiting");
   await demo.locator("[data-transport-auto-deliver]").check();
   for (const editor of await editors.all()) {
     await expect(editor).toHaveValue("The weir is cloudy.");
@@ -96,9 +100,56 @@ test("SharedText converges overlapping edits to one word", async ({ page }) => {
     await expect(editor).toHaveValue("The levee is clear.");
   }
   await expect(demo.locator("[data-note-log] li")).toHaveText([
-    "Bob: Delete “ei” from “weir” — delivered",
-    "Alice: Replace “weir” with “levee” — delivered",
+    "Bob: Delete symbols 5–7 — delivered",
+    "Alice: Insert “e” at symbol 8 — delivered",
+    "Alice: Insert “e” at symbol 7 — delivered",
+    "Alice: Insert “v” at symbol 6 — delivered",
+    "Alice: Insert “e” at symbol 5 — delivered",
+    "Alice: Insert “l” at symbol 4 — delivered",
+    "Alice: Delete symbols 4–8 — delivered",
   ]);
+});
+
+test("SharedText explains why identity-based sequence deltas replace raw offsets", async ({ page }) => {
+  await page.goto("/structures/shared-text/");
+  const lesson = page.locator("article").first();
+  await expect(page.getByRole("heading", { name: "A character offset is only local" })).toBeVisible();
+  await expect(lesson).toContainText("the result depends on which message arrives first");
+  await expect(page.getByRole("heading", { name: "SharedText uses the SharedSequence rule" })).toBeVisible();
+  await expect(lesson).toContainText("It is the same sequence CRDT.");
+  await expect(lesson).toContainText("the delta is the authoritative payload");
+  await expect(lesson).toContainText("It does not run the author's old index against its current string.");
+  await expect(page.getByRole("heading", { name: "Alternative perspective" })).toBeVisible();
+  await expect(lesson).toContainText("Values are not identities.");
+  await expect(lesson).toContainText("t{id-3} t{id-4}");
+  await expect(lesson).toContainText("equal values can still be different items");
+  await expect(lesson.getByRole("link", { name: "graphemes" })).toHaveAttribute("href", "/glossary/#grapheme");
+  await expect(lesson.getByRole("link", { name: "delta", exact: true }).first()).toHaveAttribute("href", "/glossary/#delta");
+});
+
+test("the naive SharedText counterexample diverges when raw offsets arrive in different orders", async ({ page }) => {
+  await page.goto("/structures/shared-text/");
+  const demo = page.getByTestId("naive-text-merge-demo");
+  const values = demo.locator("[data-naive-value]");
+  await expect(demo.locator("[data-naive-client]")).toHaveCount(3);
+  await expect(demo.locator(".naive-operations")).toContainText("six operations");
+  await expect(demo.locator(".naive-operations")).toContainText("s@4 · t@5 · i@6");
+  await demo.getByRole("button", { name: "Make concurrent edits" }).click();
+  await expect(values).toHaveText([
+    "The still weir is clear.",
+    "The calm weir is clear.",
+    "The weir is clear.",
+  ]);
+  await demo.getByRole("button", { name: "Replay raw offsets" }).click();
+  await expect(values).toHaveText([
+    "The calm still weir is clear.",
+    "The still calm weir is clear.",
+    "The calm still weir is clear.",
+  ]);
+  await expect(demo.locator("[data-naive-status]")).toContainText("Diverged");
+  await demo.getByRole("button", { name: "Reverse Carol's arrival order" }).click();
+  await expect(values.nth(2)).toHaveText("The still calm weir is clear.");
+  await expect(demo.locator("[data-naive-status]")).toContainText("only her delivery order changed");
 });
 
 test("remaining family pages link every dedicated lesson", async ({ page }) => {

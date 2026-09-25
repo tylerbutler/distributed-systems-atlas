@@ -1,0 +1,335 @@
+---
+import StationMark from "./StationMark.astro";
+import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/structure-demo-shell.css";
+
+const initial = "The weir is clear.";
+---
+
+<naive-text-merge-demo data-testid="naive-text-merge-demo">
+  <section class="naive-merge instrument-panel structure-demo-instrument" aria-labelledby="naive-text-merge-title">
+    <header>
+      <div>
+        <h2 id="naive-text-merge-title">Replay the raw offsets</h2>
+        <p>
+          This counterexample intentionally does not call Watershed. It applies
+          each character operation's original number to the string that happens
+          to be local when the message arrives.
+        </p>
+      </div>
+      <p class="naive-rule">
+        <span>Naive rule</span>
+        <strong>Replay each character at its original numeric position.</strong>
+      </p>
+    </header>
+
+    <div class="naive-operations" aria-label="Concurrent insertion messages">
+      <p>
+        <strong>Alice sends six operations</strong>
+        <code>s@4 · t@5 · i@6 · l@7 · l@8 · space@9</code>
+      </p>
+      <p>
+        <strong>Bob sends five operations</strong>
+        <code>c@4 · a@5 · l@6 · m@7 · space@8</code>
+      </p>
+    </div>
+
+    <div class="naive-replicas">
+      {REPLICA_IDS.map((id) => (
+        <section data-naive-client={id} aria-label={`${demoReplicaName(id)}'s naive text copy`}>
+          <header>
+            <StationMark station={id} size="lg" />
+            <h3>{demoReplicaName(id)}</h3>
+          </header>
+          <div>
+            <span>Local string</span>
+            <code data-naive-value>{initial}</code>
+          </div>
+          <output data-naive-result>Same starting text</output>
+        </section>
+      ))}
+    </div>
+
+    <div class="naive-controls">
+      <button type="button" data-naive-action="stage" disabled>Make concurrent edits</button>
+      <button type="button" data-naive-action="deliver" disabled>Replay raw offsets</button>
+      <button type="button" data-naive-action="reverse" disabled>Reverse Carol's arrival order</button>
+      <button type="button" data-naive-action="reset" disabled>Reset</button>
+    </div>
+    <p role="status" data-naive-status>
+      Ready: all three copies contain <code>{initial}</code>
+    </p>
+    <p data-naive-enhancement>Enable JavaScript to run the offset counterexample.</p>
+  </section>
+</naive-text-merge-demo>
+
+<script>
+  const initialText = "The weir is clear.";
+
+  function naiveInsert(text: string, index: number, inserted: string): string {
+    return `${text.slice(0, index)}${inserted}${text.slice(index)}`;
+  }
+
+  function naiveInsertRun(text: string, index: number, inserted: string): string {
+    return Array.from(inserted).reduce(
+      (value, character, offset) => naiveInsert(value, index + offset, character),
+      text,
+    );
+  }
+
+  class NaiveTextMergeDemo extends HTMLElement {
+    private phase: "ready" | "staged" | "delivered" | "reversed" = "ready";
+
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = "true";
+      const enhancement = this.querySelector<HTMLElement>("[data-naive-enhancement]");
+      if (enhancement) enhancement.hidden = true;
+      this.button("stage").addEventListener("click", () => {
+        this.phase = "staged";
+        this.render();
+      });
+      this.button("deliver").addEventListener("click", () => {
+        this.phase = "delivered";
+        this.render();
+      });
+      this.button("reverse").addEventListener("click", () => {
+        this.phase = "reversed";
+        this.render();
+      });
+      this.button("reset").addEventListener("click", () => {
+        this.phase = "ready";
+        this.render();
+      });
+      this.render();
+    }
+
+    private button(action: "stage" | "deliver" | "reverse" | "reset"): HTMLButtonElement {
+      const button = this.querySelector<HTMLButtonElement>(`[data-naive-action="${action}"]`);
+      if (!button) throw new Error(`Missing naive merge ${action} button`);
+      return button;
+    }
+
+    private render(): void {
+      const aliceLocal = naiveInsertRun(initialText, 4, "still ");
+      const bobLocal = naiveInsertRun(initialText, 4, "calm ");
+      const aliceThenBob = naiveInsertRun(aliceLocal, 4, "calm ");
+      const bobThenAlice = naiveInsertRun(bobLocal, 4, "still ");
+      const values = this.phase === "ready"
+        ? { A: initialText, B: initialText, C: initialText }
+        : this.phase === "staged"
+          ? { A: aliceLocal, B: bobLocal, C: initialText }
+          : this.phase === "delivered"
+            ? { A: aliceThenBob, B: bobThenAlice, C: aliceThenBob }
+            : { A: aliceThenBob, B: bobThenAlice, C: bobThenAlice };
+      const results = this.phase === "ready"
+        ? { A: "Same starting text", B: "Same starting text", C: "Same starting text" }
+        : this.phase === "staged"
+          ? { A: "Alice's local edit", B: "Bob's local edit", C: "No edit received" }
+          : {
+              A: "Bob arrived second",
+              B: "Alice arrived second",
+              C: this.phase === "reversed" ? "Bob arrived before Alice" : "Alice arrived before Bob",
+            };
+
+      for (const id of ["A", "B", "C"] as const) {
+        const value = this.querySelector<HTMLElement>(`[data-naive-client="${id}"] [data-naive-value]`);
+        const result = this.querySelector<HTMLOutputElement>(`[data-naive-client="${id}"] [data-naive-result]`);
+        if (!value || !result) throw new Error(`Missing naive merge ${id} output`);
+        value.textContent = values[id];
+        result.textContent = results[id];
+      }
+
+      this.button("stage").disabled = this.phase !== "ready";
+      this.button("deliver").disabled = this.phase !== "staged";
+      this.button("reverse").disabled = this.phase !== "delivered";
+      this.button("reset").disabled = this.phase === "ready";
+
+      const status = this.querySelector<HTMLElement>("[data-naive-status]");
+      if (!status) throw new Error("Missing naive merge status");
+      if (this.phase === "ready") {
+        status.textContent = `Ready: all three copies contain ${initialText}`;
+      } else if (this.phase === "staged") {
+        status.textContent = "Alice and Bob see their own edits. Carol still has the starting text.";
+      } else if (this.phase === "delivered") {
+        status.textContent = "Diverged: Bob has a different word order because his messages arrived in a different order.";
+      } else {
+        status.textContent = "Carol changed results when only her delivery order changed. Raw offsets do not define one shared answer.";
+      }
+    }
+  }
+
+  if (!customElements.get("naive-text-merge-demo")) {
+    customElements.define("naive-text-merge-demo", NaiveTextMergeDemo);
+  }
+</script>
+
+<style>
+  .naive-merge {
+    margin-block: var(--space-7);
+  }
+
+  .naive-merge > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.65fr);
+    gap: var(--space-6);
+    align-items: end;
+    padding-bottom: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .naive-merge h2,
+  .naive-merge h3,
+  .naive-merge p {
+    margin: 0;
+  }
+
+  .naive-merge > header p:not(.naive-rule) {
+    margin-top: var(--space-3);
+  }
+
+  .naive-rule {
+    padding: var(--space-4);
+    border-block: var(--rule-width) solid var(--interference);
+    font-family: var(--font-ui);
+  }
+
+  .naive-rule strong {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--signal);
+  }
+
+  .naive-operations {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+    padding-block: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .naive-operations p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: space-between;
+    font-family: var(--font-ui);
+  }
+
+  .naive-operations code {
+    color: var(--signal);
+  }
+
+  .naive-replicas {
+    padding-block: var(--space-4);
+  }
+
+  .naive-replicas > section {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr) minmax(7.5rem, 0.38fr);
+    gap: var(--space-3);
+    align-items: center;
+    padding-block: var(--space-4);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+
+  .naive-replicas header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .naive-replicas section > div {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-1);
+  }
+
+  .naive-replicas section > div span,
+  .naive-replicas output {
+    color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+    font: 0.8rem / 1.5 var(--font-ui);
+  }
+
+  .naive-replicas code {
+    overflow-wrap: anywhere;
+    font-size: 0.875rem;
+  }
+
+  .naive-replicas output {
+    justify-self: end;
+    text-align: right;
+  }
+
+  .naive-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-block: var(--space-5);
+  }
+
+  .naive-controls button {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    border: var(--rule-width) solid currentColor;
+    border-radius: 0;
+    color: var(--clear);
+    background: transparent;
+    font-family: var(--font-ui);
+    cursor: pointer;
+  }
+
+  .naive-controls button:hover:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  .naive-controls button:disabled {
+    border-style: dashed;
+    color: color-mix(in oklch, var(--clear) 58%, var(--instrument));
+    cursor: not-allowed;
+  }
+
+  .naive-merge [role="status"] {
+    padding: var(--space-4);
+    color: var(--instrument-deep);
+    background: var(--signal);
+    font-family: var(--font-ui);
+    font-weight: 650;
+  }
+
+  [data-naive-enhancement] {
+    margin-top: var(--space-3) !important;
+  }
+
+  @media (width < 52rem) {
+    .naive-merge > header {
+      grid-template-columns: 1fr;
+    }
+
+    .naive-replicas > section {
+      grid-template-columns: minmax(8rem, 0.45fr) minmax(0, 1fr);
+    }
+
+    .naive-replicas output {
+      grid-column: 2;
+      justify-self: start;
+      text-align: left;
+    }
+  }
+
+  @media (width < 36rem) {
+    .naive-operations {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+
+    .naive-replicas > section {
+      grid-template-columns: 1fr;
+    }
+
+    .naive-replicas output {
+      grid-column: auto;
+    }
+  }
+</style>
