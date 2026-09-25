@@ -33,6 +33,8 @@ for (const [slug, name, race, initial, final] of examples) {
       : [...final];
     await expect(demo.locator("[data-state] li")).toHaveText(displayed);
     if (slug === "shared-text") {
+      await expect(demo.locator("[data-sequence-number]")).toHaveText("SN 11");
+      await expect(demo).toHaveAttribute("data-kernel-sequence", "11");
       for (const editor of await demo.locator("[data-local-record]").all()) {
         await expect(editor).toHaveValue(displayed[0]);
       }
@@ -100,13 +102,13 @@ test("SharedText converges overlapping edits to one word", async ({ page }) => {
     await expect(editor).toHaveValue("The levee is clear.");
   }
   await expect(demo.locator("[data-note-log] li")).toHaveText([
-    "Bob: Delete symbols 5–7 — delivered",
-    "Alice: Insert “e” at symbol 8 — delivered",
-    "Alice: Insert “e” at symbol 7 — delivered",
-    "Alice: Insert “v” at symbol 6 — delivered",
-    "Alice: Insert “e” at symbol 5 — delivered",
-    "Alice: Insert “l” at symbol 4 — delivered",
-    "Alice: Delete symbols 4–8 — delivered",
+    "SN 7 · Bob: Delete symbols 5–7 — delivered",
+    "SN 6 · Alice: Insert “e” at symbol 8 — delivered",
+    "SN 5 · Alice: Insert “e” at symbol 7 — delivered",
+    "SN 4 · Alice: Insert “v” at symbol 6 — delivered",
+    "SN 3 · Alice: Insert “e” at symbol 5 — delivered",
+    "SN 2 · Alice: Insert “l” at symbol 4 — delivered",
+    "SN 1 · Alice: Delete symbols 4–8 — delivered",
   ]);
 });
 
@@ -118,7 +120,7 @@ test("SharedText explains why identity-based sequence deltas replace raw offsets
   await expect(page.getByRole("heading", { name: "SharedText uses the SharedSequence rule" })).toBeVisible();
   await expect(lesson).toContainText("It is the same sequence CRDT.");
   await expect(lesson).toContainText("the delta is the authoritative payload");
-  await expect(lesson).toContainText("It does not run the author's old index against its current string.");
+  await expect(lesson).toContainText("they do not run the author's old index against the current string");
   await expect(page.getByRole("heading", { name: "Alternative perspective" })).toBeVisible();
   await expect(lesson).toContainText("Values are not identities.");
   await expect(lesson).toContainText("t{id-3} t{id-4}");

@@ -195,9 +195,12 @@ const operationNames = structure.operations.length === 1
                 but the delta is the authoritative payload.
               </li>
               <li>
-                <strong>Merge at every other copy.</strong> A recipient merges
-                the delta into its sequence state. It does not run the author's
-                old index against its current string.
+                <strong>Sequence and deliver the operation.</strong> The
+                sequencer gives each accepted operation one sequence number.
+                The author acknowledges its pending operation, and the other
+                replicas apply it as a remote operation. They merge the delta;
+                they do not run the author's old index against the current
+                string.
               </li>
             </ol>
             <TermCallout
@@ -248,6 +251,14 @@ const operationNames = structure.operations.length === 1
               original word. Both operations refer to the original grapheme
               identities. Every notebook therefore reaches
               <code>The levee is clear.</code>, regardless of delivery order.
+            </p>
+            <p>
+              The naive panel omits both stable identities and a sequencer. A
+              sequencer can make replicas process raw-offset messages in one
+              order, but the offsets can still be stale against an author's
+              optimistic local text. SharedText preserves the intended items in
+              the delta, while the sequencer supplies the accepted operation
+              order and acknowledgements.
             </p>
           </section>
         </>
@@ -308,7 +319,7 @@ const operationNames = structure.operations.length === 1
           model="SharedSequence of Unicode graphemes"
           updates="Insert, delete, replace, or append grapheme ranges"
           merge="Merge identity-based sequence deltas, not raw character offsets"
-          delivery="Edits can arrive later or in a different order"
+          delivery="A sequencer numbers accepted character operations"
           bestFor="Collaborative plain-text fields and editors"
           cost="Sequence metadata and stable identity for each grapheme"
         />

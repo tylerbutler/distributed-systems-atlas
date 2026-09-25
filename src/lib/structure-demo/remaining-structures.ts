@@ -83,7 +83,10 @@ export const remainingStructures: RemainingStructure[] = [
     messageLabel: "Text-edit slip",
     sources: [{ name: "text_kernel", path: "text_kernel.gleam" }],
     operations: [
-      "text_kernel.p2p_insert",
+      "text_kernel.insert",
+      "text_kernel.delete_range",
+      "text_kernel.replace_range",
+      "text_kernel.ack_local",
       "text_kernel.apply_remote",
       "text_kernel.value",
     ],

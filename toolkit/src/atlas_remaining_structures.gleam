@@ -54,6 +54,7 @@ pub opaque type RemainingDemoRoom {
     c: text_kernel.TextState,
     pending: List(Authored(text_kernel.TextOperation)),
     acted: List(String),
+    sequence_number: Int,
   )
   ClaimsRoom(
     a: claims_kernel.ClaimsState,
@@ -194,36 +195,40 @@ pub fn remaining_demo_act(
         _ -> Ok(SequenceRoom(a, b, c, pending, acted))
       }
     }
-    TextRoom(a, b, c, pending, acted) -> {
+    TextRoom(a, b, c, pending, acted, sequence_number) -> {
       use acted <- result.try(mark_acted(acted, replica))
       case replica {
         "A" -> {
-          use #(a, _, operation) <- result.try(
-            text_kernel.p2p_insert(a, 4, "still ")
+          use #(a, _, submission) <- result.try(
+            text_kernel.insert(a, 4, "still ")
             |> result.map_error(fn(_) { "SharedText insertion failed" }),
           )
+          let assert Some(text_kernel.Submission(operation, _)) = submission
           Ok(TextRoom(
             a,
             b,
             c,
             list.append(pending, [Authored("A", operation)]),
             acted,
+            sequence_number,
           ))
         }
         "B" -> {
-          use #(b, _, operation) <- result.try(
-            text_kernel.p2p_insert(b, 4, "calm ")
+          use #(b, _, submission) <- result.try(
+            text_kernel.insert(b, 4, "calm ")
             |> result.map_error(fn(_) { "SharedText insertion failed" }),
           )
+          let assert Some(text_kernel.Submission(operation, _)) = submission
           Ok(TextRoom(
             a,
             b,
             c,
             list.append(pending, [Authored("B", operation)]),
             acted,
+            sequence_number,
           ))
         }
-        _ -> Ok(TextRoom(a, b, c, pending, acted))
+        _ -> Ok(TextRoom(a, b, c, pending, acted, sequence_number))
       }
     }
     ClaimsRoom(a, b, c, pending, acted, sequence_number) -> {
@@ -512,7 +517,7 @@ pub fn remaining_demo_text_edit(
 ) -> Result(RemainingDemoRoom, String) {
   use _ <- result.try(valid_replica(replica))
   case room {
-    TextRoom(a, b, c, pending, acted) -> {
+    TextRoom(a, b, c, pending, acted, sequence_number) -> {
       let state = case replica {
         "A" -> a
         "B" -> b
@@ -521,19 +526,20 @@ pub fn remaining_demo_text_edit(
       case start == end, inserted == "" {
         True, True -> Error("text edit must change the document")
         same_position, empty_insert -> {
-          use #(state, _, operation) <- result.try(
+          use #(state, _, submission) <- result.try(
             case same_position, empty_insert {
-              True, False -> text_kernel.p2p_insert(state, start, inserted)
+              True, False -> text_kernel.insert(state, start, inserted)
               False, True ->
-                text_kernel.p2p_delete_range(state, start, end)
+                text_kernel.delete_range(state, start, end)
               False, False ->
-                text_kernel.p2p_replace_range(state, start, end, inserted)
+                text_kernel.replace_range(state, start, end, inserted)
               True, True -> panic as "handled above"
             }
             |> result.map_error(fn(error) {
               "SharedText edit failed: " <> text_kernel.edit_error_detail(error)
             }),
           )
+          let assert Some(text_kernel.Submission(operation, _)) = submission
           let #(a, b, c) = case replica {
             "A" -> #(state, b, c)
             "B" -> #(a, state, c)
@@ -545,6 +551,7 @@ pub fn remaining_demo_text_edit(
             c,
             list.append(pending, [Authored(replica, operation)]),
             acted,
+            sequence_number,
           ))
         }
       }
@@ -568,17 +575,8 @@ pub fn remaining_demo_deliver(
         })
       Ok(SequenceRoom(a, b, c, [], acted))
     }
-    TextRoom(a, b, c, pending, acted) -> {
-      let #(a, b, c) =
-        list.fold(pending, #(a, b, c), fn(states, authored) {
-          #(
-            text_kernel.apply_remote(states.0, authored.operation).0,
-            text_kernel.apply_remote(states.1, authored.operation).0,
-            text_kernel.apply_remote(states.2, authored.operation).0,
-          )
-        })
-      Ok(TextRoom(a, b, c, [], acted))
-    }
+    TextRoom(a, b, c, pending, acted, sequence_number) ->
+      deliver_text(a, b, c, pending, acted, sequence_number)
     ClaimsRoom(a, b, c, pending, acted, sequence_number) ->
       deliver_claims(a, b, c, pending, acted, sequence_number)
     OrderedRoom(a, b, c, pending, acted, sequence_number) ->
@@ -606,13 +604,13 @@ pub fn remaining_demo_snapshot(
         list.length(pending),
         0,
       ))
-    TextRoom(a, b, c, pending, _) ->
+    TextRoom(a, b, c, pending, _, sequence_number) ->
       Ok(RemainingDemoSnapshot(
         [text_kernel.value(a)],
         [text_kernel.value(b)],
         [text_kernel.value(c)],
         list.length(pending),
-        0,
+        sequence_number,
       ))
     ClaimsRoom(a, b, c, pending, _, sequence_number) ->
       Ok(RemainingDemoSnapshot(
@@ -704,11 +702,13 @@ fn new_sequence_room() -> Result(RemainingDemoRoom, String) {
 }
 
 fn new_text_room() -> Result(RemainingDemoRoom, String) {
-  let #(a, _, _) =
-    text_kernel.p2p_append(
-      text_kernel.new(replica_id.new("A")),
-      "The weir is clear.",
-    )
+  let #(a, _, submission) =
+    text_kernel.append(text_kernel.new(replica_id.new("A")), "The weir is clear.")
+  let assert Some(text_kernel.Submission(operation, _)) = submission
+  use a <- result.try(
+    text_kernel.ack_local(a, operation)
+    |> result.map_error(fn(_) { "SharedText initialization failed" }),
+  )
   let summary = a |> text_kernel.summary |> json.to_string
   use b <- result.try(
     text_kernel.from_summary(summary, replica_id.new("B"))
@@ -718,7 +718,7 @@ fn new_text_room() -> Result(RemainingDemoRoom, String) {
     text_kernel.from_summary(summary, replica_id.new("C"))
     |> result.map_error(fn(_) { "SharedText summary failed" }),
   )
-  Ok(TextRoom(a, b, c, [], []))
+  Ok(TextRoom(a, b, c, [], [], 0))
 }
 
 fn new_rich_text_room() -> Result(RemainingDemoRoom, String) {
@@ -992,6 +992,46 @@ fn deliver_json_ot(
     acted,
     delivered.3,
   ))
+}
+
+fn deliver_text(
+  a: text_kernel.TextState,
+  b: text_kernel.TextState,
+  c: text_kernel.TextState,
+  pending: List(Authored(text_kernel.TextOperation)),
+  acted: List(String),
+  sequence_number: Int,
+) -> Result(RemainingDemoRoom, String) {
+  use delivered <- result.try(
+    list.try_fold(pending, #(a, b, c, sequence_number), fn(states, authored) {
+      let sequence_number = states.3 + 1
+      use a <- result.try(apply_text(states.0, authored, "A"))
+      use b <- result.try(apply_text(states.1, authored, "B"))
+      use c <- result.try(apply_text(states.2, authored, "C"))
+      Ok(#(a, b, c, sequence_number))
+    }),
+  )
+  Ok(TextRoom(
+    delivered.0,
+    delivered.1,
+    delivered.2,
+    [],
+    acted,
+    delivered.3,
+  ))
+}
+
+fn apply_text(
+  state: text_kernel.TextState,
+  authored: Authored(text_kernel.TextOperation),
+  recipient: String,
+) -> Result(text_kernel.TextState, String) {
+  case authored.author == recipient {
+    True ->
+      text_kernel.ack_local(state, authored.operation)
+      |> result.map_error(fn(_) { "SharedText acknowledgement failed" })
+    False -> Ok(text_kernel.apply_remote(state, authored.operation).0)
+  }
 }
 
 fn apply_json_ot(

@@ -112,8 +112,9 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
           {hasExchange && index === 0 && (
             <section class="remaining-exchange" aria-label={isSharedText ? "Text edit exchange" : "Trail exchange"}>
               <div class="remaining-relay" data-relay-node>
-                <h3>{isSharedText ? "Edit exchange" : "Trail exchange"}</h3>
-                <p>{isSharedText ? "Text edits travel to all three notebooks" : "Insertion notes travel to all three hikers"}</p>
+                <h3>{isSharedText ? "Sequencer" : "Trail exchange"}</h3>
+                <p>{isSharedText ? "Assigns one shared order to character operations" : "Insertion notes travel to all three hikers"}</p>
+                {isSharedText && <output data-sequence-number>SN 0</output>}
                 <output data-pending>0 notes waiting</output>
               </div>
               <ol data-note-log aria-label={`${isSharedText ? "Text edit" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
@@ -195,7 +196,12 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
     private delivering = false;
     private generation = 0;
     private acted = new Set<string>();
-    private exchangeNotes: Array<{ author: "A" | "B" | "C"; description: string; delivered: boolean }> = [];
+    private exchangeNotes: Array<{
+      author: "A" | "B" | "C";
+      description: string;
+      delivered: boolean;
+      sequenceNumber?: number;
+    }> = [];
     private markedExampleStops = new Set(["Falls", "Marsh"]);
     private outboundArrivals: Promise<void>[] = [];
     private activeAnimations = new Set<Animation>();
@@ -425,14 +431,27 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
           );
         }
         if (generation !== this.generation) return;
+        const sequenceNumber = this.state.view.sequenceNumber;
         this.state = deliverRemainingRace(this.state);
         if (this.kind === "shared-sequence" || this.kind === "shared-text") {
-          for (const note of this.exchangeNotes) note.delivered = true;
+          let nextSequenceNumber = sequenceNumber;
+          for (const note of [...this.exchangeNotes].reverse()) {
+            if (note.delivered) continue;
+            note.delivered = true;
+            if (this.kind === "shared-text") {
+              nextSequenceNumber += 1;
+              note.sequenceNumber = nextSequenceNumber;
+            }
+          }
         }
         this.clearError();
-        this.render(this.state.view.pending > 0
-          ? "Some notes still await delivery."
-          : "Delivery complete.");
+        this.render(
+          this.state.view.pending > 0
+            ? "Some notes still await delivery."
+            : this.kind === "shared-text"
+              ? `Sequenced through SN ${this.state.view.sequenceNumber}.`
+              : "Delivery complete.",
+        );
         focus.focus();
       } catch (error) {
         this.showError(error);
@@ -544,11 +563,14 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       const count = this.state.view.pending;
       const noun = this.kind === "shared-text" ? "edit" : "note";
       pending.textContent = `${count} ${count === 1 ? noun : `${noun}s`} waiting`;
+      const sequence = this.querySelector<HTMLOutputElement>("[data-sequence-number]");
+      if (sequence) sequence.textContent = `SN ${this.state.view.sequenceNumber}`;
       log.replaceChildren(...(this.exchangeNotes.length
         ? this.exchangeNotes.map((note) => {
           const item = document.createElement("li");
           const name = demoReplicaName(note.author);
-          item.textContent = `${name}: ${note.description} — ${note.delivered ? "delivered" : "waiting"}`;
+          const stamp = note.sequenceNumber === undefined ? "" : `SN ${note.sequenceNumber} · `;
+          item.textContent = `${stamp}${name}: ${note.description} — ${note.delivered ? "delivered" : "waiting"}`;
           return item;
         })
         : [Object.assign(document.createElement("li"), {
