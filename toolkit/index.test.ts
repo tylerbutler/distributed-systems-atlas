@@ -8,6 +8,7 @@ import {
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
   deliverRemainingDemo,
+  editRemainingSharedText,
   insertRemainingSequenceStop,
   stageMapRace,
   stageRegisterDemoRace,
@@ -88,6 +89,30 @@ test("SharedSequence accepts repeated inserts from every hiker and merges equal 
   ]);
   expect(delivered.replicas[0].values.filter((value) => value === "Falls")).toHaveLength(2);
   expect(delivered.replicas[0].values).toHaveLength(8);
+});
+
+test("SharedText accepts concurrent inserts and overlapping edits", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("shared-text")).room;
+  unwrapRemaining(editRemainingSharedText(room, "A", 4, 4, "still "));
+  unwrapRemaining(editRemainingSharedText(room, "B", 4, 8, "levee"));
+  unwrapRemaining(editRemainingSharedText(room, "C", 5, 7, ""));
+
+  const staged = unwrapRemaining(editRemainingSharedText(room, "C", 0, 0, "Note: "));
+  expect(staged.view.pending).toBe(4);
+  expect(staged.view.replicas[0].values[0]).toContain("still");
+  expect(staged.view.replicas[1].values[0]).toContain("levee");
+  expect(staged.view.replicas[2].values[0]).toContain("Note:");
+  expect(editRemainingSharedText(room, "A", 0, 0, "")).toMatchObject({
+    ok: false, error: { tag: "invalid-input" },
+  });
+
+  const delivered = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(delivered.pending).toBe(0);
+  expect(delivered.replicas.map(({ values }) => values)).toEqual([
+    delivered.replicas[0].values,
+    delivered.replicas[0].values,
+    delivered.replicas[0].values,
+  ]);
 });
 
 test("the public facade returns plain JSON data and does not mutate its inputs", () => {

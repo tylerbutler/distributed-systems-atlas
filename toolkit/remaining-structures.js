@@ -105,6 +105,23 @@ export function insertRemainingSequenceStop(current, replica, index, stop) {
     core.remaining_demo_insert(room, replica, index, stop.trim()));
 }
 
+export function editRemainingSharedText(current, replica, start, end, inserted) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  if (!Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(end) || end < start) {
+    return failure("invalid-input", "text range must use nonnegative ordered integers");
+  }
+  if (typeof inserted !== "string") {
+    return failure("invalid-input", "inserted text must be a string");
+  }
+  if (start === end && inserted === "") {
+    return failure("invalid-input", "text edit must change the document");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_text_edit(room, replica, start, end, inserted));
+}
+
 export function stageRemainingDemoRace(current) {
   return update(current, core.remaining_demo_stage_race);
 }

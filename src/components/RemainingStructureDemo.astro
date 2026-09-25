@@ -12,6 +12,8 @@ interface Props {
 
 const { structure } = Astro.props;
 const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
+const isSharedText = structure.id === "shared-text";
+const hasExchange = structure.id === "shared-sequence" || isSharedText;
 ---
 
 <remaining-structure-demo
@@ -20,33 +22,67 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
   data-kind={structure.id}
 >
   <section class="remaining-demo instrument-panel structure-demo-instrument" aria-labelledby={`${structure.id}-demo-title`}>
-    {structure.id === "shared-sequence" && <div class="remaining-operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>}
+    {hasExchange && <div class="remaining-operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>}
     <header>
       <div>
         <h2 id={`${structure.id}-demo-title`}>
-          {structure.id === "shared-sequence" ? "Edit the inspection route" : `${structure.name} at Eagle Creek`}
+          {structure.id === "shared-sequence"
+            ? "Edit the inspection route"
+            : isSharedText ? "Write the field note together" : `${structure.name} at Eagle Creek`}
         </h2>
         <p>
           {structure.id === "shared-sequence"
             ? "Each hiker can add trail stops to their notebook. Turn off Broadcast to see their routes before insertion notes arrive."
-            : structure.story}
+            : isSharedText
+              ? "Type in any notebook. Turn off Broadcast to hold edits locally, then turn it on to watch every copy converge."
+              : structure.story}
         </p>
       </div>
       <p class="remaining-rule"><span>Merge rule</span><strong>{structure.rule}</strong></p>
     </header>
-    <div class:list={["remaining-clients", { "sequence-clients": structure.id === "shared-sequence" }]}>
+    <div class:list={["remaining-clients", { "exchange-clients": hasExchange }]}>
       {REPLICA_IDS.map((id, index) => (
         <Fragment>
           <section data-client={id} aria-label={`${demoReplicaName(id)}'s replica`}>
-            <header><StationMark station={id} size="lg" /><h3>{demoReplicaName(id)}</h3></header>
-            <p class="remaining-local-record">
-              <span>{structure.id === "shared-sequence" ? "Route in this notebook" : structure.recordLabel}</span>
-              <strong data-local-record>{structure.initialRecord[id]}</strong>
-            </p>
+            <header>
+              <StationMark station={id} size="lg" />
+              <h3>{demoReplicaName(id)}</h3>
+              {isSharedText && <output class="remaining-pending-count" data-pending-count>0 pending</output>}
+            </header>
+            {isSharedText ? (
+              <div class="remaining-local-record remaining-text-record">
+                <label for={`shared-text-${id}`}>
+                  <span>Field note in this notebook</span>
+                  <textarea
+                    id={`shared-text-${id}`}
+                    data-text-editor
+                    data-local-record
+                    rows="5"
+                    spellcheck="false"
+                    autocomplete="off"
+                    autocapitalize="off"
+                    disabled
+                  >{structure.initialRecord[id]}</textarea>
+                </label>
+              </div>
+            ) : (
+              <p class="remaining-local-record">
+                <span>{structure.id === "shared-sequence" ? "Route in this notebook" : structure.recordLabel}</span>
+                <strong data-local-record>{structure.initialRecord[id]}</strong>
+              </p>
+            )}
             <p class="remaining-paper-note">
-              <span>{structure.id === "shared-sequence" ? "Latest insertion" : structure.messageLabel}</span>
-              <strong data-client-note>{structure.id === "shared-sequence" ? "No trail stop inserted yet." : structure.local[id]}</strong>
-              <small data-client-evidence>{structure.id === "shared-sequence" ? "Each trail stop gets a unique ID." : structure.evidence[id]}</small>
+              <span>{structure.id === "shared-sequence" ? "Latest insertion" : isSharedText ? "Latest local edit" : structure.messageLabel}</span>
+              <strong data-client-note>
+                {structure.id === "shared-sequence"
+                  ? "No trail stop inserted yet."
+                  : isSharedText ? "No local edit yet." : structure.local[id]}
+              </strong>
+              <small data-client-evidence>
+                {structure.id === "shared-sequence"
+                  ? "Each trail stop gets a unique ID."
+                  : isSharedText ? "Edits name written-symbol positions, not raw code units." : structure.evidence[id]}
+              </small>
             </p>
             {structure.id === "shared-sequence" ? (
               <form class="remaining-insert-controls" data-sequence-insert aria-label={`Insert a trail stop for ${demoReplicaName(id)}`}>
@@ -67,21 +103,21 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
                 </label>
                 <button type="submit" data-insert-submit disabled>Insert trail stop</button>
               </form>
-            ) : (
+            ) : !isSharedText && (
               <button type="button" data-client-action disabled>
                 Send note
               </button>
             )}
           </section>
-          {structure.id === "shared-sequence" && index === 0 && (
-            <section class="remaining-exchange" aria-label="Trail exchange">
+          {hasExchange && index === 0 && (
+            <section class="remaining-exchange" aria-label={isSharedText ? "Text edit exchange" : "Trail exchange"}>
               <div class="remaining-relay" data-relay-node>
-                <h3>Trail exchange</h3>
-                <p>Insertion notes travel to all three hikers</p>
+                <h3>{isSharedText ? "Edit exchange" : "Trail exchange"}</h3>
+                <p>{isSharedText ? "Text edits travel to all three notebooks" : "Insertion notes travel to all three hikers"}</p>
                 <output data-pending>0 notes waiting</output>
               </div>
-              <ol data-note-log aria-label="Insertion note log, newest first" aria-live="polite" reversed>
-                <li>No insertion notes yet.</li>
+              <ol data-note-log aria-label={`${isSharedText ? "Text edit" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
+                <li>{isSharedText ? "No text edits yet." : "No insertion notes yet."}</li>
               </ol>
             </section>
           )}
@@ -97,11 +133,16 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     <div class="remaining-controls">
       <div>
         <h3>Run the worked example</h3>
-        <p>{structure.id === "shared-sequence"
-          ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
-          : "Queue the hikers' notes together, or reset and send one at a time."}</p>
+        <p>
+          {structure.id === "shared-sequence"
+            ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
+            : isSharedText
+              ? "Crowd one position with two words, overlap edits to one word, or type your own changes above."
+              : "Queue the hikers' notes together, or reset and send one at a time."}
+        </p>
       </div>
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
+      {isSharedText && <button type="button" data-action="overlap" disabled>Overlap edits to “weir”</button>}
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>Enable JavaScript to run the race. The expected result remains in the lesson.</p>
     </div>
@@ -115,6 +156,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     actInRemainingDemo,
     createRemainingDemo,
     deliverRemainingRace,
+    editSharedText,
     insertSequenceStop,
     stageRemainingRace,
     type RemainingDemoState,
@@ -127,12 +169,33 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
   import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
   import { sequenceStopMarks } from "../lib/structure-demo/remaining-structures";
 
+  const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
+
+  function graphemes(value: string): string[] {
+    return Array.from(graphemeSegmenter.segment(value), ({ segment }) => segment);
+  }
+
+  function minimalTextEdit(before: string, after: string) {
+    const oldText = graphemes(before);
+    const newText = graphemes(after);
+    let start = 0;
+    while (start < oldText.length && start < newText.length && oldText[start] === newText[start]) start += 1;
+    let oldEnd = oldText.length;
+    let newEnd = newText.length;
+    while (oldEnd > start && newEnd > start && oldText[oldEnd - 1] === newText[newEnd - 1]) {
+      oldEnd -= 1;
+      newEnd -= 1;
+    }
+    if (start === oldEnd && start === newEnd) return null;
+    return { start, end: oldEnd, inserted: newText.slice(start, newEnd).join("") };
+  }
+
   class RemainingStructureDemo extends HTMLElement {
     private state!: RemainingDemoState;
     private delivering = false;
     private generation = 0;
     private acted = new Set<string>();
-    private sequenceNotes: Array<{ author: "A" | "B" | "C"; description: string; delivered: boolean }> = [];
+    private exchangeNotes: Array<{ author: "A" | "B" | "C"; description: string; delivered: boolean }> = [];
     private markedExampleStops = new Set(["Falls", "Marsh"]);
     private outboundArrivals: Promise<void>[] = [];
     private activeAnimations = new Set<Animation>();
@@ -164,7 +227,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
             this.state = insertSequenceStop(this.state, client, position, name);
             this.markedExampleStops.delete(name);
             const description = `Insert ${name} ${place}`;
-            this.sequenceNotes.unshift({ author: client, description, delivered: false });
+            this.exchangeNotes.unshift({ author: client, description, delivered: false });
             this.setSequenceSlip(client, description);
             nameInput.value = "";
             this.clearError();
@@ -172,6 +235,32 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
             this.render(`Queued ${hiker}'s insertion note.`);
             this.queueOutbound(client, name);
             if (this.transport.autoDeliver) void this.deliver(form.querySelector<HTMLButtonElement>("button") ?? form);
+          } catch (error) {
+            this.showError(error);
+          }
+        });
+      });
+      this.querySelectorAll<HTMLTextAreaElement>("[data-text-editor]").forEach((editor) => {
+        editor.addEventListener("input", () => {
+          const client = editor.closest<HTMLElement>("[data-client]")?.dataset.client;
+          if (client !== "A" && client !== "B" && client !== "C") {
+            this.showError("Missing text editor identity.");
+            return;
+          }
+          try {
+            const replica = this.state.view.replicas.find(({ id }) => id === client);
+            const before = replica?.values[0];
+            if (before === undefined) throw new Error("Missing SharedText value.");
+            const edit = minimalTextEdit(before, editor.value);
+            if (!edit) return;
+            this.state = editSharedText(this.state, client, edit.start, edit.end, edit.inserted);
+            const description = this.describeTextEdit(edit.start, edit.end, edit.inserted);
+            this.exchangeNotes.unshift({ author: client, description, delivered: false });
+            this.setTextSlip(client, description);
+            this.clearError();
+            this.render(`Queued ${demoReplicaName(client)}'s text edit.`);
+            this.queueOutbound(client, edit.inserted || "delete");
+            if (this.transport.autoDeliver) void this.deliver(editor);
           } catch (error) {
             this.showError(error);
           }
@@ -205,20 +294,47 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
           this.acted = new Set(REPLICA_IDS);
           if (this.kind === "shared-sequence") {
             if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
-            this.sequenceNotes = [
+            this.exchangeNotes = [
               { author: "B", description: "Insert Marsh before Weir", delivered: false },
               { author: "A", description: "Insert Falls before Weir", delivered: false },
             ];
             this.setSequenceSlip("A", "Insert Falls before Weir", "Falls");
             this.setSequenceSlip("B", "Insert Marsh before Weir", "Marsh");
+          } else if (this.kind === "shared-text") {
+            this.exchangeNotes = [
+              { author: "B", description: 'Insert “calm ” before “weir”', delivered: false },
+              { author: "A", description: 'Insert “still ” before “weir”', delivered: false },
+            ];
+            this.setTextSlip("A", 'Insert “still ” before “weir”');
+            this.setTextSlip("B", 'Insert “calm ” before “weir”');
           }
           this.clearError();
-          this.render("Notes queued for delivery.");
-          if (this.kind === "shared-sequence") {
-            this.queueOutbound("A", "Falls");
-            this.queueOutbound("B", "Marsh");
+          this.render(this.kind === "shared-text" ? "Concurrent text edits queued." : "Notes queued for delivery.");
+          if (this.kind === "shared-sequence" || this.kind === "shared-text") {
+            this.queueOutbound("A", this.kind === "shared-text" ? "still" : "Falls");
+            this.queueOutbound("B", this.kind === "shared-text" ? "calm" : "Marsh");
           }
           if (this.transport.autoDeliver) void this.deliver(this.race);
+        } catch (error) {
+          this.showError(error);
+        }
+      });
+      this.querySelector<HTMLButtonElement>('[data-action="overlap"]')?.addEventListener("click", (event) => {
+        this.resetFlow();
+        try {
+          this.state = editSharedText(this.state, "A", 4, 8, "levee");
+          this.state = editSharedText(this.state, "B", 5, 7, "");
+          this.exchangeNotes = [
+            { author: "B", description: 'Delete “ei” from “weir”', delivered: false },
+            { author: "A", description: 'Replace “weir” with “levee”', delivered: false },
+          ];
+          this.setTextSlip("A", 'Replace “weir” with “levee”');
+          this.setTextSlip("B", 'Delete “ei” from “weir”');
+          this.clearError();
+          this.render("Overlapping text edits queued.");
+          this.queueOutbound("A", "replace");
+          this.queueOutbound("B", "delete");
+          if (this.transport.autoDeliver) void this.deliver(event.currentTarget as HTMLButtonElement);
         } catch (error) {
           this.showError(error);
         }
@@ -272,14 +388,14 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.renderControls();
       const generation = this.generation;
       try {
-        if (this.kind === "shared-sequence") {
+        if (this.kind === "shared-sequence" || this.kind === "shared-text") {
           const relay = this.querySelector<HTMLElement>("[data-relay-node]");
-          if (!relay) throw new Error("Missing trail exchange relay");
-          const broadcastNotes = new Set<(typeof this.sequenceNotes)[number]>();
+          if (!relay) throw new Error("Missing exchange relay");
+          const broadcastNotes = new Set<(typeof this.exchangeNotes)[number]>();
           while (true) {
             await Promise.all(this.outboundArrivals.splice(0));
             if (generation !== this.generation) return;
-            const pendingNotes = [...this.sequenceNotes].reverse().filter(
+            const pendingNotes = [...this.exchangeNotes].reverse().filter(
               (note) => !note.delivered && !broadcastNotes.has(note),
             );
             for (const note of pendingNotes) broadcastNotes.add(note);
@@ -305,8 +421,8 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
         }
         if (generation !== this.generation) return;
         this.state = deliverRemainingRace(this.state);
-        if (this.kind === "shared-sequence") {
-          for (const note of this.sequenceNotes) note.delivered = true;
+        if (this.kind === "shared-sequence" || this.kind === "shared-text") {
+          for (const note of this.exchangeNotes) note.delivered = true;
         }
         this.clearError();
         this.render(this.state.view.pending > 0
@@ -328,7 +444,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
     private queueOutbound(client: "A" | "B" | "C", label: string): void {
       const from = this.querySelector<HTMLElement>(`[data-client="${client}"]`);
       const relay = this.querySelector<HTMLElement>("[data-relay-node]");
-      if (!from || !relay) throw new Error("Missing insertion note route");
+      if (!from || !relay) throw new Error("Missing edit route");
       this.outboundArrivals.push(this.animateHop(from, relay, label, "outbound"));
     }
 
@@ -358,7 +474,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.generation += 1;
       this.delivering = false;
       this.acted.clear();
-      this.sequenceNotes = [];
+      this.exchangeNotes = [];
       this.markedExampleStops = new Set(["Falls", "Marsh"]);
       this.outboundArrivals = [];
       for (const animation of this.activeAnimations) animation.cancel();
@@ -367,6 +483,8 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.state = createRemainingDemo(this.kind);
       if (this.kind === "shared-sequence") {
         for (const id of REPLICA_IDS) this.setSequenceSlip(id, "No trail stop inserted yet.");
+      } else if (this.kind === "shared-text") {
+        for (const id of REPLICA_IDS) this.setTextSlip(id, "No local edit yet.");
       }
     }
 
@@ -389,13 +507,21 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
               nodes.push(this.sequenceValue(value));
             }
             record.replaceChildren(...nodes);
+          } else if (this.kind === "shared-text" && record instanceof HTMLTextAreaElement) {
+            if (record.value !== (replica.values[0] ?? "")) {
+              const focused = document.activeElement === record;
+              const start = record.selectionStart;
+              const end = record.selectionEnd;
+              record.value = replica.values[0] ?? "";
+              if (focused) record.setSelectionRange(start, end);
+            }
           } else {
             record.textContent = replica.values.join(" · ");
           }
         }
         if (this.kind === "shared-sequence") this.renderSequencePositions(replica.id, replica.values);
       }
-      this.renderSequenceNotes();
+      this.renderExchangeNotes();
       this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
       const status = this.querySelector<HTMLElement>("[data-status]");
       if (status) {
@@ -405,21 +531,31 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.renderControls();
     }
 
-    private renderSequenceNotes(): void {
-      if (this.kind !== "shared-sequence") return;
+    private renderExchangeNotes(): void {
+      if (this.kind !== "shared-sequence" && this.kind !== "shared-text") return;
       const pending = this.querySelector<HTMLOutputElement>("[data-pending]");
       const log = this.querySelector<HTMLOListElement>("[data-note-log]");
-      if (!pending || !log) throw new Error("Missing trail exchange");
+      if (!pending || !log) throw new Error("Missing edit exchange");
       const count = this.state.view.pending;
-      pending.textContent = `${count} ${count === 1 ? "note" : "notes"} waiting`;
-      log.replaceChildren(...(this.sequenceNotes.length
-        ? this.sequenceNotes.map((note) => {
+      const noun = this.kind === "shared-text" ? "edit" : "note";
+      pending.textContent = `${count} ${count === 1 ? noun : `${noun}s`} waiting`;
+      log.replaceChildren(...(this.exchangeNotes.length
+        ? this.exchangeNotes.map((note) => {
           const item = document.createElement("li");
           const name = demoReplicaName(note.author);
           item.textContent = `${name}: ${note.description} — ${note.delivered ? "delivered" : "waiting"}`;
           return item;
         })
-        : [Object.assign(document.createElement("li"), { textContent: "No insertion notes yet." })]));
+        : [Object.assign(document.createElement("li"), {
+          textContent: this.kind === "shared-text" ? "No text edits yet." : "No insertion notes yet.",
+        })]));
+      if (this.kind === "shared-text") {
+        for (const id of REPLICA_IDS) {
+          const authored = this.exchangeNotes.filter((note) => note.author === id && !note.delivered).length;
+          const output = this.querySelector<HTMLOutputElement>(`[data-client="${id}"] [data-pending-count]`);
+          if (output) output.textContent = `${authored} pending`;
+        }
+      }
     }
 
     private renderSequencePositions(client: string, values: string[]): void {
@@ -454,6 +590,19 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
         : ["Each trail stop gets a unique ID."]));
     }
 
+    private setTextSlip(client: "A" | "B" | "C", description: string): void {
+      const note = this.querySelector<HTMLElement>(`[data-client="${client}"] [data-client-note]`);
+      if (!note) throw new Error(`Missing ${client} text edit note`);
+      note.textContent = description;
+    }
+
+    private describeTextEdit(start: number, end: number, inserted: string): string {
+      const clipped = inserted.length > 18 ? `${inserted.slice(0, 18)}…` : inserted;
+      if (start === end) return `Insert “${clipped}” at symbol ${start}`;
+      if (!inserted) return `Delete symbols ${start}–${end}`;
+      return `Replace symbols ${start}–${end} with “${clipped}”`;
+    }
+
     private renderValues(target: HTMLElement | null, values: string[]): void {
       if (!target) throw new Error("Missing remaining demo state");
       target.replaceChildren(...values.map((value) => {
@@ -481,13 +630,20 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
       this.querySelectorAll<HTMLSelectElement | HTMLButtonElement>(
         "[data-insert-name], [data-insert-position], [data-insert-submit]",
       ).forEach((control) => { control.disabled = false; });
+      this.querySelectorAll<HTMLTextAreaElement>("[data-text-editor]").forEach((editor) => {
+        editor.disabled = false;
+      });
       for (const button of this.querySelectorAll<HTMLButtonElement>(
         "[data-client-action]",
       )) {
         const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
         button.disabled = client ? this.acted.has(client) : true;
       }
-      this.race.disabled = this.kind === "shared-sequence" ? false : this.delivering;
+      this.race.disabled = this.kind === "shared-sequence" || this.kind === "shared-text"
+        ? false
+        : this.delivering;
+      const overlap = this.querySelector<HTMLButtonElement>('[data-action="overlap"]');
+      if (overlap) overlap.disabled = this.delivering;
       const reset = this.querySelector<HTMLButtonElement>('[data-action="reset"]');
       if (reset) reset.disabled = false;
     }

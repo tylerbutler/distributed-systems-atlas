@@ -48,7 +48,7 @@ const operationNames = structure.operations.length === 1
           {isSharedSequence
             ? "Two hikers edit the route"
             : isSharedText
-              ? "SharedSequence applied to text"
+              ? "Three hikers edit one field note"
               : "At Eagle Creek"}
         </h2>
         <p>{structure.story}</p>
@@ -60,9 +60,10 @@ const operationNames = structure.operations.length === 1
           </p>
         ) : isSharedText ? (
           <p>
-            Each written symbol is a sequence item with its own identity and
-            position. That lets every copy place concurrent edits in the same
-            order without dropping either edit.
+            Alice inserts “still” while Bob inserts “calm” at the same place.
+            Carol has not received either edit. Each written symbol has its own
+            identity, so all three notebooks can later keep both changes in the
+            same order.
           </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
@@ -136,8 +137,9 @@ const operationNames = structure.operations.length === 1
       <section>
         <h2>Run the conflict</h2>
         <p>
-          Alice and Bob act before either receives the other's slip. Carol
-          receives their notes too and checks that all three copies agree.
+          {isSharedText
+            ? "Type in any notebook, or run a worked conflict. Pause Broadcast to compare local copies before the edits travel."
+            : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
 

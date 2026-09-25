@@ -503,6 +503,56 @@ pub fn remaining_demo_insert(
   }
 }
 
+pub fn remaining_demo_text_edit(
+  room: RemainingDemoRoom,
+  replica: String,
+  start: Int,
+  end: Int,
+  inserted: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    TextRoom(a, b, c, pending, acted) -> {
+      let state = case replica {
+        "A" -> a
+        "B" -> b
+        _ -> c
+      }
+      case start == end, inserted == "" {
+        True, True -> Error("text edit must change the document")
+        same_position, empty_insert -> {
+          use #(state, _, operation) <- result.try(
+            case same_position, empty_insert {
+              True, False -> text_kernel.p2p_insert(state, start, inserted)
+              False, True ->
+                text_kernel.p2p_delete_range(state, start, end)
+              False, False ->
+                text_kernel.p2p_replace_range(state, start, end, inserted)
+              True, True -> panic as "handled above"
+            }
+            |> result.map_error(fn(error) {
+              "SharedText edit failed: " <> text_kernel.edit_error_detail(error)
+            }),
+          )
+          let #(a, b, c) = case replica {
+            "A" -> #(state, b, c)
+            "B" -> #(a, state, c)
+            _ -> #(a, b, state)
+          }
+          Ok(TextRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [Authored(replica, operation)]),
+            acted,
+          ))
+        }
+      }
+    }
+    _ -> Error("text editing requires SharedText")
+  }
+}
+
 pub fn remaining_demo_deliver(
   room: RemainingDemoRoom,
 ) -> Result(RemainingDemoRoom, String) {

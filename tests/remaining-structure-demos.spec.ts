@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
-  ["shared-text", "SharedText", "Race the field-note edits", ["The weir is clear."], ["The still calm weir is clear."]],
+  ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
   ["ordered-collection", "OrderedCollection", "Race to acquire the inspection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", "TaskManager", "Queue the dispatcher volunteers", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
@@ -28,11 +28,17 @@ for (const [slug, name, race, initial, final] of examples) {
       ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
       : [...final];
     await expect(demo.locator("[data-state] li")).toHaveText(displayed);
-    await expect(demo.locator("[data-local-record]")).toHaveText([
-      displayed.join(" · "),
-      displayed.join(" · "),
-      displayed.join(" · "),
-    ]);
+    if (slug === "shared-text") {
+      for (const editor of await demo.locator("[data-local-record]").all()) {
+        await expect(editor).toHaveValue(displayed[0]);
+      }
+    } else {
+      await expect(demo.locator("[data-local-record]")).toHaveText([
+        displayed.join(" · "),
+        displayed.join(" · "),
+        displayed.join(" · "),
+      ]);
+    }
     if (slug === "shared-sequence") {
       await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
       await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
@@ -51,13 +57,49 @@ for (const [slug, name, race, initial, final] of examples) {
     }
     await demo.getByRole("button", { name: "Reset" }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
-    await expect(demo.locator("[data-local-record]")).toHaveText([
-      initial.join(" · "),
-      initial.join(" · "),
-      initial.join(" · "),
-    ]);
+    if (slug === "shared-text") {
+      for (const editor of await demo.locator("[data-local-record]").all()) {
+        await expect(editor).toHaveValue(initial[0]);
+      }
+    } else {
+      await expect(demo.locator("[data-local-record]")).toHaveText([
+        initial.join(" · "),
+        initial.join(" · "),
+        initial.join(" · "),
+      ]);
+    }
   });
 }
+
+test("SharedText accepts typing while delivery is paused", async ({ page }) => {
+  await page.goto("/structures/shared-text/");
+  const demo = page.getByTestId("shared-text-demo");
+  const editors = demo.locator("[data-text-editor]");
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  await editors.nth(0).fill("The weir is cloudy.");
+  await expect(editors.nth(0)).toHaveValue("The weir is cloudy.");
+  await expect(editors.nth(1)).toHaveValue("The weir is clear.");
+  await expect(demo.locator("[data-pending]")).toHaveText("1 edit waiting");
+  await demo.locator("[data-transport-auto-deliver]").check();
+  for (const editor of await editors.all()) {
+    await expect(editor).toHaveValue("The weir is cloudy.");
+  }
+  await expect(demo.locator("[data-note-log] li").first()).toContainText("delivered");
+});
+
+test("SharedText converges overlapping edits to one word", async ({ page }) => {
+  await page.goto("/structures/shared-text/");
+  const demo = page.getByTestId("shared-text-demo");
+  await demo.getByRole("button", { name: "Overlap edits to “weir”" }).click();
+  await expect(demo.locator("[data-pending]")).toHaveText("0 edits waiting");
+  for (const editor of await demo.locator("[data-text-editor]").all()) {
+    await expect(editor).toHaveValue("The levee is clear.");
+  }
+  await expect(demo.locator("[data-note-log] li")).toHaveText([
+    "Bob: Delete “ei” from “weir” — delivered",
+    "Alice: Replace “weir” with “levee” — delivered",
+  ]);
+});
 
 test("remaining family pages link every dedicated lesson", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });

@@ -67,17 +67,17 @@
   padding-block: var(--space-6);
 }
 
-.sequence-clients {
+.exchange-clients {
   grid-template-columns: minmax(0, 1fr) minmax(10rem, 0.45fr) minmax(0, 1fr);
   grid-template-areas: "a exchange b" "c c c";
 }
 
-.sequence-clients [data-client="A"] { grid-area: a; }
-.sequence-clients [data-client="B"] { grid-area: b; }
-.sequence-clients [data-client="C"] {
+.exchange-clients [data-client="A"] { grid-area: a; }
+.exchange-clients [data-client="B"] { grid-area: b; }
+.exchange-clients [data-client="C"] {
   grid-area: c;
   justify-self: center;
-  width: min(100%, 24rem);
+  width: min(100%, 32rem);
 }
 
 .remaining-clients > [data-client] {
@@ -91,6 +91,13 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+.remaining-pending-count {
+  margin-inline-start: auto;
+  color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
+  font: 0.75rem / 1.4 var(--font-data);
+  font-variant-numeric: tabular-nums;
 }
 
 .remaining-local-record,
@@ -114,6 +121,33 @@
   font-family: var(--font-data);
   font-size: 0.875rem;
   overflow-wrap: anywhere;
+}
+
+.remaining-text-record {
+  display: block;
+}
+
+.remaining-text-record label {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.remaining-text-record textarea {
+  width: 100%;
+  min-height: 8rem;
+  padding: var(--space-3);
+  border: var(--rule-width) solid color-mix(in oklch, var(--clear) 55%, var(--instrument));
+  border-radius: 0;
+  color: var(--clear);
+  background: var(--instrument-deep);
+  caret-color: var(--signal);
+  font: 0.9rem / 1.6 var(--font-data);
+  resize: vertical;
+}
+
+.remaining-text-record textarea:focus-visible {
+  outline: var(--rule-width) solid var(--signal);
+  outline-offset: 3px;
 }
 
 .remaining-paper-note strong {
@@ -303,7 +337,7 @@
     grid-template-columns: 1fr;
   }
 
-  .sequence-clients {
+  .exchange-clients {
     grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.55fr) minmax(0, 1fr);
     gap: var(--space-4);
   }
@@ -314,7 +348,7 @@
     grid-template-columns: 1fr;
   }
 
-  .sequence-clients {
+  .exchange-clients {
     grid-template-areas: "a" "exchange" "b" "c";
   }
 
@@ -323,7 +357,7 @@
     border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   }
 
-  .sequence-clients [data-client="C"] {
+  .exchange-clients [data-client="C"] {
     width: 100%;
   }
 }

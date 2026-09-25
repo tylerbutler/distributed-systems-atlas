@@ -2,6 +2,7 @@ import {
   actRemainingDemo,
   createRemainingDemoRoom,
   deliverRemainingDemo,
+  editRemainingSharedText,
   insertRemainingSequenceStop,
   stageRemainingDemoRace,
   type RemainingDemoKind,
@@ -42,6 +43,16 @@ export function insertSequenceStop(
   stop: string,
 ): RemainingDemoState {
   return { kind: state.kind, ...value(insertRemainingSequenceStop(state.room, replica, index, stop)) };
+}
+
+export function editSharedText(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+  start: number,
+  end: number,
+  inserted: string,
+): RemainingDemoState {
+  return { kind: state.kind, ...value(editRemainingSharedText(state.room, replica, start, end, inserted)) };
 }
 
 export function stageRemainingRace(state: RemainingDemoState): RemainingDemoState {

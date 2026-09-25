@@ -50,6 +50,14 @@ export function insertRemainingSequenceStop(
   stop: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
+export function editRemainingSharedText(
+  current: unknown,
+  replica: unknown,
+  start: unknown,
+  end: unknown,
+  inserted: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
 export function stageRemainingDemoRace(
   current: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
