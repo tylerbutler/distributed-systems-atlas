@@ -13,6 +13,7 @@ interface Props {
 const { structure } = Astro.props;
 const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
 const isSharedText = structure.id === "shared-text";
+const isClaims = structure.id === "claims";
 const isCoordination = structure.family === "coordination";
 const hasExchange = structure.id === "shared-sequence" || isSharedText || isCoordination;
 const hasSequencer = isSharedText || isCoordination;
@@ -30,14 +31,18 @@ const hasSequencer = isSharedText || isCoordination;
         <h2 id={`${structure.id}-demo-title`}>
           {structure.id === "shared-sequence"
             ? "Edit the inspection route"
-            : isSharedText ? "Write the field note together" : `${structure.name} at Eagle Creek`}
+            : isSharedText
+              ? "Write the field note together"
+              : isClaims ? "Claim one shared key" : `${structure.name} at Eagle Creek`}
         </h2>
         <p>
           {structure.id === "shared-sequence"
             ? "Each hiker can add trail stops to their notebook. Turn off Broadcast to see their routes before insertion notes arrive."
             : isSharedText
               ? "Type in any notebook. Turn off Broadcast to hold edits locally, then turn it on to watch every copy converge."
-              : structure.story}
+              : isClaims
+                ? "Each client can submit one request for gate-key. Pause Broadcast to inspect the pending requests before the sequencer accepts them."
+                : structure.story}
         </p>
       </div>
       <p class="remaining-rule">
@@ -152,7 +157,9 @@ const hasSequencer = isSharedText || isCoordination;
             ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
             : isSharedText
               ? "Crowd one position with two words, overlap edits to one word, or type your own changes above."
-              : "Queue the hikers' notes together, or reset and send one at a time."}
+              : isClaims
+                ? "Queue all three claim requests together, or reset and submit one request at a time."
+                : "Queue the hikers' notes together, or reset and send one at a time."}
         </p>
       </div>
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>

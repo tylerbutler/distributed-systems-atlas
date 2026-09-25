@@ -224,7 +224,7 @@ test("Coordination introduces the shared DDS sequencer model", async ({ page }) 
 test("Claims explains its write-once shared-map mechanics", async ({ page }) => {
   await page.goto("/structures/claims/");
   const lesson = page.locator("article").first();
-  await expect(page.getByRole("heading", { name: "A shared map that fills each key once" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Translate the story into a map" })).toBeVisible();
   await expect(lesson).toContainText("SharedMap the closest structure by shape");
   await expect(lesson).toContainText("there is no release, delete, or reset operation");
   await expect(lesson).toContainText("first operation accepted by the sequencer");
@@ -237,11 +237,18 @@ test("Claims explains its write-once shared-map mechanics", async ({ page }) => 
   await expect(comparison).toContainText("Last numbered change");
   await expect(page.getByRole("heading", { name: "Alternative perspective" })).toBeVisible();
   await expect(lesson).toContainText("G-counters and GSets are CRDTs");
+  await expect(lesson).toContainText("TaskManager retains an ordered volunteer queue");
+  await expect(lesson).toContainText("no waiting queue, release, or promotion");
   await expect(page.getByRole("heading", {
     name: "From three pending claims to one permanent entry",
   })).toBeVisible();
   await expect(lesson).toContainText("claim_once");
   await expect(lesson).toContainText("Reset button creates a new demo room");
+  await expect(lesson).not.toContainText("slip");
+  await expect(page.getByTestId("claims-demo").getByRole("heading", {
+    name: "Claim one shared key",
+  })).toBeVisible();
+  await expect(page.getByTestId("claims-demo")).toContainText("Pending request");
 });
 
 test("remaining lessons retain content without JavaScript", async ({ browser }) => {

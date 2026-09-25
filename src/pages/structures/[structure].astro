@@ -73,19 +73,26 @@ const operationNames = structure.operations.length === 1
             identity, so all three notebooks can later keep both changes in the
             same order.
           </p>
+        ) : isClaims ? (
+          <p>
+            Each hiker's ledger begins with <code>gate-key: unclaimed</code>.
+            They send separate requests to the ranger, who can accept only one.
+            Until he numbers the requests and announces the result, every ledger
+            still shows the key as unclaimed.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && (
+        {!isSharedText && !isClaims && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
           </p>
         )}
-        {structure.localVisibility && <p>{structure.localVisibility}</p>}
+        {structure.localVisibility && !isClaims && <p>{structure.localVisibility}</p>}
       </section>
 
       {isSharedText && (
@@ -303,11 +310,19 @@ const operationNames = structure.operations.length === 1
       {isClaims && (
         <>
           <section id="claims-map-model" aria-labelledby="claims-map-model-title">
-            <h2 id="claims-map-model-title">A shared map that fills each key once</h2>
+            <h2 id="claims-map-model-title">Translate the story into a map</h2>
             <p>
-              Claims stores key-value entries. A key names the responsibility,
-              such as <code>gate-key</code>, and its value names the claimant,
-              such as <code>Alice</code>. This makes
+              In the data model, the gate key becomes the key
+              <code> gate-key</code>, and the winning hiker becomes its value. A
+              <dfn><a href="/glossary/#claims"> Claims</a></dfn> value is a map
+              of these named, write-once entries.
+            </p>
+            <TermCallout
+              term="Claims"
+              definition="A sequenced shared map of named, write-once entries. The first accepted claim for each key becomes permanent, and later claims for that key are rejected."
+            />
+            <p>
+              This makes
               <a href="/structures/shared-map/"> SharedMap</a> the closest
               structure by shape: both structures are sequenced maps whose keys
               can change independently.
@@ -376,26 +391,6 @@ const operationNames = structure.operations.length === 1
             cost="One accepted claimant per key plus pending claims"
           />
 
-          <aside class="perspective-note" aria-labelledby="claims-perspective-title">
-            <h3 class="term-callout-label" id="claims-perspective-title">Alternative perspective</h3>
-            <div>
-              <p>
-                Claims shares an irreversible quality with grow-only structures.
-                A <a href="/structures/g-counter/">G-counter</a> cannot lower an
-                accepted component, and a <a href="/structures/g-set/">GSet</a>
-                cannot remove an accepted member. Claims likewise cannot remove
-                an accepted key or change its claimant.
-              </p>
-              <p>
-                The mechanics are different. G-counters and GSets are CRDTs:
-                replicas combine concurrent state with maximum or union. Claims
-                is a DDS. It does not merge Alice, Bob, and Carol into one
-                answer. The sequencer chooses one claim, and every replica
-                applies that same decision.
-              </p>
-            </div>
-          </aside>
-
           <section aria-labelledby="claims-mechanics-title">
             <h2 id="claims-mechanics-title">From three pending claims to one permanent entry</h2>
             <ol class="text-mechanics">
@@ -426,6 +421,33 @@ const operationNames = structure.operations.length === 1
               delete or release a claim through the Claims API.
             </p>
           </section>
+
+          <aside class="perspective-note" aria-labelledby="claims-perspective-title">
+            <h3 class="term-callout-label" id="claims-perspective-title">Alternative perspective</h3>
+            <div>
+              <p>
+                Claims shares an irreversible quality with grow-only structures.
+                A <a href="/structures/g-counter/">G-counter</a> cannot lower an
+                accepted component, and a <a href="/structures/g-set/">GSet</a>
+                cannot remove an accepted member. Claims likewise cannot remove
+                an accepted key or change its claimant.
+              </p>
+              <p>
+                The mechanics are different. G-counters and GSets are CRDTs:
+                replicas combine concurrent state with maximum or union. Claims
+                is a DDS. It does not merge competing claimants. The sequencer
+                chooses one claim, and every replica applies that decision.
+              </p>
+              <p>
+                <a href="/structures/task-manager/">TaskManager</a> is closer in
+                purpose because it also assigns one client to a named task.
+                TaskManager retains an ordered volunteer queue and can promote
+                the next connected client when the active worker leaves. Claims
+                retains only the permanent winner; it has no waiting queue,
+                release, or promotion.
+              </p>
+            </div>
+          </aside>
         </>
       )}
 
@@ -455,17 +477,23 @@ const operationNames = structure.operations.length === 1
         />
       )}
 
-      <p>
-        A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
-        uses this rule to keep the shared record in agreement.
-      </p>
-      <TermCallout term={structure.name} definition={structure.rule} />
+      {!isClaims && (
+        <>
+          <p>
+            A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
+            uses this rule to keep the shared record in agreement.
+          </p>
+          <TermCallout term={structure.name} definition={structure.rule} />
+        </>
+      )}
 
       <section>
         <h2>Run the conflict</h2>
         <p>
           {isSharedText
             ? "Type in any notebook, or run a worked conflict. Pause Broadcast to compare local copies before the edits travel."
+            : isClaims
+              ? "Pause Broadcast, submit concurrent claims, and inspect the pending requests. Resume Broadcast to let the sequencer choose the permanent value."
             : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
