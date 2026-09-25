@@ -11,6 +11,13 @@ const examples = [
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const;
 
+const coordinationSequenceNumbers = {
+  claims: 3,
+  "ordered-collection": 3,
+  "task-manager": 3,
+  "pact-map": 4,
+} as const;
+
 for (const [slug, name, race, initial, final] of examples) {
   test(`${name} runs a three-client authored race`, async ({ page }) => {
     await page.goto(`/structures/${slug}/`);
@@ -27,6 +34,18 @@ for (const [slug, name, race, initial, final] of examples) {
       await expect(demo.locator("[data-pending]")).toHaveText("11 edits waiting");
       await expect(demo.locator("[data-note-log] li")).toHaveCount(11);
     }
+    if (slug in coordinationSequenceNumbers) {
+      const sequenceNumber = coordinationSequenceNumbers[
+        slug as keyof typeof coordinationSequenceNumbers
+      ];
+      await expect(demo.getByRole("heading", { name: "Sequencer" })).toBeVisible();
+      await expect(demo.locator("[data-sequence-number]")).toHaveText("SN 0");
+      await expect(demo.locator("[data-pending]")).toHaveText(
+        `${sequenceNumber} operations waiting`,
+      );
+      await expect(demo.locator("[data-note-log] li")).toHaveCount(sequenceNumber);
+      await expect(demo.locator("[data-note-log] li").last()).toContainText("waiting");
+    }
     await demo.locator("[data-transport-auto-deliver]").check();
     const displayed = slug === "shared-sequence"
       ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
@@ -38,6 +57,24 @@ for (const [slug, name, race, initial, final] of examples) {
       for (const editor of await demo.locator("[data-local-record]").all()) {
         await expect(editor).toHaveValue(displayed[0]);
       }
+    } else if (slug in coordinationSequenceNumbers) {
+      const sequenceNumber = coordinationSequenceNumbers[
+        slug as keyof typeof coordinationSequenceNumbers
+      ];
+      await expect(demo.locator("[data-sequence-number]")).toHaveText(`SN ${sequenceNumber}`);
+      await expect(demo).toHaveAttribute("data-kernel-sequence", String(sequenceNumber));
+      await expect(demo.locator("[data-pending]")).toHaveText("0 operations waiting");
+      await expect(demo.locator("[data-note-log] li").first()).toContainText("delivered");
+      await expect(demo.locator("[data-pending-count]")).toHaveText([
+        "0 pending",
+        "0 pending",
+        "0 pending",
+      ]);
+      await expect(demo.locator("[data-local-record]")).toHaveText([
+        displayed.join(" · "),
+        displayed.join(" · "),
+        displayed.join(" · "),
+      ]);
     } else {
       await expect(demo.locator("[data-local-record]")).toHaveText([
         displayed.join(" · "),
@@ -472,7 +509,10 @@ test("a direct claim shows the kernel winner instead of the scripted race result
     "gate-key: Bob",
     "gate-key: Bob",
   ]);
-  await expect(demo.locator("[data-status]")).toHaveText("Delivery complete.");
+  await expect(demo.locator("[data-status]")).toHaveText("Sequenced through SN 1.");
+  await expect(demo.locator("[data-note-log] li")).toHaveText(
+    "SN 1 · Bob: Claim gate-key for Bob — delivered",
+  );
 });
 
 test("model and lesson prose distinguish local edits from sequenced outcomes", async ({ page }) => {

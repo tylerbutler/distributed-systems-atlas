@@ -13,7 +13,9 @@ interface Props {
 const { structure } = Astro.props;
 const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
 const isSharedText = structure.id === "shared-text";
-const hasExchange = structure.id === "shared-sequence" || isSharedText;
+const isCoordination = structure.family === "coordination";
+const hasExchange = structure.id === "shared-sequence" || isSharedText || isCoordination;
+const hasSequencer = isSharedText || isCoordination;
 ---
 
 <remaining-structure-demo
@@ -38,7 +40,10 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
               : structure.story}
         </p>
       </div>
-      <p class="remaining-rule"><span>Merge rule</span><strong>{structure.rule}</strong></p>
+      <p class="remaining-rule">
+        <span>{isCoordination ? "Coordination rule" : "Merge rule"}</span>
+        <strong>{structure.rule}</strong>
+      </p>
     </header>
     <div class:list={["remaining-clients", { "exchange-clients": hasExchange }]}>
       {REPLICA_IDS.map((id, index) => (
@@ -47,7 +52,7 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
             <header>
               <StationMark station={id} size="lg" />
               <h3>{demoReplicaName(id)}</h3>
-              {isSharedText && <output class="remaining-pending-count" data-pending-count>0 pending</output>}
+              {hasSequencer && <output class="remaining-pending-count" data-pending-count>0 pending</output>}
             </header>
             {isSharedText ? (
               <div class="remaining-local-record remaining-text-record">
@@ -105,20 +110,28 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
               </form>
             ) : !isSharedText && (
               <button type="button" data-client-action disabled>
-                Send note
+                {isCoordination ? structure.local[id] : "Send note"}
               </button>
             )}
           </section>
           {hasExchange && index === 0 && (
-            <section class="remaining-exchange" aria-label={isSharedText ? "Text edit exchange" : "Trail exchange"}>
+            <section class="remaining-exchange" aria-label={hasSequencer ? "Sequencer and operation log" : "Trail exchange"}>
               <div class="remaining-relay" data-relay-node>
-                <h3>{isSharedText ? "Sequencer" : "Trail exchange"}</h3>
-                <p>{isSharedText ? "Assigns one shared order to character operations" : "Insertion notes travel to all three hikers"}</p>
-                {isSharedText && <output data-sequence-number>SN 0</output>}
-                <output data-pending>0 notes waiting</output>
+                <h3>{hasSequencer ? "Sequencer" : "Trail exchange"}</h3>
+                <p>
+                  {isSharedText
+                    ? "Assigns one shared order to character operations"
+                    : isCoordination
+                      ? "Numbers accepted operations before replicas apply them"
+                      : "Insertion notes travel to all three hikers"}
+                </p>
+                {hasSequencer && <output data-sequence-number>SN 0</output>}
+                <output data-pending>
+                  {isCoordination ? "0 operations waiting" : "0 notes waiting"}
+                </output>
               </div>
-              <ol data-note-log aria-label={`${isSharedText ? "Text edit" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
-                <li>{isSharedText ? "No text edits yet." : "No insertion notes yet."}</li>
+              <ol data-note-log aria-label={`${isSharedText ? "Text edit" : isCoordination ? "Sequenced operation" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
+                <li>{isSharedText ? "No text edits yet." : isCoordination ? "No operations accepted yet." : "No insertion notes yet."}</li>
               </ol>
             </section>
           )}
@@ -285,10 +298,16 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
             const pendingBefore = this.state.view.pending;
             this.state = actInRemainingDemo(this.state, client);
             this.acted.add(client);
+            if (this.isCoordination) {
+              for (const description of this.coordinationOperations(client)) {
+                this.exchangeNotes.unshift({ author: client, description, delivered: false });
+                this.queueOutbound(client, this.coordinationAnimationLabel(description));
+              }
+            }
             this.clearError();
             this.render(this.state.view.pending > pendingBefore
-              ? `Queued ${client}'s note. The other hikers can still send theirs.`
-              : `${client} checked their notebook. No note was sent.`);
+              ? `Queued ${demoReplicaName(client)}'s operation. The other hikers can still send theirs.`
+              : `${demoReplicaName(client)} checked their notebook. No operation was sent.`);
             if (this.transport.autoDeliver) void this.deliver(button);
           } catch (error) {
             this.showError(error);
@@ -322,9 +341,19 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
           } else {
             this.state = stageRemainingRace(this.state);
             this.acted = new Set(REPLICA_IDS);
+            if (this.isCoordination) {
+              for (const client of REPLICA_IDS) {
+                for (const description of this.coordinationOperations(client)) {
+                  this.exchangeNotes.unshift({ author: client, description, delivered: false });
+                  this.queueOutbound(client, this.coordinationAnimationLabel(description));
+                }
+              }
+            }
           }
           this.clearError();
-          this.render("Notes queued for delivery.");
+          this.render(this.isCoordination
+            ? "Operations queued for sequencing."
+            : "Notes queued for delivery.");
           if (this.kind === "shared-sequence") {
             this.queueOutbound("A", "Falls");
             this.queueOutbound("B", "Marsh");
@@ -399,7 +428,7 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       this.renderControls();
       const generation = this.generation;
       try {
-        if (this.kind === "shared-sequence" || this.kind === "shared-text") {
+        if (this.hasExchange) {
           const relay = this.querySelector<HTMLElement>("[data-relay-node]");
           if (!relay) throw new Error("Missing exchange relay");
           const broadcastNotes = new Set<(typeof this.exchangeNotes)[number]>();
@@ -433,12 +462,12 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
         if (generation !== this.generation) return;
         const sequenceNumber = this.state.view.sequenceNumber;
         this.state = deliverRemainingRace(this.state);
-        if (this.kind === "shared-sequence" || this.kind === "shared-text") {
+        if (this.hasExchange) {
           let nextSequenceNumber = sequenceNumber;
           for (const note of [...this.exchangeNotes].reverse()) {
             if (note.delivered) continue;
             note.delivered = true;
-            if (this.kind === "shared-text") {
+            if (this.hasSequencer) {
               nextSequenceNumber += 1;
               note.sequenceNumber = nextSequenceNumber;
             }
@@ -448,7 +477,7 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
         this.render(
           this.state.view.pending > 0
             ? "Some notes still await delivery."
-            : this.kind === "shared-text"
+            : this.hasSequencer
               ? `Sequenced through SN ${this.state.view.sequenceNumber}.`
               : "Delivery complete.",
         );
@@ -512,6 +541,49 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
       }
     }
 
+    private get isCoordination(): boolean {
+      return this.kind === "claims"
+        || this.kind === "ordered-collection"
+        || this.kind === "task-manager"
+        || this.kind === "pact-map";
+    }
+
+    private get hasExchange(): boolean {
+      return this.kind === "shared-sequence"
+        || this.kind === "shared-text"
+        || this.isCoordination;
+    }
+
+    private get hasSequencer(): boolean {
+      return this.kind === "shared-text" || this.isCoordination;
+    }
+
+    private coordinationOperations(client: "A" | "B" | "C"): string[] {
+      const name = demoReplicaName(client);
+      switch (this.kind) {
+        case "claims":
+          return [`Claim gate-key for ${name}`];
+        case "ordered-collection":
+          return [`Request the bridge inspection for ${name}`];
+        case "task-manager":
+          return [`Volunteer ${name} for dispatcher`];
+        case "pact-map":
+          return client === "A"
+            ? ["Propose ridge-pass", "Alice signs off"]
+            : [`${name} signs off`];
+        default:
+          return [];
+      }
+    }
+
+    private coordinationAnimationLabel(description: string): string {
+      if (description.startsWith("Claim")) return "claim";
+      if (description.startsWith("Request")) return "request";
+      if (description.startsWith("Volunteer")) return "volunteer";
+      if (description.startsWith("Propose")) return "proposal";
+      return "signoff";
+    }
+
     private render(statusText?: string): void {
       const shared = this.state.view.replicas.find(({ id }) => id === "C")
         ?? this.state.view.replicas[0];
@@ -556,12 +628,16 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
     }
 
     private renderExchangeNotes(): void {
-      if (this.kind !== "shared-sequence" && this.kind !== "shared-text") return;
+      if (!this.hasExchange) return;
       const pending = this.querySelector<HTMLOutputElement>("[data-pending]");
       const log = this.querySelector<HTMLOListElement>("[data-note-log]");
       if (!pending || !log) throw new Error("Missing edit exchange");
-      const count = this.state.view.pending;
-      const noun = this.kind === "shared-text" ? "edit" : "note";
+      const count = this.hasSequencer
+        ? this.exchangeNotes.filter((note) => !note.delivered).length
+        : this.state.view.pending;
+      const noun = this.kind === "shared-text"
+        ? "edit"
+        : this.isCoordination ? "operation" : "note";
       pending.textContent = `${count} ${count === 1 ? noun : `${noun}s`} waiting`;
       const sequence = this.querySelector<HTMLOutputElement>("[data-sequence-number]");
       if (sequence) sequence.textContent = `SN ${this.state.view.sequenceNumber}`;
@@ -574,9 +650,11 @@ const hasExchange = structure.id === "shared-sequence" || isSharedText;
           return item;
         })
         : [Object.assign(document.createElement("li"), {
-          textContent: this.kind === "shared-text" ? "No text edits yet." : "No insertion notes yet.",
+          textContent: this.kind === "shared-text"
+            ? "No text edits yet."
+            : this.isCoordination ? "No operations accepted yet." : "No insertion notes yet.",
         })]));
-      if (this.kind === "shared-text") {
+      if (this.hasSequencer) {
         for (const id of REPLICA_IDS) {
           const authored = this.exchangeNotes.filter((note) => note.author === id && !note.delivered).length;
           const output = this.querySelector<HTMLOutputElement>(`[data-client="${id}"] [data-pending-count]`);
