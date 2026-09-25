@@ -75,6 +75,11 @@ export const lwwRegisterTerm: GlossaryTerm = {
   definition: "A replicated register that keeps the value with the greatest timestamp and uses the writer ID to break equal-time ties.",
 };
 
+export const firstWriterWinsTerm: GlossaryTerm = {
+  term: "first-writer-wins",
+  definition: "A conflict rule that keeps the first accepted write and rejects or ignores later writes to the same location. The system must define how it decides which write is first.",
+};
+
 export const registerCollectionTerm: GlossaryTerm = {
   term: "RegisterCollection",
   definition: "A sequenced collection of named registers that retains competing versions so readers can choose an atomic or latest-value policy.",
@@ -112,7 +117,7 @@ export const sharedTextTerm: GlossaryTerm = {
 
 export const claimsTerm: GlossaryTerm = {
   term: "Claims",
-  definition: "A list of named responsibilities where a service numbers claims and assigns the first accepted claimant as the permanent owner.",
+  definition: "A sequenced shared map of named, write-once entries. The first accepted claim for each key becomes permanent, and later claims for that key are rejected.",
 };
 
 export const orderedCollectionTerm: GlossaryTerm = {
@@ -146,6 +151,7 @@ export const standaloneTerms = [
   ddsTerm,
   deltaTerm,
   eventualConsistencyTerm,
+  firstWriterWinsTerm,
   gCounterTerm,
   gSetTerm,
   graphemeTerm,

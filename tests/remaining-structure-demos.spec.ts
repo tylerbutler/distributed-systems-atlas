@@ -221,6 +221,29 @@ test("Coordination introduces the shared DDS sequencer model", async ({ page }) 
   await expect(article.getByRole("link", { name: "sequencer", exact: true }).first()).toHaveAttribute("href", "/glossary/#sequencer");
 });
 
+test("Claims explains its write-once shared-map mechanics", async ({ page }) => {
+  await page.goto("/structures/claims/");
+  const lesson = page.locator("article").first();
+  await expect(page.getByRole("heading", { name: "A shared map that fills each key once" })).toBeVisible();
+  await expect(lesson).toContainText("SharedMap the closest structure by shape");
+  await expect(lesson).toContainText("there is no release, delete, or reset operation");
+  await expect(lesson).toContainText("first operation accepted by the sequencer");
+  await expect(lesson.getByRole("link", { name: "first-writer-wins" }).first()).toHaveAttribute(
+    "href",
+    "/glossary/#first-writer-wins",
+  );
+  const comparison = page.getByRole("table", { name: "Claims and SharedMap mechanics" });
+  await expect(comparison).toContainText("First numbered claim");
+  await expect(comparison).toContainText("Last numbered change");
+  await expect(page.getByRole("heading", { name: "Alternative perspective" })).toBeVisible();
+  await expect(lesson).toContainText("G-counters and GSets are CRDTs");
+  await expect(page.getByRole("heading", {
+    name: "From three pending claims to one permanent entry",
+  })).toBeVisible();
+  await expect(lesson).toContainText("claim_once");
+  await expect(lesson).toContainText("Reset button creates a new demo room");
+});
+
 test("remaining lessons retain content without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {

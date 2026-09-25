@@ -22,6 +22,7 @@ if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
 const isSharedSequence = structure.id === "shared-sequence";
 const isSharedText = structure.id === "shared-text";
+const isClaims = structure.id === "claims";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -30,7 +31,7 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
@@ -299,6 +300,135 @@ const operationNames = structure.operations.length === 1
         </section>
       )}
 
+      {isClaims && (
+        <>
+          <section id="claims-map-model" aria-labelledby="claims-map-model-title">
+            <h2 id="claims-map-model-title">A shared map that fills each key once</h2>
+            <p>
+              Claims stores key-value entries. A key names the responsibility,
+              such as <code>gate-key</code>, and its value names the claimant,
+              such as <code>Alice</code>. This makes
+              <a href="/structures/shared-map/"> SharedMap</a> the closest
+              structure by shape: both structures are sequenced maps whose keys
+              can change independently.
+            </p>
+            <p>
+              Their update rules are opposite. SharedMap keeps the last numbered
+              change for a key and can later replace or clear that value. Claims
+              accepts only the first numbered claim for a key. That value is
+              permanent. A later claim cannot overwrite it, and there is no
+              release, delete, or reset operation.
+            </p>
+            <p>
+              This rule is often called
+              <dfn><a href="/glossary/#first-writer-wins"> first-writer-wins</a></dfn>.
+              In Claims, “first” means the first operation accepted by the
+              sequencer. It does not mean the earliest client clock, the first
+              button press, or the first message to reach an arbitrary replica.
+            </p>
+            <TermCallout
+              term="first-writer-wins"
+              definition="A conflict rule that keeps the first accepted write and rejects or ignores later writes to the same location. The system must define how it decides which write is first."
+            />
+            <div class="route-table-scroll claims-comparison">
+              <table aria-label="Claims and SharedMap mechanics">
+                <thead>
+                  <tr>
+                    <th scope="col">Mechanic</th>
+                    <th scope="col">Claims</th>
+                    <th scope="col">SharedMap</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Shape</th>
+                    <td>Named key to claimant</td>
+                    <td>Named key to value</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Winner</th>
+                    <td>First numbered claim</td>
+                    <td>Last numbered change</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Later write</th>
+                    <td>Rejected</td>
+                    <td>Replaces the value</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Delete</th>
+                    <td>Not supported</td>
+                    <td>Supported</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <StructureFacts
+            structure="Claims"
+            family="DDS"
+            model="Sequenced map of write-once entries"
+            updates="Claim an empty key once"
+            merge="The first accepted claim for each key wins permanently"
+            delivery="One sequencer-ordered operation stream"
+            bestFor="Permanent ownership, election, and one-time assignment"
+            cost="One accepted claimant per key plus pending claims"
+          />
+
+          <aside class="perspective-note" aria-labelledby="claims-perspective-title">
+            <h3 class="term-callout-label" id="claims-perspective-title">Alternative perspective</h3>
+            <div>
+              <p>
+                Claims shares an irreversible quality with grow-only structures.
+                A <a href="/structures/g-counter/">G-counter</a> cannot lower an
+                accepted component, and a <a href="/structures/g-set/">GSet</a>
+                cannot remove an accepted member. Claims likewise cannot remove
+                an accepted key or change its claimant.
+              </p>
+              <p>
+                The mechanics are different. G-counters and GSets are CRDTs:
+                replicas combine concurrent state with maximum or union. Claims
+                is a DDS. It does not merge Alice, Bob, and Carol into one
+                answer. The sequencer chooses one claim, and every replica
+                applies that same decision.
+              </p>
+            </div>
+          </aside>
+
+          <section aria-labelledby="claims-mechanics-title">
+            <h2 id="claims-mechanics-title">From three pending claims to one permanent entry</h2>
+            <ol class="text-mechanics">
+              <li>
+                <strong>Submit against an empty key.</strong> Alice, Bob, and
+                Carol can each create a pending claim for <code>gate-key</code>.
+                A pending claim does not yet make its author the owner.
+              </li>
+              <li>
+                <strong>Assign the accepted order.</strong> The sequencer gives
+                each operation a sequence number. The lowest accepted number
+                for this empty key determines the winner.
+              </li>
+              <li>
+                <strong>Apply one decision everywhere.</strong> The author
+                receives an acknowledgement, and the other replicas receive
+                the numbered operation. All replicas record the same claimant.
+              </li>
+              <li>
+                <strong>Reject later claims.</strong> After the key is filled,
+                <code>claim_once</code> returns <code>AlreadyClaimed</code>.
+                Starting again requires a new key, a new claim namespace, or a
+                new Claims state.
+              </li>
+            </ol>
+            <p>
+              The demo's Reset button creates a new demo room. It does not
+              delete or release a claim through the Claims API.
+            </p>
+          </section>
+        </>
+      )}
+
       {isSharedSequence && (
         <StructureFacts
           structure="SharedSequence"
@@ -479,6 +609,27 @@ const operationNames = structure.operations.length === 1
     font-size: 0.875rem;
   }
 
+  .claims-comparison {
+    margin-block: var(--space-5);
+  }
+
+  .claims-comparison table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+  }
+
+  .claims-comparison :is(th, td) {
+    padding: var(--space-3);
+    border-block: var(--rule-width) solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .claims-comparison th {
+    font-family: var(--font-ui);
+  }
+
   .text-mechanics {
     display: grid;
     gap: var(--space-3);
@@ -551,7 +702,12 @@ const operationNames = structure.operations.length === 1
       font-size: 0.875rem;
     }
 
-    .text-order-example :is(th, td) {
+    .claims-comparison table {
+      min-width: 32rem;
+      font-size: 0.875rem;
+    }
+
+    :is(.text-order-example, .claims-comparison) :is(th, td) {
       padding-inline: var(--space-2);
     }
 

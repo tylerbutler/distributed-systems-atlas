@@ -112,7 +112,7 @@ export const remainingStructures: RemainingStructure[] = [
     name: "Claims",
     module: "claims_kernel",
     tagline: "Choose one permanent claimant for a named responsibility.",
-    rule: "The ranger numbers the claim slips. He assigns the first accepted claimant and does not replace them.",
+    rule: "The ranger numbers the claim slips. The first accepted claim fills that key permanently; later claims cannot replace or remove it.",
     story: "Alice, Bob, and Carol all volunteer to hold the only gate key.",
     localVisibility: "Alice can send her claim at once, but her ledger still shows that nobody holds the gate key. The ranger numbers the claims; only then does the winner appear in anyone's ledger.",
     raceLabel: "Race the gate-key claims",
@@ -137,7 +137,7 @@ export const remainingStructures: RemainingStructure[] = [
       B: "Bob's claim · awaits a number",
       C: "Carol's claim · awaits a number",
     },
-    result: "The ranger numbers Alice's claim first. Every station records Alice as the owner.",
+    result: "The ranger numbers Alice's claim first. Every station records Alice as the permanent owner. Later claims for gate-key are rejected; the application must use a new key or create a new Claims state to start again.",
   },
   {
     id: "ordered-collection",
