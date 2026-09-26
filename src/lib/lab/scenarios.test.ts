@@ -22,6 +22,7 @@ test("registers all seven trail scenarios", () => {
     kind: "dots",
     replicas: ["A", "B"],
     initialValues: [],
+    complexity: "advanced",
     actions: [
       { type: "add", replica: "A", value: "beacon" },
       { type: "deliver", message: "m1:A:B" },

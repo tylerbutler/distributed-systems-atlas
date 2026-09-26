@@ -3,8 +3,10 @@ import { createEngine } from "./engine-registry";
 import { acceptanceFixtures } from "./fixtures";
 import { compareEvents, lamportOrder } from "./ordering-engine";
 import { vectorLabel, type LabPresentation, type PresentedControl } from "./present-frame";
+import type { LearningComplexity } from "../learning-complexity";
 
 export interface LabScenario extends EngineScenario {
+  readonly complexity: LearningComplexity;
   readonly presentation: LabPresentation;
   readonly actions?: readonly LabAction[];
 }
@@ -251,6 +253,12 @@ function orderingPresentation(mode: OrderingMode, actions: readonly LabAction[])
 }
 
 const orderingModes: OrderingMode[] = ["history", "partial-order", "lamport", "vector"];
+const orderingComplexities: LearningComplexity[] = [
+  "introductory",
+  "intermediate",
+  "intermediate",
+  "advanced",
+];
 const orderingScenarios: LabScenario[] = orderingFixtures.map((fixture, index) => {
   const actions = fixtureActions(fixture);
   const replicas = new Set<string>();
@@ -264,6 +272,7 @@ const orderingScenarios: LabScenario[] = orderingFixtures.map((fixture, index) =
   const orderingMode = orderingModes[index];
   return {
     id: fixture.id, kind: "ordering", orderingMode, replicas: [...replicas].sort(), initialValues: [],
+    complexity: orderingComplexities[index],
     actions, presentation: orderingPresentation(orderingMode, actions),
   };
 });
@@ -287,6 +296,7 @@ const structureScenarios: LabScenario[] = [acceptanceFixtures[5], acceptanceFixt
   const register = kind === "mv-register";
   return {
     id: fixture.id, kind, replicas: ["A", "B"], initialValues: [], actions,
+    complexity: register ? "intermediate" : "advanced",
     presentation: {
       title: register ? "Multi-value register lab" : "Observed-remove set lab",
       instructions: "Follow the reference steps to reproduce the article. Reset before a new run. Delivery controls determine which queued delta is delivered.",
@@ -360,6 +370,7 @@ const scenarioDefinitions: readonly LabScenario[] = [
     kind: "dots",
     replicas: ["A", "B"],
     initialValues: [],
+    complexity: "advanced",
     actions: [
       { type: "add", replica: "A", value: "beacon" },
       { type: "deliver", message: "m1:A:B" },

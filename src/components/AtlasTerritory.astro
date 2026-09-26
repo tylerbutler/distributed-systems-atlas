@@ -1,11 +1,12 @@
 ---
 import type { SheetMeta, Territory } from "../lib/atlas/graph";
+import ComplexityBadge from "./ComplexityBadge.astro";
 
 interface Props {
   id: Territory;
   title: string;
   summary: string;
-  sheets: (Pick<SheetMeta, "id" | "title" | "summary" | "status"> & {
+  sheets: (Pick<SheetMeta, "id" | "title" | "summary" | "status" | "complexity"> & {
     prerequisiteTitles: string[];
   })[];
 }
@@ -32,6 +33,7 @@ const { id, title, summary, sheets } = Astro.props;
                   : sheet.title}
               </h3>
               <span class="status">{sheet.status === "published" ? "Read now" : "Planned"}</span>
+              <ComplexityBadge complexity={sheet.complexity} />
               {sheet.summary && <p class="station-summary">{sheet.summary}</p>}
               {sheet.prerequisiteTitles.length > 0 && (
                 <p class="incoming-label">Requires: {sheet.prerequisiteTitles.join(", ")}</p>

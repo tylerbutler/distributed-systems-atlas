@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AtlasTerritory from "../../components/AtlasTerritory.astro";
+import ComplexityBadge from "../../components/ComplexityBadge.astro";
 import {
   sheetReferenceId,
   validateSheetGraph,
@@ -47,8 +48,8 @@ const territories = [
     <ol class="first-trail-steps">
       {trail.map((step) => (
         <li>{step.status === "published"
-          ? <a href={`/atlas/${step.id}/`}>{step.title}</a>
-          : <>{step.title} <span class="status">Planned</span></>}</li>
+          ? <><a href={`/atlas/${step.id}/`}>{step.title}</a> <ComplexityBadge complexity={step.complexity} /></>
+          : <>{step.title} <span class="status">Planned</span> <ComplexityBadge complexity={step.complexity} /></>}</li>
       ))}
     </ol>
     <a class="trail-overview" href="#territories">Browse topics by territory</a>

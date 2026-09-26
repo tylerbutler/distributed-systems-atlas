@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { scenarioById, scenarioTrace } from "../src/lib/lab/scenarios";
 import { firstTrail } from "../src/lib/atlas/trail";
+import { complexityLabels } from "../src/lib/learning-complexity";
 
 const lessons = [
   {
@@ -179,6 +180,10 @@ for (const lesson of lessons) {
       expect(words).toBeLessThanOrEqual(1900);
       const lab = page.getByTestId("causal-lab");
       await expect(lab).toHaveAttribute("scenario", lesson.scenario);
+      await expect(page.locator(".lab-complexity [data-complexity]"))
+        .toHaveText(new RegExp(
+          `Complexity\\s+${complexityLabels[scenarioById(lesson.scenario).complexity]}`,
+        ));
       for (const id of lesson.replicas) {
         const replica = lab.getByRole("region", { name: `Replica ${id}`, exact: true });
         for (const text of lesson.initial) await expect(replica).toContainText(text);

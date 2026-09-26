@@ -3,6 +3,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
+import ComplexityBadge from "../../components/ComplexityBadge.astro";
+import { structureComplexity } from "../../lib/learning-complexity";
 ---
 
 <BaseLayout
@@ -27,6 +29,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
       <header>
         <div>
           <StructureKindTag kind="CRDT" />
+          <ComplexityBadge complexity={structureComplexity("lww-register")} />
           <h2 id="lww-title">LWWRegister</h2>
           <p>Use the time and author to choose one answer.</p>
         </div>
@@ -66,6 +69,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
       <header>
         <div>
           <StructureKindTag kind="CRDT" />
+          <ComplexityBadge complexity={structureComplexity("multi-value-register")} />
           <h2 id="mv-title">MvRegister</h2>
           <p>Keep competing answers until someone resolves them.</p>
         </div>
@@ -103,6 +107,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
       <header>
         <div>
           <StructureKindTag kind="DDS" />
+          <ComplexityBadge complexity={structureComplexity("register-map")} />
           <h2 id="collection-title">RegisterMap</h2>
           <p>Keep numbered versions and choose how to read them.</p>
         </div>

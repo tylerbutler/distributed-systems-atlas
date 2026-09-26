@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "zod";
+import { complexityLevels } from "./lib/learning-complexity";
 
 function uniqueIdGlob(options: Parameters<typeof glob>[0]): ReturnType<typeof glob> {
   const loader = glob(options);
@@ -47,6 +48,7 @@ const sheet = defineCollection({
     summary: z.string(),
     territory: z.enum(["mechanisms", "structures", "failures", "systems"]),
     status: z.enum(["published", "planned"]),
+    complexity: z.enum(complexityLevels),
     requires: z.array(sheetReference).default([]),
     introduces: z.array(z.string()).default([]),
     related: z.array(sheetReference).default([]),

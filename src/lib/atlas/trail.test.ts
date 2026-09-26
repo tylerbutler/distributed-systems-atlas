@@ -11,6 +11,7 @@ const sheet = (
   summary: "",
   territory: "mechanisms",
   status,
+  complexity: "intermediate",
   requires: [],
   introduces: [],
   related: [],

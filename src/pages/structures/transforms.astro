@@ -3,6 +3,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
+import ComplexityBadge from "../../components/ComplexityBadge.astro";
+import { structureComplexity } from "../../lib/learning-complexity";
 import { remainingFamilies, structuresForFamily } from "../../lib/structure-demo/remaining-structures";
 import "../../styles/remaining-family.css";
 
@@ -23,6 +25,7 @@ const structures = structuresForFamily("transforms");
         <header>
           <div>
             <StructureKindTag kind={structure.kind} />
+            <ComplexityBadge complexity={structureComplexity(structure.id)} />
             <h2 id={`${structure.id}-title`}>{structure.name}</h2>
             <p>{structure.tagline}</p>
           </div>

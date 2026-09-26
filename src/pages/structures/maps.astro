@@ -3,6 +3,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import StructureNext from "../../components/StructureNext.astro";
 import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
+import ComplexityBadge from "../../components/ComplexityBadge.astro";
+import { structureComplexity } from "../../lib/learning-complexity";
 ---
 
 <BaseLayout
@@ -25,7 +27,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </header>
 
     <section aria-labelledby="shared-map-title">
-      <header><div><StructureKindTag kind="DDS" /><h2 id="shared-map-title">SharedMap</h2><p>Use one shared order to select a value for each name.</p></div><code>map_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><ComplexityBadge complexity={structureComplexity("shared-map")} /><h2 id="shared-map-title">SharedMap</h2><p>Use one shared order to select a value for each name.</p></div><code>map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -43,7 +45,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </section>
 
     <section aria-labelledby="lww-map-title">
-      <header><div><StructureKindTag kind="CRDT" /><h2 id="lww-map-title">LWWMap</h2><p>Compare the times beside each line to select a value.</p></div><code>lww_map_kernel</code></header>
+      <header><div><StructureKindTag kind="CRDT" /><ComplexityBadge complexity={structureComplexity("lww-map")} /><h2 id="lww-map-title">LWWMap</h2><p>Compare the times beside each line to select a value.</p></div><code>lww_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -60,7 +62,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </section>
 
     <section aria-labelledby="or-map-title">
-      <header><div><StructureKindTag kind="CRDT" /><h2 id="or-map-title">OR-map</h2><p>New work can survive a removal made at the same time.</p></div><code>or_map_kernel</code></header>
+      <header><div><StructureKindTag kind="CRDT" /><ComplexityBadge complexity={structureComplexity("or-map")} /><h2 id="or-map-title">OR-map</h2><p>New work can survive a removal made at the same time.</p></div><code>or_map_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>
@@ -78,7 +80,7 @@ import StructureKindTag from "../../components/StructureKindTag.astro";
     </section>
 
     <section aria-labelledby="directory-title">
-      <header><div><StructureKindTag kind="DDS" /><h2 id="directory-title">SharedDirectory</h2><p>Track each folder separately when a name is reused.</p></div><code>directory_kernel</code></header>
+      <header><div><StructureKindTag kind="DDS" /><ComplexityBadge complexity={structureComplexity("shared-directory")} /><h2 id="directory-title">SharedDirectory</h2><p>Track each folder separately when a name is reused.</p></div><code>directory_kernel</code></header>
       <div class="structure-body">
         <div>
           <p>

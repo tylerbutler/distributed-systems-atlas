@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
+import ComplexityBadge from "../components/ComplexityBadge.astro";
 import LessonIllustration from "../components/LessonIllustration.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
@@ -64,6 +65,7 @@ const pairedLesson = pairedLessonForSheet(entry.id);
       </p>
       <p class="sheet-summary">{entry.data.summary}</p>
       <p class="sheet-reading-meta">
+        <ComplexityBadge complexity={entry.data.complexity} />
         <span>{readingMinutes} min read</span>
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
         {position >= 0 && <span>Structure-first trail · {position + 1} of {firstTrail.length}</span>}

@@ -1,0 +1,53 @@
+---
+import {
+  complexityLabels,
+  type LearningComplexity,
+} from "../lib/learning-complexity";
+
+interface Props {
+  complexity: LearningComplexity;
+}
+
+const { complexity } = Astro.props;
+---
+
+<span class="complexity-badge" data-complexity={complexity}>
+  <span>Complexity</span>
+  <strong>{complexityLabels[complexity]}</strong>
+</span>
+
+<style>
+  .complexity-badge {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 2rem;
+    align-items: center;
+    border: var(--rule-width) solid currentColor;
+    color: var(--instrument);
+    font: 0.72rem/1 var(--font-ui);
+  }
+
+  .complexity-badge span,
+  .complexity-badge strong {
+    padding: 0.4rem 0.55rem;
+  }
+
+  .complexity-badge span {
+    color: var(--muted);
+  }
+
+  .complexity-badge strong {
+    color: var(--clear);
+    background: var(--instrument);
+    letter-spacing: 0.02em;
+  }
+
+  .complexity-badge[data-complexity="introductory"] strong {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+
+  :global(.structure-kind-tag) + .complexity-badge {
+    margin-inline-start: var(--space-2);
+  }
+</style>

@@ -23,6 +23,7 @@ export interface SheetMeta {
   summary: string;
   territory: Territory;
   status: PublicationStatus;
+  complexity: LearningComplexity;
   requires: SheetReference[];
   introduces: string[];
   related: SheetReference[];
@@ -239,3 +240,4 @@ export function buildBibliography(
     a.title.localeCompare(b.title),
   );
 }
+import type { LearningComplexity } from "../learning-complexity";

@@ -13,6 +13,7 @@ const sheet = (overrides: Partial<SheetMeta>): SheetMeta => ({
   summary: "Track one event and the history that observed it.",
   territory: "mechanisms",
   status: "published",
+  complexity: "advanced",
   requires: [],
   introduces: ["dot"],
   related: [],

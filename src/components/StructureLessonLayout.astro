@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import ComplexityBadge from "./ComplexityBadge.astro";
 import LessonIllustration from "./LessonIllustration.astro";
 import StructureNext from "./StructureNext.astro";
+import { structureComplexity } from "../lib/learning-complexity";
 
 interface Props {
   articleClass: string;
@@ -18,6 +20,7 @@ const {
   territoryLabel = "Structures",
   title,
 } = Astro.props;
+const complexity = structureComplexity(Astro.url.pathname);
 ---
 
 <BaseLayout
@@ -28,7 +31,10 @@ const {
 >
   <article class={articleClass}>
     <header class="page-intro">
-      <p class="territory-label">{territoryLabel}</p>
+      <div class="lesson-meta">
+        <p class="territory-label">{territoryLabel}</p>
+        <ComplexityBadge {complexity} />
+      </div>
       <h1>{title}</h1>
       <p class="structure-summary"><slot name="summary" /></p>
       <LessonIllustration id={illustrationId} />
@@ -51,5 +57,17 @@ const {
 
   .structure-summary {
     font-size: 1.2rem;
+  }
+
+  .lesson-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .lesson-meta p {
+    margin: 0;
   }
 </style>

@@ -1,5 +1,6 @@
 ---
 import TraceFallback from "./TraceFallback.astro";
+import ComplexityBadge from "./ComplexityBadge.astro";
 import { createEngine } from "../lib/lab/engine-registry";
 import { presentFrame } from "../lib/lab/present-frame";
 import { scenarioById } from "../lib/lab/scenarios";
@@ -15,6 +16,9 @@ const engine = createEngine(definition);
 const frame = presentFrame(engine.current(), engine.history(), definition.presentation);
 ---
 
+<div class="lab-complexity">
+  <ComplexityBadge complexity={definition.complexity} />
+</div>
 <causal-lab scenario={scenario} data-testid="causal-lab">
   <TraceFallback frame={frame} />
 </causal-lab>
@@ -22,3 +26,10 @@ const frame = presentFrame(engine.current(), engine.history(), definition.presen
 <script>
   import "../lib/lab/causal-lab-element";
 </script>
+
+<style>
+  .lab-complexity {
+    max-width: 72rem;
+    margin: var(--space-7) auto 0;
+  }
+</style>

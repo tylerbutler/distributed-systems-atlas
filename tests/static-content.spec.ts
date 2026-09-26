@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 import { remainingStructures } from "../src/lib/structure-demo/remaining-structures";
 import { firstTrail, pairedSheets } from "../src/lib/atlas/trail";
 import { structureGroups, structureNextLinks } from "../src/lib/structure-demo/structure-navigation";
+import { complexityLabels, structureComplexity } from "../src/lib/learning-complexity";
 
 const trailTitles = [
   "Multi-value registers",
@@ -37,6 +38,8 @@ test("a sheet exposes its reading context and next step", async ({ page }) => {
   await expect(terms.locator("dt")).toHaveText(["dot", "causal context"]);
   await expect(terms.locator("p")).toHaveCount(0);
   await expect(page.locator(".sheet-header")).toContainText(/\d+ min read/);
+  await expect(page.locator(".sheet-header [data-complexity]"))
+    .toHaveText(/Complexity\s+Advanced/);
   await expect(page.locator(".sheet-header")).toContainText("Lab available");
   await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
   await expect(page.locator(".sheet-header")).toContainText("Structure-first trail · 3 of 7");
@@ -161,6 +164,8 @@ test("structure navigation follows the family and lesson order", async ({ page }
       const route = `/structures/${slug}/`;
       await page.goto(route);
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+      await expect(page.locator(".page-intro [data-complexity]"))
+        .toHaveText(new RegExp(`Complexity\\s+${complexityLabels[structureComplexity(slug)]}`));
       for (const link of structureNextLinks(route)) {
         await expect(page.getByRole("navigation", { name: "Continue through structures" })
           .getByRole("link", { name: link.label })).toHaveAttribute("href", link.href);
@@ -172,10 +177,12 @@ test("structure navigation follows the family and lesson order", async ({ page }
 test("atlas trail and paired lessons use the same destinations", async ({ page }) => {
   await page.goto("/atlas/");
   const trail = page.getByRole("navigation", { name: "Causal evidence trail" });
-  await expect(trail.getByRole("listitem")).toHaveText(firstTrail.map((step) => step.title));
   for (const step of firstTrail) {
-    await expect(trail.getByRole("link", { name: step.title }))
+    const item = trail.getByRole("listitem").filter({ hasText: step.title });
+    await expect(item.getByRole("link", { name: step.title }))
       .toHaveAttribute("href", `/atlas/${step.id}/`);
+    await expect(item.locator("[data-complexity]"))
+      .toHaveText(new RegExp(`Complexity\\s+${complexityLabels[step.complexity]}`));
   }
   for (const [slug, pair] of Object.entries(pairedSheets)) {
     await page.goto(`/structures/${slug}/`);
