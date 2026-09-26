@@ -1,6 +1,7 @@
 ---
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import FifoWorkQueueDemo from "../../components/FifoWorkQueueDemo.astro";
+import JsonOtDemo from "../../components/JsonOtDemo.astro";
 import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
 import PactMapDemo from "../../components/PactMapDemo.astro";
 import TaskManagerDemo from "../../components/TaskManagerDemo.astro";
@@ -29,6 +30,7 @@ const isClaims = structure.id === "claims";
 const isFifoWorkQueue = structure.id === "fifo-work-queue";
 const isTaskManager = structure.id === "task-manager";
 const isPactMap = structure.id === "pact-map";
+const isJsonOt = structure.id === "json-ot";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -37,7 +39,7 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap || isJsonOt ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
@@ -104,13 +106,21 @@ const operationNames = structure.operations.length === 1
             The ridge-pass proposal is a separate pending value until its
             frozen signer list becomes empty.
           </p>
+        ) : isJsonOt ? (
+          <p>
+            Each notebook begins with the same incident report: Mill Race, a
+            gauge stage of 24, and an ordered crew list containing Ada and Ben.
+            Alice and Bob both insert a new crew member at position 0 before
+            either sees the other insertion. Carol changes a nested number at
+            <code> .gauge.stage</code>.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && (
+        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && !isJsonOt && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
@@ -602,7 +612,128 @@ const operationNames = structure.operations.length === 1
         </>
       )}
 
-      {!isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && (
+      {isJsonOt && (
+        <>
+          <StructureFacts
+            structure="JsonOt"
+            family="OT"
+            model="One JSON tree with object, array, number, and subtype operations"
+            updates="Insert, delete, replace, move, add, or edit at a JSON path"
+            merge="Transform each operation against concurrent sequenced work"
+            delivery="A sequencer assigns SN; each operation carries the RSN its author saw"
+            bestFor="Collaborative structured documents with nested objects and ordered arrays"
+            cost="Recent operation log, transform rules, and one in-flight operation per client"
+          />
+
+          <section aria-labelledby="json-map-limit-title">
+            <h2 id="json-map-limit-title">A map winner can discard document intent</h2>
+            <p>
+              A SharedMap can store the whole report under one key, but then
+              each edit replaces one complete value. If Alice writes a new
+              crew array and Carol writes a new gauge object at the same time,
+              the later map assignment can discard the earlier document change.
+            </p>
+            <p>
+              Splitting every field into a separate map key helps only until a
+              field contains structure. The crew list has positions. Both Alice
+              and Bob can honestly write <code>insert at crew[0]</code> against
+              their local copy, but those two operations cannot remain at the
+              same index after both are accepted.
+            </p>
+            <p>
+              JsonOt preserves operations, not only final field values. A
+              component names a path and an action, such as list insert,
+              object replace, list move, or number add.
+            </p>
+          </section>
+
+          <section aria-labelledby="json-sequence-title">
+            <h2 id="json-sequence-title">The sequencer orders; each client transforms</h2>
+            <p>
+              JsonOt uses the same central sequence numbers as the other
+              sequenced structures. The sequencer does not inspect JSON and
+              does not rewrite an operation. It only assigns the shared order.
+            </p>
+            <p>
+              Each operation also carries a
+              <dfn><a href="/glossary/#reference-sequence-number"> reference sequence number</a></dfn>:
+              the latest accepted sequence the author had seen. When an
+              operation arrives, the client finds every operation in the gap
+              between that reference and the new sequence number. It transforms
+              the incoming path through that window before applying it.
+            </p>
+            <div class="route-table-scroll">
+              <table aria-label="Concurrent JsonOt list insert transformation">
+                <thead>
+                  <tr>
+                    <th scope="col">Sequence</th>
+                    <th scope="col">Original operation</th>
+                    <th scope="col">Applied operation</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">SN 1 · Alice</th>
+                    <td><code>insert "Cy" at .crew[0]</code></td>
+                    <td><code>insert "Cy" at .crew[0]</code></td>
+                  </tr>
+                  <tr>
+                    <th scope="row">SN 2 · Bob</th>
+                    <td><code>insert "Dot" at .crew[0]</code></td>
+                    <td><code>insert "Dot" at .crew[1]</code></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Alice's earlier sequenced insertion shifts Bob's concurrent
+              position. Every replica performs the same transform and reaches
+              <code>["Cy", "Dot", "Ada", "Ben"]</code>. The order comes from
+              the sequencer; the valid array positions come from OT.
+            </p>
+            <TermCallout
+              term="operational transform"
+              definition="A collaboration model that rewrites an operation against concurrent operations so its intent still fits the current document."
+            />
+          </section>
+
+          <section aria-labelledby="json-client-title">
+            <h2 id="json-client-title">One operation travels while later edits wait</h2>
+            <ol class="text-mechanics">
+              <li>
+                <strong>Apply locally.</strong> The author sees the change in
+                the optimistic document before the sequencer replies.
+              </li>
+              <li>
+                <strong>Send one operation.</strong> The client sends the first
+                pending operation with the current reference sequence number.
+              </li>
+              <li>
+                <strong>Buffer later edits.</strong> If the author edits again,
+                the kernel composes the new work into a buffer instead of
+                sending a second operation with an unsafe context.
+              </li>
+              <li>
+                <strong>Rebase on remote work.</strong> The kernel transforms
+                both the incoming operation and its own pending work so the
+                optimistic document does not jump backward.
+              </li>
+              <li>
+                <strong>Release after acknowledgement.</strong> When the
+                in-flight operation returns with a sequence number, the kernel
+                sends the buffered work against the new confirmed version.
+              </li>
+            </ol>
+            <p>
+              This single-operation-in-flight rule avoids a context gap known
+              as the dOPT problem. The server remains a general sequencer; the
+              JsonOt kernel owns the document-specific transformation rules.
+            </p>
+          </section>
+        </>
+      )}
+
+      {!isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && !isJsonOt && (
         <>
           <p>
             A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
@@ -625,6 +756,8 @@ const operationNames = structure.operations.length === 1
                   ? "Queue several volunteers, then compare promotion after departure with completion of the whole task."
                   : isPactMap
                     ? "Keep the accepted plan visible while signoffs and roster changes clear a pending replacement."
+                    : isJsonOt
+                      ? "Pause Broadcast to compare three optimistic JSON documents. Resume it to watch same-index list operations transform and converge."
             : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
@@ -635,6 +768,8 @@ const operationNames = structure.operations.length === 1
           ? <TaskManagerDemo />
           : isPactMap
             ? <PactMapDemo />
+            : isJsonOt
+              ? <JsonOtDemo />
         : <RemainingStructureDemo structure={structure} />}
 
       <section aria-labelledby="route-result">

@@ -15,7 +15,15 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
       ["The still calm weir is clear."],
     ),
     #("claims", ["gate-key: unclaimed"], ["gate-key: Alice"]),
-    #("json-ot", ["{}"], ["{\"revision\":1,\"title\":\"field notes\"}"]),
+    #(
+      "json-ot",
+      [
+        "{\"crew\":[\"Ada\",\"Ben\"],\"gauge\":{\"stage\":24,\"trend\":\"steady\"},\"site\":\"Mill Race\"}",
+      ],
+      [
+        "{\"crew\":[\"Cy\",\"Dot\",\"Ada\",\"Ben\"],\"gauge\":{\"stage\":25,\"trend\":\"steady\"},\"site\":\"Mill Race\"}",
+      ],
+    ),
     #(
       "shared-rich-text",
       ["Hello World"],

@@ -44,7 +44,11 @@ test.each([
   ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
+  [
+    "json-ot",
+    ['{"crew":["Ada","Ben"],"gauge":{"stage":24,"trend":"steady"},"site":"Mill Race"}'],
+    ['{"crew":["Cy","Dot","Ada","Ben"],"gauge":{"stage":25,"trend":"steady"},"site":"Mill Race"}'],
+  ],
   ["shared-rich-text", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const)("%s derives its view from Watershed operations", (kind, initial, expected) => {
   const created = unwrapRemaining(createRemainingDemoRoom(kind));

@@ -4,7 +4,6 @@ const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const;
 
@@ -237,6 +236,68 @@ test("PactMap keeps the accepted value until the frozen roster clears", async ({
   await expect(demo.locator('[data-worker="C"] [data-pact-status]')).toHaveText("Left roster");
 });
 
+test("JsonOt transforms concurrent list positions and keeps nested edits", async ({ page }) => {
+  await page.goto("/structures/json-ot/");
+  const demo = page.getByTestId("json-ot-demo");
+  await expect(demo.locator("[data-worker]")).toHaveCount(3);
+  await expect(demo.locator("[data-shared-crew] li")).toHaveText(["0: Ada", "1: Ben"]);
+  await expect(demo.locator("[data-shared-stage]")).toHaveText("24");
+
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  await demo.locator('[data-worker="A"] [data-json-action]').click();
+  await demo.locator('[data-worker="B"] [data-json-action]').click();
+  await demo.locator('[data-worker="C"] [data-json-action]').click();
+
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 0");
+  await expect(demo.locator("[data-client-status]")).toHaveText([
+    "Optimistic edit pending",
+    "Optimistic edit pending",
+    "Optimistic edit pending",
+  ]);
+  await expect(demo.locator('[data-worker="A"] [data-document]')).toContainText('"Cy"');
+  await expect(demo.locator('[data-worker="B"] [data-document]')).toContainText('"Dot"');
+  await expect(demo.locator('[data-worker="C"] [data-document]')).toContainText('"stage": 25');
+  await expect(demo.locator("[data-log] li")).toHaveText([
+    "Carol: add 1 at .gauge.stage — waiting",
+    'Bob: insert "Dot" at .crew[0] — waiting',
+    'Alice: insert "Cy" at .crew[0] — waiting',
+  ]);
+
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 3");
+  await expect(demo.locator("[data-transformed-path]")).toHaveText(".crew[1] · transformed");
+  await expect(demo.locator("[data-shared-crew] li")).toHaveText([
+    "0: Cy",
+    "1: Dot",
+    "2: Ada",
+    "3: Ben",
+  ]);
+  await expect(demo.locator("[data-shared-stage]")).toHaveText("25");
+  const documents = await demo.locator("[data-document] code").allTextContents();
+  expect(documents).toEqual([documents[0], documents[0], documents[0]]);
+  await expect(demo.locator("[data-log] li").first()).toHaveText(
+    "SN 3 · Carol: add 1 at .gauge.stage — delivered",
+  );
+});
+
+test("JsonOt explains why sequence order also needs path transformation", async ({ page }) => {
+  await page.goto("/structures/json-ot/");
+  const lesson = page.locator("article").first();
+  await expect(page.getByRole("heading", { name: "A map winner can discard document intent" })).toBeVisible();
+  await expect(lesson).toContainText("JsonOt preserves operations, not only final field values.");
+  await expect(page.getByRole("heading", { name: "The sequencer orders; each client transforms" })).toBeVisible();
+  await expect(lesson).toContainText("The sequencer does not inspect JSON and does not rewrite an operation.");
+  await expect(page.getByRole("table", { name: "Concurrent JsonOt list insert transformation" }))
+    .toContainText('insert "Dot" at .crew[1]');
+  await expect(lesson).toContainText("The order comes from the sequencer; the valid array positions come from OT.");
+  await expect(page.getByRole("heading", { name: "One operation travels while later edits wait" })).toBeVisible();
+  await expect(lesson).toContainText("single-operation-in-flight rule avoids a context gap");
+  await expect(lesson.getByRole("link", { name: "reference sequence number" })).toHaveAttribute(
+    "href",
+    "/glossary/#reference-sequence-number",
+  );
+});
+
 test("SharedText accepts typing while delivery is paused", async ({ page }) => {
   await page.goto("/structures/shared-text/");
   const demo = page.getByTestId("shared-text-demo");
@@ -426,6 +487,12 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
     await expect(pactDemo.locator("[data-accepted] li")).toHaveText("north-gate");
     await expect(pactDemo.getByRole("button").first()).toBeDisabled();
     await expect(pactDemo).toContainText("Enable JavaScript to run the agreement");
+    await page.goto("/structures/json-ot/");
+    const jsonOtDemo = page.getByTestId("json-ot-demo");
+    await expect(jsonOtDemo.locator("[data-worker]")).toHaveCount(3);
+    await expect(jsonOtDemo.locator("[data-shared-crew] li")).toHaveText(["0: Ada", "1: Ben"]);
+    await expect(jsonOtDemo.getByRole("button").first()).toBeDisabled();
+    await expect(jsonOtDemo).toContainText("Enable JavaScript to run the document edits");
   } finally {
     await context.close();
   }
@@ -710,7 +777,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["fifo-work-queue", "A claim, completion, or release does not change the shared board until the sequencer accepts it."],
     ["task-manager", "Assignment and waiting positions remain unconfirmed until the sequencer numbers the operation."],
     ["pact-map", "The accepted value changes only when no required signers remain."],
-    ["json-ot", "Alice sees her title edit before the ranger gives it a number"],
+    ["json-ot", "Alice immediately sees Cy at crew position 0"],
     ["shared-rich-text", "Alice sees the bold heading as soon as she edits it"],
   ] as const) {
     await page.goto(`/structures/${slug}/`);

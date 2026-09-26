@@ -1,0 +1,423 @@
+---
+import DemoTransportControls from "./DemoTransportControls.astro";
+import StationMark from "./StationMark.astro";
+import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/fifo-work-queue-demo.css";
+import "../styles/structure-demo-shell.css";
+
+const initialDocument = {
+  crew: ["Ada", "Ben"],
+  gauge: { stage: 24, trend: "steady" },
+  site: "Mill Race",
+};
+---
+
+<json-ot-demo class="structure-demo-root" data-testid="json-ot-demo">
+  <section class="queue-demo instrument-panel structure-demo-instrument" aria-labelledby="json-ot-demo-title">
+    <div class="structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
+    <header>
+      <div>
+        <h2 id="json-ot-demo-title">Edit one incident report</h2>
+        <p>Compare optimistic local documents, then watch the sequencer order and transform their operations.</p>
+      </div>
+      <p class="queue-rule">
+        <span>Transform rule</span>
+        <strong>Rebase stale paths before applying them</strong>
+      </p>
+    </header>
+
+    <div class="queue-board json-ot-board" aria-label="JsonOt transform state">
+      <section>
+        <h3>Concurrent target</h3>
+        <p>Alice and Bob both wrote against the original list.</p>
+        <code>.crew[0]</code>
+      </section>
+      <section>
+        <h3>Bob's delivered path</h3>
+        <p>The path changes after Alice's earlier insertion.</p>
+        <code data-transformed-path>.crew[0] · waiting</code>
+      </section>
+      <section>
+        <h3>Carol's crew view</h3>
+        <p>The observer shows the shared result after delivery.</p>
+        <ol data-shared-crew>
+          {initialDocument.crew.map((name, index) => <li>{index}: {name}</li>)}
+        </ol>
+        <p class="json-ot-stage">Gauge stage <strong data-shared-stage>{initialDocument.gauge.stage}</strong></p>
+      </section>
+    </div>
+
+    <div class="queue-workbench">
+      {REPLICA_IDS.map((id, index) => (
+        <Fragment>
+          <section class="queue-worker json-ot-client" data-worker={id}>
+            <header>
+              <StationMark station={id} size="lg" />
+              <h3>{demoReplicaName(id)}</h3>
+            </header>
+            <p>
+              <span>Client state</span>
+              <strong data-client-status>Synced at SN 0</strong>
+            </p>
+            <pre data-document aria-label={`${demoReplicaName(id)}'s JSON document`}><code>{JSON.stringify(initialDocument, null, 2)}</code></pre>
+            <div>
+              <button type="button" data-json-action disabled>
+                {id === "A"
+                  ? 'Insert "Cy" at crew[0]'
+                  : id === "B"
+                    ? 'Insert "Dot" at crew[0]'
+                    : "Add 1 to gauge.stage"}
+              </button>
+            </div>
+          </section>
+          {index === 0 && (
+            <aside class="queue-exchange" aria-label="Sequencer and operation log">
+              <div class="queue-sequencer" data-relay-node>
+                <h3>Sequencer</h3>
+                <p>Assigns the shared order. Each client transforms operations from an older reference sequence.</p>
+                <output data-sequence>SN 0</output>
+              </div>
+              <ol data-log aria-label="JsonOt operation log, newest first" reversed>
+                <li>No operations accepted yet.</li>
+              </ol>
+            </aside>
+          )}
+        </Fragment>
+      ))}
+    </div>
+
+    <DemoTransportControls />
+
+    <div class="queue-controls">
+      <div>
+        <h3>Run the worked example</h3>
+        <p>Alice and Bob insert at the same list index while Carol changes a nested number. Delivery transforms Bob's stale index and keeps all three edits.</p>
+      </div>
+      <button type="button" data-worked-example disabled>Run concurrent document edits</button>
+      <button type="button" data-reset disabled>Reset</button>
+      <p data-enhancement-note>Enable JavaScript to run the document edits. The expected result remains in the lesson.</p>
+    </div>
+    <p role="status" data-status>Ready: all clients share the baseline report.</p>
+    <p role="alert" data-error hidden></p>
+  </section>
+</json-ot-demo>
+
+<script>
+  import {
+    actInRemainingDemo,
+    createRemainingDemo,
+    deliverRemainingRace,
+    type RemainingDemoState,
+  } from "../lib/structure-demo/remaining-structure-demo";
+  import { animateDemoOperation } from "../lib/structure-demo/demo-operation-flight";
+  import {
+    autoDeliveryChangeEvent,
+    DemoTransportControlsElement,
+  } from "../lib/structure-demo/demo-transport-controls";
+  import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+
+  type Replica = "A" | "B" | "C";
+  type JsonDocument = {
+    crew: string[];
+    gauge: { stage: number; trend: string };
+    site: string;
+  };
+  type JsonOtLog = {
+    author: Replica;
+    description: string;
+    delivered: boolean;
+    sequenceNumber?: number;
+  };
+
+  const operation = {
+    A: { description: 'insert "Cy" at .crew[0]', label: "crew[0] + Cy" },
+    B: { description: 'insert "Dot" at .crew[0]', label: "crew[0] + Dot" },
+    C: { description: "add 1 at .gauge.stage", label: "stage +1" },
+  } satisfies Record<Replica, { description: string; label: string }>;
+
+  class JsonOtDemo extends HTMLElement {
+    private state!: RemainingDemoState;
+    private acted = new Set<Replica>();
+    private operations: JsonOtLog[] = [];
+    private delivering = false;
+    private delivery?: Promise<void>;
+    private generation = 0;
+    private outboundArrivals: Promise<void>[] = [];
+    private activeAnimations = new Set<Animation>();
+
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = "true";
+      this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
+      this.reset();
+      this.querySelectorAll<HTMLButtonElement>("[data-json-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const replica = button.closest<HTMLElement>("[data-worker]")?.dataset.worker;
+          if (replica === "A" || replica === "B" || replica === "C") this.queue(replica);
+        });
+      });
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.addEventListener("click", async () => {
+        this.reset();
+        const broadcast = this.transport.querySelector<HTMLInputElement>("[data-transport-auto-deliver]")!;
+        const autoDeliver = broadcast.checked;
+        broadcast.checked = false;
+        this.queue("A");
+        this.queue("B");
+        this.queue("C");
+        await this.deliver();
+        broadcast.checked = autoDeliver;
+        this.render("All clients converged after three transformed operations.");
+      });
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.addEventListener("click", () => this.reset());
+      this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+        if (this.transport.autoDeliver && this.state.view.pending > 0) void this.deliver();
+      });
+    }
+
+    private queue(replica: Replica) {
+      if (this.acted.has(replica) || this.delivering) return;
+      try {
+        this.state = actInRemainingDemo(this.state, replica);
+        this.acted.add(replica);
+        this.operations.unshift({
+          author: replica,
+          description: operation[replica].description,
+          delivered: false,
+        });
+        this.outboundArrivals.push(this.animateOperation(
+          this.worker(replica),
+          this.relay,
+          operation[replica].label,
+          "outbound",
+          this.transport.nextDuration(420),
+        ));
+        this.render(`Queued ${demoReplicaName(replica)}'s JSON operation.`);
+        if (this.transport.autoDeliver) void this.deliver();
+      } catch (error) {
+        this.showError(error);
+      }
+    }
+
+    private deliver(): Promise<void> {
+      if (this.delivery) return this.delivery;
+      if (this.state.view.pending === 0) return Promise.resolve();
+      const generation = this.generation;
+      this.delivery = this.deliverPending(generation).finally(() => {
+        this.delivery = undefined;
+        if (
+          generation === this.generation
+          && this.transport.autoDeliver
+          && this.state.view.pending > 0
+        ) void this.deliver();
+      });
+      return this.delivery;
+    }
+
+    private async deliverPending(generation: number) {
+      this.delivering = true;
+      this.renderControls();
+      try {
+        while (this.outboundArrivals.length) {
+          await Promise.all(this.outboundArrivals.splice(0));
+        }
+        if (generation !== this.generation) return;
+        const pending = [...this.operations].reverse().filter(({ delivered }) => !delivered);
+        let sequenceNumber = this.state.view.sequenceNumber;
+        for (const entry of pending) {
+          sequenceNumber += 1;
+          entry.sequenceNumber = sequenceNumber;
+        }
+        await Promise.all(REPLICA_IDS.flatMap((id) => pending.map((entry) =>
+          this.animateOperation(
+            this.relay,
+            this.worker(id),
+            `SN ${entry.sequenceNumber}`,
+            "shared",
+            this.transport.nextDuration(480),
+          )
+        )));
+        if (generation !== this.generation) return;
+        this.state = deliverRemainingRace(this.state);
+        for (const entry of pending) entry.delivered = true;
+        this.render(`Sequenced through SN ${this.state.view.sequenceNumber}. Every document agrees.`);
+      } catch (error) {
+        this.showError(error);
+      } finally {
+        if (generation !== this.generation) return;
+        this.delivering = false;
+        this.renderControls();
+      }
+    }
+
+    private document(replica: Replica): JsonDocument {
+      const value = this.state.view.replicas.find(({ id }) => id === replica)?.values[0];
+      if (!value) throw new Error(`Missing ${demoReplicaName(replica)}'s JSON document.`);
+      const document = JSON.parse(value) as JsonDocument;
+      if (
+        !Array.isArray(document.crew)
+        || typeof document.gauge?.stage !== "number"
+        || typeof document.gauge?.trend !== "string"
+        || typeof document.site !== "string"
+      ) throw new Error("JsonOt returned an unexpected document shape.");
+      return document;
+    }
+
+    private render(status: string) {
+      for (const id of REPLICA_IDS) {
+        const document = this.document(id);
+        this.worker(id).querySelector<HTMLElement>("[data-document] code")!.textContent =
+          JSON.stringify(document, null, 2);
+        const pending = this.operations.some((entry) => entry.author === id && !entry.delivered);
+        this.worker(id).querySelector<HTMLElement>("[data-client-status]")!.textContent =
+          pending ? "Optimistic edit pending" : `Synced at SN ${this.state.view.sequenceNumber}`;
+      }
+      const observer = this.document("C");
+      this.fillCrew(observer.crew);
+      this.querySelector<HTMLElement>("[data-shared-stage]")!.textContent =
+        String(observer.gauge.stage);
+      const bobDelivered = this.operations.some((entry) =>
+        entry.author === "B" && entry.delivered
+      );
+      this.querySelector<HTMLElement>("[data-transformed-path]")!.textContent =
+        bobDelivered ? ".crew[1] · transformed" : ".crew[0] · waiting";
+      this.querySelector<HTMLOutputElement>("[data-sequence]")!.textContent =
+        `SN ${this.state.view.sequenceNumber}`;
+      this.renderLog();
+      this.querySelector<HTMLElement>("[data-status]")!.textContent = status;
+      this.renderControls();
+      this.clearError();
+    }
+
+    private renderControls() {
+      for (const id of REPLICA_IDS) {
+        this.worker(id).querySelector<HTMLButtonElement>("[data-json-action]")!.disabled =
+          this.delivering || this.acted.has(id);
+      }
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = this.delivering;
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = this.delivering;
+    }
+
+    private renderLog() {
+      const target = this.querySelector<HTMLOListElement>("[data-log]")!;
+      target.replaceChildren(...(this.operations.length ? this.operations : [null]).map((entry) => {
+        const item = document.createElement("li");
+        if (!entry) {
+          item.textContent = "No operations accepted yet.";
+          return item;
+        }
+        const stamp = entry.sequenceNumber === undefined ? "" : `SN ${entry.sequenceNumber} · `;
+        item.textContent =
+          `${stamp}${demoReplicaName(entry.author)}: ${entry.description} — ${entry.delivered ? "delivered" : "waiting"}`;
+        return item;
+      }));
+    }
+
+    private fillCrew(crew: string[]) {
+      const target = this.querySelector<HTMLOListElement>("[data-shared-crew]")!;
+      target.replaceChildren(...crew.map((name, index) => {
+        const item = document.createElement("li");
+        item.textContent = `${index}: ${name}`;
+        return item;
+      }));
+    }
+
+    private animateOperation(
+      from: HTMLElement,
+      to: HTMLElement,
+      label: string,
+      leg: "outbound" | "shared",
+      duration: number,
+    ): Promise<void> {
+      return animateDemoOperation({
+        activeAnimations: this.activeAnimations,
+        className: "queue-operation-pulse",
+        duration,
+        from,
+        label,
+        labelClassName: "queue-operation-label",
+        layer: this.querySelector<HTMLElement>("[data-operation-layer]")!,
+        leg,
+        to,
+      });
+    }
+
+    private get transport(): DemoTransportControlsElement {
+      const controls = this.querySelector<DemoTransportControlsElement>("demo-transport-controls");
+      if (!controls) throw new Error("Missing JsonOt transport controls.");
+      return controls;
+    }
+
+    private get relay(): HTMLElement {
+      return this.querySelector<HTMLElement>("[data-relay-node]")!;
+    }
+
+    private worker(id: Replica): HTMLElement {
+      return this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!;
+    }
+
+    private showError(error: unknown) {
+      const alert = this.querySelector<HTMLElement>("[data-error]")!;
+      alert.hidden = false;
+      alert.textContent = error instanceof Error ? error.message : String(error);
+    }
+
+    private clearError() {
+      const alert = this.querySelector<HTMLElement>("[data-error]")!;
+      alert.hidden = true;
+      alert.textContent = "";
+    }
+
+    private reset() {
+      this.generation += 1;
+      for (const animation of this.activeAnimations) animation.cancel();
+      this.activeAnimations.clear();
+      this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
+      this.state = createRemainingDemo("json-ot");
+      this.acted.clear();
+      this.operations = [];
+      this.outboundArrivals = [];
+      this.delivering = false;
+      this.delivery = undefined;
+      this.render("Ready: all clients share the baseline report.");
+    }
+  }
+
+  if (!customElements.get("json-ot-demo")) {
+    customElements.define("json-ot-demo", JsonOtDemo);
+  }
+</script>
+
+<style>
+  .json-ot-board code {
+    display: block;
+    margin-top: var(--space-4);
+    color: var(--signal);
+    font: 650 0.9rem / 1.5 var(--font-data);
+  }
+
+  .json-ot-stage {
+    padding-top: var(--space-3);
+    border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
+  }
+
+  .json-ot-stage strong {
+    color: var(--signal);
+    font-family: var(--font-data);
+  }
+
+  .json-ot-client pre {
+    min-height: 15.5rem;
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3);
+    overflow-x: auto;
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
+    color: var(--clear);
+    background: color-mix(in oklch, var(--instrument-deep) 90%, black);
+    font: 0.75rem / 1.55 var(--font-data);
+    tab-size: 2;
+  }
+
+  .json-ot-client pre code {
+    font: inherit;
+  }
+</style>

@@ -167,14 +167,28 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
       ))
       }
     "json-ot" ->
-      Ok(JsonOtRoom(
-        json_ot_kernel.new(),
-        json_ot_kernel.new(),
-        json_ot_kernel.new(),
-        [],
-        [],
-        0,
-      ))
+      {
+        let initial =
+          json_ot.VObject([
+            #(
+              "crew",
+              json_ot.VArray([
+                json_ot.VString("Ada"),
+                json_ot.VString("Ben"),
+              ]),
+            ),
+            #(
+              "gauge",
+              json_ot.VObject([
+                #("stage", json_ot.VNumber(json_ot.NInt(24))),
+                #("trend", json_ot.VString("steady")),
+              ]),
+            ),
+            #("site", json_ot.VString("Mill Race")),
+          ])
+        let initial = json_ot_kernel.from_value(initial)
+        Ok(JsonOtRoom(initial, initial, initial, [], [], 0))
+      }
     "shared-rich-text" -> new_rich_text_room()
     _ -> Error("unknown remaining structure demo")
   }
@@ -677,9 +691,9 @@ pub fn remaining_demo_act(
             json_ot_kernel.submit(
               a,
               [
-                json_ot.object_insert(
-                  [json_ot.Key("title")],
-                  json_ot.VString("field notes"),
+                json_ot.list_insert(
+                  [json_ot.Key("crew"), json_ot.Index(0)],
+                  json_ot.VString("Cy"),
                 ),
               ],
               sequence_number,
@@ -701,9 +715,9 @@ pub fn remaining_demo_act(
             json_ot_kernel.submit(
               b,
               [
-                json_ot.object_insert(
-                  [json_ot.Key("revision")],
-                  json_ot.VNumber(json_ot.NInt(1)),
+                json_ot.list_insert(
+                  [json_ot.Key("crew"), json_ot.Index(0)],
+                  json_ot.VString("Dot"),
                 ),
               ],
               sequence_number,
@@ -720,7 +734,30 @@ pub fn remaining_demo_act(
             sequence_number,
           ))
         }
-        _ -> Ok(JsonOtRoom(a, b, c, pending, acted, sequence_number))
+        _ -> {
+          use #(c, wire, _) <- result.try(
+            json_ot_kernel.submit(
+              c,
+              [
+                json_ot.number_add(
+                  [json_ot.Key("gauge"), json_ot.Key("stage")],
+                  json_ot.NInt(1),
+                ),
+              ],
+              sequence_number,
+            )
+            |> result.map_error(fn(_) { "JsonOt submission failed" }),
+          )
+          let assert Some(wire) = wire
+          Ok(JsonOtRoom(
+            a,
+            b,
+            c,
+            list.append(pending, [Authored("C", wire)]),
+            acted,
+            sequence_number,
+          ))
+        }
       }
     }
     RichTextRoom(a, b, c, pending, acted, sequence_number) -> {
