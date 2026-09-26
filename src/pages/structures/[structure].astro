@@ -725,10 +725,15 @@ const operationNames = structure.operations.length === 1
               </li>
             </ol>
             <p>
-              This single-operation-in-flight rule avoids a context gap known
-              as the dOPT problem. The server remains a general sequencer; the
-              JsonOt kernel owns the document-specific transformation rules.
+              This single-operation-in-flight rule avoids the
+              <dfn><a href="/glossary/#dopt-problem"> dOPT problem</a></dfn>.
+              The server remains a general sequencer; the JsonOt kernel owns
+              the document-specific transformation rules.
             </p>
+            <TermCallout
+              term="dOPT problem"
+              definition="An OT correctness failure that occurs when a client transforms operations created from different document states as though they shared one context. The replicas can then produce different documents."
+            />
           </section>
         </>
       )}

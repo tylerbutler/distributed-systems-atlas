@@ -20,6 +20,11 @@ export const otTerm: GlossaryTerm = {
   definition: "A collaboration model that rewrites operations against changes made at the same time before it applies them.",
 };
 
+export const doptProblemTerm: GlossaryTerm = {
+  term: "dOPT problem",
+  definition: "An OT correctness failure that occurs when a client transforms operations created from different document states as though they shared one context. The replicas can then produce different documents.",
+};
+
 export const eventualConsistencyTerm: GlossaryTerm = {
   term: "eventual consistency",
   definition: "Each replica has only the updates it has received, so its current view can be incomplete and can differ from the others. Once updates stop and all remaining messages arrive, every replica eventually converges on the same state.",
@@ -150,6 +155,7 @@ export const standaloneTerms = [
   crdtTerm,
   ddsTerm,
   deltaTerm,
+  doptProblemTerm,
   eventualConsistencyTerm,
   firstWriterWinsTerm,
   gCounterTerm,
