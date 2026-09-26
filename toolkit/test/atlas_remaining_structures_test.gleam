@@ -16,11 +16,6 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     ),
     #("claims", ["gate-key: unclaimed"], ["gate-key: Alice"]),
     #(
-      "fifo-work-queue",
-      ["Queue: inspect bridge"],
-      ["Alice owns inspect bridge", "Queue empty"],
-    ),
-    #(
       "task-manager",
       ["dispatcher: unassigned"],
       ["dispatcher: Alice", "waiting: Bob, Carol"],
@@ -66,4 +61,25 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     reset.b |> should.equal(initial)
     reset.c |> should.equal(initial)
   })
+}
+
+pub fn fifo_work_queue_releases_to_tail_and_completes_test() {
+  let assert Ok(room) = demos.new_remaining_demo("fifo-work-queue")
+  let assert Ok(room) = demos.remaining_demo_ordered_acquire(room, "A")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(room) = demos.remaining_demo_ordered_acquire(room, "B")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(room) = demos.remaining_demo_ordered_release(room, "A")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(room) = demos.remaining_demo_ordered_acquire(room, "C")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(room) = demos.remaining_demo_ordered_complete(room, "B")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(snapshot) = demos.remaining_demo_snapshot(room)
+
+  snapshot.a
+  |> should.equal(["Carol owns restock first-aid cache", "Queue: inspect bridge"])
+  snapshot.b |> should.equal(snapshot.a)
+  snapshot.c |> should.equal(snapshot.a)
+  snapshot.sequence_number |> should.equal(5)
 }

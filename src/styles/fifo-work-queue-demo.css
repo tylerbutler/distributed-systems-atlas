@@ -1,0 +1,192 @@
+.queue-demo h2,
+.queue-demo h3,
+.queue-demo p {
+  margin: 0;
+}
+
+.queue-demo > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(14rem, 0.6fr);
+  gap: var(--space-6);
+  align-items: end;
+  padding-bottom: var(--space-5);
+  border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+}
+
+.queue-demo > header p:not(.queue-rule) {
+  margin-top: var(--space-3);
+}
+
+.queue-rule {
+  padding: var(--space-4);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 45%, var(--instrument));
+  font-family: var(--font-ui);
+}
+
+.queue-rule strong {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--signal);
+}
+
+.queue-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+}
+
+.queue-board > section,
+.queue-workers > section {
+  padding: var(--space-4);
+  border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  background: color-mix(in oklch, var(--clear) 3%, var(--instrument));
+}
+
+.queue-board h3,
+.queue-workers h3,
+.queue-sequencer h3 {
+  color: var(--signal);
+  font: 650 1rem / 1.4 var(--font-ui);
+}
+
+.queue-board p,
+.queue-sequencer p {
+  margin-top: var(--space-1);
+  color: color-mix(in oklch, var(--clear) 72%, var(--instrument));
+  font: 0.8rem / 1.5 var(--font-ui);
+}
+
+.queue-board ol,
+.queue-board ul,
+.queue-sequencer ol {
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.queue-board li,
+.queue-sequencer li {
+  padding-block: var(--space-3);
+  border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
+  font: 0.82rem / 1.5 var(--font-data);
+}
+
+.queue-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.35fr);
+  gap: var(--space-5);
+  padding-block: var(--space-5);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+}
+
+.queue-workers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.queue-workers header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.queue-workers p {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+  padding-block: var(--space-3);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
+}
+
+.queue-workers p span {
+  color: color-mix(in oklch, var(--clear) 72%, var(--instrument));
+  font: 0.75rem / 1.4 var(--font-ui);
+}
+
+.queue-workers p strong {
+  font: 0.82rem / 1.5 var(--font-data);
+}
+
+.queue-workers section > div {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.queue-demo button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: var(--rule-width) solid currentColor;
+  border-radius: 0;
+  color: var(--signal);
+  background: transparent;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.queue-demo button:hover:not(:disabled) {
+  color: var(--instrument-deep);
+  background: var(--signal);
+}
+
+.queue-demo button:disabled {
+  border-style: dashed;
+  color: color-mix(in oklch, var(--clear) 55%, var(--instrument));
+  cursor: not-allowed;
+}
+
+.queue-sequencer > div {
+  padding: var(--space-4);
+  border: var(--rule-width) dashed var(--signal);
+  text-align: center;
+}
+
+.queue-sequencer output {
+  display: block;
+  margin-top: var(--space-3);
+  font-family: var(--font-data);
+}
+
+.queue-sequencer ol {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+.queue-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  padding-top: var(--space-5);
+}
+
+.queue-controls > div,
+.queue-controls > p {
+  flex-basis: 100%;
+}
+
+.queue-controls > div p {
+  margin-top: var(--space-2);
+  color: color-mix(in oklch, var(--clear) 72%, var(--instrument));
+}
+
+.queue-demo [data-status],
+.queue-demo [data-error] {
+  margin-top: var(--space-4);
+  font-family: var(--font-ui);
+}
+
+.queue-demo [data-error] {
+  color: var(--signal);
+}
+
+@media (max-width: 760px) {
+  .queue-demo > header,
+  .queue-board,
+  .queue-workbench,
+  .queue-workers {
+    grid-template-columns: 1fr;
+  }
+}

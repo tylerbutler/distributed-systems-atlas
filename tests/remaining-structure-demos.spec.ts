@@ -4,7 +4,6 @@ const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["fifo-work-queue", "FifoWorkQueue", "Race to acquire the inspection", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", "TaskManager", "Queue the dispatcher volunteers", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", "PactMap", "Propose and sign off the closure", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
@@ -13,7 +12,6 @@ const examples = [
 
 const coordinationSequenceNumbers = {
   claims: 3,
-  "fifo-work-queue": 3,
   "task-manager": 3,
   "pact-map": 4,
 } as const;
@@ -113,6 +111,38 @@ for (const [slug, name, race, initial, final] of examples) {
     }
   });
 }
+
+test("FifoWorkQueue shows acquisition, release to tail, and completion", async ({ page }) => {
+  await page.goto("/structures/fifo-work-queue/");
+  const demo = page.getByTestId("fifo-work-queue-demo");
+  await expect(demo.locator("[data-worker]")).toHaveCount(3);
+  await expect(demo.locator("[data-queue] li")).toHaveText([
+    "1. inspect bridge",
+    "2. clear fallen branch",
+    "3. restock first-aid cache",
+  ]);
+
+  await demo.getByRole("button", { name: "Run release-to-tail example" }).click();
+
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 5");
+  await expect(demo.locator("[data-queue] li")).toHaveText("1. inspect bridge");
+  await expect(demo.locator("[data-active] li")).toHaveText(
+    "Carol · restock first-aid cache",
+  );
+  await expect(demo.locator("[data-done] li")).toHaveText(
+    "clear fallen branch",
+  );
+  await expect(demo.locator('[data-worker="C"] [data-held]')).toHaveText(
+    "restock first-aid cache",
+  );
+  await expect(demo.locator("[data-log] li")).toHaveCount(5);
+  await expect(demo.locator("[data-log] li").first()).toContainText(
+    "SN 5 · Bob completed clear fallen branch",
+  );
+  await expect(demo.locator("[data-status]")).toContainText(
+    "released bridge inspection is now behind",
+  );
+});
 
 test("SharedText accepts typing while delivery is paused", async ({ page }) => {
   await page.goto("/structures/shared-text/");
@@ -282,6 +312,16 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
         await expect(page.getByRole("heading", { name: "Quick facts" })).toBeVisible();
       }
     }
+    await page.goto("/structures/fifo-work-queue/");
+    const queueDemo = page.getByTestId("fifo-work-queue-demo");
+    await expect(queueDemo.locator("[data-worker]")).toHaveCount(3);
+    await expect(queueDemo.locator("[data-queue] li")).toHaveText([
+      "inspect bridge",
+      "clear fallen branch",
+      "restock first-aid cache",
+    ]);
+    await expect(queueDemo.getByRole("button").first()).toBeDisabled();
+    await expect(queueDemo).toContainText("Enable JavaScript to run the queue");
   } finally {
     await context.close();
   }
@@ -561,9 +601,9 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["shared-counter", "The local update is optimistic."],
     ["shared-map", "Alice sees her own note as soon as she writes it."],
     ["shared-directory", "Alice can use her new folder and see the notes she adds or removes"],
-    ["register-map", "Writes stay hidden until the sequencer"],
-    ["claims", "her ledger still shows that nobody holds the gate key"],
-    ["fifo-work-queue", "None can mark the inspection as theirs until a numbered request"],
+    ["register-map", "Each write carries a reference sequence number"],
+    ["claims", "every ledger still shows the key as unclaimed"],
+    ["fifo-work-queue", "A claim, completion, or release does not change the shared board until the sequencer accepts it."],
     ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
     ["pact-map", "Only after the required stations sign off can anyone read the new value."],
     ["json-ot", "Alice sees her title edit before the ranger gives it a number"],

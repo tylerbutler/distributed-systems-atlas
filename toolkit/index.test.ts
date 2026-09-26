@@ -8,8 +8,11 @@ import {
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
   deliverRemainingDemo,
+  acquireRemainingQueueJob,
+  completeRemainingQueueJob,
   editRemainingSharedText,
   insertRemainingSequenceStop,
+  releaseRemainingQueueJob,
   stageMapRace,
   stageRegisterDemoRace,
   stageRemainingDemoRace,
@@ -34,7 +37,6 @@ test.each([
   ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["fifo-work-queue", ["Queue: inspect bridge"], ["Alice owns inspect bridge", "Queue empty"]],
   ["task-manager", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
@@ -61,6 +63,28 @@ test.each([
 
   const reset = unwrapRemaining(createRemainingDemoRoom(kind));
   expect(reset.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+});
+
+test("FifoWorkQueue acquires in order, returns releases to the tail, and removes completed work", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("fifo-work-queue")).room;
+
+  unwrapRemaining(acquireRemainingQueueJob(room, "A"));
+  unwrapRemaining(deliverRemainingDemo(room));
+  unwrapRemaining(acquireRemainingQueueJob(room, "B"));
+  unwrapRemaining(deliverRemainingDemo(room));
+  unwrapRemaining(releaseRemainingQueueJob(room, "A"));
+  unwrapRemaining(deliverRemainingDemo(room));
+  unwrapRemaining(acquireRemainingQueueJob(room, "C"));
+  unwrapRemaining(deliverRemainingDemo(room));
+  unwrapRemaining(completeRemainingQueueJob(room, "B"));
+  const completed = unwrapRemaining(deliverRemainingDemo(room)).view;
+
+  expect(completed.sequenceNumber).toBe(5);
+  expect(completed.replicas.map(({ values }) => values)).toEqual([
+    ["Carol owns restock first-aid cache", "Queue: inspect bridge"],
+    ["Carol owns restock first-aid cache", "Queue: inspect bridge"],
+    ["Carol owns restock first-aid cache", "Queue: inspect bridge"],
+  ]);
 });
 
 test("SharedSequence accepts repeated inserts from every hiker and merges equal names", () => {

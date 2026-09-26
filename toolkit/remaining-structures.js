@@ -122,6 +122,41 @@ export function editRemainingSharedText(current, replica, start, end, inserted) 
     core.remaining_demo_text_edit(room, replica, start, end, inserted));
 }
 
+export function addRemainingQueueJob(current, replica, value) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  if (typeof value !== "string" || !value.trim() || value.trim().length > 60) {
+    return failure("invalid-input", "job must contain 1 to 60 characters");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_ordered_add(room, replica, value.trim()));
+}
+
+export function acquireRemainingQueueJob(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_ordered_acquire(room, replica));
+}
+
+export function completeRemainingQueueJob(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_ordered_complete(room, replica));
+}
+
+export function releaseRemainingQueueJob(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_ordered_release(room, replica));
+}
+
 export function stageRemainingDemoRace(current) {
   return update(current, core.remaining_demo_stage_race);
 }

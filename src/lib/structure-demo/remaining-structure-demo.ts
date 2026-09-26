@@ -1,9 +1,13 @@
 import {
+  acquireRemainingQueueJob,
+  addRemainingQueueJob,
+  completeRemainingQueueJob,
   actRemainingDemo,
   createRemainingDemoRoom,
   deliverRemainingDemo,
   editRemainingSharedText,
   insertRemainingSequenceStop,
+  releaseRemainingQueueJob,
   stageRemainingDemoRace,
   type RemainingDemoKind,
   type RemainingDemoRoom,
@@ -23,6 +27,35 @@ function value<T>(
 ): T {
   if (!result.ok) throw new Error(`${result.error.tag}: ${result.error.message}`);
   return result.value;
+}
+
+export function addQueueJob(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+  job: string,
+): RemainingDemoState {
+  return { kind: state.kind, ...value(addRemainingQueueJob(state.room, replica, job)) };
+}
+
+export function acquireQueueJob(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(acquireRemainingQueueJob(state.room, replica)) };
+}
+
+export function completeQueueJob(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(completeRemainingQueueJob(state.room, replica)) };
+}
+
+export function releaseQueueJob(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(releaseRemainingQueueJob(state.room, replica)) };
 }
 
 export function createRemainingDemo(kind: RemainingDemoKind): RemainingDemoState {

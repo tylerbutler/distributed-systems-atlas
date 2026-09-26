@@ -1,0 +1,202 @@
+---
+import StationMark from "./StationMark.astro";
+import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+import "../styles/fifo-work-queue-demo.css";
+import "../styles/structure-demo-shell.css";
+---
+
+<fifo-work-queue-demo class="structure-demo-root" data-testid="fifo-work-queue-demo">
+  <section class="queue-demo instrument-panel structure-demo-instrument" aria-labelledby="fifo-work-queue-demo-title">
+    <header>
+      <div>
+        <h2 id="fifo-work-queue-demo-title">Dispatch the trail jobs</h2>
+        <p>Claim the oldest queued job. Complete it, or release it to the back of the queue.</p>
+      </div>
+      <p class="queue-rule"><span>Queue rule</span><strong>First in, first out</strong></p>
+    </header>
+
+    <div class="queue-board" aria-label="Work queue state">
+      <section>
+        <h3>Queued</h3>
+        <p>Oldest job is first.</p>
+        <ol data-queue>
+          <li>inspect bridge</li>
+          <li>clear fallen branch</li>
+          <li>restock first-aid cache</li>
+        </ol>
+      </section>
+      <section>
+        <h3>In progress</h3>
+        <p>Each job has one holder.</p>
+        <ul data-active></ul>
+      </section>
+      <section>
+        <h3>Done</h3>
+        <p>Completion history is separate.</p>
+        <ul data-done><li>No completed jobs yet.</li></ul>
+      </section>
+    </div>
+
+    <div class="queue-workbench">
+      <div class="queue-workers">
+        {REPLICA_IDS.map((id) => (
+          <section data-worker={id}>
+            <header><StationMark station={id} size="lg" /><h3>{demoReplicaName(id)}</h3></header>
+            <p><span>Held job</span><strong data-held>None</strong></p>
+            <div>
+              <button type="button" data-queue-action="acquire" disabled>Claim next</button>
+              <button type="button" data-queue-action="complete" disabled>Complete</button>
+              <button type="button" data-queue-action="release" disabled>Release</button>
+            </div>
+          </section>
+        ))}
+      </div>
+      <aside class="queue-sequencer" aria-label="Sequencer and operation log">
+        <div>
+          <h3>Sequencer</h3>
+          <p>Applies each queue operation in one shared order.</p>
+          <output data-sequence>SN 0</output>
+        </div>
+        <ol data-log reversed><li>No operations accepted yet.</li></ol>
+      </aside>
+    </div>
+
+    <div class="queue-controls">
+      <div>
+        <h3>Run the worked example</h3>
+        <p>Alice and Bob claim work. Alice releases hers. Carol then gets the next FIFO job, and Bob completes his.</p>
+      </div>
+      <button type="button" data-worked-example disabled>Run release-to-tail example</button>
+      <button type="button" data-reset disabled>Reset</button>
+      <p data-enhancement-note>Enable JavaScript to run the queue. The expected result remains in the lesson.</p>
+    </div>
+    <p role="status" data-status>Ready: three jobs queued.</p>
+    <p role="alert" data-error hidden></p>
+  </section>
+</fifo-work-queue-demo>
+
+<script>
+  import {
+    acquireQueueJob,
+    completeQueueJob,
+    createRemainingDemo,
+    deliverRemainingRace,
+    releaseQueueJob,
+    type RemainingDemoState,
+  } from "../lib/structure-demo/remaining-structure-demo";
+  import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+
+  type Replica = "A" | "B" | "C";
+
+  class FifoWorkQueueDemo extends HTMLElement {
+    private state!: RemainingDemoState;
+    private done: string[] = [];
+    private log: string[] = [];
+
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = "true";
+      this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
+      this.reset();
+      this.querySelectorAll<HTMLButtonElement>("[data-queue-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const worker = button.closest<HTMLElement>("[data-worker]")?.dataset.worker;
+          if (worker !== "A" && worker !== "B" && worker !== "C") return;
+          this.run(button.dataset.queueAction ?? "", worker);
+        });
+      });
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.addEventListener("click", () => {
+        this.reset();
+        this.run("acquire", "A");
+        this.run("acquire", "B");
+        this.run("release", "A");
+        this.run("acquire", "C");
+        this.run("complete", "B");
+        this.render("The released bridge inspection is now behind the remaining queued work.");
+      });
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.addEventListener("click", () => this.reset());
+    }
+
+    private run(action: string, replica: Replica) {
+      try {
+        const held = this.heldJobs().get(replica);
+        if (action === "acquire") this.state = acquireQueueJob(this.state, replica);
+        else if (action === "release") this.state = releaseQueueJob(this.state, replica);
+        else if (action === "complete") {
+          if (!held) throw new Error("This worker does not hold a job.");
+          this.state = completeQueueJob(this.state, replica);
+          this.done.unshift(held);
+        } else throw new Error("Unknown queue operation.");
+        this.state = deliverRemainingRace(this.state);
+        const verb = action === "acquire" ? "claimed next" : action === "release" ? `released ${held}` : `completed ${held}`;
+        this.log.unshift(`SN ${this.state.view.sequenceNumber} · ${demoReplicaName(replica)} ${verb}`);
+        this.render(`${demoReplicaName(replica)} ${verb}.`);
+      } catch (error) {
+        const alert = this.querySelector<HTMLElement>("[data-error]")!;
+        alert.hidden = false;
+        alert.textContent = error instanceof Error ? error.message : String(error);
+      }
+    }
+
+    private values(): string[] {
+      return this.state.view.replicas.find(({ id }) => id === "C")?.values ?? [];
+    }
+
+    private heldJobs(): Map<Replica, string> {
+      const jobs = new Map<Replica, string>();
+      for (const value of this.values()) {
+        const match = /^(Alice|Bob|Carol) owns (.+)$/.exec(value);
+        if (!match) continue;
+        jobs.set(match[1] === "Alice" ? "A" : match[1] === "Bob" ? "B" : "C", match[2]);
+      }
+      return jobs;
+    }
+
+    private render(status: string) {
+      const queue = this.values().filter((value) => value.startsWith("Queue: ")).map((value) => value.slice(7));
+      const held = this.heldJobs();
+      this.fill("[data-queue]", queue, true);
+      this.fill("[data-active]", [...held].map(([id, job]) => `${demoReplicaName(id)} · ${job}`));
+      this.fill("[data-done]", this.done);
+      for (const id of REPLICA_IDS) {
+        const worker = this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!;
+        worker.querySelector<HTMLElement>("[data-held]")!.textContent = held.get(id) ?? "None";
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="acquire"]')!.disabled = held.has(id) || queue.length === 0;
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="complete"]')!.disabled = !held.has(id);
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="release"]')!.disabled = !held.has(id);
+      }
+      this.querySelector<HTMLOutputElement>("[data-sequence]")!.textContent = `SN ${this.state.view.sequenceNumber}`;
+      this.fill("[data-log]", this.log);
+      this.querySelector<HTMLElement>("[data-status]")!.textContent = status;
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = false;
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = false;
+      const alert = this.querySelector<HTMLElement>("[data-error]")!;
+      alert.hidden = true;
+      alert.textContent = "";
+    }
+
+    private fill(selector: string, values: string[], ordered = false) {
+      const target = this.querySelector<HTMLElement>(selector)!;
+      const empty = selector === "[data-done]" ? "No completed jobs yet."
+        : selector === "[data-active]" ? "No jobs in progress."
+        : selector === "[data-log]" ? "No operations accepted yet."
+        : "Queue empty.";
+      target.replaceChildren(...(values.length ? values : [empty]).map((value, index) => {
+        const item = document.createElement("li");
+        item.textContent = ordered && values.length ? `${index + 1}. ${value}` : value;
+        return item;
+      }));
+    }
+
+    private reset() {
+      this.state = createRemainingDemo("fifo-work-queue");
+      this.done = [];
+      this.log = [];
+      this.render("Ready: three jobs queued.");
+    }
+  }
+
+  if (!customElements.get("fifo-work-queue-demo")) {
+    customElements.define("fifo-work-queue-demo", FifoWorkQueueDemo);
+  }
+</script>

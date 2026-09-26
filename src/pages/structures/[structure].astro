@@ -1,5 +1,6 @@
 ---
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
+import FifoWorkQueueDemo from "../../components/FifoWorkQueueDemo.astro";
 import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
@@ -23,6 +24,7 @@ const family = remainingFamilies[structure.family];
 const isSharedSequence = structure.id === "shared-sequence";
 const isSharedText = structure.id === "shared-text";
 const isClaims = structure.id === "claims";
+const isFifoWorkQueue = structure.id === "fifo-work-queue";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -31,7 +33,7 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
@@ -80,13 +82,19 @@ const operationNames = structure.operations.length === 1
             Until he numbers the requests and announces the result, every ledger
             still shows the key as unclaimed.
           </p>
+        ) : isFifoWorkQueue ? (
+          <p>
+            The list is not a set of cards that workers choose from. A worker
+            asks for the next job, and the queue gives that worker the oldest
+            available entry.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && !isClaims && (
+        {!isSharedText && !isClaims && !isFifoWorkQueue && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
@@ -477,7 +485,41 @@ const operationNames = structure.operations.length === 1
         />
       )}
 
-      {!isClaims && (
+      {isFifoWorkQueue && (
+        <>
+          <StructureFacts
+            structure="FifoWorkQueue"
+            family="DDS"
+            model="Sequenced FIFO queue with acquired jobs"
+            updates="Add, acquire next, complete, or release"
+            merge="The sequencer applies one accepted operation order"
+            delivery="Clients wait for a numbered result"
+            bestFor="Dispatching independent jobs to competing workers"
+            cost="Queued jobs, held jobs, and sequenced operations"
+          />
+          <section aria-labelledby="queue-mechanics-title">
+            <h2 id="queue-mechanics-title">From queued work to one active holder</h2>
+            <ol class="text-mechanics">
+              <li><strong>Add at the tail.</strong> New work joins the back of the queue.</li>
+              <li><strong>Acquire the head.</strong> A worker asks for the next job, not a named job. The oldest queued entry becomes that worker's held job.</li>
+              <li><strong>Complete or release.</strong> Completion removes held work. Release returns it to the tail, after jobs that were already waiting.</li>
+              <li><strong>Recover from worker loss.</strong> The runtime can remove a disconnected client and return its held work to the tail. Another worker can then run it.</li>
+            </ol>
+            <p>
+              This rule gives one active holder, but it does not guarantee
+              exactly-once execution. A worker can perform part of a job and
+              fail before completion is accepted. The returned job can then run
+              again, so job handlers should tolerate retries.
+            </p>
+            <p>
+              The queue does not keep a completed-job archive. The demo's Done
+              column is a separate session history, like Watershed's example.
+            </p>
+          </section>
+        </>
+      )}
+
+      {!isClaims && !isFifoWorkQueue && (
         <>
           <p>
             A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
@@ -494,11 +536,15 @@ const operationNames = structure.operations.length === 1
             ? "Type in any notebook, or run a worked conflict. Pause Broadcast to compare local copies before the edits travel."
             : isClaims
               ? "Pause Broadcast, submit concurrent claims, and inspect the pending requests. Resume Broadcast to let the sequencer choose the permanent value."
+              : isFifoWorkQueue
+                ? "Follow several jobs through queued, in progress, released, and done states."
             : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
 
-      <RemainingStructureDemo structure={structure} />
+      {isFifoWorkQueue
+        ? <FifoWorkQueueDemo />
+        : <RemainingStructureDemo structure={structure} />}
 
       <section aria-labelledby="route-result">
         <h2 id="route-result">Read the result</h2>

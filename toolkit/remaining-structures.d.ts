@@ -58,6 +58,27 @@ export function editRemainingSharedText(
   inserted: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
+export function addRemainingQueueJob(
+  current: unknown,
+  replica: unknown,
+  value: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function acquireRemainingQueueJob(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function completeRemainingQueueJob(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function releaseRemainingQueueJob(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
 export function stageRemainingDemoRace(
   current: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;

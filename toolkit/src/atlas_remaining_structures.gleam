@@ -123,7 +123,11 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
     "fifo-work-queue" -> {
       let initial =
         ordered_collection_kernel.from_summary(
-          [json.string("inspect bridge")],
+          [
+            json.string("inspect bridge"),
+            json.string("clear fallen branch"),
+            json.string("restock first-aid cache"),
+          ],
           [],
         )
       Ok(OrderedRoom(initial, initial, initial, [], [], 0))
@@ -158,6 +162,98 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
       ))
     "shared-rich-text" -> new_rich_text_room()
     _ -> Error("unknown remaining structure demo")
+  }
+}
+
+pub fn remaining_demo_ordered_add(
+  room: RemainingDemoRoom,
+  replica: String,
+  value: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    OrderedRoom(a, b, c, pending, acted, sequence_number) -> {
+      let state = ordered_state(a, b, c, replica)
+      Ok(OrderedRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [
+          Authored(replica, ordered_collection_kernel.add(
+            state,
+            json.string(value),
+          )),
+        ]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a FifoWorkQueue demo")
+  }
+}
+
+pub fn remaining_demo_ordered_acquire(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    OrderedRoom(a, b, c, pending, acted, sequence_number) -> {
+      let state = ordered_state(a, b, c, replica)
+      use _ <- result.try(no_held_job(state, replica))
+      Ok(OrderedRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [
+          Authored(replica, ordered_collection_kernel.acquire(replica)),
+        ]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a FifoWorkQueue demo")
+  }
+}
+
+pub fn remaining_demo_ordered_complete(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  remaining_demo_ordered_finish(room, replica, True)
+}
+
+pub fn remaining_demo_ordered_release(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  remaining_demo_ordered_finish(room, replica, False)
+}
+
+fn remaining_demo_ordered_finish(
+  room: RemainingDemoRoom,
+  replica: String,
+  complete: Bool,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    OrderedRoom(a, b, c, pending, acted, sequence_number) -> {
+      let state = ordered_state(a, b, c, replica)
+      use _ <- result.try(held_job(state, replica))
+      let operation = case complete {
+        True -> ordered_collection_kernel.complete(replica)
+        False -> ordered_collection_kernel.release(replica)
+      }
+      Ok(OrderedRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [Authored(replica, operation)]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a FifoWorkQueue demo")
   }
 }
 
@@ -1151,6 +1247,43 @@ fn ordered_values(
   case owners {
     [] -> queue_values
     _ -> list.append(owners, queue_values)
+  }
+}
+
+fn ordered_state(
+  a: ordered_collection_kernel.OrderedState,
+  b: ordered_collection_kernel.OrderedState,
+  c: ordered_collection_kernel.OrderedState,
+  replica: String,
+) -> ordered_collection_kernel.OrderedState {
+  case replica {
+    "A" -> a
+    "B" -> b
+    _ -> c
+  }
+}
+
+fn held_job(
+  state: ordered_collection_kernel.OrderedState,
+  replica: String,
+) -> Result(json.Json, String) {
+  state
+  |> ordered_collection_kernel.summary_jobs
+  |> list.find(fn(entry) { entry.0 == replica })
+  |> result.map(fn(entry) {
+    let #(_, ordered_collection_kernel.JobEntry(value, _)) = entry
+    value
+  })
+  |> result.map_error(fn(_) { "the client does not hold a job" })
+}
+
+fn no_held_job(
+  state: ordered_collection_kernel.OrderedState,
+  replica: String,
+) -> Result(Nil, String) {
+  case held_job(state, replica) {
+    Ok(_) -> Error("the client already holds a job")
+    Error(_) -> Ok(Nil)
   }
 }
 
