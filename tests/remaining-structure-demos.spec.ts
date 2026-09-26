@@ -122,9 +122,21 @@ test("FifoWorkQueue shows acquisition, release to tail, and completion", async (
     "3. restock first-aid cache",
   ]);
 
-  await demo.getByRole("button", { name: "Claim next" }).first().click();
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  const claimButtons = demo.getByRole("button", { name: "Claim next" });
+  await claimButtons.nth(0).click();
   await expect(demo.locator(".queue-operation-pulse.outbound")).toBeVisible();
-  await expect(demo.locator("[data-sequence]")).toHaveText("SN 1");
+  await claimButtons.nth(1).click();
+  await claimButtons.nth(2).click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 0");
+  await expect(demo.locator("[data-log] li")).toHaveCount(3);
+  await expect(demo.locator("[data-log] li")).toContainText([
+    "Carol: claim next — waiting",
+    "Bob: claim next — waiting",
+    "Alice: claim next — waiting",
+  ]);
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 3");
   await demo.getByRole("button", { name: "Reset" }).click();
   await demo.getByRole("button", { name: "Run release-to-tail example" }).click();
 
@@ -141,7 +153,7 @@ test("FifoWorkQueue shows acquisition, release to tail, and completion", async (
   );
   await expect(demo.locator("[data-log] li")).toHaveCount(5);
   await expect(demo.locator("[data-log] li").first()).toContainText(
-    "SN 5 · Bob completed clear fallen branch",
+    "SN 5 · Bob: complete clear fallen branch — delivered",
   );
   await expect(demo.locator("[data-status]")).toContainText(
     "released bridge inspection is now behind",

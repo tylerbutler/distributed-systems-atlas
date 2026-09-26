@@ -1,4 +1,5 @@
 ---
+import DemoTransportControls from "./DemoTransportControls.astro";
 import StationMark from "./StationMark.astro";
 import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
 import "../styles/fifo-work-queue-demo.css";
@@ -66,6 +67,8 @@ import "../styles/structure-demo-shell.css";
       ))}
     </div>
 
+    <DemoTransportControls />
+
     <div class="queue-controls">
       <div>
         <h3>Run the worked example</h3>
@@ -90,15 +93,29 @@ import "../styles/structure-demo-shell.css";
     type RemainingDemoState,
   } from "../lib/structure-demo/remaining-structure-demo";
   import { animateDemoOperation } from "../lib/structure-demo/demo-operation-flight";
+  import {
+    autoDeliveryChangeEvent,
+    DemoTransportControlsElement,
+  } from "../lib/structure-demo/demo-transport-controls";
   import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
 
   type Replica = "A" | "B" | "C";
+  type QueueAction = "acquire" | "complete" | "release";
+  type QueueOperation = {
+    action: QueueAction;
+    author: Replica;
+    held?: string;
+    delivered: boolean;
+    sequenceNumber?: number;
+  };
 
   class FifoWorkQueueDemo extends HTMLElement {
     private state!: RemainingDemoState;
     private done: string[] = [];
-    private log: string[] = [];
-    private busy = false;
+    private operations: QueueOperation[] = [];
+    private delivering = false;
+    private delivery?: Promise<void>;
+    private outboundArrivals: Promise<void>[] = [];
     private activeAnimations = new Set<Animation>();
 
     connectedCallback() {
@@ -110,59 +127,108 @@ import "../styles/structure-demo-shell.css";
         button.addEventListener("click", () => {
           const worker = button.closest<HTMLElement>("[data-worker]")?.dataset.worker;
           if (worker !== "A" && worker !== "B" && worker !== "C") return;
-          void this.run(button.dataset.queueAction ?? "", worker);
+          const action = button.dataset.queueAction;
+          if (action !== "acquire" && action !== "complete" && action !== "release") return;
+          this.queue(action, worker);
         });
       });
       this.querySelector<HTMLButtonElement>("[data-worked-example]")!.addEventListener("click", async () => {
         this.reset();
-        await this.run("acquire", "A");
-        await this.run("acquire", "B");
-        await this.run("release", "A");
-        await this.run("acquire", "C");
-        await this.run("complete", "B");
+        await this.queueAndDeliver("acquire", "A");
+        await this.queueAndDeliver("acquire", "B");
+        await this.queueAndDeliver("release", "A");
+        await this.queueAndDeliver("acquire", "C");
+        await this.queueAndDeliver("complete", "B");
         this.render("The released bridge inspection is now behind the remaining queued work.");
       });
       this.querySelector<HTMLButtonElement>("[data-reset]")!.addEventListener("click", () => this.reset());
+      this.transport.addEventListener(autoDeliveryChangeEvent, () => {
+        if (this.transport.autoDeliver && this.state.view.pending > 0) {
+          void this.deliver();
+        }
+      });
     }
 
-    private async run(action: string, replica: Replica) {
-      if (this.busy) return;
-      this.busy = true;
-      this.renderControls();
+    private queue(action: QueueAction, replica: Replica) {
       try {
         const held = this.heldJobs().get(replica);
         if (action === "acquire") this.state = acquireQueueJob(this.state, replica);
         else if (action === "release") this.state = releaseQueueJob(this.state, replica);
-        else if (action === "complete") {
+        else {
           if (!held) throw new Error("This worker does not hold a job.");
           this.state = completeQueueJob(this.state, replica);
-        } else throw new Error("Unknown queue operation.");
+        }
+        this.operations.unshift({ action, author: replica, held, delivered: false });
         const verb = action === "acquire" ? "claim next" : action;
-        await this.animateOperation(
+        this.outboundArrivals.push(this.animateOperation(
           this.querySelector<HTMLElement>(`[data-worker="${replica}"]`)!,
           this.querySelector<HTMLElement>("[data-relay-node]")!,
           verb,
           "outbound",
-          320,
-        );
-        this.state = deliverRemainingRace(this.state);
-        if (action === "complete" && held) this.done.unshift(held);
-        const result = action === "acquire" ? "claimed next" : action === "release" ? `released ${held}` : `completed ${held}`;
-        this.log.unshift(`SN ${this.state.view.sequenceNumber} · ${demoReplicaName(replica)} ${result}`);
-        this.render(`${demoReplicaName(replica)} ${result}.`);
-        await Promise.all(REPLICA_IDS.map((id) => this.animateOperation(
-          this.querySelector<HTMLElement>("[data-relay-node]")!,
-          this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!,
-          `SN ${this.state.view.sequenceNumber}`,
-          "shared",
-          380,
+          this.transport.nextDuration(420),
+        ));
+        this.render(`Queued ${demoReplicaName(replica)}'s ${verb} operation.`);
+        if (this.transport.autoDeliver) void this.deliver();
+      } catch (error) {
+        const alert = this.querySelector<HTMLElement>("[data-error]")!;
+        alert.hidden = false;
+        alert.textContent = error instanceof Error ? error.message : String(error);
+      }
+    }
+
+    private async queueAndDeliver(action: QueueAction, replica: Replica) {
+      this.queue(action, replica);
+      await this.deliver();
+    }
+
+    private deliver(): Promise<void> {
+      if (this.delivery) return this.delivery;
+      if (this.state.view.pending === 0) return Promise.resolve();
+      this.delivery = this.deliverPending().finally(() => {
+        this.delivery = undefined;
+        if (this.transport.autoDeliver && this.state.view.pending > 0) {
+          void this.deliver();
+        }
+      });
+      return this.delivery;
+    }
+
+    private async deliverPending() {
+      this.delivering = true;
+      this.renderControls();
+      try {
+        while (this.outboundArrivals.length > 0) {
+          await Promise.all(this.outboundArrivals.splice(0));
+        }
+        const pending = [...this.operations].reverse().filter(({ delivered }) => !delivered);
+        let sequenceNumber = this.state.view.sequenceNumber;
+        for (const operation of pending) {
+          sequenceNumber += 1;
+          operation.sequenceNumber = sequenceNumber;
+        }
+        await Promise.all(REPLICA_IDS.flatMap((id) => pending.map((operation) =>
+          this.animateOperation(
+            this.querySelector<HTMLElement>("[data-relay-node]")!,
+            this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!,
+            `SN ${operation.sequenceNumber}`,
+            "shared",
+            this.transport.nextDuration(480),
+          )
         )));
+        this.state = deliverRemainingRace(this.state);
+        for (const operation of pending) {
+          operation.delivered = true;
+          if (operation.action === "complete" && operation.held) {
+            this.done.unshift(operation.held);
+          }
+        }
+        this.render(`Sequenced through SN ${this.state.view.sequenceNumber}.`);
       } catch (error) {
         const alert = this.querySelector<HTMLElement>("[data-error]")!;
         alert.hidden = false;
         alert.textContent = error instanceof Error ? error.message : String(error);
       } finally {
-        this.busy = false;
+        this.delivering = false;
         this.renderControls();
       }
     }
@@ -201,6 +267,14 @@ import "../styles/structure-demo-shell.css";
       return jobs;
     }
 
+    private get transport(): DemoTransportControlsElement {
+      const controls = this.querySelector<DemoTransportControlsElement>(
+        "demo-transport-controls",
+      );
+      if (!controls) throw new Error("Missing queue transport controls.");
+      return controls;
+    }
+
     private render(status: string) {
       const queue = this.values().filter((value) => value.startsWith("Queue: ")).map((value) => value.slice(7));
       const held = this.heldJobs();
@@ -212,7 +286,7 @@ import "../styles/structure-demo-shell.css";
         worker.querySelector<HTMLElement>("[data-held]")!.textContent = held.get(id) ?? "None";
       }
       this.querySelector<HTMLOutputElement>("[data-sequence]")!.textContent = `SN ${this.state.view.sequenceNumber}`;
-      this.fill("[data-log]", this.log);
+      this.renderLog();
       this.querySelector<HTMLElement>("[data-status]")!.textContent = status;
       this.renderControls();
       const alert = this.querySelector<HTMLElement>("[data-error]")!;
@@ -223,17 +297,37 @@ import "../styles/structure-demo-shell.css";
     private renderControls() {
       const queue = this.values().some((value) => value.startsWith("Queue: "));
       const held = this.heldJobs();
+      const pendingAuthors = new Set(
+        this.operations.filter(({ delivered }) => !delivered).map(({ author }) => author),
+      );
       for (const id of REPLICA_IDS) {
         const worker = this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!;
         worker.querySelector<HTMLButtonElement>('[data-queue-action="acquire"]')!.disabled =
-          this.busy || held.has(id) || !queue;
+          pendingAuthors.has(id) || held.has(id) || !queue;
         worker.querySelector<HTMLButtonElement>('[data-queue-action="complete"]')!.disabled =
-          this.busy || !held.has(id);
+          pendingAuthors.has(id) || !held.has(id);
         worker.querySelector<HTMLButtonElement>('[data-queue-action="release"]')!.disabled =
-          this.busy || !held.has(id);
+          pendingAuthors.has(id) || !held.has(id);
       }
-      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = this.busy;
-      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = this.busy;
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = this.delivering;
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = this.delivering;
+    }
+
+    private renderLog() {
+      const target = this.querySelector<HTMLOListElement>("[data-log]")!;
+      target.replaceChildren(...(this.operations.length ? this.operations : [null]).map((operation) => {
+        const item = document.createElement("li");
+        if (!operation) {
+          item.textContent = "No operations accepted yet.";
+          return item;
+        }
+        const action = operation.action === "acquire"
+          ? "claim next"
+          : `${operation.action} ${operation.held}`;
+        const stamp = operation.sequenceNumber === undefined ? "" : `SN ${operation.sequenceNumber} · `;
+        item.textContent = `${stamp}${demoReplicaName(operation.author)}: ${action} — ${operation.delivered ? "delivered" : "waiting"}`;
+        return item;
+      }));
     }
 
     private fill(selector: string, values: string[], ordered = false) {
@@ -255,7 +349,10 @@ import "../styles/structure-demo-shell.css";
       this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
       this.state = createRemainingDemo("fifo-work-queue");
       this.done = [];
-      this.log = [];
+      this.operations = [];
+      this.outboundArrivals = [];
+      this.delivering = false;
+      this.delivery = undefined;
       this.render("Ready: three jobs queued.");
     }
   }
