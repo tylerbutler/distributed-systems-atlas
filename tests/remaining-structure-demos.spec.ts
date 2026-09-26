@@ -122,6 +122,10 @@ test("FifoWorkQueue shows acquisition, release to tail, and completion", async (
     "3. restock first-aid cache",
   ]);
 
+  await demo.getByRole("button", { name: "Claim next" }).first().click();
+  await expect(demo.locator(".queue-operation-pulse.outbound")).toBeVisible();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 1");
+  await demo.getByRole("button", { name: "Reset" }).click();
   await demo.getByRole("button", { name: "Run release-to-tail example" }).click();
 
   await expect(demo.locator("[data-sequence]")).toHaveText("SN 5");

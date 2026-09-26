@@ -7,6 +7,7 @@ import "../styles/structure-demo-shell.css";
 
 <fifo-work-queue-demo class="structure-demo-root" data-testid="fifo-work-queue-demo">
   <section class="queue-demo instrument-panel structure-demo-instrument" aria-labelledby="fifo-work-queue-demo-title">
+    <div class="structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
     <header>
       <div>
         <h2 id="fifo-work-queue-demo-title">Dispatch the trail jobs</h2>
@@ -38,9 +39,9 @@ import "../styles/structure-demo-shell.css";
     </div>
 
     <div class="queue-workbench">
-      <div class="queue-workers">
-        {REPLICA_IDS.map((id) => (
-          <section data-worker={id}>
+      {REPLICA_IDS.map((id, index) => (
+        <Fragment>
+          <section class="queue-worker" data-worker={id}>
             <header><StationMark station={id} size="lg" /><h3>{demoReplicaName(id)}</h3></header>
             <p><span>Held job</span><strong data-held>None</strong></p>
             <div>
@@ -49,16 +50,20 @@ import "../styles/structure-demo-shell.css";
               <button type="button" data-queue-action="release" disabled>Release</button>
             </div>
           </section>
-        ))}
-      </div>
-      <aside class="queue-sequencer" aria-label="Sequencer and operation log">
-        <div>
-          <h3>Sequencer</h3>
-          <p>Applies each queue operation in one shared order.</p>
-          <output data-sequence>SN 0</output>
-        </div>
-        <ol data-log reversed><li>No operations accepted yet.</li></ol>
-      </aside>
+          {index === 0 && (
+            <aside class="queue-exchange" aria-label="Sequencer and operation log">
+              <div class="queue-sequencer" data-relay-node>
+                <h3>Sequencer</h3>
+                <p>Applies each queue operation in one shared order.</p>
+                <output data-sequence>SN 0</output>
+              </div>
+              <ol data-log aria-label="Sequenced operation log, newest first" reversed>
+                <li>No operations accepted yet.</li>
+              </ol>
+            </aside>
+          )}
+        </Fragment>
+      ))}
     </div>
 
     <div class="queue-controls">
@@ -84,6 +89,7 @@ import "../styles/structure-demo-shell.css";
     releaseQueueJob,
     type RemainingDemoState,
   } from "../lib/structure-demo/remaining-structure-demo";
+  import { animateDemoOperation } from "../lib/structure-demo/demo-operation-flight";
   import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
 
   type Replica = "A" | "B" | "C";
@@ -92,6 +98,8 @@ import "../styles/structure-demo-shell.css";
     private state!: RemainingDemoState;
     private done: string[] = [];
     private log: string[] = [];
+    private busy = false;
+    private activeAnimations = new Set<Animation>();
 
     connectedCallback() {
       if (this.dataset.ready) return;
@@ -102,22 +110,25 @@ import "../styles/structure-demo-shell.css";
         button.addEventListener("click", () => {
           const worker = button.closest<HTMLElement>("[data-worker]")?.dataset.worker;
           if (worker !== "A" && worker !== "B" && worker !== "C") return;
-          this.run(button.dataset.queueAction ?? "", worker);
+          void this.run(button.dataset.queueAction ?? "", worker);
         });
       });
-      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.addEventListener("click", () => {
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.addEventListener("click", async () => {
         this.reset();
-        this.run("acquire", "A");
-        this.run("acquire", "B");
-        this.run("release", "A");
-        this.run("acquire", "C");
-        this.run("complete", "B");
+        await this.run("acquire", "A");
+        await this.run("acquire", "B");
+        await this.run("release", "A");
+        await this.run("acquire", "C");
+        await this.run("complete", "B");
         this.render("The released bridge inspection is now behind the remaining queued work.");
       });
       this.querySelector<HTMLButtonElement>("[data-reset]")!.addEventListener("click", () => this.reset());
     }
 
-    private run(action: string, replica: Replica) {
+    private async run(action: string, replica: Replica) {
+      if (this.busy) return;
+      this.busy = true;
+      this.renderControls();
       try {
         const held = this.heldJobs().get(replica);
         if (action === "acquire") this.state = acquireQueueJob(this.state, replica);
@@ -125,17 +136,55 @@ import "../styles/structure-demo-shell.css";
         else if (action === "complete") {
           if (!held) throw new Error("This worker does not hold a job.");
           this.state = completeQueueJob(this.state, replica);
-          this.done.unshift(held);
         } else throw new Error("Unknown queue operation.");
+        const verb = action === "acquire" ? "claim next" : action;
+        await this.animateOperation(
+          this.querySelector<HTMLElement>(`[data-worker="${replica}"]`)!,
+          this.querySelector<HTMLElement>("[data-relay-node]")!,
+          verb,
+          "outbound",
+          320,
+        );
         this.state = deliverRemainingRace(this.state);
-        const verb = action === "acquire" ? "claimed next" : action === "release" ? `released ${held}` : `completed ${held}`;
-        this.log.unshift(`SN ${this.state.view.sequenceNumber} · ${demoReplicaName(replica)} ${verb}`);
-        this.render(`${demoReplicaName(replica)} ${verb}.`);
+        if (action === "complete" && held) this.done.unshift(held);
+        const result = action === "acquire" ? "claimed next" : action === "release" ? `released ${held}` : `completed ${held}`;
+        this.log.unshift(`SN ${this.state.view.sequenceNumber} · ${demoReplicaName(replica)} ${result}`);
+        this.render(`${demoReplicaName(replica)} ${result}.`);
+        await Promise.all(REPLICA_IDS.map((id) => this.animateOperation(
+          this.querySelector<HTMLElement>("[data-relay-node]")!,
+          this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!,
+          `SN ${this.state.view.sequenceNumber}`,
+          "shared",
+          380,
+        )));
       } catch (error) {
         const alert = this.querySelector<HTMLElement>("[data-error]")!;
         alert.hidden = false;
         alert.textContent = error instanceof Error ? error.message : String(error);
+      } finally {
+        this.busy = false;
+        this.renderControls();
       }
+    }
+
+    private animateOperation(
+      from: HTMLElement,
+      to: HTMLElement,
+      label: string,
+      leg: "outbound" | "shared",
+      duration: number,
+    ): Promise<void> {
+      return animateDemoOperation({
+        activeAnimations: this.activeAnimations,
+        className: "queue-operation-pulse",
+        duration,
+        from,
+        label,
+        labelClassName: "queue-operation-label",
+        layer: this.querySelector<HTMLElement>("[data-operation-layer]")!,
+        leg,
+        to,
+      });
     }
 
     private values(): string[] {
@@ -161,18 +210,30 @@ import "../styles/structure-demo-shell.css";
       for (const id of REPLICA_IDS) {
         const worker = this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!;
         worker.querySelector<HTMLElement>("[data-held]")!.textContent = held.get(id) ?? "None";
-        worker.querySelector<HTMLButtonElement>('[data-queue-action="acquire"]')!.disabled = held.has(id) || queue.length === 0;
-        worker.querySelector<HTMLButtonElement>('[data-queue-action="complete"]')!.disabled = !held.has(id);
-        worker.querySelector<HTMLButtonElement>('[data-queue-action="release"]')!.disabled = !held.has(id);
       }
       this.querySelector<HTMLOutputElement>("[data-sequence]")!.textContent = `SN ${this.state.view.sequenceNumber}`;
       this.fill("[data-log]", this.log);
       this.querySelector<HTMLElement>("[data-status]")!.textContent = status;
-      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = false;
-      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = false;
+      this.renderControls();
       const alert = this.querySelector<HTMLElement>("[data-error]")!;
       alert.hidden = true;
       alert.textContent = "";
+    }
+
+    private renderControls() {
+      const queue = this.values().some((value) => value.startsWith("Queue: "));
+      const held = this.heldJobs();
+      for (const id of REPLICA_IDS) {
+        const worker = this.querySelector<HTMLElement>(`[data-worker="${id}"]`)!;
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="acquire"]')!.disabled =
+          this.busy || held.has(id) || !queue;
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="complete"]')!.disabled =
+          this.busy || !held.has(id);
+        worker.querySelector<HTMLButtonElement>('[data-queue-action="release"]')!.disabled =
+          this.busy || !held.has(id);
+      }
+      this.querySelector<HTMLButtonElement>("[data-worked-example]")!.disabled = this.busy;
+      this.querySelector<HTMLButtonElement>("[data-reset]")!.disabled = this.busy;
     }
 
     private fill(selector: string, values: string[], ordered = false) {
@@ -189,6 +250,9 @@ import "../styles/structure-demo-shell.css";
     }
 
     private reset() {
+      for (const animation of this.activeAnimations) animation.cancel();
+      this.activeAnimations.clear();
+      this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
       this.state = createRemainingDemo("fifo-work-queue");
       this.done = [];
       this.log = [];

@@ -37,14 +37,14 @@
 }
 
 .queue-board > section,
-.queue-workers > section {
+.queue-worker {
   padding: var(--space-4);
   border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
   background: color-mix(in oklch, var(--clear) 3%, var(--instrument));
 }
 
 .queue-board h3,
-.queue-workers h3,
+.queue-worker h3,
 .queue-sequencer h3 {
   color: var(--signal);
   font: 650 1rem / 1.4 var(--font-ui);
@@ -59,14 +59,14 @@
 
 .queue-board ol,
 .queue-board ul,
-.queue-sequencer ol {
+.queue-exchange ol {
   margin: var(--space-4) 0 0;
   padding: 0;
   list-style: none;
 }
 
 .queue-board li,
-.queue-sequencer li {
+.queue-exchange li {
   padding-block: var(--space-3);
   border-top: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
   font: 0.82rem / 1.5 var(--font-data);
@@ -74,25 +74,31 @@
 
 .queue-workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.35fr);
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr) minmax(0, 1fr);
+  grid-template-areas:
+    "a exchange b"
+    "c c c";
   gap: var(--space-5);
+  align-items: start;
   padding-block: var(--space-5);
   border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
 }
 
-.queue-workers {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
+.queue-worker[data-worker="A"] { grid-area: a; }
+.queue-worker[data-worker="B"] { grid-area: b; }
+.queue-worker[data-worker="C"] {
+  grid-area: c;
+  justify-self: center;
+  width: min(100%, 31rem);
 }
 
-.queue-workers header {
+.queue-worker header {
   display: flex;
   align-items: center;
   gap: var(--space-3);
 }
 
-.queue-workers p {
+.queue-worker p {
   display: grid;
   gap: var(--space-1);
   margin-top: var(--space-4);
@@ -100,16 +106,16 @@
   border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 30%, var(--instrument));
 }
 
-.queue-workers p span {
+.queue-worker p span {
   color: color-mix(in oklch, var(--clear) 72%, var(--instrument));
   font: 0.75rem / 1.4 var(--font-ui);
 }
 
-.queue-workers p strong {
+.queue-worker p strong {
   font: 0.82rem / 1.5 var(--font-data);
 }
 
-.queue-workers section > div {
+.queue-worker > div {
   display: grid;
   gap: var(--space-2);
   margin-top: var(--space-4);
@@ -137,7 +143,16 @@
   cursor: not-allowed;
 }
 
-.queue-sequencer > div {
+.queue-exchange {
+  grid-area: exchange;
+  display: flex;
+  min-width: 0;
+  align-self: stretch;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.queue-sequencer {
   padding: var(--space-4);
   border: var(--rule-width) dashed var(--signal);
   text-align: center;
@@ -149,9 +164,41 @@
   font-family: var(--font-data);
 }
 
-.queue-sequencer ol {
+.queue-exchange ol {
+  flex: 1;
+  min-height: 22rem;
   max-height: 24rem;
   overflow-y: auto;
+}
+
+.queue-operation-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+
+.queue-operation-pulse.shared {
+  background: var(--clear);
+}
+
+.queue-operation-label {
+  position: absolute;
+  bottom: calc(100% + var(--space-1));
+  left: 50%;
+  padding: 2px 5px;
+  color: var(--instrument-deep);
+  background: var(--signal);
+  font: 600 0.6875rem / 1 var(--font-data);
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.queue-operation-pulse.shared .queue-operation-label {
+  background: var(--clear);
 }
 
 .queue-controls {
@@ -185,8 +232,19 @@
 @media (max-width: 760px) {
   .queue-demo > header,
   .queue-board,
-  .queue-workbench,
-  .queue-workers {
+  .queue-workbench {
     grid-template-columns: 1fr;
+  }
+
+  .queue-workbench {
+    grid-template-areas:
+      "a"
+      "exchange"
+      "b"
+      "c";
+  }
+
+  .queue-worker[data-worker="C"] {
+    width: 100%;
   }
 }
