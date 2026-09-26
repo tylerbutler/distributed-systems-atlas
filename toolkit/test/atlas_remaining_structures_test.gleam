@@ -15,11 +15,6 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
       ["The still calm weir is clear."],
     ),
     #("claims", ["gate-key: unclaimed"], ["gate-key: Alice"]),
-    #(
-      "pact-map",
-      ["closure-target: absent"],
-      ["closure-target: ridge-pass", "accepted by A, B, C"],
-    ),
     #("json-ot", ["{}"], ["{\"revision\":1,\"title\":\"field notes\"}"]),
     #(
       "shared-rich-text",
@@ -56,6 +51,38 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     reset.b |> should.equal(initial)
     reset.c |> should.equal(initial)
   })
+}
+
+pub fn pact_map_keeps_accepted_value_until_signoffs_clear_test() {
+  let assert Ok(room) = demos.new_remaining_demo("pact-map")
+  let assert Ok(room) =
+    demos.remaining_demo_pact_propose(room, "A", "ridge-pass")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(pending) = demos.remaining_demo_snapshot(room)
+  pending.a
+  |> should.equal([
+    "accepted: north-gate",
+    "pending: ridge-pass",
+    "needs signoff: Alice, Bob, Carol",
+  ])
+
+  let assert Ok(room) = demos.remaining_demo_pact_accept(room, "A")
+  let assert Ok(room) = demos.remaining_demo_pact_accept(room, "B")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(partial) = demos.remaining_demo_snapshot(room)
+  partial.a
+  |> should.equal([
+    "accepted: north-gate",
+    "pending: ridge-pass",
+    "needs signoff: Carol",
+  ])
+
+  let assert Ok(room) = demos.remaining_demo_pact_disconnect(room, "C")
+  let assert Ok(accepted) = demos.remaining_demo_snapshot(room)
+  accepted.a |> should.equal(["accepted: ridge-pass"])
+  accepted.b |> should.equal(accepted.a)
+  accepted.c |> should.equal(accepted.a)
+  accepted.sequence_number |> should.equal(4)
 }
 
 pub fn task_manager_promotes_and_completes_test() {

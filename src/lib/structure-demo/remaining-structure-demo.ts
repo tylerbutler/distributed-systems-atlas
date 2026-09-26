@@ -1,5 +1,6 @@
 import {
   acquireRemainingQueueJob,
+  acceptRemainingPact,
   addRemainingQueueJob,
   abandonRemainingTask,
   completeRemainingQueueJob,
@@ -8,8 +9,10 @@ import {
   createRemainingDemoRoom,
   deliverRemainingDemo,
   disconnectRemainingTaskClient,
+  disconnectRemainingPactClient,
   editRemainingSharedText,
   insertRemainingSequenceStop,
+  proposeRemainingPact,
   releaseRemainingQueueJob,
   stageRemainingDemoRace,
   volunteerRemainingTask,
@@ -88,6 +91,28 @@ export function disconnectTaskClient(
   replica: "A" | "B" | "C",
 ): RemainingDemoState {
   return { kind: state.kind, ...value(disconnectRemainingTaskClient(state.room, replica)) };
+}
+
+export function proposePact(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+  proposal: string,
+): RemainingDemoState {
+  return { kind: state.kind, ...value(proposeRemainingPact(state.room, replica, proposal)) };
+}
+
+export function acceptPact(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(acceptRemainingPact(state.room, replica)) };
+}
+
+export function disconnectPactClient(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(disconnectRemainingPactClient(state.room, replica)) };
 }
 
 export function createRemainingDemo(kind: RemainingDemoKind): RemainingDemoState {

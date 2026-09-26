@@ -99,6 +99,22 @@ export function disconnectRemainingTaskClient(
   replica: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
+export function proposeRemainingPact(
+  current: unknown,
+  replica: unknown,
+  value: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function acceptRemainingPact(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function disconnectRemainingPactClient(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
 export function stageRemainingDemoRace(
   current: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;

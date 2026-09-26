@@ -142,15 +142,30 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
         0,
       ))
     "pact-map" ->
+      {
+        let initial =
+          pact_map_kernel.from_summary([
+            #(
+              "closure-target",
+              pact_map_kernel.Pact(
+                accepted: Some(pact_map_kernel.Accepted(
+                  value: Some(json.string("north-gate")),
+                  sequence_number: 0,
+                )),
+                pending: None,
+              ),
+            ),
+          ])
       Ok(PactRoom(
-        pact_map_kernel.new(),
-        pact_map_kernel.new(),
-        pact_map_kernel.new(),
+        initial,
+        initial,
+        initial,
         None,
         [],
         [],
         0,
       ))
+      }
     "json-ot" ->
       Ok(JsonOtRoom(
         json_ot_kernel.new(),
@@ -347,6 +362,102 @@ pub fn remaining_demo_task_disconnect(
     TaskRoom(_, _, _, _, _, _) ->
       Error("deliver pending operations before disconnecting a client")
     _ -> Error("the room is not a TaskManager demo")
+  }
+}
+
+pub fn remaining_demo_pact_propose(
+  room: RemainingDemoRoom,
+  replica: String,
+  value: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    PactRoom(a, b, c, None, [], acted, sequence_number) -> {
+      let state = pact_state(a, b, c, replica)
+      use operation <- result.try(
+        pact_map_kernel.set(
+          state,
+          "closure-target",
+          Some(json.string(value)),
+          sequence_number,
+        )
+        |> result.map_error(fn(_) { "a proposal already waits for signoffs" }),
+      )
+      Ok(PactRoom(
+        a,
+        b,
+        c,
+        Some(operation),
+        [],
+        acted,
+        sequence_number,
+      ))
+    }
+    PactRoom(_, _, _, _, _, _, _) ->
+      Error("finish the pending PactMap operation first")
+    _ -> Error("the room is not a PactMap demo")
+  }
+}
+
+pub fn remaining_demo_pact_accept(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    PactRoom(a, b, c, None, signoffs, acted, sequence_number) -> {
+      let client = replica_number(replica)
+      let state = pact_state(a, b, c, replica)
+      use pending <- result.try(
+        pact_map_kernel.pending(state, "closure-target")
+        |> result.map_error(fn(_) { "no proposal waits for signoff" }),
+      )
+      use _ <- result.try(case list.contains(pending.expected_signoffs, client) {
+        True -> Ok(Nil)
+        False -> Error("this client is not expected to sign off")
+      })
+      use _ <- result.try(case list.contains(signoffs, client) {
+        True -> Error("this client already queued a signoff")
+        False -> Ok(Nil)
+      })
+      Ok(PactRoom(
+        a,
+        b,
+        c,
+        None,
+        list.append(signoffs, [client]),
+        acted,
+        sequence_number,
+      ))
+    }
+    PactRoom(_, _, _, Some(_), _, _, _) ->
+      Error("sequence the proposal before collecting signoffs")
+    _ -> Error("the room is not a PactMap demo")
+  }
+}
+
+pub fn remaining_demo_pact_disconnect(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    PactRoom(a, b, c, None, [], acted, sequence_number) -> {
+      let client = replica_number(replica)
+      let sequence_number = sequence_number + 1
+      Ok(PactRoom(
+        pact_map_kernel.remove_member(a, client, sequence_number).0,
+        pact_map_kernel.remove_member(b, client, sequence_number).0,
+        pact_map_kernel.remove_member(c, client, sequence_number).0,
+        None,
+        [],
+        acted,
+        sequence_number,
+      ))
+    }
+    PactRoom(_, _, _, _, _, _, _) ->
+      Error("deliver pending PactMap operations before disconnecting a client")
+    _ -> Error("the room is not a PactMap demo")
   }
 }
 
@@ -1438,6 +1549,19 @@ fn replace_task_state(
   }
 }
 
+fn pact_state(
+  a: pact_map_kernel.PactMapState,
+  b: pact_map_kernel.PactMapState,
+  c: pact_map_kernel.PactMapState,
+  replica: String,
+) -> pact_map_kernel.PactMapState {
+  case replica {
+    "A" -> a
+    "B" -> b
+    _ -> c
+  }
+}
+
 fn task_values(state: task_manager_kernel.TaskManagerState) -> List(String) {
   let queue =
     task_manager_kernel.summary_queues(state)
@@ -1460,12 +1584,23 @@ fn task_values(state: task_manager_kernel.TaskManagerState) -> List(String) {
 }
 
 fn pact_values(state: pact_map_kernel.PactMapState) -> List(String) {
-  case pact_map_kernel.get(state, "closure-target") {
-    Ok(value) -> [
-      "closure-target: " <> json_string(value),
-      "accepted by A, B, C",
-    ]
-    Error(_) -> ["closure-target: absent"]
+  let accepted = case pact_map_kernel.get(state, "closure-target") {
+    Ok(value) -> "accepted: " <> json_string(value)
+    Error(_) -> "accepted: absent"
+  }
+  case pact_map_kernel.pending(state, "closure-target") {
+    Error(_) -> [accepted]
+    Ok(pact_map_kernel.Pending(value, expected_signoffs)) -> {
+      let pending = case value {
+        Some(value) -> "pending: " <> json_string(value)
+        None -> "pending: delete"
+      }
+      let signoffs =
+        expected_signoffs
+        |> list.map(replica_name_from_number)
+        |> string.join(", ")
+      [accepted, pending, "needs signoff: " <> signoffs]
+    }
   }
 }
 

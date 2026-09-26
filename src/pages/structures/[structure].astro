@@ -2,6 +2,7 @@
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import FifoWorkQueueDemo from "../../components/FifoWorkQueueDemo.astro";
 import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
+import PactMapDemo from "../../components/PactMapDemo.astro";
 import TaskManagerDemo from "../../components/TaskManagerDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
@@ -27,6 +28,7 @@ const isSharedText = structure.id === "shared-text";
 const isClaims = structure.id === "claims";
 const isFifoWorkQueue = structure.id === "fifo-work-queue";
 const isTaskManager = structure.id === "task-manager";
+const isPactMap = structure.id === "pact-map";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -35,7 +37,7 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
@@ -96,13 +98,19 @@ const operationNames = structure.operations.length === 1
             first accepted volunteer works the desk; the other accepted
             volunteers form its replacement line.
           </p>
+        ) : isPactMap ? (
+          <p>
+            Every notebook continues to show north-gate as the accepted plan.
+            The ridge-pass proposal is a separate pending value until its
+            frozen signer list becomes empty.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && (
+        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
@@ -561,7 +569,40 @@ const operationNames = structure.operations.length === 1
         </>
       )}
 
-      {!isClaims && !isFifoWorkQueue && !isTaskManager && (
+      {isPactMap && (
+        <>
+          <StructureFacts
+            structure="PactMap"
+            family="DDS"
+            model="Map entries with accepted and pending values"
+            updates="Propose, sign off, or remove a roster member"
+            merge="A proposal settles when its frozen signoff list is empty"
+            delivery="The sequencer orders proposals, signoffs, and roster leaves"
+            bestFor="Configuration changes that need unanimous connected-client agreement"
+            cost="Accepted value, pending value, and expected signer list per key"
+          />
+          <section aria-labelledby="pact-map-mechanics-title">
+            <h2 id="pact-map-mechanics-title">From a proposal to an accepted value</h2>
+            <ol class="text-mechanics">
+              <li><strong>Keep the accepted value.</strong> Reads continue to return north-gate while a replacement waits.</li>
+              <li><strong>Sequence one proposal.</strong> The proposal records ridge-pass and freezes the connected roster as Alice, Bob, and Carol.</li>
+              <li><strong>Remove each obligation.</strong> A signoff removes its author from the expected list. A sequenced roster leave removes that member too.</li>
+              <li><strong>Settle when the list is empty.</strong> The pending value becomes accepted only after no required signers remain.</li>
+            </ol>
+            <p>
+              PactMap provides unanimity among the clients connected when the
+              proposal sequences. It does not wait for clients that join later,
+              and a departed client cannot block the pact forever.
+            </p>
+            <p>
+              One key can hold only one pending proposal. Another writer must
+              wait until the current pact settles before proposing a new value.
+            </p>
+          </section>
+        </>
+      )}
+
+      {!isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && (
         <>
           <p>
             A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
@@ -582,6 +623,8 @@ const operationNames = structure.operations.length === 1
                 ? "Follow several jobs through queued, in progress, released, and done states."
                 : isTaskManager
                   ? "Queue several volunteers, then compare promotion after departure with completion of the whole task."
+                  : isPactMap
+                    ? "Keep the accepted plan visible while signoffs and roster changes clear a pending replacement."
             : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
@@ -590,6 +633,8 @@ const operationNames = structure.operations.length === 1
         ? <FifoWorkQueueDemo />
         : isTaskManager
           ? <TaskManagerDemo />
+          : isPactMap
+            ? <PactMapDemo />
         : <RemainingStructureDemo structure={structure} />}
 
       <section aria-labelledby="route-result">

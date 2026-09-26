@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
   abandonRemainingTask,
+  acceptRemainingPact,
   completeRemainingTask,
   createRegisterDemoRoom,
   createRemainingDemoRoom,
@@ -11,10 +12,12 @@ import {
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
   deliverRemainingDemo,
   disconnectRemainingTaskClient,
+  disconnectRemainingPactClient,
   acquireRemainingQueueJob,
   completeRemainingQueueJob,
   editRemainingSharedText,
   insertRemainingSequenceStop,
+  proposeRemainingPact,
   releaseRemainingQueueJob,
   stageMapRace,
   stageRegisterDemoRace,
@@ -41,7 +44,6 @@ test.each([
   ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["pact-map", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const)("%s derives its view from Watershed operations", (kind, initial, expected) => {
@@ -66,6 +68,39 @@ test.each([
 
   const reset = unwrapRemaining(createRemainingDemoRoom(kind));
   expect(reset.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+});
+
+test("PactMap preserves the accepted value until signoffs and roster leaves settle the proposal", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("pact-map")).room;
+
+  unwrapRemaining(proposeRemainingPact(room, "A", "ridge-pass"));
+  let view = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(view.replicas[0].values).toEqual([
+    "accepted: north-gate",
+    "pending: ridge-pass",
+    "needs signoff: Alice, Bob, Carol",
+  ]);
+  expect(proposeRemainingPact(room, "B", "bridge")).toMatchObject({
+    ok: false,
+    error: { tag: "invalid-state" },
+  });
+
+  unwrapRemaining(acceptRemainingPact(room, "A"));
+  unwrapRemaining(acceptRemainingPact(room, "B"));
+  view = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(view.replicas[0].values).toEqual([
+    "accepted: north-gate",
+    "pending: ridge-pass",
+    "needs signoff: Carol",
+  ]);
+
+  view = unwrapRemaining(disconnectRemainingPactClient(room, "C")).view;
+  expect(view.replicas.map(({ values }) => values)).toEqual([
+    ["accepted: ridge-pass"],
+    ["accepted: ridge-pass"],
+    ["accepted: ridge-pass"],
+  ]);
+  expect(view.sequenceNumber).toBe(4);
 });
 
 test("TaskManager promotes after departure and clears the roster on completion", () => {

@@ -189,6 +189,33 @@ export function disconnectRemainingTaskClient(current, replica) {
     core.remaining_demo_task_disconnect(room, replica));
 }
 
+export function proposeRemainingPact(current, replica, value) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  if (typeof value !== "string" || !value.trim() || value.trim().length > 60) {
+    return failure("invalid-input", "proposal must contain 1 to 60 characters");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_pact_propose(room, replica, value.trim()));
+}
+
+export function acceptRemainingPact(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_pact_accept(room, replica));
+}
+
+export function disconnectRemainingPactClient(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_pact_disconnect(room, replica));
+}
+
 export function stageRemainingDemoRace(current) {
   return update(current, core.remaining_demo_stage_race);
 }

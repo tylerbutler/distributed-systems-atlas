@@ -4,14 +4,12 @@ const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["pact-map", "PactMap", "Propose and sign off the closure", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const;
 
 const coordinationSequenceNumbers = {
   claims: 3,
-  "pact-map": 4,
 } as const;
 
 for (const [slug, name, race, initial, final] of examples) {
@@ -206,6 +204,39 @@ test("TaskManager queues volunteers, promotes on disconnect, and completes", asy
   await expect(demo.locator("[data-waiting] li")).toHaveText("No volunteers waiting.");
 });
 
+test("PactMap keeps the accepted value until the frozen roster clears", async ({ page }) => {
+  await page.goto("/structures/pact-map/");
+  const demo = page.getByTestId("pact-map-demo");
+  await expect(demo.locator("[data-worker]")).toHaveCount(3);
+  await expect(demo.locator("[data-accepted] li")).toHaveText("north-gate");
+
+  await demo.getByRole("button", { name: "Propose ridge-pass" }).first().click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 1");
+  await expect(demo.locator("[data-accepted] li")).toHaveText("north-gate");
+  await expect(demo.locator("[data-pending-value] li")).toHaveText("ridge-pass");
+  await expect(demo.locator("[data-signoffs] li")).toHaveText(["Alice", "Bob", "Carol"]);
+
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  const signoffs = demo.getByRole("button", { name: "Sign off" });
+  await signoffs.nth(0).click();
+  await signoffs.nth(1).click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 1");
+  await expect(demo.locator("[data-log] li").first()).toHaveText(
+    "Bob: sign off — waiting",
+  );
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 3");
+  await expect(demo.locator("[data-accepted] li")).toHaveText("north-gate");
+  await expect(demo.locator("[data-signoffs] li")).toHaveText("Carol");
+
+  await demo.locator('[data-worker="C"] [data-pact-action="disconnect"]').click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 4");
+  await expect(demo.locator("[data-accepted] li")).toHaveText("ridge-pass");
+  await expect(demo.locator("[data-pending-value] li")).toHaveText("No proposal pending.");
+  await expect(demo.locator("[data-signoffs] li")).toHaveText("No signoffs required.");
+  await expect(demo.locator('[data-worker="C"] [data-pact-status]')).toHaveText("Left roster");
+});
+
 test("SharedText accepts typing while delivery is paused", async ({ page }) => {
   await page.goto("/structures/shared-text/");
   const demo = page.getByTestId("shared-text-demo");
@@ -390,6 +421,12 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
     await expect(taskDemo.locator("[data-assigned] li")).toHaveText("No dispatcher assigned.");
     await expect(taskDemo.getByRole("button").first()).toBeDisabled();
     await expect(taskDemo).toContainText("Enable JavaScript to run the roster");
+    await page.goto("/structures/pact-map/");
+    const pactDemo = page.getByTestId("pact-map-demo");
+    await expect(pactDemo.locator("[data-worker]")).toHaveCount(3);
+    await expect(pactDemo.locator("[data-accepted] li")).toHaveText("north-gate");
+    await expect(pactDemo.getByRole("button").first()).toBeDisabled();
+    await expect(pactDemo).toContainText("Enable JavaScript to run the agreement");
   } finally {
     await context.close();
   }
@@ -673,7 +710,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["claims", "every ledger still shows the key as unclaimed"],
     ["fifo-work-queue", "A claim, completion, or release does not change the shared board until the sequencer accepts it."],
     ["task-manager", "Assignment and waiting positions remain unconfirmed until the sequencer numbers the operation."],
-    ["pact-map", "Only after the required stations sign off can anyone read the new value."],
+    ["pact-map", "The accepted value changes only when no required signers remain."],
     ["json-ot", "Alice sees her title edit before the ranger gives it a number"],
     ["shared-rich-text", "Alice sees the bold heading as soon as she edits it"],
   ] as const) {
