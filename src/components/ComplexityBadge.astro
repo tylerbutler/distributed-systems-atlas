@@ -18,12 +18,17 @@ const { complexity } = Astro.props;
 
 <style>
   .complexity-badge {
+    --complexity-color: var(--instrument);
+    --complexity-ink: var(--clear);
+
     display: inline-flex;
     width: fit-content;
     min-height: 2rem;
     align-items: center;
+    padding-block: 0.2rem;
+    padding-inline-end: 0.2rem;
     border: var(--rule-width) solid currentColor;
-    color: var(--instrument);
+    color: var(--complexity-color);
     font: 0.72rem/1 var(--font-ui);
   }
 
@@ -37,14 +42,26 @@ const { complexity } = Astro.props;
   }
 
   .complexity-badge strong {
-    color: var(--clear);
-    background: var(--instrument);
+    color: var(--complexity-ink);
+    background: var(--complexity-color);
     letter-spacing: 0.02em;
   }
 
-  .complexity-badge[data-complexity="introductory"] strong {
-    color: var(--instrument-deep);
-    background: var(--signal);
+  .complexity-badge[data-complexity="introductory"] {
+    --complexity-color: var(--signal);
+    --complexity-ink: var(--instrument-deep);
+  }
+
+  .complexity-badge[data-complexity="intermediate"] {
+    --complexity-color: oklch(45% 0.1 195);
+  }
+
+  .complexity-badge[data-complexity="advanced"] {
+    --complexity-color: oklch(42% 0.13 305);
+  }
+
+  .complexity-badge[data-complexity="expert"] {
+    --complexity-color: oklch(45% 0.16 28);
   }
 
   :global(.structure-kind-tag) + .complexity-badge {
