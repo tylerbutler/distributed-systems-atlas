@@ -230,6 +230,126 @@ pub fn remaining_demo_ordered_release(
   remaining_demo_ordered_finish(room, replica, False)
 }
 
+pub fn remaining_demo_task_volunteer(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    TaskRoom(a, b, c, pending, acted, sequence_number) -> {
+      let self_id = replica_number(replica)
+      let message_id = sequence_number + list.length(pending) + 1
+      let state = task_state(a, b, c, replica)
+      let #(state, operation, _) =
+        task_manager_kernel.volunteer(
+          state,
+          "dispatcher",
+          self_id,
+          message_id,
+        )
+      let assert Some(operation) = operation
+      let #(a, b, c) = replace_task_state(a, b, c, replica, state)
+      Ok(TaskRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [TaskOperation(replica, operation, message_id)]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a TaskManager demo")
+  }
+}
+
+pub fn remaining_demo_task_abandon(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    TaskRoom(a, b, c, pending, acted, sequence_number) -> {
+      let self_id = replica_number(replica)
+      let message_id = sequence_number + list.length(pending) + 1
+      let state = task_state(a, b, c, replica)
+      let #(state, operation, _) =
+        task_manager_kernel.abandon(
+          state,
+          "dispatcher",
+          self_id,
+          message_id,
+        )
+      let assert Some(operation) = operation
+      let #(a, b, c) = replace_task_state(a, b, c, replica, state)
+      Ok(TaskRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [TaskOperation(replica, operation, message_id)]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a TaskManager demo")
+  }
+}
+
+pub fn remaining_demo_task_complete(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    TaskRoom(a, b, c, pending, acted, sequence_number) -> {
+      let self_id = replica_number(replica)
+      let message_id = sequence_number + list.length(pending) + 1
+      let state = task_state(a, b, c, replica)
+      use #(state, operation) <- result.try(
+        task_manager_kernel.complete(
+          state,
+          "dispatcher",
+          self_id,
+          message_id,
+        )
+        |> result.map_error(fn(_) { "only the assigned client can complete the task" }),
+      )
+      let #(a, b, c) = replace_task_state(a, b, c, replica, state)
+      Ok(TaskRoom(
+        a,
+        b,
+        c,
+        list.append(pending, [TaskOperation(replica, operation, message_id)]),
+        acted,
+        sequence_number,
+      ))
+    }
+    _ -> Error("the room is not a TaskManager demo")
+  }
+}
+
+pub fn remaining_demo_task_disconnect(
+  room: RemainingDemoRoom,
+  replica: String,
+) -> Result(RemainingDemoRoom, String) {
+  use _ <- result.try(valid_replica(replica))
+  case room {
+    TaskRoom(a, b, c, [], acted, sequence_number) -> {
+      let client_id = replica_number(replica)
+      Ok(TaskRoom(
+        task_manager_kernel.remove_client(a, client_id).0,
+        task_manager_kernel.remove_client(b, client_id).0,
+        task_manager_kernel.remove_client(c, client_id).0,
+        [],
+        acted,
+        sequence_number,
+      ))
+    }
+    TaskRoom(_, _, _, _, _, _) ->
+      Error("deliver pending operations before disconnecting a client")
+    _ -> Error("the room is not a TaskManager demo")
+  }
+}
+
 fn remaining_demo_ordered_finish(
   room: RemainingDemoRoom,
   replica: String,
@@ -1284,6 +1404,37 @@ fn no_held_job(
   case held_job(state, replica) {
     Ok(_) -> Error("the client already holds a job")
     Error(_) -> Ok(Nil)
+  }
+}
+
+fn task_state(
+  a: task_manager_kernel.TaskManagerState,
+  b: task_manager_kernel.TaskManagerState,
+  c: task_manager_kernel.TaskManagerState,
+  replica: String,
+) -> task_manager_kernel.TaskManagerState {
+  case replica {
+    "A" -> a
+    "B" -> b
+    _ -> c
+  }
+}
+
+fn replace_task_state(
+  a: task_manager_kernel.TaskManagerState,
+  b: task_manager_kernel.TaskManagerState,
+  c: task_manager_kernel.TaskManagerState,
+  replica: String,
+  state: task_manager_kernel.TaskManagerState,
+) -> #(
+  task_manager_kernel.TaskManagerState,
+  task_manager_kernel.TaskManagerState,
+  task_manager_kernel.TaskManagerState,
+) {
+  case replica {
+    "A" -> #(state, b, c)
+    "B" -> #(a, state, c)
+    _ -> #(a, b, state)
   }
 }
 

@@ -16,11 +16,6 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     ),
     #("claims", ["gate-key: unclaimed"], ["gate-key: Alice"]),
     #(
-      "task-manager",
-      ["dispatcher: unassigned"],
-      ["dispatcher: Alice", "waiting: Bob, Carol"],
-    ),
-    #(
       "pact-map",
       ["closure-target: absent"],
       ["closure-target: ridge-pass", "accepted by A, B, C"],
@@ -61,6 +56,34 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
     reset.b |> should.equal(initial)
     reset.c |> should.equal(initial)
   })
+}
+
+pub fn task_manager_promotes_and_completes_test() {
+  let assert Ok(room) = demos.new_remaining_demo("task-manager")
+  let assert Ok(room) = demos.remaining_demo_task_volunteer(room, "A")
+  let assert Ok(room) = demos.remaining_demo_task_volunteer(room, "B")
+  let assert Ok(room) = demos.remaining_demo_task_volunteer(room, "C")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(queued) = demos.remaining_demo_snapshot(room)
+  queued.a
+  |> should.equal(["dispatcher: Alice", "waiting: Bob, Carol"])
+
+  let assert Ok(room) = demos.remaining_demo_task_disconnect(room, "A")
+  let assert Ok(promoted) = demos.remaining_demo_snapshot(room)
+  promoted.a |> should.equal(["dispatcher: Bob", "waiting: Carol"])
+
+  let assert Ok(room) = demos.remaining_demo_task_abandon(room, "C")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(waiting_left) = demos.remaining_demo_snapshot(room)
+  waiting_left.a |> should.equal(["dispatcher: Bob"])
+
+  let assert Ok(room) = demos.remaining_demo_task_complete(room, "B")
+  let assert Ok(room) = demos.remaining_demo_deliver(room)
+  let assert Ok(completed) = demos.remaining_demo_snapshot(room)
+  completed.a |> should.equal(["dispatcher: unassigned"])
+  completed.b |> should.equal(completed.a)
+  completed.c |> should.equal(completed.a)
+  completed.sequence_number |> should.equal(5)
 }
 
 pub fn fifo_work_queue_releases_to_tail_and_completes_test() {

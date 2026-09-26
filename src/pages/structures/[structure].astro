@@ -2,6 +2,7 @@
 import RemainingStructureDemo from "../../components/RemainingStructureDemo.astro";
 import FifoWorkQueueDemo from "../../components/FifoWorkQueueDemo.astro";
 import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
+import TaskManagerDemo from "../../components/TaskManagerDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import TermCallout from "../../components/TermCallout.astro";
@@ -25,6 +26,7 @@ const isSharedSequence = structure.id === "shared-sequence";
 const isSharedText = structure.id === "shared-text";
 const isClaims = structure.id === "claims";
 const isFifoWorkQueue = structure.id === "fifo-work-queue";
+const isTaskManager = structure.id === "task-manager";
 const operationNames = structure.operations.length === 1
   ? structure.operations[0]
   : `${structure.operations.slice(0, -1).join(", ")}, and ${structure.operations.at(-1)}`;
@@ -33,7 +35,7 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
@@ -88,13 +90,19 @@ const operationNames = structure.operations.length === 1
             asks for the next job, and the queue gives that worker the oldest
             available entry.
           </p>
+        ) : isTaskManager ? (
+          <p>
+            Each hiker writes a volunteer request for the same named task. The
+            first accepted volunteer works the desk; the other accepted
+            volunteers form its replacement line.
+          </p>
         ) : <p>
           Each hiker keeps a {structure.recordLabel.toLowerCase()}. They write each
           change on a {structure.messageLabel.toLowerCase()} to send to the others.
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && !isClaims && !isFifoWorkQueue && (
+        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
@@ -519,7 +527,41 @@ const operationNames = structure.operations.length === 1
         </>
       )}
 
-      {!isClaims && !isFifoWorkQueue && (
+      {isTaskManager && (
+        <>
+          <StructureFacts
+            structure="TaskManager"
+            family="DDS"
+            model="Sequenced FIFO volunteer queue per named task"
+            updates="Volunteer, leave, complete, or disconnect"
+            merge="The queue head is assigned; later volunteers wait in order"
+            delivery="Operations use the sequencer; roster loss removes disconnected clients"
+            bestFor="Long-lived duties that need automatic failover"
+            cost="One ordered client queue per active task"
+          />
+          <section aria-labelledby="task-manager-mechanics-title">
+            <h2 id="task-manager-mechanics-title">From volunteers to automatic replacement</h2>
+            <ol class="text-mechanics">
+              <li><strong>Volunteer for a named task.</strong> Accepted volunteers join that task's queue in sequence-number order.</li>
+              <li><strong>Assign the queue head.</strong> The first connected client is active. The remaining clients wait in a known order.</li>
+              <li><strong>Promote after departure.</strong> A voluntary leave operation or a roster disconnect removes that client. If the client was active, the next connected volunteer becomes active.</li>
+              <li><strong>Complete the task.</strong> Only the active client can submit completion. Completion closes the task and clears its full volunteer queue.</li>
+            </ol>
+            <p>
+              TaskManager coordinates responsibility, not the work itself. The
+              application still decides how to resume a partially completed
+              duty after failover.
+            </p>
+            <p>
+              A disconnect is not another volunteer operation. The runtime
+              updates the connected-client roster, and the kernel removes that
+              client from every task queue.
+            </p>
+          </section>
+        </>
+      )}
+
+      {!isClaims && !isFifoWorkQueue && !isTaskManager && (
         <>
           <p>
             A <dfn><a href={`/glossary/#${structure.glossaryId}`}>{structure.name}</a></dfn>
@@ -538,12 +580,16 @@ const operationNames = structure.operations.length === 1
               ? "Pause Broadcast, submit concurrent claims, and inspect the pending requests. Resume Broadcast to let the sequencer choose the permanent value."
               : isFifoWorkQueue
                 ? "Follow several jobs through queued, in progress, released, and done states."
+                : isTaskManager
+                  ? "Queue several volunteers, then compare promotion after departure with completion of the whole task."
             : "Alice and Bob act before either receives the other's slip. Carol receives their notes too and checks that all three copies agree."}
         </p>
       </section>
 
       {isFifoWorkQueue
         ? <FifoWorkQueueDemo />
+        : isTaskManager
+          ? <TaskManagerDemo />
         : <RemainingStructureDemo structure={structure} />}
 
       <section aria-labelledby="route-result">

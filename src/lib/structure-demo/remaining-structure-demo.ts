@@ -1,14 +1,18 @@
 import {
   acquireRemainingQueueJob,
   addRemainingQueueJob,
+  abandonRemainingTask,
   completeRemainingQueueJob,
+  completeRemainingTask,
   actRemainingDemo,
   createRemainingDemoRoom,
   deliverRemainingDemo,
+  disconnectRemainingTaskClient,
   editRemainingSharedText,
   insertRemainingSequenceStop,
   releaseRemainingQueueJob,
   stageRemainingDemoRace,
+  volunteerRemainingTask,
   type RemainingDemoKind,
   type RemainingDemoRoom,
   type RemainingDemoView,
@@ -56,6 +60,34 @@ export function releaseQueueJob(
   replica: "A" | "B" | "C",
 ): RemainingDemoState {
   return { kind: state.kind, ...value(releaseRemainingQueueJob(state.room, replica)) };
+}
+
+export function volunteerForTask(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(volunteerRemainingTask(state.room, replica)) };
+}
+
+export function abandonTask(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(abandonRemainingTask(state.room, replica)) };
+}
+
+export function completeTask(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(completeRemainingTask(state.room, replica)) };
+}
+
+export function disconnectTaskClient(
+  state: RemainingDemoState,
+  replica: "A" | "B" | "C",
+): RemainingDemoState {
+  return { kind: state.kind, ...value(disconnectRemainingTaskClient(state.room, replica)) };
 }
 
 export function createRemainingDemo(kind: RemainingDemoKind): RemainingDemoState {

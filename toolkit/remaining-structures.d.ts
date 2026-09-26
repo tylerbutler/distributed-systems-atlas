@@ -79,6 +79,26 @@ export function releaseRemainingQueueJob(
   replica: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
+export function volunteerRemainingTask(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function abandonRemainingTask(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function completeRemainingTask(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
+export function disconnectRemainingTaskClient(
+  current: unknown,
+  replica: unknown,
+): RemainingDemoOperationResult<RemainingDemoResult>;
+
 export function stageRemainingDemoRace(
   current: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;

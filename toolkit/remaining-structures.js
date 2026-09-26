@@ -157,6 +157,38 @@ export function releaseRemainingQueueJob(current, replica) {
     core.remaining_demo_ordered_release(room, replica));
 }
 
+export function volunteerRemainingTask(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_task_volunteer(room, replica));
+}
+
+export function abandonRemainingTask(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_task_abandon(room, replica));
+}
+
+export function completeRemainingTask(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_task_complete(room, replica));
+}
+
+export function disconnectRemainingTaskClient(current, replica) {
+  if (replica !== "A" && replica !== "B" && replica !== "C") {
+    return failure("invalid-input", "replica must be A, B, or C");
+  }
+  return update(current, (room) =>
+    core.remaining_demo_task_disconnect(room, replica));
+}
+
 export function stageRemainingDemoRace(current) {
   return update(current, core.remaining_demo_stage_race);
 }

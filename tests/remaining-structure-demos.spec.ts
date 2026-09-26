@@ -4,7 +4,6 @@ const examples = [
   ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["task-manager", "TaskManager", "Queue the dispatcher volunteers", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", "PactMap", "Propose and sign off the closure", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", "JsonOt", "Race the report edits", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
@@ -12,7 +11,6 @@ const examples = [
 
 const coordinationSequenceNumbers = {
   claims: 3,
-  "task-manager": 3,
   "pact-map": 4,
 } as const;
 
@@ -158,6 +156,54 @@ test("FifoWorkQueue shows acquisition, release to tail, and completion", async (
   await expect(demo.locator("[data-status]")).toContainText(
     "released bridge inspection is now behind",
   );
+});
+
+test("TaskManager queues volunteers, promotes on disconnect, and completes", async ({ page }) => {
+  await page.goto("/structures/task-manager/");
+  const demo = page.getByTestId("task-manager-demo");
+  await expect(demo.locator("[data-worker]")).toHaveCount(3);
+  await expect(demo.locator("[data-assigned] li")).toHaveText("No dispatcher assigned.");
+
+  await demo.locator("[data-transport-auto-deliver]").uncheck();
+  const volunteers = demo.getByRole("button", { name: "Volunteer" });
+  await volunteers.nth(0).click();
+  await volunteers.nth(1).click();
+  await volunteers.nth(2).click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 0");
+  await expect(demo.locator("[data-log] li")).toHaveText([
+    "Carol: volunteer for dispatcher — waiting",
+    "Bob: volunteer for dispatcher — waiting",
+    "Alice: volunteer for dispatcher — waiting",
+  ]);
+  await expect(demo.locator("[data-roster-status]")).toHaveText([
+    "Volunteer pending",
+    "Volunteer pending",
+    "Volunteer pending",
+  ]);
+
+  await demo.locator("[data-transport-auto-deliver]").check();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 3");
+  await expect(demo.locator("[data-assigned] li")).toHaveText("Alice");
+  await expect(demo.locator("[data-waiting] li")).toHaveText(["1. Bob", "2. Carol"]);
+
+  await demo.locator('[data-worker="A"] [data-task-action="disconnect"]').click();
+  await expect(demo.locator("[data-assigned] li")).toHaveText("Bob");
+  await expect(demo.locator("[data-waiting] li")).toHaveText("1. Carol");
+  await expect(demo.locator("[data-log] li").first()).toHaveText(
+    "Roster · Alice: disconnect — delivered",
+  );
+  await expect(demo.locator('[data-worker="A"] [data-roster-status]')).toHaveText(
+    "Disconnected",
+  );
+  for (const button of await demo.locator('[data-worker="A"] button').all()) {
+    await expect(button).toBeDisabled();
+  }
+
+  await demo.locator('[data-worker="B"] [data-task-action="complete"]').click();
+  await expect(demo.locator("[data-sequence]")).toHaveText("SN 4");
+  await expect(demo.locator("[data-task-state] li")).toHaveText("Dispatch task completed.");
+  await expect(demo.locator("[data-assigned] li")).toHaveText("No dispatcher assigned.");
+  await expect(demo.locator("[data-waiting] li")).toHaveText("No volunteers waiting.");
 });
 
 test("SharedText accepts typing while delivery is paused", async ({ page }) => {
@@ -338,6 +384,12 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
     ]);
     await expect(queueDemo.getByRole("button").first()).toBeDisabled();
     await expect(queueDemo).toContainText("Enable JavaScript to run the queue");
+    await page.goto("/structures/task-manager/");
+    const taskDemo = page.getByTestId("task-manager-demo");
+    await expect(taskDemo.locator("[data-worker]")).toHaveCount(3);
+    await expect(taskDemo.locator("[data-assigned] li")).toHaveText("No dispatcher assigned.");
+    await expect(taskDemo.getByRole("button").first()).toBeDisabled();
+    await expect(taskDemo).toContainText("Enable JavaScript to run the roster");
   } finally {
     await context.close();
   }
@@ -620,7 +672,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["register-map", "Each write carries a reference sequence number"],
     ["claims", "every ledger still shows the key as unclaimed"],
     ["fifo-work-queue", "A claim, completion, or release does not change the shared board until the sequencer accepts it."],
-    ["task-manager", "She cannot mark herself assigned or even confirmed in the queue until"],
+    ["task-manager", "Assignment and waiting positions remain unconfirmed until the sequencer numbers the operation."],
     ["pact-map", "Only after the required stations sign off can anyone read the new value."],
     ["json-ot", "Alice sees her title edit before the ranger gives it a number"],
     ["shared-rich-text", "Alice sees the bold heading as soon as she edits it"],

@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
   add, createMvRegister, createOrSet, createPNCounter, createPNCounterRoom,
+  abandonRemainingTask,
+  completeRemainingTask,
   createRegisterDemoRoom,
   createRemainingDemoRoom,
   createMapRoom,
@@ -8,6 +10,7 @@ import {
   deliverPNCounterOperations, deliverSharedCounterOperations, inspect,
   deliverMapOperations, deliverRegisterDemo, deliverSetOperations, inspectPNCounter, merge, mergePNCounter, remove, stagePNCounterRace,
   deliverRemainingDemo,
+  disconnectRemainingTaskClient,
   acquireRemainingQueueJob,
   completeRemainingQueueJob,
   editRemainingSharedText,
@@ -19,6 +22,7 @@ import {
   stageSetRace,
   stageSharedCounterRace, updatePNCounter, updatePNCounterRoom,
   updateSharedCounterRoom, write, writeRegisterMapDemo,
+  volunteerRemainingTask,
   type Change, type Result, type State,
   type RemainingDemoOperationResult,
 } from "@atlas/toolkit";
@@ -37,7 +41,6 @@ test.each([
   ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["task-manager", ["dispatcher: unassigned"], ["dispatcher: Alice", "waiting: Bob, Carol"]],
   ["pact-map", ["closure-target: absent"], ["closure-target: ridge-pass", "accepted by A, B, C"]],
   ["json-ot", ["{}"], ['{"revision":1,"title":"field notes"}']],
   ["shared-rich-text", ["Hello World"], ["Hello [bold] World ▲"]],
@@ -63,6 +66,38 @@ test.each([
 
   const reset = unwrapRemaining(createRemainingDemoRoom(kind));
   expect(reset.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
+});
+
+test("TaskManager promotes after departure and clears the roster on completion", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("task-manager")).room;
+
+  unwrapRemaining(volunteerRemainingTask(room, "A"));
+  unwrapRemaining(volunteerRemainingTask(room, "B"));
+  unwrapRemaining(volunteerRemainingTask(room, "C"));
+  let view = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(view.replicas[0].values).toEqual([
+    "dispatcher: Alice",
+    "waiting: Bob, Carol",
+  ]);
+
+  view = unwrapRemaining(disconnectRemainingTaskClient(room, "A")).view;
+  expect(view.replicas[0].values).toEqual([
+    "dispatcher: Bob",
+    "waiting: Carol",
+  ]);
+
+  unwrapRemaining(abandonRemainingTask(room, "C"));
+  view = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(view.replicas[0].values).toEqual(["dispatcher: Bob"]);
+
+  unwrapRemaining(completeRemainingTask(room, "B"));
+  view = unwrapRemaining(deliverRemainingDemo(room)).view;
+  expect(view.replicas.map(({ values }) => values)).toEqual([
+    ["dispatcher: unassigned"],
+    ["dispatcher: unassigned"],
+    ["dispatcher: unassigned"],
+  ]);
+  expect(view.sequenceNumber).toBe(5);
 });
 
 test("FifoWorkQueue acquires in order, returns releases to the tail, and removes completed work", () => {
