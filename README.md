@@ -110,10 +110,22 @@ there outside CI. Stop an unrelated server on that port before verification.
 
 ## Netlify
 
-`pnpm build` compiles the Gleam toolkit, so Netlify must install Gleam before
-it runs the build. `netlify.toml` installs `mise`, installs the Gleam version
-from `mise.toml`, and runs the build through that tool environment. The publish
-directory is `dist`.
+GitHub Actions builds and deploys `main` with
+`.github/workflows/deploy-netlify.yml`. Add these GitHub Actions repository
+secrets:
+
+- `NETLIFY_AUTH_TOKEN`: a Netlify personal access token
+- `NETLIFY_SITE_ID`: the site's Project ID from **Project configuration >
+  General > Project information**
+
+In Netlify, select **Project configuration > Build & deploy > Continuous
+deployment > Stop builds**. This prevents each push from also starting a
+Netlify build. Manual CLI and API deploys still work when builds are stopped.
+
+The workflow installs the tools from `mise.toml`, runs `pnpm build`, and
+uploads `dist` with `netlify deploy --no-build`. `netlify.toml` keeps the
+Netlify build command as a fallback if automatic Netlify builds are enabled
+again.
 
 ### Release checks
 
