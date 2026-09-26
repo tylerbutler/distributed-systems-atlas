@@ -47,15 +47,15 @@ export const structureGroups: StructureGroup[] = [
       ["LWWMap", "lww-map"],
       ["OR-map", "or-map"],
       ["SharedDirectory", "shared-directory"],
+      ["JsonOt", "json-ot"],
     ],
   },
-  ...(["sequences", "coordination", "transforms"] as const).map((family) => ({
+  ...(["sequences", "coordination"] as const).map((family) => ({
     title: remainingFamilies[family].name,
     href: `/structures/${family}/`,
     summary: {
       sequences: "Keep lists and text in order while several people edit them.",
       coordination: "Choose one owner, worker, assignee, or accepted value.",
-      transforms: "Keep JSON and formatted text changes when they happen at the same time.",
     }[family],
     lessons: structuresForFamily(family).map(({ name, id }): [string, string] => [name, id]),
   })),

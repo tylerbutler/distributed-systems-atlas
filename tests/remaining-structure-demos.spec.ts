@@ -317,9 +317,8 @@ test("the naive SharedText counterexample diverges when raw offsets arrive in di
 test("remaining family pages link every dedicated lesson", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const [family, names] of [
-    ["sequences", ["SharedSequence", "SharedText"]],
+    ["sequences", ["SharedSequence", "SharedText", "SharedRichText"]],
     ["coordination", ["Claims", "FifoWorkQueue", "TaskManager", "PactMap"]],
-    ["transforms", ["JsonOt", "SharedRichText"]],
   ] as const) {
     await page.goto(`/structures/${family}/`);
     await expect(page.locator("main")).toHaveCount(1);

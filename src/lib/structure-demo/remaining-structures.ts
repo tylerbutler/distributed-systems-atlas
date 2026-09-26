@@ -1,4 +1,4 @@
-export type RemainingFamily = "sequences" | "coordination" | "transforms";
+export type RemainingFamily = "maps" | "sequences" | "coordination";
 export type RemainingStructureId =
   | "shared-sequence"
   | "shared-text"
@@ -257,7 +257,7 @@ export const remainingStructures: RemainingStructure[] = [
   {
     id: "json-ot",
     glossaryId: "jsonot",
-    family: "transforms",
+    family: "maps",
     kind: "OT",
     name: "JsonOt",
     module: "json_ot_kernel",
@@ -292,7 +292,7 @@ export const remainingStructures: RemainingStructure[] = [
   {
     id: "shared-rich-text",
     glossaryId: "sharedrichtext",
-    family: "transforms",
+    family: "sequences",
     kind: "OT",
     name: "SharedRichText",
     module: "rich_text_kernel",
@@ -332,20 +332,20 @@ export const remainingFamilies: Record<RemainingFamily, {
   tagline: string;
   intro: string;
 }> = {
+  maps: {
+    name: "Maps",
+    tagline: "Store named values and transform concurrent document changes.",
+    intro: "Maps organize values by name. Some choose one value for each key; JsonOt instead transforms concurrent edits to different paths in one JSON document.",
+  },
   sequences: {
     name: "Sequences",
-    tagline: "Keep everyone's trail stops and written notes in order.",
-    intro: "Alice and Bob each have a copy of the ranger's trail stop list and field notes. Before they compare changes, both add a trail stop at the same place on the list. How can they keep both trail stops in order?",
+    tagline: "Keep lists, plain text, and formatted text in order.",
+    intro: "Alice and Bob edit separate copies of the ranger's route and reports. Sequence structures preserve ordered items, written symbols, and formatting when their changes meet.",
   },
   coordination: {
     name: "Coordination",
     tagline: "Choose one owner, one worker, or one accepted value.",
     intro: "Every structure in this family is a distributed data structure. The ranger's sequencer numbers accepted operations, so every replica applies one shared order before it chooses an owner, worker, queue position, or agreed value.",
-  },
-  transforms: {
-    name: "Transforms",
-    tagline: "Adjust simultaneous edits so both can go into one report.",
-    intro: "Alice and Bob edit separate parts of the ranger's report before they see each other's work. Each hiker adjusts their own edit when the other's note arrives, so the shared report includes both.",
   },
 };
 

@@ -246,6 +246,7 @@ test("the map family links every dedicated lesson", async ({ page }) => {
     ["Open the LWWMap lesson", "/structures/lww-map/"],
     ["Open the OR-map lesson", "/structures/or-map/"],
     ["Open the SharedDirectory lesson", "/structures/shared-directory/"],
+    ["Open the JsonOt lesson", "/structures/json-ot/"],
   ]) {
     await expect(page.getByRole("link", { name })).toHaveAttribute("href", href);
   }

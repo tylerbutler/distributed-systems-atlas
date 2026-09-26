@@ -5,6 +5,10 @@ import LessonIllustration from "../../components/LessonIllustration.astro";
 import StructureKindTag from "../../components/StructureKindTag.astro";
 import ComplexityBadge from "../../components/ComplexityBadge.astro";
 import { structureComplexity } from "../../lib/learning-complexity";
+import { structureById } from "../../lib/structure-demo/remaining-structures";
+
+const jsonOt = structureById("json-ot");
+if (!jsonOt) throw new Error("Missing JsonOt structure");
 ---
 
 <BaseLayout
@@ -96,6 +100,38 @@ import { structureComplexity } from "../../lib/learning-complexity";
       <a class="structure-link" href="/structures/shared-directory/">Open the SharedDirectory lesson</a>
     </section>
 
+    <section aria-labelledby="json-ot-title">
+      <header>
+        <div>
+          <StructureKindTag kind={jsonOt.kind} />
+          <ComplexityBadge complexity={structureComplexity(jsonOt.id)} />
+          <h2 id="json-ot-title">{jsonOt.name}</h2>
+          <p>{jsonOt.tagline}</p>
+        </div>
+        <code>{jsonOt.module}</code>
+      </header>
+      <div class="structure-body">
+        <div>
+          <p>
+            Alice adds a title while Bob adds a revision number to separate
+            paths in the same JSON report. Each client transforms incoming and
+            pending edits so both changes fit the shared document.
+          </p>
+          <h3>Best for</h3>
+          <ul>
+            <li>Collaborative JSON documents with nested paths</li>
+            <li>Editors that show local changes before sequencing confirms them</li>
+          </ul>
+        </div>
+        <dl>
+          <div><dt>Values</dt><dd>JSON objects, arrays, and scalar values</dd></div>
+          <div><dt>When edits overlap</dt><dd>Transform each operation against concurrent work</dd></div>
+          <div><dt>Ordering</dt><dd>A sequencer confirms the shared operation order</dd></div>
+        </dl>
+      </div>
+      <a class="structure-link" href="/structures/json-ot/">Open the JsonOt lesson</a>
+    </section>
+
     <section class="family-comparison" aria-labelledby="map-choice-title">
       <h2 id="map-choice-title">Choose what happens when answers differ</h2>
       <table aria-label="Map comparison">
@@ -105,6 +141,7 @@ import { structureComplexity } from "../../lib/learning-complexity";
           <tr><th scope="row">Use clock times to select text values</th><td>LWWMap</td><td>Remember clocks and removals</td></tr>
           <tr><th scope="row">New work survives removal</th><td>OR-map</td><td>Remember which work each person saw</td></tr>
           <tr><th scope="row">Folders can reuse names</th><td>SharedDirectory</td><td>Track each folder separately</td></tr>
+          <tr><th scope="row">Concurrent edits change several JSON paths</th><td>JsonOt</td><td>Transform pending and incoming operations</td></tr>
         </tbody>
       </table>
     </section>

@@ -130,7 +130,8 @@ test("breadcrumbs link to the relevant structure and reference indexes", async (
     ["/structures/shared-directory/", "Maps"],
     ["/structures/shared-sequence/", "Sequences"],
     ["/structures/claims/", "Coordination"],
-    ["/structures/json-ot/", "Transforms"],
+    ["/structures/json-ot/", "Maps"],
+    ["/structures/shared-rich-text/", "Sequences"],
   ] as const) {
     await page.goto(route);
     await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/structures/");
@@ -498,7 +499,7 @@ test("the structures index and landing route readers through published families"
   await expect(page.getByRole("link", { name: "Compare CRDT, DDS, and OT structures" }))
     .toHaveAttribute("href", "/structures/models/");
   const familyLinks = page.getByRole("list", { name: "Structure lessons" }).getByRole("link");
-  await expect(familyLinks).toHaveCount(7);
+  await expect(familyLinks).toHaveCount(6);
   await expect(familyLinks.filter({ has: page.getByRole("heading", { name: "Registers", exact: true }) }))
     .toHaveAttribute("href", "/structures/registers/");
   await expect(familyLinks.filter({ has: page.getByRole("heading", { name: "Maps", exact: true }) }))
