@@ -25,7 +25,7 @@ does not imply that a replica has a global view. The release includes the seven
 sheets, landing page, structures index, counter-family and set-family pages,
 dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet,
 observed-remove set, LWWRegister, MvRegister, RegisterMap, SharedMap,
-LWWMap, OR-map, SharedDirectory, SharedSequence, SharedText, Claims,
+LWWMap, OR-map, SharedDirectory, SequenceCrdt, SharedText, Claims,
 FifoWorkQueue, TaskManager, PactMap, JsonOt, and SharedRichText lessons,
 plus the seven family overview pages, atlas index, glossary, and bibliography.
 
@@ -75,7 +75,7 @@ Open the local URL printed by Astro. The publication includes `/`,
 `/structures/register-map/`, `/structures/maps/`,
 `/structures/shared-map/`, `/structures/lww-map/`, `/structures/or-map/`,
 `/structures/shared-directory/`, `/structures/sequences/`,
-`/structures/shared-sequence/`, `/structures/shared-text/`,
+`/structures/sequence-crdt/`, `/structures/shared-text/`,
 `/structures/coordination/`, `/structures/claims/`,
 `/structures/fifo-work-queue/`, `/structures/task-manager/`,
 `/structures/pact-map/`, `/structures/transforms/`, `/structures/json-ot/`,

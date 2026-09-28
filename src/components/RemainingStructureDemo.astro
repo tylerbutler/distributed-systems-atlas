@@ -15,7 +15,7 @@ const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
 const isSharedText = structure.id === "shared-text";
 const isClaims = structure.id === "claims";
 const isCoordination = structure.family === "coordination";
-const hasExchange = structure.id === "shared-sequence" || isSharedText || isCoordination;
+const hasExchange = structure.id === "sequence-crdt" || isSharedText || isCoordination;
 const hasSequencer = isSharedText || isCoordination;
 ---
 
@@ -29,14 +29,14 @@ const hasSequencer = isSharedText || isCoordination;
     <header>
       <div>
         <h2 id={`${structure.id}-demo-title`}>
-          {structure.id === "shared-sequence"
+          {structure.id === "sequence-crdt"
             ? "Edit the inspection route"
             : isSharedText
               ? "Write the field note together"
               : isClaims ? "Claim one shared key" : `${structure.name} at Eagle Creek`}
         </h2>
         <p>
-          {structure.id === "shared-sequence"
+          {structure.id === "sequence-crdt"
             ? "Each hiker can add trail stops to their notebook. Turn off Broadcast to see their routes before insertion notes arrive."
             : isSharedText
               ? "Type in any notebook. Turn off Broadcast to hold edits locally, then turn it on to watch every copy converge."
@@ -77,24 +77,24 @@ const hasSequencer = isSharedText || isCoordination;
               </div>
             ) : (
               <p class="remaining-local-record">
-                <span>{structure.id === "shared-sequence" ? "Route in this notebook" : structure.recordLabel}</span>
+                <span>{structure.id === "sequence-crdt" ? "Route in this notebook" : structure.recordLabel}</span>
                 <strong data-local-record>{structure.initialRecord[id]}</strong>
               </p>
             )}
             <p class="remaining-paper-note">
-              <span>{structure.id === "shared-sequence" ? "Latest insertion" : isSharedText ? "Latest local edit" : structure.messageLabel}</span>
+              <span>{structure.id === "sequence-crdt" ? "Latest insertion" : isSharedText ? "Latest local edit" : structure.messageLabel}</span>
               <strong data-client-note>
-                {structure.id === "shared-sequence"
+                {structure.id === "sequence-crdt"
                   ? "No trail stop inserted yet."
                   : isSharedText ? "No local edit yet." : structure.local[id]}
               </strong>
               <small data-client-evidence>
-                {structure.id === "shared-sequence"
+                {structure.id === "sequence-crdt"
                   ? "Each trail stop gets a unique ID."
                   : isSharedText ? "Edits name written-symbol positions, not raw code units." : structure.evidence[id]}
               </small>
             </p>
-            {structure.id === "shared-sequence" ? (
+            {structure.id === "sequence-crdt" ? (
               <form class="remaining-insert-controls" data-sequence-insert aria-label={`Insert a trail stop for ${demoReplicaName(id)}`}>
                 <label>Trail stop name
                   <select data-insert-name required disabled>
@@ -143,8 +143,8 @@ const hasSequencer = isSharedText || isCoordination;
         </Fragment>
       ))}
     </div>
-    <section class="remaining-state" aria-label={structure.id === "shared-sequence" ? "Carol's current route" : "Carol's current view"}>
-      <span>{structure.id === "shared-sequence" ? "Carol's current route" : "Carol's current view"}</span>
+    <section class="remaining-state" aria-label={structure.id === "sequence-crdt" ? "Carol's current route" : "Carol's current view"}>
+      <span>{structure.id === "sequence-crdt" ? "Carol's current route" : "Carol's current view"}</span>
       <ul data-state>{structure.initial.map((item) => <li>{item}</li>)}</ul>
     </section>
     <DemoTransportControls />
@@ -153,7 +153,7 @@ const hasSequencer = isSharedText || isCoordination;
       <div>
         <h3>Run the worked example</h3>
         <p>
-          {structure.id === "shared-sequence"
+          {structure.id === "sequence-crdt"
             ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
             : isSharedText
               ? "Crowd one position with two words, overlap edits to one word, or type your own changes above."
@@ -324,7 +324,7 @@ const hasSequencer = isSharedText || isCoordination;
       this.race.addEventListener("click", () => {
         this.resetFlow();
         try {
-          if (this.kind === "shared-sequence") {
+          if (this.kind === "sequence-crdt") {
             this.state = stageRemainingRace(this.state);
             this.acted = new Set(REPLICA_IDS);
             if (this.state.view.pending !== 2) throw new Error("Expected Alice's and Bob's insertion notes");
@@ -361,7 +361,7 @@ const hasSequencer = isSharedText || isCoordination;
           this.render(this.isCoordination
             ? "Operations queued for sequencing."
             : "Notes queued for delivery.");
-          if (this.kind === "shared-sequence") {
+          if (this.kind === "sequence-crdt") {
             this.queueOutbound("A", "Falls");
             this.queueOutbound("B", "Marsh");
           }
@@ -403,7 +403,7 @@ const hasSequencer = isSharedText || isCoordination;
     private get kind(): RemainingDemoState["kind"] {
       const kind = this.dataset.kind;
       if (
-        kind === "shared-sequence"
+        kind === "sequence-crdt"
         || kind === "shared-text"
         || kind === "claims"
         || kind === "fifo-work-queue"
@@ -541,7 +541,7 @@ const hasSequencer = isSharedText || isCoordination;
       this.activeAnimations.clear();
       this.querySelector<HTMLElement>("[data-operation-layer]")?.replaceChildren();
       this.state = createRemainingDemo(this.kind);
-      if (this.kind === "shared-sequence") {
+      if (this.kind === "sequence-crdt") {
         for (const id of REPLICA_IDS) this.setSequenceSlip(id, "No trail stop inserted yet.");
       } else if (this.kind === "shared-text") {
         for (const id of REPLICA_IDS) this.setTextSlip(id, "No local edit yet.");
@@ -556,7 +556,7 @@ const hasSequencer = isSharedText || isCoordination;
     }
 
     private get hasExchange(): boolean {
-      return this.kind === "shared-sequence"
+      return this.kind === "sequence-crdt"
         || this.kind === "shared-text"
         || this.isCoordination;
     }
@@ -603,7 +603,7 @@ const hasSequencer = isSharedText || isCoordination;
           `[data-client="${replica.id}"] [data-local-record]`,
         );
         if (record) {
-          if (this.kind === "shared-sequence") {
+          if (this.kind === "sequence-crdt") {
             const nodes: Node[] = [];
             for (const [index, value] of replica.values.entries()) {
               if (index) nodes.push(document.createTextNode(" · "));
@@ -622,7 +622,7 @@ const hasSequencer = isSharedText || isCoordination;
             record.textContent = replica.values.join(" · ");
           }
         }
-        if (this.kind === "shared-sequence") this.renderSequencePositions(replica.id, replica.values);
+        if (this.kind === "sequence-crdt") this.renderSequencePositions(replica.id, replica.values);
       }
       this.renderExchangeNotes();
       this.dataset.kernelSequence = String(this.state.view.sequenceNumber);
@@ -736,7 +736,7 @@ const hasSequencer = isSharedText || isCoordination;
       if (!target) throw new Error("Missing remaining demo state");
       target.replaceChildren(...values.map((value) => {
         const item = document.createElement("li");
-        item.append(this.kind === "shared-sequence" ? this.sequenceValue(value) : value);
+        item.append(this.kind === "sequence-crdt" ? this.sequenceValue(value) : value);
         return item;
       }));
     }
@@ -768,7 +768,7 @@ const hasSequencer = isSharedText || isCoordination;
         const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
         button.disabled = client ? this.acted.has(client) : true;
       }
-      this.race.disabled = this.kind === "shared-sequence" || this.kind === "shared-text"
+      this.race.disabled = this.kind === "sequence-crdt" || this.kind === "shared-text"
         ? false
         : this.delivering;
       const overlap = this.querySelector<HTMLButtonElement>('[data-action="overlap"]');

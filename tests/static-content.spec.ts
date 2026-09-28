@@ -128,7 +128,7 @@ test("breadcrumbs link to the relevant structure and reference indexes", async (
     ["/structures/observed-remove-set/", "Sets"],
     ["/structures/register-map/", "Registers"],
     ["/structures/shared-directory/", "Maps"],
-    ["/structures/shared-sequence/", "Sequences"],
+    ["/structures/sequence-crdt/", "Sequences"],
     ["/structures/claims/", "Coordination"],
     ["/structures/json-ot/", "Maps"],
     ["/structures/shared-rich-text/", "Sequences"],
@@ -146,11 +146,11 @@ test("breadcrumbs link to the relevant structure and reference indexes", async (
   await page.goto("/structures/coordination/");
   await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/structures/");
   await expect(rail.locator('[aria-current="page"]')).toHaveText("Coordination");
-  await page.goto("/structures/shared-sequence/");
+  await page.goto("/structures/sequence-crdt/");
   await expect(rail.getByRole("listitem")).toHaveText([
-    "Structures", "Sequences", "SharedSequence",
+    "Structures", "Sequences", "SequenceCrdt",
   ]);
-  await expect(page).toHaveTitle("SharedSequence | Distributed Systems Atlas");
+  await expect(page).toHaveTitle("SequenceCrdt | Distributed Systems Atlas");
 });
 
 test("structure navigation follows the family and lesson order", async ({ page }) => {

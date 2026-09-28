@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const examples = [
-  ["shared-sequence", "SharedSequence", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
+  ["sequence-crdt", "SequenceCrdt", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
   ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
@@ -40,7 +40,7 @@ for (const [slug, name, race, initial, final] of examples) {
       await expect(demo.locator("[data-note-log] li").last()).toContainText("waiting");
     }
     await demo.locator("[data-transport-auto-deliver]").check();
-    const displayed = slug === "shared-sequence"
+    const displayed = slug === "sequence-crdt"
       ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
       : [...final];
     await expect(demo.locator("[data-state] li")).toHaveText(displayed);
@@ -75,7 +75,7 @@ for (const [slug, name, race, initial, final] of examples) {
         displayed.join(" · "),
       ]);
     }
-    if (slug === "shared-sequence") {
+    if (slug === "sequence-crdt") {
       await expect(demo.locator('[data-client="A"] .remaining-paper-note sup')).toHaveText("A:4");
       await expect(demo.locator('[data-client="B"] .remaining-paper-note sup')).toHaveText("B:4");
       await expect(demo.locator("[data-note-log] li")).toHaveText([
@@ -338,7 +338,7 @@ test("SharedText explains why identity-based sequence deltas replace raw offsets
   const lesson = page.locator("article").first();
   await expect(page.getByRole("heading", { name: "A character offset is only local" })).toBeVisible();
   await expect(lesson).toContainText("the result depends on which message arrives first");
-  await expect(page.getByRole("heading", { name: "SharedText uses the SharedSequence rule" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "SharedText uses the SequenceCrdt rule" })).toBeVisible();
   await expect(lesson).toContainText("It is the same sequence CRDT.");
   await expect(lesson).toContainText("the delta is the authoritative payload");
   await expect(lesson).toContainText("they do not run the author's old index against the current string");
@@ -378,7 +378,7 @@ test("the naive SharedText counterexample diverges when raw offsets arrive in di
 test("remaining family pages link every dedicated lesson", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const [family, names] of [
-    ["sequences", ["SharedSequence", "SharedText", "SharedRichText"]],
+    ["sequences", ["SequenceCrdt", "SharedText", "SharedRichText"]],
     ["coordination", ["Claims", "FifoWorkQueue", "TaskManager", "PactMap"]],
   ] as const) {
     await page.goto(`/structures/${family}/`);
@@ -447,7 +447,7 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
       await expect(demo.locator(".remaining-paper-note")).toHaveCount(3);
       await expect(demo.getByRole("button").first()).toBeDisabled();
       await expect(demo).toContainText("Enable JavaScript to run the race");
-      if (slug === "shared-sequence") {
+      if (slug === "sequence-crdt") {
         await expect(demo.locator("[data-sequence-insert]")).toHaveCount(3);
         await expect(demo.locator("[data-insert-submit]").first()).toBeDisabled();
         const notebook = page.getByRole("table", {
@@ -499,8 +499,8 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
 });
 
 test("direct controls remain active after another client queues work", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   const controls = demo.locator("[data-sequence-insert]");
   await expect(controls).toHaveCount(3);
   for (const form of await controls.all()) {
@@ -525,9 +525,9 @@ test("direct controls remain active after another client queues work", async ({ 
   await expect(demo.locator('[data-client="C"] [data-local-record]')).toContainText("Marsh");
 });
 
-test("SharedSequence controls stay active while notes are in flight", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+test("SequenceCrdt controls stay active while notes are in flight", async ({ page }) => {
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
   const bob = demo.locator('[data-client="B"] [data-sequence-insert]');
   await alice.getByLabel("Trail stop name").selectOption("Ridge");
@@ -546,9 +546,9 @@ test("SharedSequence controls stay active while notes are in flight", async ({ p
   await expect(demo.locator("[data-state]")).toContainText("Lookout");
 });
 
-test("SharedSequence shows each local route and the insertion notes in transit", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+test("SequenceCrdt shows each local route and the insertion notes in transit", async ({ page }) => {
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   await demo.locator("[data-transport-auto-deliver]").uncheck();
   const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
   const bob = demo.locator('[data-client="B"] [data-sequence-insert]');
@@ -600,9 +600,9 @@ test("SharedSequence shows each local route and the insertion notes in transit",
     .toHaveText("No insertion notes yet.");
 });
 
-test("SharedSequence animates notes to the relay and then to the notebooks", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+test("SequenceCrdt animates notes to the relay and then to the notebooks", async ({ page }) => {
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   await demo.locator("[data-transport-auto-deliver]").uncheck();
   const alice = demo.locator('[data-client="A"] [data-sequence-insert]');
   await alice.getByLabel("Trail stop name").selectOption("Ridge");
@@ -627,9 +627,9 @@ test("SharedSequence animates notes to the relay and then to the notebooks", asy
   await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
 });
 
-test("SharedSequence broadcasts pending notes together", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+test("SequenceCrdt broadcasts pending notes together", async ({ page }) => {
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   await demo.locator("[data-transport-auto-deliver]").uncheck();
   await demo.getByRole("button", { name: "Race the route insertions" }).click();
   await expect(demo.locator(".remaining-operation-pulse.outbound")).toHaveCount(2);
@@ -639,10 +639,10 @@ test("SharedSequence broadcasts pending notes together", async ({ page }) => {
   await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
 });
 
-test("SharedSequence delivers without spatial motion when reduced motion is requested", async ({ page }) => {
+test("SequenceCrdt delivers without spatial motion when reduced motion is requested", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   const carol = demo.locator('[data-client="C"] [data-sequence-insert]');
   await carol.getByLabel("Trail stop name").selectOption("Lookout");
   await carol.getByRole("button", { name: "Insert trail stop" }).click();
@@ -654,12 +654,12 @@ test("SharedSequence delivers without spatial motion when reduced motion is requ
   await expect(demo.locator(".remaining-operation-pulse")).toHaveCount(0);
 });
 
-test("SharedSequence uses the reading column and a wider sandbox", async ({ page }) => {
+test("SequenceCrdt uses the reading column and a wider sandbox", async ({ page }) => {
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/structures/shared-sequence/");
+    await page.goto("/structures/sequence-crdt/");
     const article = page.locator(".structure-lesson");
-    const demo = page.getByTestId("shared-sequence-demo");
+    const demo = page.getByTestId("sequence-crdt-demo");
     const facts = page.locator(".structure-facts");
     await expect(article.locator(".page-intro .structure-kind-tag")).toHaveCount(0);
     await expect(facts.locator(".structure-kind-tag")).toHaveCount(1);
@@ -674,7 +674,7 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
     expect(factsBox!.x).toBeGreaterThanOrEqual(0);
     expect(factsBox!.x + factsBox!.width).toBeLessThanOrEqual(width);
     await expect(demo.locator(".remaining-demo")).toHaveCSS("background-color", "oklch(0.29 0.075 238)");
-    await expect(article.getByRole("navigation", { name: "SharedSequence lesson map" }))
+    await expect(article.getByRole("navigation", { name: "SequenceCrdt lesson map" }))
       .toBeVisible();
     await expect(article.getByRole("heading", { name: "Quick facts" })).toBeVisible();
     await expect(article.getByRole("table", { name: "Each hiker's inspection route before and after sharing" }))
@@ -716,8 +716,8 @@ test("SharedSequence uses the reading column and a wider sandbox", async ({ page
 });
 
 test("reset cancels an in-flight kernel delivery", async ({ page }) => {
-  await page.goto("/structures/shared-sequence/");
-  const demo = page.getByTestId("shared-sequence-demo");
+  await page.goto("/structures/sequence-crdt/");
+  const demo = page.getByTestId("sequence-crdt-demo");
   await demo.getByRole("button", { name: "Race the route insertions" }).click();
   await expect(demo.locator(".remaining-operation-pulse.outbound").first()).toBeVisible();
   await demo.getByRole("button", { name: "Reset" }).click();

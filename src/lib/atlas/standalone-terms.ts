@@ -110,8 +110,8 @@ export const sharedDirectoryTerm: GlossaryTerm = {
   definition: "A shared folder tree where a service numbers changes. A new folder stays distinct from an old folder with the same name.",
 };
 
-export const sharedSequenceTerm: GlossaryTerm = {
-  term: "SharedSequence",
+export const sequenceCrdtTerm: GlossaryTerm = {
+  term: "SequenceCrdt",
   definition: "A shared ordered list where each item has its own mark. People can add, move, replace, or remove items without losing track of which one they mean.",
 };
 
@@ -176,7 +176,7 @@ export const standaloneTerms = [
   sharedCounterTerm,
   sharedMapTerm,
   sharedRichTextTerm,
-  sharedSequenceTerm,
+  sequenceCrdtTerm,
   sharedTextTerm,
   sluiceTerm,
   taskManagerTerm,

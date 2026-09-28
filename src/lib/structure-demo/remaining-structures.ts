@@ -1,6 +1,6 @@
 export type RemainingFamily = "maps" | "sequences" | "coordination";
 export type RemainingStructureId =
-  | "shared-sequence"
+  | "sequence-crdt"
   | "shared-text"
   | "claims"
   | "fifo-work-queue"
@@ -36,11 +36,11 @@ export const sequenceStopMarks = { Falls: "A:4", Marsh: "B:4" } as const;
 
 export const remainingStructures: RemainingStructure[] = [
   {
-    id: "shared-sequence",
-    glossaryId: "sharedsequence",
+    id: "sequence-crdt",
+    glossaryId: "sequencecrdt",
     family: "sequences",
     kind: "CRDT",
-    name: "SharedSequence",
+    name: "SequenceCrdt",
     module: "sequence_kernel",
     tagline: "Alice and Bob add trail stops to the same route without losing either one.",
     rule: "Give each trail stop its own mark, so adding or moving other trail stops does not change which one a note means.",
@@ -76,7 +76,7 @@ export const remainingStructures: RemainingStructure[] = [
     name: "SharedText",
     module: "text_kernel",
     tagline: "Alice, Bob, and Carol can type in one field note without losing concurrent edits.",
-    rule: "Treat each grapheme as a SharedSequence item with its own identity, so replicas merge deltas instead of replaying stale character offsets.",
+    rule: "Treat each grapheme as a SequenceCrdt item with its own identity, so replicas merge deltas instead of replaying stale character offsets.",
     story: "Alice and Bob revise the same sentence while Carol reads an older copy of the field note.",
     raceLabel: "Crowd an insert before “weir”",
     recordLabel: "Field-note page",

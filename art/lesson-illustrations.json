@@ -253,12 +253,12 @@
       "altDraft": "Fieldworkers add pieces to ordered route and note strips with individually tagged items."
     },
     {
-      "id": "structures-shared-sequence",
+      "id": "structures-sequence-crdt",
       "kind": "structure",
-      "route": "/structures/shared-sequence/",
-      "title": "SharedSequence",
+      "route": "/structures/sequence-crdt/",
+      "title": "SequenceCrdt",
       "source": "src/lib/structure-demo/remaining-structures.ts",
-      "asset": "/illustrations/lessons/structures-shared-sequence.svg",
+      "asset": "/illustrations/lessons/structures-sequence-crdt.svg",
       "alt": "New waterfall and marsh cards fit before the same weir card in a tagged inspection route with a bridge and gate.",
       "scenePrompt": "Alice and Bob revise a long inspection-route card laid across a table. Existing waypoint cards show a bridge, a weir, and a gate. Alice brings a waterfall card and Bob a marsh card to the same gap before the weir. Both new cards fit in the expanded strip, and every card retains its own small identity tab. No map grid or numbered positions.",
       "semanticGuardrails": "Both concurrent insertions survive before the same stable anchor in deterministic identity order. The visual should not imply that arrival speed or the workers' physical positions choose the result. Keep the weir anchor visibly the same object.",

@@ -82,7 +82,7 @@ preserves an unseen concurrent tally update, and SharedDirectory gives nested
 folders stable identities. Each structure has a dedicated three-client demo
 that runs through Watershed's public channel API.
 
-The Sequences overview follows the ordered inspection route into SharedSequence
+The Sequences overview follows the ordered inspection route into SequenceCrdt
 and SharedText. Stable item and grapheme identities explain why concurrent
 inserts can both survive even when local indexes change.
 
@@ -99,7 +99,7 @@ Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
 MvRegister, RegisterMap, SharedMap, LWWMap, OR-map, and SharedDirectory
-demos, plus compact rule models for SharedSequence, SharedText, Claims,
+demos, plus compact rule models for SequenceCrdt, SharedText, Claims,
 FifoWorkQueue, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
 engines cover ordering, clocks, and Dots. Focused structure demos use at least
 three clients. Counter, set, register, and map lessons run pinned Watershed

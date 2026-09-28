@@ -6,7 +6,7 @@ for (const [path, testId, outbound, broadcast] of [
   ["/structures/g-set/", "g-set-demo", ".set-operation-pulse.outbound", ".set-operation-pulse.shared"],
   ["/structures/lww-register/", "lww-register-demo", ".register-operation-pulse.outbound", ".register-operation-pulse.shared"],
   ["/structures/shared-map/", "shared-map-demo", ".map-operation-pulse.outbound", ".map-operation-pulse.shared"],
-  ["/structures/shared-sequence/", "shared-sequence-demo", ".remaining-operation-pulse.outbound", ".remaining-operation-pulse.shared"],
+  ["/structures/sequence-crdt/", "sequence-crdt-demo", ".remaining-operation-pulse.outbound", ".remaining-operation-pulse.shared"],
 ] as const) {
   test(`${testId} broadcasts queued operations together`, async ({ page }) => {
     await page.goto(path);

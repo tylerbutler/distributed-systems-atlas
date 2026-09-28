@@ -24,7 +24,7 @@ export function getStaticPaths() {
 const structure = structureById(Astro.params.structure ?? "");
 if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
-const isSharedSequence = structure.id === "shared-sequence";
+const isSequenceCrdt = structure.id === "sequence-crdt";
 const isSharedText = structure.id === "shared-text";
 const isClaims = structure.id === "claims";
 const isFifoWorkQueue = structure.id === "fifo-work-queue";
@@ -39,18 +39,18 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSharedSequence || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap || isJsonOt ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSequenceCrdt || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap || isJsonOt ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
       <Fragment slot="summary">{structure.tagline}</Fragment>
 
-      {(isSharedSequence || isSharedText) && (
+      {(isSequenceCrdt || isSharedText) && (
         <nav class="lesson-map" aria-label={`${structure.name} lesson map`}>
           <a href={isSharedText ? "#offset-problem" : "#route-setup"}>
             {isSharedText ? "See why offsets fail" : "Compare the notebooks"}
           </a>
-          <a href={isSharedText ? "#text-mechanics" : "#shared-sequence-demo-title"}>
+          <a href={isSharedText ? "#text-mechanics" : "#sequence-crdt-demo-title"}>
             {isSharedText ? "Follow the mechanics" : "Try the route sandbox"}
           </a>
           <a href={isSharedText ? "#shared-text-demo-title" : "#route-result"}>
@@ -61,14 +61,14 @@ const operationNames = structure.operations.length === 1
 
       <section class="structure-story">
         <h2>
-          {isSharedSequence
+          {isSequenceCrdt
             ? "Two hikers edit the route"
             : isSharedText
               ? "Three hikers edit one field note"
               : "At Eagle Creek"}
         </h2>
         <p>{structure.story}</p>
-        {isSharedSequence ? (
+        {isSequenceCrdt ? (
           <p>
             The ranger's route begins Bridge, Weir, North gate. Alice adds Falls
             before Weir in her notebook. Bob adds Marsh before Weir in his.
@@ -203,13 +203,13 @@ const operationNames = structure.operations.length === 1
           </section>
 
           <section id="text-mechanics" aria-labelledby="text-mechanics-title">
-            <h2 id="text-mechanics-title">SharedText uses the SharedSequence rule</h2>
+            <h2 id="text-mechanics-title">SharedText uses the SequenceCrdt rule</h2>
             <p>
               The order resolution is not merely similar. It is the same
               sequence CRDT. Watershed's text value wraps a
               <code> Sequence(String)</code>. Each grapheme is a sequence item
               with a stable identity, and concurrent insertions use the same
-              deterministic order as SharedSequence.
+              deterministic order as SequenceCrdt.
             </p>
             <p>
               SharedText adds a text layer around that sequence. The layer
@@ -271,7 +271,7 @@ const operationNames = structure.operations.length === 1
                 The IDs are conceptual labels, not Watershed's wire format. If
                 Alice deletes <code>id-3</code>, every replica can remove the
                 same <code>t</code> even after another edit moves it to a new
-                visible index. SharedSequence needs IDs for the same reason:
+                visible index. SequenceCrdt needs IDs for the same reason:
                 equal values can still be different items.
               </p>
             </div>
@@ -306,7 +306,7 @@ const operationNames = structure.operations.length === 1
         </>
       )}
 
-      {isSharedSequence && (
+      {isSequenceCrdt && (
         <section id="route-setup" aria-labelledby="route-setup-title">
           <h2 id="route-setup-title">Three notebooks before the notes arrive</h2>
           <figure class="route-notebooks">
@@ -485,9 +485,9 @@ const operationNames = structure.operations.length === 1
         </>
       )}
 
-      {isSharedSequence && (
+      {isSequenceCrdt && (
         <StructureFacts
-          structure="SharedSequence"
+          structure="SequenceCrdt"
           family="CRDT"
           model="Replicated sequence with stable item identities"
           updates="Insert trail stops into an ordered route"
@@ -502,7 +502,7 @@ const operationNames = structure.operations.length === 1
         <StructureFacts
           structure="SharedText"
           family="CRDT"
-          model="SharedSequence of Unicode graphemes"
+          model="SequenceCrdt of Unicode graphemes"
           updates="Insert, delete, replace, or append grapheme ranges"
           merge="Merge identity-based sequence deltas, not raw character offsets"
           delivery="A sequencer numbers accepted character operations"

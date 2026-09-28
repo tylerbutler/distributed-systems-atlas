@@ -5,7 +5,7 @@ import gleeunit/should
 pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() {
   let cases = [
     #(
-      "shared-sequence",
+      "sequence-crdt",
       ["Bridge", "Weir", "North gate"],
       ["Bridge", "Falls", "Marsh", "Weir", "North gate"],
     ),

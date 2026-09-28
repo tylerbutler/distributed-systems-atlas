@@ -109,7 +109,7 @@ pub opaque type RemainingDemoRoom {
 
 pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
   case kind {
-    "shared-sequence" -> new_sequence_room()
+    "sequence-crdt" -> new_sequence_room()
     "shared-text" -> new_text_room()
     "claims" ->
       Ok(ClaimsRoom(
@@ -849,7 +849,7 @@ pub fn remaining_demo_insert(
           use #(state, _, operation) <- result.try(
             sequence_kernel.p2p_insert(state, index, json.string(name))
             |> result.map_error(fn(error) {
-              "SharedSequence insertion failed: "
+              "SequenceCrdt insertion failed: "
               <> sequence_kernel.edit_error_detail(error)
             }),
           )
@@ -868,7 +868,7 @@ pub fn remaining_demo_insert(
         }
       }
     }
-    _ -> Error("trail stop insertion requires SharedSequence")
+    _ -> Error("trail stop insertion requires SequenceCrdt")
   }
 }
 
@@ -1050,17 +1050,17 @@ fn new_sequence_room() -> Result(RemainingDemoRoom, String) {
         json.string(value),
       )
       |> result.map(fn(update) { update.0 })
-      |> result.map_error(fn(_) { "SharedSequence initialization failed" })
+      |> result.map_error(fn(_) { "SequenceCrdt initialization failed" })
     }),
   )
   let summary = a |> sequence_kernel.summary |> json.to_string
   use b <- result.try(
     sequence_kernel.from_summary(summary, replica_id.new("B"))
-    |> result.map_error(fn(_) { "SharedSequence summary failed" }),
+    |> result.map_error(fn(_) { "SequenceCrdt summary failed" }),
   )
   use c <- result.try(
     sequence_kernel.from_summary(summary, replica_id.new("C"))
-    |> result.map_error(fn(_) { "SharedSequence summary failed" }),
+    |> result.map_error(fn(_) { "SequenceCrdt summary failed" }),
   )
   Ok(SequenceRoom(a, b, c, [], []))
 }

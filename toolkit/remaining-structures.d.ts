@@ -1,5 +1,5 @@
 export type RemainingDemoKind =
-  | "shared-sequence"
+  | "sequence-crdt"
   | "shared-text"
   | "claims"
   | "fifo-work-queue"

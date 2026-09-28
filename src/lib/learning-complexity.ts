@@ -28,7 +28,7 @@ const structureComplexities: Record<string, LearningComplexity> = {
   "lww-map": "intermediate",
   "or-map": "advanced",
   "shared-directory": "advanced",
-  "shared-sequence": "advanced",
+  "sequence-crdt": "advanced",
   "shared-text": "expert",
   claims: "intermediate",
   "fifo-work-queue": "advanced",

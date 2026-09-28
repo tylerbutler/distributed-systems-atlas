@@ -290,7 +290,7 @@ The familiar value stays larger than its metadata.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure unless item identity is the lesson's merge rule.
 
-SharedSequence adds a lesson map, Quick facts, and a worked three-notebook
+SequenceCrdt adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
 and newly received trail stops after sharing. Yellow identifies Alice's Falls and
 dark blue identifies Bob's Marsh; the table caption names both colors.

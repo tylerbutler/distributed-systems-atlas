@@ -41,7 +41,7 @@ function unwrapRemaining<T>(result: RemainingDemoOperationResult<T>): T {
 }
 
 test.each([
-  ["shared-sequence", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
+  ["sequence-crdt", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
   ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
   [
@@ -161,8 +161,8 @@ test("FifoWorkQueue acquires in order, returns releases to the tail, and removes
   ]);
 });
 
-test("SharedSequence accepts repeated inserts from every hiker and merges equal names", () => {
-  const room = unwrapRemaining(createRemainingDemoRoom("shared-sequence")).room;
+test("SequenceCrdt accepts repeated inserts from every hiker and merges equal names", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("sequence-crdt")).room;
   unwrapRemaining(insertRemainingSequenceStop(room, "A", 1, "Falls"));
   unwrapRemaining(insertRemainingSequenceStop(room, "C", 1, "Falls"));
   unwrapRemaining(insertRemainingSequenceStop(room, "B", 3, "Marsh"));
