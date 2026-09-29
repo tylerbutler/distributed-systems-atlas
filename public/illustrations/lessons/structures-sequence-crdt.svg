@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="shared-sequence-title shared-sequence-desc">
-  <title id="shared-sequence-title">SharedSequence: two additions before one anchor</title>
-  <desc id="shared-sequence-desc">An expanded inspection-route strip retains a bridge, weir, and gate. New waterfall and marsh cards both fit before the same weir card. Every waypoint has its own persistent identity tab.</desc>
-  <defs><pattern id="shared-sequence-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="sequence-crdt-title sequence-crdt-desc">
+  <title id="sequence-crdt-title">SequenceCrdt: two additions before one anchor</title>
+  <desc id="sequence-crdt-desc">An expanded inspection-route strip retains a bridge, weir, and gate. New waterfall and marsh cards both fit before the same weir card. Every waypoint has its own persistent identity tab.</desc>
+  <defs><pattern id="sequence-crdt-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
   <style>
     .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
     .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
@@ -11,7 +11,7 @@
   <path class="fine" d="M93 462Q417 429 802 464M269 489L623 480"/>
   <g transform="rotate(-4 450 328)">
     <path class="light" d="M99 273Q118 253 140 268H780V436H139Q113 451 99 431Z"/>
-    <path d="M111 422H780V436H139Q114 447 99 431L99 416Z" fill="url(#shared-sequence-hatch)"/>
+    <path d="M111 422H780V436H139Q114 447 99 431L99 416Z" fill="url(#sequence-crdt-hatch)"/>
     <path class="paper" d="M123 273H238V413H123Z"/>
     <path class="ink" d="M137 356Q180 315 224 356M141 356V384M222 355V384M138 341Q180 301 224 341M155 326V340M181 316V332M205 325V340"/>
     <path class="fine" d="M137 391Q158 384 180 393T225 393"/>
