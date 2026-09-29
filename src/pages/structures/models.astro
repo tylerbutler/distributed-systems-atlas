@@ -48,7 +48,7 @@ const models = [
       ["LWWMap", "/structures/lww-map/"],
       ["OR-map", "/structures/or-map/"],
       ["SequenceCrdt", "/structures/sequence-crdt/"],
-      ["SharedText", "/structures/shared-text/"],
+      ["TextCrdt", "/structures/text-crdt/"],
     ],
   },
   {
@@ -58,12 +58,12 @@ const models = [
     summary: "Rewrite changes so they still make sense together.",
     body: [
       "Operational transform, or OT, adjusts one change against another change made at the same time. If one person inserts text, another person's position can move before their change applies.",
-      "JsonOt uses this method for paths in a JSON document. SharedRichText uses it for text, formatting, and embedded content. Both show local edits before the sequencer confirms them.",
+      "JsonOt uses this method for paths in a JSON document. RichTextOt uses it for text, formatting, and embedded content. Both show local edits before the sequencer confirms them.",
     ],
     tradeoff: "It needs shared order for agreement, recent operations for transforms, and a correct rule for each pair of change types.",
     members: [
       ["JsonOt", "/structures/json-ot/"],
-      ["SharedRichText", "/structures/shared-rich-text/"],
+      ["RichTextOt", "/structures/rich-text-ot/"],
     ],
   },
 ];
@@ -184,7 +184,7 @@ const rows = [
       <p>
         Alice edits a shared report while Bob edits his copy. With{" "}
         <a href="/structures/json-ot/">JsonOt</a> or{" "}
-        <a href="/structures/shared-rich-text/">SharedRichText</a>, each sees
+        <a href="/structures/rich-text-ot/">RichTextOt</a>, each sees
         their own edit when they submit it. Their clients send one operation
         at a time and buffer further local edits until the ranger confirms
         the operation on the wire.

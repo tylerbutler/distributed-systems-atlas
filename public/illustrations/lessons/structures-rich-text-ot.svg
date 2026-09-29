@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="rich-text-title rich-text-desc">
-  <title id="rich-text-title">SharedRichText: formatting and insertion</title>
+  <title id="rich-text-title">RichTextOt: formatting and insertion</title>
   <desc id="rich-text-desc">A broad pen rests at a report heading drawn as heavy abstract strokes. A second pencil points to a newly appended triangular trail marker at the end of the final writing strip. The rest of the page remains intact.</desc>
   <defs><pattern id="rich-text-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)"><path d="M0 0V8" stroke="#78909a" stroke-width="1"/></pattern></defs>
   <style>

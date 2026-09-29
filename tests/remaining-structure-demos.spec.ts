@@ -2,9 +2,9 @@ import { expect, test } from "@playwright/test";
 
 const examples = [
   ["sequence-crdt", "SequenceCrdt", "Race the route insertions", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
-  ["shared-text", "SharedText", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
+  ["text-crdt", "TextCrdt", "Crowd an insert before “weir”", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", "Claims", "Race the gate-key claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
-  ["shared-rich-text", "SharedRichText", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
+  ["rich-text-ot", "RichTextOt", "Race formatting and insertion", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const;
 
 const coordinationSequenceNumbers = {
@@ -23,7 +23,7 @@ for (const [slug, name, race, initial, final] of examples) {
     await demo.getByRole("button", { name: race }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
     await expect(demo.locator("[data-status]")).toContainText("queued");
-    if (slug === "shared-text") {
+    if (slug === "text-crdt") {
       await expect(demo.locator("[data-pending]")).toHaveText("11 edits waiting");
       await expect(demo.locator("[data-note-log] li")).toHaveCount(11);
     }
@@ -44,7 +44,7 @@ for (const [slug, name, race, initial, final] of examples) {
       ? final.map((value) => value === "Falls" ? "FallsA:4" : value === "Marsh" ? "MarshB:4" : value)
       : [...final];
     await expect(demo.locator("[data-state] li")).toHaveText(displayed);
-    if (slug === "shared-text") {
+    if (slug === "text-crdt") {
       await expect(demo.locator("[data-sequence-number]")).toHaveText("SN 11");
       await expect(demo).toHaveAttribute("data-kernel-sequence", "11");
       for (const editor of await demo.locator("[data-local-record]").all()) {
@@ -93,7 +93,7 @@ for (const [slug, name, race, initial, final] of examples) {
     }
     await demo.getByRole("button", { name: "Reset" }).click();
     await expect(demo.locator("[data-state] li")).toHaveText(initial);
-    if (slug === "shared-text") {
+    if (slug === "text-crdt") {
       for (const editor of await demo.locator("[data-local-record]").all()) {
         await expect(editor).toHaveValue(initial[0]);
       }
@@ -298,9 +298,9 @@ test("JsonOt explains why sequence order also needs path transformation", async 
   );
 });
 
-test("SharedText accepts typing while delivery is paused", async ({ page }) => {
-  await page.goto("/structures/shared-text/");
-  const demo = page.getByTestId("shared-text-demo");
+test("TextCrdt accepts typing while delivery is paused", async ({ page }) => {
+  await page.goto("/structures/text-crdt/");
+  const demo = page.getByTestId("text-crdt-demo");
   const editors = demo.locator("[data-text-editor]");
   await demo.locator("[data-transport-auto-deliver]").uncheck();
   await editors.nth(0).fill("The weir is cloudy.");
@@ -314,9 +314,9 @@ test("SharedText accepts typing while delivery is paused", async ({ page }) => {
   await expect(demo.locator("[data-note-log] li").first()).toContainText("delivered");
 });
 
-test("SharedText converges overlapping edits to one word", async ({ page }) => {
-  await page.goto("/structures/shared-text/");
-  const demo = page.getByTestId("shared-text-demo");
+test("TextCrdt converges overlapping edits to one word", async ({ page }) => {
+  await page.goto("/structures/text-crdt/");
+  const demo = page.getByTestId("text-crdt-demo");
   await demo.getByRole("button", { name: "Overlap edits to “weir”" }).click();
   await expect(demo.locator("[data-pending]")).toHaveText("0 edits waiting");
   for (const editor of await demo.locator("[data-text-editor]").all()) {
@@ -333,12 +333,12 @@ test("SharedText converges overlapping edits to one word", async ({ page }) => {
   ]);
 });
 
-test("SharedText explains why identity-based sequence deltas replace raw offsets", async ({ page }) => {
-  await page.goto("/structures/shared-text/");
+test("TextCrdt explains why identity-based sequence deltas replace raw offsets", async ({ page }) => {
+  await page.goto("/structures/text-crdt/");
   const lesson = page.locator("article").first();
   await expect(page.getByRole("heading", { name: "A character offset is only local" })).toBeVisible();
   await expect(lesson).toContainText("the result depends on which message arrives first");
-  await expect(page.getByRole("heading", { name: "SharedText uses the SequenceCrdt rule" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "TextCrdt uses the SequenceCrdt rule" })).toBeVisible();
   await expect(lesson).toContainText("It is the same sequence CRDT.");
   await expect(lesson).toContainText("the delta is the authoritative payload");
   await expect(lesson).toContainText("they do not run the author's old index against the current string");
@@ -350,8 +350,8 @@ test("SharedText explains why identity-based sequence deltas replace raw offsets
   await expect(lesson.getByRole("link", { name: "delta", exact: true }).first()).toHaveAttribute("href", "/glossary/#delta");
 });
 
-test("the naive SharedText counterexample diverges when raw offsets arrive in different orders", async ({ page }) => {
-  await page.goto("/structures/shared-text/");
+test("the naive TextCrdt counterexample diverges when raw offsets arrive in different orders", async ({ page }) => {
+  await page.goto("/structures/text-crdt/");
   const demo = page.getByTestId("naive-text-merge-demo");
   const values = demo.locator("[data-naive-value]");
   await expect(demo.locator("[data-naive-client]")).toHaveCount(3);
@@ -378,7 +378,7 @@ test("the naive SharedText counterexample diverges when raw offsets arrive in di
 test("remaining family pages link every dedicated lesson", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   for (const [family, names] of [
-    ["sequences", ["SequenceCrdt", "SharedText", "SharedRichText"]],
+    ["sequences", ["SequenceCrdt", "TextCrdt", "RichTextOt"]],
     ["coordination", ["Claims", "FifoWorkQueue", "TaskManager", "PactMap"]],
   ] as const) {
     await page.goto(`/structures/${family}/`);
@@ -778,7 +778,7 @@ test("model and lesson prose distinguish local edits from sequenced outcomes", a
     ["task-manager", "Assignment and waiting positions remain unconfirmed until the sequencer numbers the operation."],
     ["pact-map", "The accepted value changes only when no required signers remain."],
     ["json-ot", "Alice immediately sees Cy at crew position 0"],
-    ["shared-rich-text", "Alice sees the bold heading as soon as she edits it"],
+    ["rich-text-ot", "Alice sees the bold heading as soon as she edits it"],
   ] as const) {
     await page.goto(`/structures/${slug}/`);
     await expect(page.locator("article").first()).toContainText(detail);

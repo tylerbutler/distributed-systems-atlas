@@ -105,7 +105,7 @@ export function insertRemainingSequenceStop(current, replica, index, stop) {
     core.remaining_demo_insert(room, replica, index, stop.trim()));
 }
 
-export function editRemainingSharedText(current, replica, start, end, inserted) {
+export function editRemainingTextCrdt(current, replica, start, end, inserted) {
   if (replica !== "A" && replica !== "B" && replica !== "C") {
     return failure("invalid-input", "replica must be A, B, or C");
   }

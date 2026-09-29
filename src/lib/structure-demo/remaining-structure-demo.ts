@@ -10,7 +10,7 @@ import {
   deliverRemainingDemo,
   disconnectRemainingTaskClient,
   disconnectRemainingPactClient,
-  editRemainingSharedText,
+  editRemainingTextCrdt,
   insertRemainingSequenceStop,
   proposeRemainingPact,
   releaseRemainingQueueJob,
@@ -135,14 +135,14 @@ export function insertSequenceStop(
   return { kind: state.kind, ...value(insertRemainingSequenceStop(state.room, replica, index, stop)) };
 }
 
-export function editSharedText(
+export function editTextCrdt(
   state: RemainingDemoState,
   replica: "A" | "B" | "C",
   start: number,
   end: number,
   inserted: string,
 ): RemainingDemoState {
-  return { kind: state.kind, ...value(editRemainingSharedText(state.room, replica, start, end, inserted)) };
+  return { kind: state.kind, ...value(editRemainingTextCrdt(state.room, replica, start, end, inserted)) };
 }
 
 export function stageRemainingRace(state: RemainingDemoState): RemainingDemoState {

@@ -131,7 +131,7 @@ test("breadcrumbs link to the relevant structure and reference indexes", async (
     ["/structures/sequence-crdt/", "Sequences"],
     ["/structures/claims/", "Coordination"],
     ["/structures/json-ot/", "Maps"],
-    ["/structures/shared-rich-text/", "Sequences"],
+    ["/structures/rich-text-ot/", "Sequences"],
   ] as const) {
     await page.goto(route);
     await expect(rail.getByRole("link", { name: "Structures" })).toHaveAttribute("href", "/structures/");

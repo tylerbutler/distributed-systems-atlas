@@ -29,13 +29,13 @@ const structureComplexities: Record<string, LearningComplexity> = {
   "or-map": "advanced",
   "shared-directory": "advanced",
   "sequence-crdt": "advanced",
-  "shared-text": "expert",
+  "text-crdt": "expert",
   claims: "intermediate",
   "fifo-work-queue": "advanced",
   "task-manager": "advanced",
   "pact-map": "expert",
   "json-ot": "expert",
-  "shared-rich-text": "expert",
+  "rich-text-ot": "expert",
 };
 
 export function structureComplexity(idOrPath: string): LearningComplexity {

@@ -265,12 +265,12 @@
       "altDraft": "Two new waypoint cards are inserted before the same weir card in an inspection route."
     },
     {
-      "id": "structures-shared-text",
+      "id": "structures-text-crdt",
       "kind": "structure",
-      "route": "/structures/shared-text/",
-      "title": "SharedText",
+      "route": "/structures/text-crdt/",
+      "title": "TextCrdt",
       "source": "src/lib/structure-demo/remaining-structures.ts",
-      "asset": "/illustrations/lessons/structures-shared-text.svg",
+      "asset": "/illustrations/lessons/structures-text-crdt.svg",
       "alt": "Two pencils point toward separate runs of blank character-sized tiles, each with its own identity tab.",
       "scenePrompt": "An extreme close view of a field-note strip under two pencils. Alice and Bob each add a small intact run of character-sized paper tiles at the same writing gap, shifting the following strip without cutting its pieces. Tiny identity tabs remain attached underneath each tile. Keep tile faces blank; the eventual article, not the renderer, supplies actual text.",
       "semanticGuardrails": "This metaphor stands for stable grapheme identities, not byte positions or text stored as physical tiles. Both concurrent insertions survive; no grapheme is split. Do not suggest that whole words are the implementation's atomic unit.",
@@ -361,12 +361,12 @@
       "altDraft": "Two edit slips target separate title and revision fields on the same report form."
     },
     {
-      "id": "structures-shared-rich-text",
+      "id": "structures-rich-text-ot",
       "kind": "structure",
-      "route": "/structures/shared-rich-text/",
-      "title": "SharedRichText",
+      "route": "/structures/rich-text-ot/",
+      "title": "RichTextOt",
       "source": "src/lib/structure-demo/remaining-structures.ts",
-      "asset": "/illustrations/lessons/structures-shared-rich-text.svg",
+      "asset": "/illustrations/lessons/structures-rich-text-ot.svg",
       "alt": "A broad pen emphasizes a report heading while a pencil points to a triangular marker appended to the final writing strip.",
       "scenePrompt": "A report lies on an editing desk. One hand uses a broad pen to strengthen the heading's abstract horizontal strokes while another appends a small triangular trail marker at the end of the page's final writing strip. Retain the rest of the page intact. Draw the heading as blank typographic guides, not generated words, and distinguish the two actions clearly.",
       "semanticGuardrails": "Formatting and insertion survive together after operation transformation. Bold is a retained attribute, not a replacement string. Do not delete existing content, imply arbitrary overlapping edits never conflict, or substitute a font-style comparison for the actual editing scene.",

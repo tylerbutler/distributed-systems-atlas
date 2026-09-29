@@ -110,7 +110,7 @@ pub opaque type RemainingDemoRoom {
 pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
   case kind {
     "sequence-crdt" -> new_sequence_room()
-    "shared-text" -> new_text_room()
+    "text-crdt" -> new_text_room()
     "claims" ->
       Ok(ClaimsRoom(
         claims_kernel.new(),
@@ -189,7 +189,7 @@ pub fn new_remaining_demo(kind: String) -> Result(RemainingDemoRoom, String) {
         let initial = json_ot_kernel.from_value(initial)
         Ok(JsonOtRoom(initial, initial, initial, [], [], 0))
       }
-    "shared-rich-text" -> new_rich_text_room()
+    "rich-text-ot" -> new_rich_text_room()
     _ -> Error("unknown remaining structure demo")
   }
 }
@@ -542,7 +542,7 @@ pub fn remaining_demo_act(
         "A" -> {
           use #(a, _, submission) <- result.try(
             text_kernel.insert(a, 4, "still ")
-            |> result.map_error(fn(_) { "SharedText insertion failed" }),
+            |> result.map_error(fn(_) { "TextCrdt insertion failed" }),
           )
           let assert Some(text_kernel.Submission(operation, _)) = submission
           Ok(TextRoom(
@@ -557,7 +557,7 @@ pub fn remaining_demo_act(
         "B" -> {
           use #(b, _, submission) <- result.try(
             text_kernel.insert(b, 4, "calm ")
-            |> result.map_error(fn(_) { "SharedText insertion failed" }),
+            |> result.map_error(fn(_) { "TextCrdt insertion failed" }),
           )
           let assert Some(text_kernel.Submission(operation, _)) = submission
           Ok(TextRoom(
@@ -769,13 +769,13 @@ pub fn remaining_demo_act(
           use delta <- result.try(
             rich_text.delta_retain(rich_text.empty_delta(), 5, bold)
             |> result.map_error(fn(_) {
-              "SharedRichText formatting failed"
+              "RichTextOt formatting failed"
             }),
           )
           use #(a, wire, _) <- result.try(
             rich_text_kernel.submit(a, delta, sequence_number)
             |> result.map_error(fn(_) {
-              "SharedRichText submission failed"
+              "RichTextOt submission failed"
             }),
           )
           let assert Some(wire) = wire
@@ -795,7 +795,7 @@ pub fn remaining_demo_act(
               11,
               rich_text.attributes([]),
             )
-            |> result.map_error(fn(_) { "SharedRichText retain failed" }),
+            |> result.map_error(fn(_) { "RichTextOt retain failed" }),
           )
           use delta <- result.try(
             rich_text.delta_insert_text(
@@ -804,13 +804,13 @@ pub fn remaining_demo_act(
               rich_text.attributes([]),
             )
             |> result.map_error(fn(_) {
-              "SharedRichText insertion failed"
+              "RichTextOt insertion failed"
             }),
           )
           use #(b, wire, _) <- result.try(
             rich_text_kernel.submit(b, delta, sequence_number)
             |> result.map_error(fn(_) {
-              "SharedRichText submission failed"
+              "RichTextOt submission failed"
             }),
           )
           let assert Some(wire) = wire
@@ -900,7 +900,7 @@ pub fn remaining_demo_text_edit(
               True, True -> panic as "handled above"
             }
             |> result.map_error(fn(error) {
-              "SharedText edit failed: " <> text_kernel.edit_error_detail(error)
+              "TextCrdt edit failed: " <> text_kernel.edit_error_detail(error)
             }),
           )
           let assert Some(text_kernel.Submission(operation, _)) = submission
@@ -920,7 +920,7 @@ pub fn remaining_demo_text_edit(
         }
       }
     }
-    _ -> Error("text editing requires SharedText")
+    _ -> Error("text editing requires TextCrdt")
   }
 }
 
@@ -1071,16 +1071,16 @@ fn new_text_room() -> Result(RemainingDemoRoom, String) {
   let assert Some(text_kernel.Submission(operation, _)) = submission
   use a <- result.try(
     text_kernel.ack_local(a, operation)
-    |> result.map_error(fn(_) { "SharedText initialization failed" }),
+    |> result.map_error(fn(_) { "TextCrdt initialization failed" }),
   )
   let summary = a |> text_kernel.summary |> json.to_string
   use b <- result.try(
     text_kernel.from_summary(summary, replica_id.new("B"))
-    |> result.map_error(fn(_) { "SharedText summary failed" }),
+    |> result.map_error(fn(_) { "TextCrdt summary failed" }),
   )
   use c <- result.try(
     text_kernel.from_summary(summary, replica_id.new("C"))
-    |> result.map_error(fn(_) { "SharedText summary failed" }),
+    |> result.map_error(fn(_) { "TextCrdt summary failed" }),
   )
   Ok(TextRoom(a, b, c, [], [], 0))
 }
@@ -1092,7 +1092,7 @@ fn new_rich_text_room() -> Result(RemainingDemoRoom, String) {
       "Hello World",
       rich_text.attributes([]),
     )
-    |> result.map_error(fn(_) { "SharedRichText initialization failed" }),
+    |> result.map_error(fn(_) { "RichTextOt initialization failed" }),
   )
   Ok(RichTextRoom(
     rich_text_kernel.from_document(document),
@@ -1393,7 +1393,7 @@ fn apply_text(
   case authored.author == recipient {
     True ->
       text_kernel.ack_local(state, authored.operation)
-      |> result.map_error(fn(_) { "SharedText acknowledgement failed" })
+      |> result.map_error(fn(_) { "TextCrdt acknowledgement failed" })
     False -> Ok(text_kernel.apply_remote(state, authored.operation).0)
   }
 }
@@ -1482,7 +1482,7 @@ fn apply_rich_text(
   }
   update
   |> result.map(fn(value) { value.0 })
-  |> result.map_error(fn(_) { "SharedRichText delivery failed" })
+  |> result.map_error(fn(_) { "RichTextOt delivery failed" })
 }
 
 fn sequence_values(state: sequence_kernel.SequenceState) -> List(String) {
@@ -1654,7 +1654,7 @@ fn rich_text_value(
 ) -> Result(String, String) {
   use document <- result.try(
     rich_text_kernel.view(state)
-    |> result.map_error(fn(_) { "SharedRichText view failed" }),
+    |> result.map_error(fn(_) { "RichTextOt view failed" }),
   )
   Ok(
     rich_text.document_to_operations(document)

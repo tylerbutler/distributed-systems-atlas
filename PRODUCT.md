@@ -83,7 +83,7 @@ folders stable identities. Each structure has a dedicated three-client demo
 that runs through Watershed's public channel API.
 
 The Sequences overview follows the ordered inspection route into SequenceCrdt
-and SharedText. Stable item and grapheme identities explain why concurrent
+and TextCrdt. Stable item and grapheme identities explain why concurrent
 inserts can both survive even when local indexes change.
 
 The Coordination overview covers Claims, FifoWorkQueue, TaskManager, and
@@ -91,7 +91,7 @@ PactMap. These structures do not merge several valid answers. They use the
 sequencer, queue order, or connected roster to choose one owner, worker,
 assignee, or accepted value.
 
-The Transforms overview covers JsonOt and SharedRichText. Their lessons show
+The Transforms overview covers JsonOt and RichTextOt. Their lessons show
 how concurrent document operations transform before application so edits to
 different paths, text, and formatting can survive together.
 
@@ -99,8 +99,8 @@ Astro renders the content shell and useful initial lab state. Native custom
 elements use deterministic TypeScript lesson models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
 MvRegister, RegisterMap, SharedMap, LWWMap, OR-map, and SharedDirectory
-demos, plus compact rule models for SequenceCrdt, SharedText, Claims,
-FifoWorkQueue, TaskManager, PactMap, JsonOt, and SharedRichText. Reference
+demos, plus compact rule models for SequenceCrdt, TextCrdt, Claims,
+FifoWorkQueue, TaskManager, PactMap, JsonOt, and RichTextOt. Reference
 engines cover ordering, clocks, and Dots. Focused structure demos use at least
 three clients. Counter, set, register, and map lessons run pinned Watershed
 semantics through the site's Gleam toolkit and its stable `@atlas/toolkit` entry

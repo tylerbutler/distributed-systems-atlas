@@ -115,8 +115,8 @@ export const sequenceCrdtTerm: GlossaryTerm = {
   definition: "A shared ordered list where each item has its own mark. People can add, move, replace, or remove items without losing track of which one they mean.",
 };
 
-export const sharedTextTerm: GlossaryTerm = {
-  term: "SharedText",
+export const textCrdtTerm: GlossaryTerm = {
+  term: "TextCrdt",
   definition: "A shared text built from an ordered sequence of graphemes. Each grapheme has a stable identity, so replicas merge edits without replaying stale character offsets.",
 };
 
@@ -145,8 +145,8 @@ export const jsonOtTerm: GlossaryTerm = {
   definition: "A shared JSON report that adjusts edits made at the same time so changes to separate fields can both remain.",
 };
 
-export const sharedRichTextTerm: GlossaryTerm = {
-  term: "SharedRichText",
+export const richTextOtTerm: GlossaryTerm = {
+  term: "RichTextOt",
   definition: "A shared report that adjusts simultaneous text and formatting edits so both hikers' changes can remain.",
 };
 
@@ -175,9 +175,9 @@ export const standaloneTerms = [
   sharedDirectoryTerm,
   sharedCounterTerm,
   sharedMapTerm,
-  sharedRichTextTerm,
+  richTextOtTerm,
   sequenceCrdtTerm,
-  sharedTextTerm,
+  textCrdtTerm,
   sluiceTerm,
   taskManagerTerm,
   twoPSetTerm,

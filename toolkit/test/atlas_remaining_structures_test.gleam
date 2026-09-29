@@ -10,7 +10,7 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
       ["Bridge", "Falls", "Marsh", "Weir", "North gate"],
     ),
     #(
-      "shared-text",
+      "text-crdt",
       ["The weir is clear."],
       ["The still calm weir is clear."],
     ),
@@ -25,7 +25,7 @@ pub fn remaining_structure_rooms_derive_all_views_from_kernel_operations_test() 
       ],
     ),
     #(
-      "shared-rich-text",
+      "rich-text-ot",
       ["Hello World"],
       ["Hello [bold] World ▲"],
     ),

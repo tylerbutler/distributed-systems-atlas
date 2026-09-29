@@ -15,7 +15,7 @@ import {
   disconnectRemainingPactClient,
   acquireRemainingQueueJob,
   completeRemainingQueueJob,
-  editRemainingSharedText,
+  editRemainingTextCrdt,
   insertRemainingSequenceStop,
   proposeRemainingPact,
   releaseRemainingQueueJob,
@@ -42,14 +42,14 @@ function unwrapRemaining<T>(result: RemainingDemoOperationResult<T>): T {
 
 test.each([
   ["sequence-crdt", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"]],
-  ["shared-text", ["The weir is clear."], ["The still calm weir is clear."]],
+  ["text-crdt", ["The weir is clear."], ["The still calm weir is clear."]],
   ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"]],
   [
     "json-ot",
     ['{"crew":["Ada","Ben"],"gauge":{"stage":24,"trend":"steady"},"site":"Mill Race"}'],
     ['{"crew":["Cy","Dot","Ada","Ben"],"gauge":{"stage":25,"trend":"steady"},"site":"Mill Race"}'],
   ],
-  ["shared-rich-text", ["Hello World"], ["Hello [bold] World ▲"]],
+  ["rich-text-ot", ["Hello World"], ["Hello [bold] World ▲"]],
 ] as const)("%s derives its view from Watershed operations", (kind, initial, expected) => {
   const created = unwrapRemaining(createRemainingDemoRoom(kind));
   expect(created.view.replicas.map(({ values }) => values)).toEqual([initial, initial, initial]);
@@ -189,18 +189,18 @@ test("SequenceCrdt accepts repeated inserts from every hiker and merges equal na
   expect(delivered.replicas[0].values).toHaveLength(8);
 });
 
-test("SharedText accepts concurrent inserts and overlapping edits", () => {
-  const room = unwrapRemaining(createRemainingDemoRoom("shared-text")).room;
-  unwrapRemaining(editRemainingSharedText(room, "A", 4, 4, "still "));
-  unwrapRemaining(editRemainingSharedText(room, "B", 4, 8, "levee"));
-  unwrapRemaining(editRemainingSharedText(room, "C", 5, 7, ""));
+test("TextCrdt accepts concurrent inserts and overlapping edits", () => {
+  const room = unwrapRemaining(createRemainingDemoRoom("text-crdt")).room;
+  unwrapRemaining(editRemainingTextCrdt(room, "A", 4, 4, "still "));
+  unwrapRemaining(editRemainingTextCrdt(room, "B", 4, 8, "levee"));
+  unwrapRemaining(editRemainingTextCrdt(room, "C", 5, 7, ""));
 
-  const staged = unwrapRemaining(editRemainingSharedText(room, "C", 0, 0, "Note: "));
+  const staged = unwrapRemaining(editRemainingTextCrdt(room, "C", 0, 0, "Note: "));
   expect(staged.view.pending).toBe(4);
   expect(staged.view.replicas[0].values[0]).toContain("still");
   expect(staged.view.replicas[1].values[0]).toContain("levee");
   expect(staged.view.replicas[2].values[0]).toContain("Note:");
-  expect(editRemainingSharedText(room, "A", 0, 0, "")).toMatchObject({
+  expect(editRemainingTextCrdt(room, "A", 0, 0, "")).toMatchObject({
     ok: false, error: { tag: "invalid-input" },
   });
 

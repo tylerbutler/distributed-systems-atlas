@@ -25,7 +25,7 @@ const structure = structureById(Astro.params.structure ?? "");
 if (!structure) throw new Error("Unknown structure");
 const family = remainingFamilies[structure.family];
 const isSequenceCrdt = structure.id === "sequence-crdt";
-const isSharedText = structure.id === "shared-text";
+const isTextCrdt = structure.id === "text-crdt";
 const isClaims = structure.id === "claims";
 const isFifoWorkQueue = structure.id === "fifo-work-queue";
 const isTaskManager = structure.id === "task-manager";
@@ -39,22 +39,22 @@ const operationNames = structure.operations.length === 1
 <StructureLessonLayout
   title={structure.name}
   description={structure.tagline}
-  articleClass={`structure-lesson${isSequenceCrdt || isSharedText || isClaims || isFifoWorkQueue || isTaskManager || isPactMap || isJsonOt ? " structure-page" : ""}`}
+  articleClass={`structure-lesson${isSequenceCrdt || isTextCrdt || isClaims || isFifoWorkQueue || isTaskManager || isPactMap || isJsonOt ? " structure-page" : ""}`}
   illustrationId={`structures-${structure.id}`}
   territoryLabel={`Structures · ${family.name}`}
 >
       <Fragment slot="summary">{structure.tagline}</Fragment>
 
-      {(isSequenceCrdt || isSharedText) && (
+      {(isSequenceCrdt || isTextCrdt) && (
         <nav class="lesson-map" aria-label={`${structure.name} lesson map`}>
-          <a href={isSharedText ? "#offset-problem" : "#route-setup"}>
-            {isSharedText ? "See why offsets fail" : "Compare the notebooks"}
+          <a href={isTextCrdt ? "#offset-problem" : "#route-setup"}>
+            {isTextCrdt ? "See why offsets fail" : "Compare the notebooks"}
           </a>
-          <a href={isSharedText ? "#text-mechanics" : "#sequence-crdt-demo-title"}>
-            {isSharedText ? "Follow the mechanics" : "Try the route sandbox"}
+          <a href={isTextCrdt ? "#text-mechanics" : "#sequence-crdt-demo-title"}>
+            {isTextCrdt ? "Follow the mechanics" : "Try the route sandbox"}
           </a>
-          <a href={isSharedText ? "#shared-text-demo-title" : "#route-result"}>
-            {isSharedText ? "Try the shared editor" : "Read the result"}
+          <a href={isTextCrdt ? "#text-crdt-demo-title" : "#route-result"}>
+            {isTextCrdt ? "Try the shared editor" : "Read the result"}
           </a>
         </nav>
       )}
@@ -63,7 +63,7 @@ const operationNames = structure.operations.length === 1
         <h2>
           {isSequenceCrdt
             ? "Two hikers edit the route"
-            : isSharedText
+            : isTextCrdt
               ? "Three hikers edit one field note"
               : "At Eagle Creek"}
         </h2>
@@ -74,7 +74,7 @@ const operationNames = structure.operations.length === 1
             before Weir in her notebook. Bob adds Marsh before Weir in his.
             Carol has not received either insertion slip, so her route is unchanged.
           </p>
-        ) : isSharedText ? (
+        ) : isTextCrdt ? (
           <p>
             Alice inserts “still” while Bob inserts “calm” at the same place.
             Carol has not received either edit. Each written symbol has its own
@@ -120,7 +120,7 @@ const operationNames = structure.operations.length === 1
           The slip includes the details they need to agree on the result. In the
           demo, you can see both the hiker's copy and the slip they send.
         </p>}
-        {!isSharedText && !isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && !isJsonOt && (
+        {!isTextCrdt && !isClaims && !isFifoWorkQueue && !isTaskManager && !isPactMap && !isJsonOt && (
           <p>
             Another hiker may act before the slip arrives. Each hiker uses the
             rule to record the other's work when they receive it.
@@ -129,7 +129,7 @@ const operationNames = structure.operations.length === 1
         {structure.localVisibility && !isClaims && <p>{structure.localVisibility}</p>}
       </section>
 
-      {isSharedText && (
+      {isTextCrdt && (
         <>
           <section id="offset-problem" aria-labelledby="offset-problem-title">
             <h2 id="offset-problem-title">A character offset is only local</h2>
@@ -184,7 +184,7 @@ const operationNames = structure.operations.length === 1
           <section aria-labelledby="grapheme-title">
             <h2 id="grapheme-title">Text is a sequence of graphemes</h2>
             <p>
-              SharedText first divides a string into
+              TextCrdt first divides a string into
               <dfn><a href="/glossary/#grapheme"> graphemes</a></dfn>. A grapheme
               is one visible written symbol. It can contain more than one Unicode
               code point, such as a letter plus a combining accent or a family
@@ -203,7 +203,7 @@ const operationNames = structure.operations.length === 1
           </section>
 
           <section id="text-mechanics" aria-labelledby="text-mechanics-title">
-            <h2 id="text-mechanics-title">SharedText uses the SequenceCrdt rule</h2>
+            <h2 id="text-mechanics-title">TextCrdt uses the SequenceCrdt rule</h2>
             <p>
               The order resolution is not merely similar. It is the same
               sequence CRDT. Watershed's text value wraps a
@@ -212,7 +212,7 @@ const operationNames = structure.operations.length === 1
               deterministic order as SequenceCrdt.
             </p>
             <p>
-              SharedText adds a text layer around that sequence. The layer
+              TextCrdt adds a text layer around that sequence. The layer
               segments strings into graphemes, joins the visible items back into
               a string, and builds range operations for deletion and replacement.
               It does not add a second ordering rule.
@@ -298,7 +298,7 @@ const operationNames = structure.operations.length === 1
               The naive panel omits both stable identities and a sequencer. A
               sequencer can make replicas process raw-offset messages in one
               order, but the offsets can still be stale against an author's
-              optimistic local text. SharedText preserves the intended items in
+              optimistic local text. TextCrdt preserves the intended items in
               the delta, while the sequencer supplies the accepted operation
               order and acknowledgements.
             </p>
@@ -498,9 +498,9 @@ const operationNames = structure.operations.length === 1
         />
       )}
 
-      {isSharedText && (
+      {isTextCrdt && (
         <StructureFacts
-          structure="SharedText"
+          structure="TextCrdt"
           family="CRDT"
           model="SequenceCrdt of Unicode graphemes"
           updates="Insert, delete, replace, or append grapheme ranges"
@@ -751,7 +751,7 @@ const operationNames = structure.operations.length === 1
       <section>
         <h2>Run the conflict</h2>
         <p>
-          {isSharedText
+          {isTextCrdt
             ? "Type in any notebook, or run a worked conflict. Pause Broadcast to compare local copies before the edits travel."
             : isClaims
               ? "Pause Broadcast, submit concurrent claims, and inspect the pending requests. Resume Broadcast to let the sequencer choose the permanent value."

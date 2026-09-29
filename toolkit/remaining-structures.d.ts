@@ -1,12 +1,12 @@
 export type RemainingDemoKind =
   | "sequence-crdt"
-  | "shared-text"
+  | "text-crdt"
   | "claims"
   | "fifo-work-queue"
   | "task-manager"
   | "pact-map"
   | "json-ot"
-  | "shared-rich-text";
+  | "rich-text-ot";
 
 export type RemainingDemoReplica = "A" | "B" | "C";
 
@@ -50,7 +50,7 @@ export function insertRemainingSequenceStop(
   stop: unknown,
 ): RemainingDemoOperationResult<RemainingDemoResult>;
 
-export function editRemainingSharedText(
+export function editRemainingTextCrdt(
   current: unknown,
   replica: unknown,
   start: unknown,

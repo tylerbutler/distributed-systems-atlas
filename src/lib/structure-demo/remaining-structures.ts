@@ -1,13 +1,13 @@
 export type RemainingFamily = "maps" | "sequences" | "coordination";
 export type RemainingStructureId =
   | "sequence-crdt"
-  | "shared-text"
+  | "text-crdt"
   | "claims"
   | "fifo-work-queue"
   | "task-manager"
   | "pact-map"
   | "json-ot"
-  | "shared-rich-text";
+  | "rich-text-ot";
 
 export type RemainingStructure = {
   id: RemainingStructureId;
@@ -69,11 +69,11 @@ export const remainingStructures: RemainingStructure[] = [
     result: "Both new trail stops target the gap before Weir. Falls has ID A:4, and Marsh has ID B:4. Every notebook compares those IDs the same way, placing Falls before Marsh.",
   },
   {
-    id: "shared-text",
-    glossaryId: "sharedtext",
+    id: "text-crdt",
+    glossaryId: "textcrdt",
     family: "sequences",
     kind: "CRDT",
-    name: "SharedText",
+    name: "TextCrdt",
     module: "text_kernel",
     tagline: "Alice, Bob, and Carol can type in one field note without losing concurrent edits.",
     rule: "Treat each grapheme as a SequenceCrdt item with its own identity, so replicas merge deltas instead of replaying stale character offsets.",
@@ -102,7 +102,7 @@ export const remainingStructures: RemainingStructure[] = [
       B: "calm mark B:1 · before weir",
       C: "No slip in this race",
     },
-    result: "Alice and Bob target the same place before “weir.” Both words remain after delivery because SharedText identifies the nearby symbols instead of relying on one changing character offset.",
+    result: "Alice and Bob target the same place before “weir.” Both words remain after delivery because TextCrdt identifies the nearby symbols instead of relying on one changing character offset.",
   },
   {
     id: "claims",
@@ -294,11 +294,11 @@ export const remainingStructures: RemainingStructure[] = [
     result: "All three reports contain Cy and Dot in one deterministic crew order, and the nested gauge stage is 25. Bob's insertion path shifts when it is transformed past Alice's earlier sequenced insertion.",
   },
   {
-    id: "shared-rich-text",
-    glossaryId: "sharedrichtext",
+    id: "rich-text-ot",
+    glossaryId: "richtextot",
     family: "sequences",
     kind: "OT",
-    name: "SharedRichText",
+    name: "RichTextOt",
     module: "rich_text_kernel",
     tagline: "Keep Alice's bold heading and Bob's new symbol in the same report.",
     rule: "Adjust each edit against the other hiker's work so the heading stays bold and the new symbol stays in place.",

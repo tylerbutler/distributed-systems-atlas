@@ -12,11 +12,11 @@ interface Props {
 
 const { structure } = Astro.props;
 const trailStopChoices = ["Falls", "Marsh", "Ridge", "Lookout"];
-const isSharedText = structure.id === "shared-text";
+const isTextCrdt = structure.id === "text-crdt";
 const isClaims = structure.id === "claims";
 const isCoordination = structure.family === "coordination";
-const hasExchange = structure.id === "sequence-crdt" || isSharedText || isCoordination;
-const hasSequencer = isSharedText || isCoordination;
+const hasExchange = structure.id === "sequence-crdt" || isTextCrdt || isCoordination;
+const hasSequencer = isTextCrdt || isCoordination;
 ---
 
 <remaining-structure-demo
@@ -31,14 +31,14 @@ const hasSequencer = isSharedText || isCoordination;
         <h2 id={`${structure.id}-demo-title`}>
           {structure.id === "sequence-crdt"
             ? "Edit the inspection route"
-            : isSharedText
+            : isTextCrdt
               ? "Write the field note together"
               : isClaims ? "Claim one shared key" : `${structure.name} at Eagle Creek`}
         </h2>
         <p>
           {structure.id === "sequence-crdt"
             ? "Each hiker can add trail stops to their notebook. Turn off Broadcast to see their routes before insertion notes arrive."
-            : isSharedText
+            : isTextCrdt
               ? "Type in any notebook. Turn off Broadcast to hold edits locally, then turn it on to watch every copy converge."
               : isClaims
                 ? "Each client can submit one request for gate-key. Pause Broadcast to inspect the pending requests before the sequencer accepts them."
@@ -59,12 +59,12 @@ const hasSequencer = isSharedText || isCoordination;
               <h3>{demoReplicaName(id)}</h3>
               {hasSequencer && <output class="remaining-pending-count" data-pending-count>0 pending</output>}
             </header>
-            {isSharedText ? (
+            {isTextCrdt ? (
               <div class="remaining-local-record remaining-text-record">
-                <label for={`shared-text-${id}`}>
+                <label for={`text-crdt-${id}`}>
                   <span>Field note in this notebook</span>
                   <textarea
-                    id={`shared-text-${id}`}
+                    id={`text-crdt-${id}`}
                     data-text-editor
                     data-local-record
                     rows="5"
@@ -82,16 +82,16 @@ const hasSequencer = isSharedText || isCoordination;
               </p>
             )}
             <p class="remaining-paper-note">
-              <span>{structure.id === "sequence-crdt" ? "Latest insertion" : isSharedText ? "Latest local edit" : structure.messageLabel}</span>
+              <span>{structure.id === "sequence-crdt" ? "Latest insertion" : isTextCrdt ? "Latest local edit" : structure.messageLabel}</span>
               <strong data-client-note>
                 {structure.id === "sequence-crdt"
                   ? "No trail stop inserted yet."
-                  : isSharedText ? "No local edit yet." : structure.local[id]}
+                  : isTextCrdt ? "No local edit yet." : structure.local[id]}
               </strong>
               <small data-client-evidence>
                 {structure.id === "sequence-crdt"
                   ? "Each trail stop gets a unique ID."
-                  : isSharedText ? "Edits name written-symbol positions, not raw code units." : structure.evidence[id]}
+                  : isTextCrdt ? "Edits name written-symbol positions, not raw code units." : structure.evidence[id]}
               </small>
             </p>
             {structure.id === "sequence-crdt" ? (
@@ -113,7 +113,7 @@ const hasSequencer = isSharedText || isCoordination;
                 </label>
                 <button type="submit" data-insert-submit disabled>Insert trail stop</button>
               </form>
-            ) : !isSharedText && (
+            ) : !isTextCrdt && (
               <button type="button" data-client-action disabled>
                 {isCoordination ? structure.local[id] : "Send note"}
               </button>
@@ -124,7 +124,7 @@ const hasSequencer = isSharedText || isCoordination;
               <div class="remaining-relay" data-relay-node>
                 <h3>{hasSequencer ? "Sequencer" : "Trail exchange"}</h3>
                 <p>
-                  {isSharedText
+                  {isTextCrdt
                     ? "Assigns one shared order to character operations"
                     : isCoordination
                       ? "Numbers accepted operations before replicas apply them"
@@ -135,8 +135,8 @@ const hasSequencer = isSharedText || isCoordination;
                   {isCoordination ? "0 operations waiting" : "0 notes waiting"}
                 </output>
               </div>
-              <ol data-note-log aria-label={`${isSharedText ? "Text edit" : isCoordination ? "Sequenced operation" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
-                <li>{isSharedText ? "No text edits yet." : isCoordination ? "No operations accepted yet." : "No insertion notes yet."}</li>
+              <ol data-note-log aria-label={`${isTextCrdt ? "Text edit" : isCoordination ? "Sequenced operation" : "Insertion note"} log, newest first`} aria-live="polite" reversed>
+                <li>{isTextCrdt ? "No text edits yet." : isCoordination ? "No operations accepted yet." : "No insertion notes yet."}</li>
               </ol>
             </section>
           )}
@@ -155,7 +155,7 @@ const hasSequencer = isSharedText || isCoordination;
         <p>
           {structure.id === "sequence-crdt"
             ? "Queue Alice's Falls and Bob's Marsh together, or insert trail stops from any notebook."
-            : isSharedText
+            : isTextCrdt
               ? "Crowd one position with two words, overlap edits to one word, or type your own changes above."
               : isClaims
                 ? "Queue all three claim requests together, or reset and submit one request at a time."
@@ -163,7 +163,7 @@ const hasSequencer = isSharedText || isCoordination;
         </p>
       </div>
       <button type="button" data-action="race" disabled>{structure.raceLabel}</button>
-      {isSharedText && <button type="button" data-action="overlap" disabled>Overlap edits to “weir”</button>}
+      {isTextCrdt && <button type="button" data-action="overlap" disabled>Overlap edits to “weir”</button>}
       <button type="button" data-action="reset" disabled>Reset</button>
       <p data-enhancement-note>Enable JavaScript to run the race. The expected result remains in the lesson.</p>
     </div>
@@ -177,7 +177,7 @@ const hasSequencer = isSharedText || isCoordination;
     actInRemainingDemo,
     createRemainingDemo,
     deliverRemainingRace,
-    editSharedText,
+    editTextCrdt,
     insertSequenceStop,
     stageRemainingRace,
     type RemainingDemoState,
@@ -276,7 +276,7 @@ const hasSequencer = isSharedText || isCoordination;
           try {
             const replica = this.state.view.replicas.find(({ id }) => id === client);
             const before = replica?.values[0];
-            if (before === undefined) throw new Error("Missing SharedText value.");
+            if (before === undefined) throw new Error("Missing TextCrdt value.");
             const edit = minimalTextEdit(before, editor.value);
             if (!edit) return;
             const labels = this.applyCharacterEdit(client, edit.start, edit.end, edit.inserted);
@@ -334,7 +334,7 @@ const hasSequencer = isSharedText || isCoordination;
             ];
             this.setSequenceSlip("A", "Insert Falls before Weir", "Falls");
             this.setSequenceSlip("B", "Insert Marsh before Weir", "Marsh");
-          } else if (this.kind === "shared-text") {
+          } else if (this.kind === "text-crdt") {
             const aliceLabels = this.applyCharacterEdit("A", 4, 4, "still ");
             const bobLabels = this.applyCharacterEdit("B", 4, 4, "calm ");
             this.setTextSlip("A", "6 character operations queued for “still ”");
@@ -404,13 +404,13 @@ const hasSequencer = isSharedText || isCoordination;
       const kind = this.dataset.kind;
       if (
         kind === "sequence-crdt"
-        || kind === "shared-text"
+        || kind === "text-crdt"
         || kind === "claims"
         || kind === "fifo-work-queue"
         || kind === "task-manager"
         || kind === "pact-map"
         || kind === "json-ot"
-        || kind === "shared-rich-text"
+        || kind === "rich-text-ot"
       ) return kind;
       throw new Error("Missing remaining demo kind");
     }
@@ -543,7 +543,7 @@ const hasSequencer = isSharedText || isCoordination;
       this.state = createRemainingDemo(this.kind);
       if (this.kind === "sequence-crdt") {
         for (const id of REPLICA_IDS) this.setSequenceSlip(id, "No trail stop inserted yet.");
-      } else if (this.kind === "shared-text") {
+      } else if (this.kind === "text-crdt") {
         for (const id of REPLICA_IDS) this.setTextSlip(id, "No local edit yet.");
       }
     }
@@ -557,12 +557,12 @@ const hasSequencer = isSharedText || isCoordination;
 
     private get hasExchange(): boolean {
       return this.kind === "sequence-crdt"
-        || this.kind === "shared-text"
+        || this.kind === "text-crdt"
         || this.isCoordination;
     }
 
     private get hasSequencer(): boolean {
-      return this.kind === "shared-text" || this.isCoordination;
+      return this.kind === "text-crdt" || this.isCoordination;
     }
 
     private coordinationOperations(client: "A" | "B" | "C"): string[] {
@@ -610,7 +610,7 @@ const hasSequencer = isSharedText || isCoordination;
               nodes.push(this.sequenceValue(value));
             }
             record.replaceChildren(...nodes);
-          } else if (this.kind === "shared-text" && record instanceof HTMLTextAreaElement) {
+          } else if (this.kind === "text-crdt" && record instanceof HTMLTextAreaElement) {
             if (record.value !== (replica.values[0] ?? "")) {
               const focused = document.activeElement === record;
               const start = record.selectionStart;
@@ -642,7 +642,7 @@ const hasSequencer = isSharedText || isCoordination;
       const count = this.hasSequencer
         ? this.exchangeNotes.filter((note) => !note.delivered).length
         : this.state.view.pending;
-      const noun = this.kind === "shared-text"
+      const noun = this.kind === "text-crdt"
         ? "edit"
         : this.isCoordination ? "operation" : "note";
       pending.textContent = `${count} ${count === 1 ? noun : `${noun}s`} waiting`;
@@ -657,7 +657,7 @@ const hasSequencer = isSharedText || isCoordination;
           return item;
         })
         : [Object.assign(document.createElement("li"), {
-          textContent: this.kind === "shared-text"
+          textContent: this.kind === "text-crdt"
             ? "No text edits yet."
             : this.isCoordination ? "No operations accepted yet." : "No insertion notes yet.",
         })]));
@@ -716,14 +716,14 @@ const hasSequencer = isSharedText || isCoordination;
     ): string[] {
       const labels: string[] = [];
       if (end > start) {
-        this.state = editSharedText(this.state, client, start, end, "");
+        this.state = editTextCrdt(this.state, client, start, end, "");
         const description = `Delete symbols ${start}–${end}`;
         this.exchangeNotes.unshift({ author: client, description, delivered: false });
         labels.push("delete");
       }
       for (const [offset, character] of graphemes(inserted).entries()) {
         const index = start + offset;
-        this.state = editSharedText(this.state, client, index, index, character);
+        this.state = editTextCrdt(this.state, client, index, index, character);
         const visible = character === " " ? "space" : character;
         const description = `Insert “${visible}” at symbol ${index}`;
         this.exchangeNotes.unshift({ author: client, description, delivered: false });
@@ -768,7 +768,7 @@ const hasSequencer = isSharedText || isCoordination;
         const client = button.closest<HTMLElement>("[data-client]")?.dataset.client;
         button.disabled = client ? this.acted.has(client) : true;
       }
-      this.race.disabled = this.kind === "sequence-crdt" || this.kind === "shared-text"
+      this.race.disabled = this.kind === "sequence-crdt" || this.kind === "text-crdt"
         ? false
         : this.delivering;
       const overlap = this.querySelector<HTMLButtonElement>('[data-action="overlap"]');
