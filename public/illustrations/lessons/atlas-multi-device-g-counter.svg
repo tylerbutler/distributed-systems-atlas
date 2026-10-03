@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="room-title room-desc">
-  <title id="room-title">Multi-device rooms: notebooks and a stored receipt archive</title>
-  <desc id="room-desc">Three field notebooks marked with a circle, diamond, and hexagon each contain a three-row record. Beside them, an open archive box holds retained receipt slips and a fresh yellow-tabbed slip, with outgoing copies on the bench.</desc>
+  <title id="room-title">Multi-device rooms: notebooks and a stored counter snapshot</title>
+  <desc id="room-desc">Three field notebooks marked with a circle, diamond, and hexagon each contain a three-row record. Beside them, a storage box holds one yellow-tabbed three-row snapshot, with outgoing copies on the bench.</desc>
   <defs>
     <pattern id="room-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
       <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
@@ -39,9 +39,6 @@
   <path d="M480 309L598 369V469L480 405Z" fill="url(#room-hatch)"/>
   <path class="paper" d="M478 294L666 255L789 318L598 359Z"/>
   <path class="light" d="M500 297L665 264L767 317L600 350Z"/>
-  <path class="paper" d="M523 271L650 245L699 270V311L572 338L523 312Z"/>
-  <path class="paper" d="M529 247L656 221L705 247V306L578 333L529 306Z"/>
-  <path class="paper" d="M535 223L662 197L711 223V301L584 328L535 300Z"/>
   <path class="paper" d="M541 199L668 173L717 199V296L590 323L541 296Z"/>
   <path d="M644 178L661 175L670 180V195L653 199L644 194Z" fill="#ebcd42"/>
   <path class="fine" d="M602 225L691 206M602 243L691 224M602 261L691 242"/>

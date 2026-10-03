@@ -3,18 +3,20 @@ import {
   deliverGCounterRace,
   deliverOneGCounterOperation,
   incrementGCounterRoom,
+  mergeGCounter,
   resendGCounterComponent,
   stageGCounterRace,
   type GCounterRoom,
+  type GCounter,
   type GCounterRoomView,
   type Result,
   type TransportDelivery,
 } from "@atlas/toolkit";
-import { demoReplicaName, REPLICA_IDS, type DemoReplicaId } from "./replicas";
+import { demoReplicaName, isDemoReplicaId, REPLICA_IDS, type DemoReplicaId } from "./replicas";
 
 export type ReplicaId = DemoReplicaId;
 export type GCounterDemoPhase = "initial" | "queued" | "delivered" | "resent";
-type Counts = Record<ReplicaId, number>;
+export type Counts = Record<ReplicaId, number>;
 const MAX_RECORDED_DELIVERIES = 36;
 export type GCounterDemoState = {
   phase: GCounterDemoPhase;
@@ -114,6 +116,37 @@ export function incrementReplica(
     };
   } catch (error) {
     return failure(state, `${gCounterUserName(replica)} bird count`, error);
+  }
+}
+
+export function mergeReplicaCounts(
+  state: GCounterDemoState,
+  counts: Readonly<Counts>,
+): GCounterDemoResult {
+  const counter = (components: Readonly<Counts>): GCounter => ({
+    version: 1,
+    kind: "g-counter",
+    replicaId: "A",
+    counts: REPLICA_IDS.map((replicaId) => ({ replicaId, count: components[replicaId] })),
+    value: REPLICA_IDS.reduce((sum, replicaId) => sum + components[replicaId], 0),
+  });
+  try {
+    const merged = value(mergeGCounter(counter(state.authoredCounts), counter(counts)));
+    let next = state;
+    for (const component of merged.counts) {
+      if (!isDemoReplicaId(component.replicaId)) {
+        throw new Error(`Unknown room replica: ${component.replicaId}`);
+      }
+      const replica = component.replicaId;
+      const growth = component.count - next.authoredCounts[replica];
+      if (growth === 0) continue;
+      const result = incrementReplica(next, replica, growth);
+      if (!result.ok) return result;
+      next = result.state;
+    }
+    return { ok: true, state: next };
+  } catch (error) {
+    return failure(state, "Room state merge", error);
   }
 }
 

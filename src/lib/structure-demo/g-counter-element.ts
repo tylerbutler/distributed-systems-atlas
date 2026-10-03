@@ -1,14 +1,17 @@
 import {
   createGCounterDemo,
   deliverNextOperation,
+  deliverRace,
   gCounterUserName,
   incrementReplica,
+  mergeReplicaCounts,
   presentGCounterDemo,
   resendUserCount,
   stageRace,
   type GCounterDemoResult,
   type GCounterDemoState,
   type ReplicaId,
+  type Counts,
 } from "./g-counter";
 import { annotate } from "rough-notation";
 import {
@@ -20,8 +23,10 @@ import { isDemoReplicaId } from "./replicas";
 import {
   GCounterRoomClient,
   normalizeRoomCode,
-  type RoomIncrement,
+  type RoomState,
 } from "./g-counter-room-client";
+import { REPLICA_IDS } from "./replicas";
+import { MAX_COMPONENT } from "../../../worker/protocol";
 
 type Action = "race" | "resend" | "reset";
 type RoomAction = "create" | "join" | "copy" | "leave";
@@ -55,6 +60,8 @@ class GCounterDemoElement extends HTMLElement {
   private roomReplica: ReplicaId | null = null;
   private roomConnected = false;
   private roomPresence = 0;
+  private roomEpoch = "";
+  private roomConfirmedCounts: Counts = { A: 0, B: 0, C: 0 };
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
@@ -63,19 +70,23 @@ class GCounterDemoElement extends HTMLElement {
       button.addEventListener("click", async () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.increment);
-        if (this.roomConnected) {
-          if (replica !== this.roomReplica) return;
-          try {
-            this.roomClient?.increment(amount);
-            this.roomStatus(`Sent ${gCounterUserName(replica)}'s +${amount} update to room ${this.roomCode}.`);
-          } catch (error) {
-            this.roomError(error);
-          }
+        if (this.roomClient && (!this.roomConnected || replica !== this.roomReplica)) return;
+        if (this.roomClient && this.state.authoredCounts[replica] > MAX_COMPONENT - amount) {
+          this.roomStatus("This hiker's count reached the numeric limit. Reset the room before adding more.");
           return;
         }
         const result = incrementReplica(this.state, replica, amount);
         this.apply(result, button);
         if (result.ok) {
+          if (this.roomClient) {
+            try {
+              this.roomClient.publish(result.state.authoredCounts[replica], this.roomEpoch);
+            } catch (error) {
+              this.restoreRoomState({ epoch: this.roomEpoch, counts: this.roomConfirmedCounts });
+              this.roomError(error);
+              return;
+            }
+          }
           this.queueOutbound(replica, `+${amount}`);
           this.showGuidedObservation(
             `${gCounterUserName(replica)} records ${amount} more ${amount === 1 ? "bird" : "birds"} and leaves a checkpoint note.`,
@@ -93,9 +104,9 @@ class GCounterDemoElement extends HTMLElement {
       await this.applyAnimated(resendUserCount(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
-      if (this.roomConnected) {
+      if (this.roomClient) {
         try {
-          this.roomClient?.reset();
+          this.roomClient.reset(this.roomEpoch);
         } catch (error) {
           this.roomError(error);
         }
@@ -207,25 +218,30 @@ class GCounterDemoElement extends HTMLElement {
     this.roomReplica = null;
     this.roomConnected = false;
     this.roomStatus(`Connecting to room ${room}...`);
-    this.renderRoom();
     this.roomClient = new GCounterRoomClient(location.origin, {
       hello: (message) => {
         this.roomCode = message.room;
         this.roomReplica = message.replica;
         this.roomPresence = message.connected;
         this.roomConnected = true;
-        this.replayRoom(message.events);
+        this.restoreRoomState(message.state);
         const url = new URL(location.href);
         url.searchParams.set("room", this.roomCode);
         history.replaceState(null, "", url);
         this.renderRoom();
       },
-      increment: (event) => this.receiveRoomIncrement(event),
-      reset: () => {
-        this.resetFlow();
-        this.state = createGCounterDemo();
-        this.render();
-        this.roomStatus(`Room ${this.roomCode} was reset.`);
+      state: (state) => this.receiveRoomState(state),
+      reset: (state) => {
+        if (state.epoch === this.roomEpoch) {
+          this.receiveRoomState(state);
+        } else {
+          this.restoreRoomState(state);
+          this.roomStatus(`Room ${this.roomCode} was reset. Earlier changes were discarded.`);
+        }
+      },
+      rejected: (message, state) => {
+        this.restoreRoomState(state);
+        this.roomStatus(message);
       },
       presence: (connected) => {
         this.roomPresence = connected;
@@ -236,10 +252,13 @@ class GCounterDemoElement extends HTMLElement {
         if (!this.roomConnected && this.roomReplica === null) return;
         this.roomConnected = false;
         this.roomReplica = null;
-        this.roomStatus(`Disconnected from room ${this.roomCode}.`);
         this.render();
+        this.roomStatus(
+          `Disconnected from room ${this.roomCode}. Counts may include unconfirmed changes. Rejoin to load stored state.`,
+        );
       },
     });
+    this.render();
     this.roomClient.connect(room);
   }
 
@@ -256,39 +275,52 @@ class GCounterDemoElement extends HTMLElement {
     this.render();
   }
 
-  private replayRoom(events: readonly RoomIncrement[]): void {
+  private restoreRoomState(snapshot: RoomState): void {
     this.resetFlow();
-    this.state = createGCounterDemo();
-    for (const event of events) {
-      const incremented = incrementReplica(this.state, event.replica, event.amount);
-      if (!incremented.ok) {
-        this.roomStatus(incremented.error);
-        break;
-      }
-      const delivered = deliverNextOperation(incremented.state);
-      if (!delivered.ok) {
-        this.roomStatus(delivered.error);
-        break;
-      }
-      this.state = delivered.state;
+    const merged = mergeReplicaCounts(createGCounterDemo(), snapshot.counts);
+    if (!merged.ok) {
+      this.roomStatus(merged.error);
+      return;
     }
+    const settled = merged.state.view.pending ? deliverRace(merged.state) : merged;
+    if (!settled.ok) {
+      this.roomStatus(settled.error);
+      return;
+    }
+    this.roomEpoch = snapshot.epoch;
+    this.roomConfirmedCounts = { ...snapshot.counts };
+    this.state = {
+      ...settled.state,
+      baselineSequence: settled.state.view.sequenceNumber,
+      deliveries: [],
+      latestDeliveries: [],
+      result: `Loaded stored room state. All three hikers read ${settled.state.view.replicas[0]?.value ?? 0} birds.`,
+    };
     this.render();
   }
 
-  private receiveRoomIncrement(event: RoomIncrement): void {
-    const result = incrementReplica(this.state, event.replica, event.amount);
+  private receiveRoomState(snapshot: RoomState): void {
+    if (snapshot.epoch !== this.roomEpoch) return;
+    const before = this.state.authoredCounts;
+    const result = mergeReplicaCounts(this.state, snapshot.counts);
     if (!result.ok) {
       this.roomStatus(result.error);
       return;
     }
+    for (const replica of REPLICA_IDS) {
+      this.roomConfirmedCounts[replica] = Math.max(
+        this.roomConfirmedCounts[replica], snapshot.counts[replica],
+      );
+    }
     this.state = result.state;
     this.render();
-    this.queueOutbound(event.replica, `+${event.amount}`);
+    for (const replica of REPLICA_IDS) {
+      if (this.state.authoredCounts[replica] > before[replica]) {
+        this.queueOutbound(replica, `count ${this.state.authoredCounts[replica]}`);
+      }
+    }
     if (this.transport.autoDeliver) {
-      const focus = this.querySelector<HTMLButtonElement>(
-        `[data-replica="${event.replica}"][data-increment="${event.amount}"]`,
-      )!;
-      void this.deliverQueued(focus);
+      void this.deliverQueued(this.transport);
     }
   }
 
@@ -313,7 +345,7 @@ class GCounterDemoElement extends HTMLElement {
     this.roomButton("create").disabled = this.roomConnected;
     this.roomButton("join").disabled = this.roomConnected || !validCode;
     this.roomButton("copy").disabled = !this.roomConnected;
-    this.roomButton("leave").disabled = !this.roomConnected;
+    this.roomButton("leave").disabled = !this.roomClient;
     if (!this.roomConnected) return;
     const role = this.roomReplica
       ? `This device controls ${gCounterUserName(this.roomReplica)}.`
@@ -321,7 +353,11 @@ class GCounterDemoElement extends HTMLElement {
     this.roomStatus(
       `Room ${this.roomCode}: ${role} ${this.roomPresence} ${
         this.roomPresence === 1 ? "device is" : "devices are"
-      } connected.`,
+      } connected.${
+        this.roomReplica && this.state.authoredCounts[this.roomReplica] > this.roomConfirmedCounts[this.roomReplica]
+          ? " Local changes are waiting for storage confirmation."
+          : ""
+      }`,
     );
   }
 
@@ -657,18 +693,20 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.disabled = this.roomConnected && button.dataset.replica !== this.roomReplica;
+      button.disabled = Boolean(this.roomClient)
+        && (!this.roomConnected || button.dataset.replica !== this.roomReplica);
     }
-    this.button("race").disabled = this.roomConnected;
+    this.button("race").disabled = Boolean(this.roomClient);
     this.button("race").textContent = this.transport.autoDeliver
       ? "Leave Alice +7 and Bob +3 together"
       : "Hold Alice +7 and Bob +3 notes";
     this.button("resend").disabled =
-      this.roomConnected || this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
+      Boolean(this.roomClient) || this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Repeat ${gCounterUserName(view.latestAuthor)}'s note`
       : "Repeat latest checkpoint note";
-    this.button("reset").disabled = false;
+    this.button("reset").disabled = Boolean(this.roomClient)
+      && (!this.roomConnected || this.roomReplica === null);
     this.querySelector<HTMLInputElement>("[data-guided-observations]")!.disabled = false;
     this.renderRoom();
   }

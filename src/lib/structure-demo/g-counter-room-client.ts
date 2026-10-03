@@ -1,59 +1,48 @@
 import type { ReplicaId } from "./g-counter";
-
-export type RoomIncrement = {
-  readonly id: string;
-  readonly sequence: number;
-  readonly replica: ReplicaId;
-  readonly amount: 1 | 3 | 7;
-};
+import { isCount, isEpoch, isRoomState, ROOM_CODE, type RoomState } from "../../../worker/protocol";
+export type { RoomCounts, RoomState } from "../../../worker/protocol";
 
 type RoomHello = {
   readonly type: "hello";
   readonly room: string;
   readonly replica: ReplicaId | null;
-  readonly events: readonly RoomIncrement[];
+  readonly state: RoomState;
   readonly connected: number;
 };
 
 type RoomMessage =
   | RoomHello
-  | { readonly type: "increment"; readonly event: RoomIncrement }
-  | { readonly type: "reset" }
+  | { readonly type: "state"; readonly state: RoomState }
+  | { readonly type: "reset"; readonly state: RoomState }
   | { readonly type: "presence"; readonly connected: number }
-  | { readonly type: "error"; readonly message: string };
+  | { readonly type: "error"; readonly message: string; readonly state: RoomState };
 
 function isReplica(value: unknown): value is ReplicaId {
   return value === "A" || value === "B" || value === "C";
 }
 
-function isIncrement(value: unknown): value is RoomIncrement {
-  if (!value || typeof value !== "object") return false;
-  const event = value as Record<string, unknown>;
-  return typeof event.id === "string"
-    && typeof event.sequence === "number"
-    && isReplica(event.replica)
-    && (event.amount === 1 || event.amount === 3 || event.amount === 7);
+function isConnectedCount(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
 export function isRoomMessage(value: unknown): value is RoomMessage {
   if (!value || typeof value !== "object") return false;
   const message = value as Record<string, unknown>;
-  if (message.type === "reset") return true;
-  if (message.type === "increment") return isIncrement(message.event);
-  if (message.type === "presence") return typeof message.connected === "number";
-  if (message.type === "error") return typeof message.message === "string";
+  if (message.type === "reset" || message.type === "state") return isRoomState(message.state);
+  if (message.type === "presence") return isConnectedCount(message.connected);
+  if (message.type === "error") return typeof message.message === "string" && isRoomState(message.state);
   return message.type === "hello"
-    && typeof message.room === "string"
+    && typeof message.room === "string" && ROOM_CODE.test(message.room)
     && (message.replica === null || isReplica(message.replica))
-    && Array.isArray(message.events)
-    && message.events.every(isIncrement)
-    && typeof message.connected === "number";
+    && isRoomState(message.state)
+    && isConnectedCount(message.connected);
 }
 
 export type GCounterRoomHandlers = {
   hello(message: RoomHello): void;
-  increment(event: RoomIncrement): void;
-  reset(): void;
+  state(state: RoomState): void;
+  reset(state: RoomState): void;
+  rejected(message: string, state: RoomState): void;
   presence(connected: number): void;
   status(message: string): void;
   closed(): void;
@@ -81,9 +70,11 @@ export class GCounterRoomClient {
     this.close();
     const socket = new WebSocket(roomWebSocketUrl(this.origin, room));
     this.socket = socket;
-    socket.addEventListener("message", (event) => this.receive(String(event.data)));
+    socket.addEventListener("message", (event) => {
+      if (this.socket === socket) this.receive(String(event.data));
+    });
     socket.addEventListener("error", () => {
-      this.handlers.status("Could not connect to the live room.");
+      if (this.socket === socket) this.handlers.status("Could not connect to the live room.");
     });
     socket.addEventListener("close", () => {
       if (this.socket === socket) {
@@ -93,15 +84,14 @@ export class GCounterRoomClient {
     });
   }
 
-  increment(amount: number): void {
-    if (amount !== 1 && amount !== 3 && amount !== 7) {
-      throw new Error(`Unsupported G-counter increment: ${amount}`);
-    }
-    this.send({ type: "increment", id: crypto.randomUUID(), amount });
+  publish(count: number, epoch: string): void {
+    if (!isCount(count) || !isEpoch(epoch)) throw new Error("Invalid G-counter room state.");
+    this.send({ type: "state", epoch, count });
   }
 
-  reset(): void {
-    this.send({ type: "reset" });
+  reset(epoch: string): void {
+    if (!isEpoch(epoch)) throw new Error("Invalid G-counter reset epoch.");
+    this.send({ type: "reset", epoch });
   }
 
   close(): void {
@@ -130,9 +120,9 @@ export class GCounterRoomClient {
       return;
     }
     if (message.type === "hello") this.handlers.hello(message);
-    else if (message.type === "increment") this.handlers.increment(message.event);
-    else if (message.type === "reset") this.handlers.reset();
+    else if (message.type === "state") this.handlers.state(message.state);
+    else if (message.type === "reset") this.handlers.reset(message.state);
     else if (message.type === "presence") this.handlers.presence(message.connected);
-    else if (message.type === "error") this.handlers.status(message.message);
+    else if (message.type === "error") this.handlers.rejected(message.message, message.state);
   }
 }

@@ -34,8 +34,10 @@ test("the multi-device demo links to its storage explainer without JavaScript", 
       .toHaveText(/Complexity\s+Intermediate/);
     await expect(page.getByRole("heading", { name: "Each browser runs all three counters" }))
       .toBeVisible();
-    await expect(page.locator(".sheet-body")).toContainText("1,000 increments");
-    for (const term of ["Durable Object", "WebSocket", "event log", "replay", "hibernation"]) {
+    await expect(page.getByRole("heading", { name: "Alice updates before the server replies" }))
+      .toBeVisible();
+    await expect(page.locator(".sheet-body")).toContainText("waiting for an echo is not a G-counter requirement");
+    for (const term of ["Durable Object", "WebSocket", "optimistic update", "state snapshot", "epoch", "hibernation"]) {
       await expect(page.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
     }
     await expect(page.getByRole("link", { name: "Return to the G-counter demo" }))
@@ -44,7 +46,7 @@ test("the multi-device demo links to its storage explainer without JavaScript", 
     await expect(page.locator("#systems").getByRole("link", { name: "How multi-device G-counter rooms work" }))
       .toHaveAttribute("href", "/atlas/multi-device-g-counter/");
     await page.goto("/glossary/");
-    for (const anchor of ["durable-object", "websocket", "event-log", "replay", "hibernation"]) {
+    for (const anchor of ["durable-object", "websocket", "optimistic-update", "state-snapshot", "epoch", "hibernation"]) {
       await expect(page.locator(`#${anchor}`)).toBeVisible();
     }
   } finally {

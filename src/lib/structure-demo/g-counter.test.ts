@@ -3,6 +3,7 @@ import {
   createGCounterDemo,
   deliverRace,
   incrementReplica,
+  mergeReplicaCounts,
   presentGCounterDemo,
   resendUserCount,
   stageRace,
@@ -59,5 +60,29 @@ describe("G-counter checkpoint lesson", () => {
     expect(view.replicas).toEqual(before);
     expect(view.deliveries).toHaveLength(9);
     expect(view.result).toContain("still read 10");
+  });
+
+  test("merges repeated, stale, and reordered room state through the Watershed kernel", () => {
+    let state = success(incrementReplica(createGCounterDemo(), "A", 7)).state;
+    state = success(mergeReplicaCounts(state, { A: 7, B: 3, C: 1 })).state;
+    expect(state.authoredCounts).toEqual({ A: 7, B: 3, C: 1 });
+    expect(state.queuedOperations).toBe(3);
+    const duplicate = success(mergeReplicaCounts(state, { A: 7, B: 3, C: 1 })).state;
+    expect(duplicate).toBe(state);
+    const stale = success(mergeReplicaCounts(state, { A: 4, B: 0, C: 0 })).state;
+    expect(stale).toBe(state);
+    const advanced = success(mergeReplicaCounts(stale, { A: 10, B: 1, C: 0 })).state;
+    expect(advanced.authoredCounts).toEqual({ A: 10, B: 3, C: 1 });
+    expect(advanced.queuedOperations).toBe(4);
+    expect(presentGCounterDemo(success(deliverRace(advanced)).state).replicas.map(({ value }) => value))
+      .toEqual([14, 14, 14]);
+  });
+
+  test("reconstructs a room from one stored snapshot", () => {
+    const restored = success(mergeReplicaCounts(createGCounterDemo(), { A: 14, B: 3, C: 7 })).state;
+    const settled = success(deliverRace(restored)).state;
+    expect(presentGCounterDemo(settled).replicas.map(({ value }) => value)).toEqual([24, 24, 24]);
+    const incremented = success(incrementReplica(settled, "A", 1)).state;
+    expect(incremented.authoredCounts.A).toBe(15);
   });
 });

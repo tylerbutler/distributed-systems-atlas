@@ -379,10 +379,10 @@
       "title": "How multi-device G-counter rooms work",
       "source": "src/content/sheets/multi-device-g-counter.mdx",
       "asset": "/illustrations/lessons/atlas-multi-device-g-counter.svg",
-      "alt": "Three shape-marked notebooks each have a three-row record beside an archive box of retained receipt slips and outgoing copies.",
-      "scenePrompt": "On an observation bench, arrange three field notebooks marked with a circle, diamond, and hexagon. Each notebook contains the same blank three-row record. Beside them, an open archive box preserves a sequence of receipt slips, with one yellow-tabbed fresh slip and outgoing envelope copies on the bench. Draw the notebooks as separate records and the box as retained history, using the existing ink treatment.",
-      "semanticGuardrails": "The central archive represents the real room service's accepted increment log, not a shared mutable counter or a requirement of the G-counter merge rule. Each browser runs all three counter copies. Keep receipt identities and numerical values blank; do not imply that broadcasting guarantees receipt or that browsers persist their model locally.",
-      "altDraft": "Separate field notebooks beside a retained receipt archive and copies for distribution."
+      "alt": "Three shape-marked notebooks each have a three-row record beside a storage box holding one current counter snapshot and outgoing copies.",
+      "scenePrompt": "On an observation bench, arrange three field notebooks marked with a circle, diamond, and hexagon. Each notebook contains the same blank three-row record. Beside them, an open storage box holds one yellow-tabbed snapshot with three component rows and outgoing envelope copies on the bench. Draw the notebooks as separate local records and the box as the latest stored state, using the existing ink treatment.",
+      "semanticGuardrails": "The central box represents the room service's current component-state snapshot, not an increment history or a requirement of the G-counter merge rule. Each browser runs all three counter copies. Keep numerical values blank; do not imply that broadcasting guarantees receipt or that browsers persist their model locally.",
+      "altDraft": "Separate field notebooks beside a stored counter snapshot and copies for distribution."
     },
     {
       "id": "atlas-local-history",

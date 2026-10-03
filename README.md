@@ -150,12 +150,24 @@ production bindings.
 
 ## Live G-counter rooms
 
+Multiplayer demos must use the demonstrated structure's native synchronization
+mechanism. Keep the transport consistent with the kernel's update and merge
+semantics.
+
 The G-counter lesson can connect three browsers through a Cloudflare Durable
 Object. The static site still works when the room service is unavailable. Each
 connected browser runs the existing Watershed-backed G-counter model. The
-Durable Object assigns Alice, Bob, or Carol, relays increments, and stores the
-room operations for replay. A room accepts up to 1,000 operations before it
-must be reset.
+Durable Object assigns Alice, Bob, or Carol and relays cumulative counter
+state. A click updates the browser's Watershed model before the server replies.
+The browser merges echoed and remote state through the Watershed G-counter
+kernel, so duplicate or older state does not count twice.
+
+SQLite stores one snapshot: three component counts and a reset epoch. A join
+loads that snapshot instead of replaying an operation log. Existing rooms
+initialize it from their earlier stored increments. Reset creates a new epoch,
+so late state from before the reset cannot restore cleared counts. Room roles
+belong to active connections; disconnected devices cannot keep writing, and
+unconfirmed changes have no persistent browser outbox.
 
 Use Astro alone for normal content and interface work:
 

@@ -1,11 +1,11 @@
 ---
 title: How multi-device G-counter rooms work
-summary: Follow an increment through the browser, a WebSocket connection, and a Durable Object's SQLite history.
+summary: Follow an optimistic counter update through the browser, a WebSocket connection, and a Durable Object's stored state.
 territory: systems
 status: published
 complexity: intermediate
 requires: []
-introduces: [Durable Object, WebSocket, event log, replay, hibernation]
+introduces: [Durable Object, WebSocket, optimistic update, state snapshot, epoch, hibernation]
 related: [local-history]
 scenarios: []
 terms:
@@ -13,10 +13,12 @@ terms:
     definition: A Cloudflare service that combines coordination for one named object with storage private to that object.
   - term: WebSocket
     definition: A persistent connection over which a browser and a server can send messages to each other.
-  - term: event log
-    definition: A stored sequence of application events used to reconstruct state.
-  - term: replay
-    definition: Applying stored events to an initial state to reconstruct the state after those events.
+  - term: optimistic update
+    definition: A local change shown before the server confirms that it has accepted the update.
+  - term: state snapshot
+    definition: A stored copy of the current state used to initialize or restore a replica.
+  - term: epoch
+    definition: An identifier for one generation of a room's counter state. Reset creates a new epoch.
   - term: hibernation
     definition: A Durable Object lifecycle state in which Cloudflare keeps accepted WebSocket connections open without keeping the object's code in memory.
 references:
@@ -44,27 +46,28 @@ Your screen contains three local counter copies, not one counter fetched
 from the server.
 
 The browser executes the same Watershed Gleam code used by the single-device
-demo. When Alice records seven birds, each connected browser applies that
-action to its own model of Alice. Inside each browser, the demo then delivers
-Alice's cumulative count to its local copies of Bob and Carol.
+demo. Alice records seven birds in her browser before the server replies.
+The room service shares her cumulative count with the connected browsers.
+Inside each browser, the demo delivers Alice's cumulative count to its local
+copies of Bob and Carol.
 
 <figure aria-label="The two transport layers">
   <dl class="sheet-data">
     <dt>Between browsers</dt>
-    <dd>A room service accepts increments, stores them, and sends them to
-    the connected browsers.</dd>
+    <dd>A room service stores cumulative component counts and sends the
+    counter state to connected browsers.</dd>
     <dt>Inside one browser</dt>
-    <dd>The Watershed model applies each increment and delivers counter
-    updates among its three local copies.</dd>
+    <dd>The Watershed kernel merges incoming component counts. The local
+    delivery model shows the resulting growth among its three copies.</dd>
   </dl>
-  <figcaption>The live connection exchanges actions. The animated checkpoint
+  <figcaption>The live connection exchanges state. The animated checkpoint
   notes show delivery inside the local model.</figcaption>
 </figure>
 
 The **Speed**, **Jitter**, and **Broadcast** controls affect that local
 delivery model. Turning off **Broadcast** can leave checkpoint notes queued
 on your screen. It does not disconnect your browser from the room service or
-stop the service from storing new increments.
+stop the service from storing new counts.
 
 ## One room per code
 
@@ -93,108 +96,130 @@ request.
 
 The object assigns the first available role: `A` for Alice, `B` for Bob, or
 `C` for Carol. When all three roles are occupied, another browser joins as
-an observer. Observers receive history and new increments, but the server
-rejects their increment and reset requests.
+an observer. Observers receive the current state and later state updates,
+but the server rejects their component updates and reset requests.
 
-The first server message, `hello`, contains your role, the stored increments,
+The first server message, `hello`, contains your role, the stored counter state,
 and the connected-device count. Roles belong to connections. A later join
 can receive a different role, and an observer does not acquire a free role
 without leaving and joining again.
 
-## Follow Alice's increment
+## Alice updates before the server replies
 
-When Alice clicks **+7**, her browser generates an action ID with
-`crypto.randomUUID()` and sends a message like this:
+When Alice clicks **+7**, her local count changes from zero to seven. This is
+an <dfn><a href="/glossary/#optimistic-update">optimistic update</a></dfn>:
+Alice sees her change before the server confirms storage.
+
+<TermCallout
+  term="optimistic update"
+  definition="A local change shown before the server confirms that it has accepted the update."
+  inlineOnly
+/>
+
+Her browser sends her cumulative component count, rather than a command to
+add seven:
 
 ```json
 {
-  "type": "increment",
-  "id": "9df10f6c-c764-46d8-a3c8-54eec6227005",
-  "amount": 7
+  "type": "state",
+  "epoch": "9df10f6c-c764-46d8-a3c8-54eec6227005",
+  "count": 7
 }
 ```
 
 The browser does not choose the author in this message. The server reads
-Alice's role from the connection's saved metadata. It accepts only increments
-of `1`, `3`, or `7`, checks the room's operation limit, and rejects malformed
-input. After validation, the server checks whether the ID is already stored.
-It ignores a duplicate without another broadcast. For a new action, it
-inserts a row and broadcasts the stored event.
+Alice's role from the connection's saved metadata. It validates the count
+and the room's reset identifier, then keeps the maximum of Alice's stored
+count and her submitted count. Bob's and Carol's components remain unchanged.
+The server stores the result before broadcasting the full three-component
+state, including back to Alice.
 
-The broadcast includes the action ID, a database sequence number, the author,
-and the amount. The server sends it to Alice too. Her browser waits for this
-message before changing the live-room model; it does not apply an optimistic
-increment when she clicks.
+Alice's browser merges the echo through the Watershed G-counter kernel.
+Her local component is seven, so `max(7, 7)` leaves it at seven. The echo
+confirms storage without another increment. Duplicate and older states
+cannot increase the same component twice.
 
-Each browser runs `incrementReplica` for the author in the event, then uses
-the existing local delivery queue. Bob can record three birds while Alice's
-checkpoint notes are still in transit. Once the local queues finish, the
-three displayed counters in each browser show ten.
+Bob can record three birds while Alice's animated checkpoint notes are still
+in transit. Each browser merges the room state, then queues any new growth
+in its existing local delivery model. After those local queues finish, the
+three displayed counters in each browser show ten. The checkpoint's note
+number belongs to this local simulation; the room protocol has no global
+operation sequence.
 
-The stored sequence number determines replay order. The local Watershed
-model has its own operation numbering. Neither number is a bird total.
-The G-counter's merge rule remains component-wise maximum; the shared room
-adds a central action order for this demonstration.
+## State broadcasts and application behavior
 
-## SQLite stores increments
+A state-based G-counter application can update locally and synchronize
+cumulative counts later. Its merge rule needs no server approval or central
+operation order. This demo uses that state-based merge while keeping a
+Cloudflare room as the relay and storage service.
 
-The object keeps an <dfn><a href="/glossary/#event-log">event log</a></dfn>
-in its private SQLite database. The schema has one row per accepted increment:
+Sending `+7` commands would require different handling. If Alice applied the
+command on click and again on the server echo, she would record fourteen.
+That design needs action IDs and a check that each accepted command is applied
+once. With cumulative component state, another copy of seven changes nothing.
+Operation-based designs can also support optimistic updates; waiting for an
+echo is not a G-counter requirement.
+
+The demo still differs from a local-first application that supports offline
+work. Alice cannot keep writing after a disconnect. Her browser holds no
+persistent outbox, and the hiker role belongs to a connection rather than a
+stable device identity. An application that permits concurrent offline
+writers needs a distinct replica identity for each writer. Two independent
+writers sharing Alice's component could each record seven and merge to seven
+instead of fourteen.
+
+## SQLite stores a state snapshot
+
+The object keeps a
+<dfn><a href="/glossary/#state-snapshot">state snapshot</a></dfn>
+in its private SQLite database. One row contains the current component counts
+and the reset identifier:
 
 <TermCallout
-  term="event log"
-  definition="A stored sequence of application events used to reconstruct state."
+  term="state snapshot"
+  definition="A stored copy of the current state used to initialize or restore a replica."
   inlineOnly
 />
 
 ```sql
-CREATE TABLE IF NOT EXISTS events (
-  sequence INTEGER PRIMARY KEY AUTOINCREMENT,
-  id TEXT NOT NULL UNIQUE,
-  replica TEXT NOT NULL,
-  amount INTEGER NOT NULL
+CREATE TABLE IF NOT EXISTS counter (
+  singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+  epoch TEXT NOT NULL,
+  a INTEGER NOT NULL,
+  b INTEGER NOT NULL,
+  c INTEGER NOT NULL
 );
 ```
 
-SQLite assigns the sequence number. The unique `id` identifies an action,
-`replica` identifies its author, and `amount` records the increase. The
-database contains no saved bird total, counter snapshot, or animation state.
-On a future join, the browser computes the counters from these rows.
+The `singleton` key allows one row. The `a`, `b`, and `c` columns contain each
+hiker's cumulative count. A browser computes the bird total by adding the
+components. The snapshot contains no click history or animation state.
 
 The message handler uses synchronous SQL without an `await` between the
-duplicate check and insertion. Another handler in that object cannot
-interrupt those statements. The code inserts the row before broadcasting,
-so a stored increment can be recovered on a later join even if a browser
-misses the broadcast.
+read and update. Another handler in that object cannot interrupt those
+statements. The code stores the larger component count before broadcasting,
+so a later join can recover it even if a browser misses the broadcast.
 
 The database belongs to the room object, rather than a shared D1 database
-or a browser's local storage. Closing the tabs does not clear the rows.
+or a browser's local storage. Closing the tabs does not clear the stored counter.
 Cloudflare retains durable storage when it unloads an idle object or runs
 a new instance of its code.
 
-## Rebuild a browser after a join
+## Restore a browser after a join
 
-<dfn><a href="/glossary/#replay">Replay</a></dfn> reconstructs a browser's
-model from the stored increments. The server selects rows with
-`ORDER BY sequence` and includes them in `hello`.
+The server includes the stored snapshot in `hello`. Your browser creates a
+fresh three-counter model, merges the component counts, and completes their
+local delivery before showing the restored state.
 
-<TermCallout
-  term="replay"
-  definition="Applying stored events to an initial state to reconstruct the state after those events."
-  inlineOnly
-/>
+This also works for a fourth browser that joins as an observer. It can display
+the existing count without having witnessed the earlier clicks. The local
+checkpoint log starts empty because the snapshot contains state, not the
+sequence of clicks that produced it.
 
-Your browser creates a fresh three-counter model. For each row, it applies
-the increment to the named author and completes that local operation's
-delivery before processing the next row. This also works for a fourth
-browser that joins as an observer. It can display the existing count without
-having witnessed the earlier clicks.
-
-Starting from zero matters. Replaying Alice's `+7` onto a model that already
-includes it would increase her count again. The server's action-ID check
-prevents duplicate rows; the G-counter's maximum rule prevents duplicate
-cumulative checkpoint notes from increasing the total. Those checks apply
-to different kinds of messages.
+If a new connection receives Alice's role, it loads her stored component before
+recording more birds. With a stored count of seven, its first **+1** submits
+eight. The server gives only one active connection each hiker role, and a
+disconnected browser cannot submit further changes through the demo controls.
 
 ## Keep storage separate from connections
 
@@ -215,34 +240,49 @@ connection's role with `serializeAttachment` and reads it with
 connections available through `getWebSockets`. Ordinary instance fields
 alone would not preserve their roles across a wake.
 
-SQLite stores the increment history. WebSocket attachments store connection
+SQLite stores the counter snapshot. WebSocket attachments store connection
 metadata. Each browser holds its counter model and visual controls in memory.
 These have different lifetimes: reloading a browser rebuilds its model, while
-hibernation does not require the server to recreate the event log.
+hibernation does not require the server to recreate the counter state.
 
 <section class="sheet-costs" aria-labelledby="room-limits-and-recovery">
 
 ## Room limits and recovery
 
-A room accepts up to **1,000 increments** before a participant must reset it.
 Any connected participant with a hiker role can reset the room. The server
-deletes the event rows and sends `reset` to the connected browsers; each
-browser creates a fresh model. SQLite's auto-increment sequence need not
-restart at one.
+sets the three stored counts to zero and creates a new
+<dfn><a href="/glossary/#epoch">epoch</a></dfn> before sending `reset`.
+Each browser creates a fresh model for that epoch.
+
+<TermCallout
+  term="epoch"
+  definition="An identifier for one generation of a room's counter state. Reset creates a new epoch."
+  inlineOnly
+/>
+
+A reset is outside the grow-only merge rule. Without a new epoch, merging
+zero with Alice's old seven would restore seven. The server rejects state
+and reset requests from an older epoch. Browsers ignore old-epoch state,
+so late messages cannot restore cleared counts. Reset waits for the server
+to assign the new epoch; ordinary increments do not wait.
 
 The demo has no automatic room expiry. It also has no user accounts or
 private-room authorization: anyone with the code can join. Use a new room
 for an experiment, and tell the other participants before resetting it.
 
-The browser does not keep an offline outbox, retry unconfirmed increments,
+The browser does not keep an offline outbox, retry unconfirmed state,
 or reconnect a closed socket on its own. You can join again or reload the
-room link to request the stored history. If a connection fails before the
-server stores an action, replay cannot recover that action.
+room link to request stored state. Until the server echoes Alice's count,
+the room status marks her local changes as waiting for storage confirmation.
+After a disconnect, the display may include unconfirmed changes. Rejoining
+replaces that display with the stored snapshot; a change that never reached
+storage is lost. A server rejection restores its returned snapshot and shows
+the reason.
 
-Joining requires the full history, so replay work increases with the number
-of rows. The 1,000-increment limit bounds that work in this demo. A larger
-application would need a defined recovery protocol and a strategy for
-snapshots or history retention.
+Snapshot storage and join work remain fixed at three components. Each component is
+limited to one third of JavaScript's largest safe integer, rounded down, so
+their sum stays exact. This replaces an operation-count limit: another update
+changes the same row instead of adding a row.
 
 </section>
 
@@ -253,28 +293,34 @@ Use three browsers and a new room for this check:
 1. Record seven birds for Alice and three for Bob. Wait for the local
    broadcasts to finish and compare the displayed tens.
 2. Reload one browser with the room link. Its fresh model should reconstruct
-   the same count from `hello`, even if its assigned hiker changes.
+   the same count from the snapshot in `hello`, even if its assigned hiker changes.
 3. Join from a fourth browser. It should display ten as an observer, with
    the hiker increment controls disabled.
 4. Reset from a participant's browser. The connected displays should return
-   to zero, and a new join should have no increments to replay.
+   to zero, and a new join should receive the new epoch with zero counts.
 
 [Return to the G-counter demo](/structures/g-counter/).
 
 ## Implementation notes
 
 The [room Worker](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/worker/index.ts)
-contains the role assignment, SQL, and broadcasts.
+contains the role assignment, snapshot storage, reset epochs, and broadcasts.
 The [protocol parser](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/worker/protocol.ts)
-defines accepted browser actions.
+defines accepted component counts and reset requests.
 The [browser room client](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/g-counter-room-client.ts)
 handles the WebSocket messages, while the
 [demo element](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/g-counter-element.ts)
-replays history and updates the local display.
+restores snapshots and updates the local display.
+
+The [demo model](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/g-counter.ts)
+calls the toolkit's `mergeGCounter` boundary, which uses Watershed's
+`g_counter_kernel` for component-wise merge. It queues only newly observed
+growth in the local three-hiker delivery model. Local clicks use
+`incrementGCounterRoom`, which applies the Watershed increment before delivery.
 
 The [Gleam adapter](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/toolkit/src/atlas_sluice.gleam)
 creates the three Watershed clients and their G-counters. The Worker stores
-and relays browser actions; the browser executes the counter model.
+and relays component state; the browser executes the counter model.
 The Cloudflare references below describe the storage and connection APIs
 used by this implementation.
 

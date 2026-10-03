@@ -1,13 +1,33 @@
 export const ROOM_CODE = /^[A-Z0-9]{4,8}$/;
-export const INCREMENTS = new Set([1, 3, 7]);
+export const MAX_COMPONENT = Math.floor(Number.MAX_SAFE_INTEGER / 3);
+const EPOCH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export type ClientIncrement = {
-  readonly type: "increment";
-  readonly id: string;
-  readonly amount: 1 | 3 | 7;
+export type RoomCounts = { readonly A: number; readonly B: number; readonly C: number };
+export type RoomState = {
+  readonly epoch: string;
+  readonly counts: RoomCounts;
 };
 
-export type ClientMessage = ClientIncrement | { readonly type: "reset" };
+export type ClientMessage =
+  | { readonly type: "state"; readonly epoch: string; readonly count: number }
+  | { readonly type: "reset"; readonly epoch: string };
+
+export function isEpoch(value: unknown): value is string {
+  return typeof value === "string" && EPOCH.test(value);
+}
+
+export function isCount(value: unknown): value is number {
+  return typeof value === "number"
+    && Number.isSafeInteger(value) && value >= 0 && value <= MAX_COMPONENT;
+}
+
+export function isRoomState(value: unknown): value is RoomState {
+  if (!value || typeof value !== "object") return false;
+  const state = value as Record<string, unknown>;
+  if (!isEpoch(state.epoch) || !state.counts || typeof state.counts !== "object") return false;
+  const counts = state.counts as Record<string, unknown>;
+  return isCount(counts.A) && isCount(counts.B) && isCount(counts.C);
+}
 
 export function parseClientMessage(value: string | ArrayBuffer): ClientMessage | null {
   if (typeof value !== "string" || value.length > 256) return null;
@@ -19,17 +39,8 @@ export function parseClientMessage(value: string | ArrayBuffer): ClientMessage |
   }
   if (!input || typeof input !== "object") return null;
   const message = input as Record<string, unknown>;
-  if (message.type === "reset") return { type: "reset" };
-  if (
-    message.type !== "increment"
-    || typeof message.id !== "string"
-    || !/^[0-9a-f-]{36}$/i.test(message.id)
-    || typeof message.amount !== "number"
-    || !INCREMENTS.has(message.amount)
-  ) return null;
-  return {
-    type: "increment",
-    id: message.id,
-    amount: message.amount as 1 | 3 | 7,
-  };
+  if (!isEpoch(message.epoch)) return null;
+  if (message.type === "reset") return { type: "reset", epoch: message.epoch };
+  if (message.type !== "state" || !isCount(message.count)) return null;
+  return { type: "state", epoch: message.epoch, count: message.count };
 }
