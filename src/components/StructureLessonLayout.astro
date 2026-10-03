@@ -37,6 +37,7 @@ const complexity = structureComplexity(Astro.url.pathname);
       </div>
       <h1>{title}</h1>
       <p class="structure-summary"><slot name="summary" /></p>
+      <slot name="navigation" />
       <LessonIllustration id={illustrationId} />
     </header>
 

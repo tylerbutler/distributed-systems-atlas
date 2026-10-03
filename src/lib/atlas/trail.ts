@@ -31,23 +31,6 @@ export type TrailEntry = Pick<
   "id" | "title" | "summary" | "territory" | "status" | "complexity" | "requires"
 >;
 
-export function buildTrail(entries: SheetMeta[]): TrailEntry[] {
-  return firstTrail.map((step) =>
-    entries.find(({ id }) => id === step.id) ?? {
-      ...step,
-      summary: "",
-      status: "planned",
-      requires: [],
-    }
-  );
-}
-
 export function buildAtlasEntries(entries: SheetMeta[]): TrailEntry[] {
-  const trail = buildTrail(entries);
-  const trailIds = new Set<string>(firstTrail.map(({ id }) => id));
-  return [...trail, ...entries.filter(({ id }) => !trailIds.has(id))];
-}
-
-export function trailPosition(id: string): number {
-  return firstTrail.findIndex((step) => step.id === id);
+  return [...entries].sort((a, b) => a.title.localeCompare(b.title, "en"));
 }

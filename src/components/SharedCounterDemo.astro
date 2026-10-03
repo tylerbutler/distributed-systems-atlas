@@ -108,15 +108,6 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       </div>
     </div>
 
-    <DemoRoomControls id="shared-counter-room-title">
-      <p>
-        Join one room on three devices. Each device controls one hiker.
-        Your signed change applies locally first. The real room service
-        assigns the sequence number, stores the operation, and broadcasts it.
-      </p>
-      <p><a href="#live-room-title">How the real sequencer and storage work</a></p>
-    </DemoRoomControls>
-
     <DemoTransportControls />
 
     <section class="shared-controls" aria-label="SharedCounter lesson controls">
@@ -153,6 +144,15 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
         </p>
       </div>
     </details>
+
+    <DemoRoomControls id="shared-counter-room-title">
+      <p>
+        Join one room on three devices. Each device controls one hiker.
+        Your signed change applies locally first. The real room service
+        assigns the sequence number, stores the operation, and broadcasts it.
+      </p>
+      <p><a href="#live-room-title">How the real sequencer and storage work</a></p>
+    </DemoRoomControls>
   </section>
 </shared-counter-demo>
 
@@ -381,7 +381,7 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
   .sequencer-action {
     color: color-mix(in oklch, var(--clear) 70%, var(--instrument));
     font-family: var(--font-data);
-    font-size: 0.68rem;
+    font-size: 1rem;
   }
 
   .operation-log {
@@ -401,8 +401,8 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
   .operation-log :global(li) {
     color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
     font-family: var(--font-data);
-    font-size: 0.72rem;
-    line-height: 1.45;
+    font-size: 1rem;
+    line-height: 1.5;
     text-align: center;
   }
 
@@ -458,7 +458,7 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
 
   .shared-result,
   .shared-error {
-    max-width: none;
+    max-width: var(--measure-reading);
     margin: 0;
     padding: var(--space-4);
     color: var(--instrument-deep);

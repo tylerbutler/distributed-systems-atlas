@@ -128,6 +128,7 @@ test("SharedCounter controls remain keyboard sized without overflow", async ({ p
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-counter/");
   const demo = page.getByTestId("shared-counter-demo");
+  await demo.locator("[data-room-disclosure] > summary").click();
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(

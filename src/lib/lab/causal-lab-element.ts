@@ -402,11 +402,8 @@ class CausalLabElement extends HTMLElement {
       this.completion.replaceChildren();
       return;
     }
-    const article = this.closest<HTMLElement>(".sheet");
-    const href = article?.dataset.nextHref ?? "/atlas/";
-    const title = article?.dataset.nextTitle ?? "Reference atlas";
-    const next = node("a", `Continue to ${title}`);
-    next.href = href;
+    const next = node("a", "Browse the reference atlas");
+    next.href = "/atlas/";
     next.className = "lab-next";
     const takeaway = node("p", outcome.heading);
     takeaway.className = "observation-label";

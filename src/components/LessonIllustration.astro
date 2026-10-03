@@ -24,9 +24,15 @@ if (!illustration?.asset || !illustration.alt) {
 <style>
   .lesson-illustration {
     display: block;
-    width: min(100%, 32rem);
+    width: min(100%, 18rem);
     height: auto;
     margin: var(--space-5) auto 0;
     mix-blend-mode: multiply;
+  }
+
+  @media (width < 48rem) {
+    .lesson-illustration {
+      width: min(100%, 12rem);
+    }
   }
 </style>

@@ -5,33 +5,47 @@ interface Props {
 const { id } = Astro.props;
 ---
 
-<section class="demo-room" aria-labelledby={id}>
-  <div class="room-description">
-    <h3 id={id}>Use three devices</h3>
-    <slot />
-  </div>
-  <div class="room-controls">
-    <label>
-      <span>Room code</span>
-      <input type="text" inputmode="text" autocomplete="off" maxlength="8" data-room-code disabled />
-    </label>
-    <button type="button" data-room-action="create" disabled>Create room</button>
-    <button type="button" data-room-action="join" disabled>Join room</button>
-    <button type="button" data-room-action="copy" disabled>Copy room link</button>
-    <button type="button" data-room-action="leave" disabled>Leave room</button>
-  </div>
-  <p data-room-status aria-live="polite">Enable JavaScript to connect to a live room.</p>
-</section>
+<details class="demo-room-disclosure" data-room-disclosure>
+  <summary id={id}>Use three devices</summary>
+  <section class="demo-room" aria-labelledby={id}>
+    <div class="room-description">
+      <slot />
+    </div>
+    <div class="room-controls">
+      <label>
+        <span>Room code</span>
+        <input type="text" inputmode="text" autocomplete="off" maxlength="8" data-room-code disabled />
+      </label>
+      <button type="button" data-room-action="create" disabled>Create room</button>
+      <button type="button" data-room-action="join" disabled>Join room</button>
+      <button type="button" data-room-action="copy" disabled>Copy room link</button>
+      <button type="button" data-room-action="leave" disabled>Leave room</button>
+    </div>
+    <p data-room-status aria-live="polite">Enable JavaScript to connect to a live room.</p>
+  </section>
+</details>
 
 <style>
+  .demo-room-disclosure {
+    margin-top: var(--space-5);
+    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+  }
+  .demo-room-disclosure summary {
+    min-height: 44px;
+    padding-block: var(--space-4);
+    font-family: var(--font-ui);
+    font-weight: 650;
+    cursor: pointer;
+  }
+  .demo-room-disclosure summary:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
   .demo-room {
     display: grid;
-    margin-block: var(--space-4);
-    padding: var(--space-4);
-    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+    padding-bottom: var(--space-4);
     gap: var(--space-3);
   }
-  .demo-room h3,
   .demo-room p,
   .room-description :global(p) {
     margin: 0;
@@ -50,7 +64,7 @@ const { id } = Astro.props;
     display: grid;
     gap: var(--space-1);
     font-family: var(--font-ui);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
   .room-controls input {
     width: 10ch;

@@ -100,19 +100,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </p>
     <p class="gcounter-error" role="alert" hidden></p>
 
-    <DemoRoomControls id="gcounter-room-title">
-        <p>
-          Join the same room on three devices. Each device controls one hiker,
-          and every browser runs the G-counter. Your hiker's count changes
-          before the server replies; the room shares cumulative counts.
-        </p>
-        <p>
-          <a href="/atlas/multi-device-g-counter/">
-            How multi-device rooms and storage work
-          </a>
-        </p>
-    </DemoRoomControls>
-
     <DemoTransportControls />
 
     <section class="gcounter-controls" aria-label="Worked example controls">
@@ -200,6 +187,19 @@ const initial = presentGCounterDemo(createGCounterDemo());
         </p>
       </div>
     </details>
+
+    <DemoRoomControls id="gcounter-room-title">
+      <p>
+        Join the same room on three devices. Each device controls one hiker,
+        and every browser runs the G-counter. Your hiker's count changes
+        before the server replies; the room shares cumulative counts.
+      </p>
+      <p>
+        <a href="/atlas/multi-device-g-counter/">
+          How multi-device rooms and storage work
+        </a>
+      </p>
+    </DemoRoomControls>
   </section>
 </g-counter-demo>
 
@@ -465,8 +465,8 @@ const initial = presentGCounterDemo(createGCounterDemo());
   .operation-log :global(li) {
     color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
     font-family: var(--font-data);
-    font-size: 0.68rem;
-    line-height: 1.45;
+    font-size: 1rem;
+    line-height: 1.5;
     text-align: center;
   }
 
@@ -571,7 +571,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
 
   .gcounter-result,
   .gcounter-error {
-    max-width: none;
+    max-width: var(--measure-reading);
     margin: 0;
     padding: var(--space-4);
     color: var(--instrument-deep);

@@ -58,6 +58,12 @@ typography:
     fontWeight: 400
     lineHeight: 1.5
     fontFeature: "tabular-nums"
+  operation-log:
+    fontFamily: '"Azeret Mono Variable", monospace'
+    fontSize: "1rem"
+    fontWeight: 400
+    lineHeight: 1.5
+    fontFeature: "tabular-nums"
 rounded:
   square: "0"
   round: "50%"
@@ -71,7 +77,7 @@ spacing:
   "7": "clamp(2rem, 1rem + 4vw, 4rem)"
   "8": "clamp(3rem, 1rem + 8vw, 8rem)"
 components:
-  trail-entry:
+  structure-entry:
     backgroundColor: "{colors.signal}"
     textColor: "{colors.instrument-deep}"
     typography: "{typography.entry-action}"
@@ -124,7 +130,7 @@ The emitted direction contract is:
 - **THESIS:** Compare partial observations in a daylit signal observatory, refusing the glowing network dashboard.
 - **OWN-WORLD:** Mineral-blue instruments, white-blue reading fields, sulfur signals, vermilion interference; square stations and thin ruled records.
 - **STORY:** Engineers choose a familiar data structure, observe its merge behavior, then inspect the causal evidence that makes the result possible. Motion snaps between recorded frames.
-- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing recommends counters as the first lesson and keeps the full structure index secondary. Sheets open with title, reading context, and prose; the console interrupts below.
+- **FIRST VIEWPORT:** Navigation and observation rail lead; the landing links to the structure catalogue and reference atlas. Lesson introductions keep the illustration compact and show local section links sooner. Sheets open with title, reading context, and prose; the console interrupts below.
 - **FORM:** Signal observatory is brief-pinned, overriding roll index 3; seed key `e7ba61a7`.
 - **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -157,7 +163,7 @@ The palette separates reading stock, instrument structure, signal activity, inte
 
 - **Sky Sheet:** Long-form reading surfaces, chart stock, observation slips, and static diagrams.
 - **Graphite:** Default prose and data text on light surfaces.
-- **Muted Record:** Secondary status, captions, trail context, and low-priority metadata.
+- **Muted Record:** Secondary status, captions, page context, and low-priority metadata.
 - **Clear Readout:** Text and links on instrument fields.
 - **Chart Line / Faint Chart Line:** Boundaries, dividers, trace structure, and the restrained horizontal ruling used only inside chart fields.
 
@@ -186,9 +192,10 @@ The palette separates reading stock, instrument structure, signal activity, inte
 - **Title** (650, 1.4rem, 1.15): Mechanism steps and compact component headings.
 - **Body** (400, fluid 1.05–1.15rem, 1.68): Essays and explanations, capped at 68ch.
 - **Label** (500, 0.875rem, 1.5): Navigation, statuses, metadata, and observation labels.
-- **Entry Action** (650, fluid 1.05–1.15rem, 1.68): Landing entry links; their stronger weight distinguishes the primary route into the trail.
+- **Entry Action** (650, fluid 1.05–1.15rem, 1.68): Landing entry links; their stronger weight distinguishes the primary structure-browsing action.
 - **Lab Control** (400, fluid 1.05–1.15rem, 1.4): Lab buttons; compact leading keeps multi-line actions legible without giving them label density.
 - **Data** (400, 0.875rem, 1.5): Vectors, dots, clocks, message IDs, trace indices, raw state, and pseudocode. Numerals are tabular.
+- **Operation Log** (400, 1rem, 1.5): Counter checkpoint notes and sequenced operations that readers inspect to explain an outcome.
 
 ### Named Rules
 
@@ -203,9 +210,11 @@ the terms rail replaces duplicate inline callouts.
 
 ## Layout
 
-The root content field is 72rem wide with fluid horizontal padding. The landing signal gives one direct entry to Counters and one secondary route to the full structure index. The atlas begins with Structures before connecting to its supporting territories, and sheets use a reading topology rather than repeated cards.
+The root content field is 72rem wide with fluid horizontal padding. The landing signal links to the full structure catalogue and the reference atlas without prescribing a starting lesson. The atlas begins with Structures before connecting to its supporting territories; topics sort by title within each territory. Sheets use a reading topology rather than repeated cards.
 
-The observation rail persists below primary navigation. Structure pages follow Structures → family → lesson; reference sheets follow Reference atlas → territory → sheet. Family order and lesson order come from the shared structure navigation model, which also supplies the next links and structure index. The seven-sheet trail appears in order on the reference index. The current page and trail position remain text, followed by a thin trace and a sulfur current point. Below 48rem, the rail wraps; the primary navigation stays visible rather than hiding behind a menu.
+The observation rail persists below primary navigation. Structure breadcrumbs show Structures → family → lesson; reference breadcrumbs show Reference atlas → territory → sheet. The shared structure navigation model supplies the catalogue and links back to the containing family. The UI has no learning trails, numbered family steps, prescribed next lessons, or trail-progress counts. The current page remains text, followed by a thin trace and a sulfur current point. Below 48rem, the rail wraps and the header uses compact spacing; the four primary navigation links stay visible.
+
+Lesson and family introductions place their illustration beside the text from 64rem. The G-counter's local section links follow its summary and precede the illustration in document order. On wide screens those links span the introduction below the text and artwork. Below that width, the art remains in reading order and shrinks to 12rem below 48rem. The site keeps the original artwork, aspect ratio, and alt text.
 
 The territory chart uses a fixed 14rem index column beside connected sheet stops. At 64rem and below, the territory summary moves above the chart field. Below 40rem, connectors simplify into a vertical station list; order and status remain explicit.
 
@@ -263,7 +272,7 @@ Small curved geometry appears only where the territory connector physically turn
 
 ### Observation Rail
 
-One broad Mineral Instrument band contains wrapping location text and a separate trace. It is navigation, not decoration: `Atlas`, territory, family, sheet, and trail count remain selectable text, with links on ancestor crumbs. The sulfur endpoint marks current position, while `aria-current` and weight provide redundant state.
+One broad Mineral Instrument band contains wrapping location text and a separate trace. It is navigation, not decoration: `Atlas`, territory, family, and sheet remain selectable text, with links on ancestor crumbs. The sulfur endpoint marks current position, while `aria-current` and weight provide redundant state.
 
 ### Territory Chart
 
@@ -271,7 +280,7 @@ Each territory is one band with an index, purpose, connected stops, status, and 
 
 ### Sheet Reading Topology
 
-The header keeps title, territory, summary, reading time, lab availability, prerequisites, and trail position in the reading field. Local contents and terms become side rails only at wide widths. Break-it sections use a thin vermilion left rule and literal warning copy; cost sections remain dense ledgers rather than alerts; Field notes close quietly under a neutral rule.
+The header keeps title, territory, summary, reading time, lab availability, and background links in the reading field. Local contents and terms become side rails only at wide widths. The correctness-review warning stays visible below the title, with a neutral clear field and an explicit text label; it does not use the sulfur action color. Break-it sections use a thin vermilion left rule and literal warning copy; cost sections remain dense ledgers rather than alerts; Field notes close quietly under a neutral rule.
 
 ### Observation Console
 
@@ -333,6 +342,12 @@ using the same annotation library and flash lifecycle as Watershed. The counts
 for Alice, Bob, and Carol appear in a ruled table after
 disclosure. Structure demos do not inherit the observation console's partition
 controls, trace history, raw inspector, or invariant ledger.
+
+Counter operation logs use 1rem data text and 1.5 line height; result and error
+copy stays within the 68ch reading measure. G-counter and SharedCounter
+multi-device controls sit in a native disclosure after the local sandbox
+controls and explanation. A valid shared-room link opens the disclosure so
+connection status and room actions remain visible.
 
 The PN-counter demo has its own structure page. It keeps the same three hikers,
 checkpoint topology, transport marks, and large local values. The agreed

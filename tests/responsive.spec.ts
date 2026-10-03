@@ -108,23 +108,31 @@ test("observation console uses its desktop, tablet, and mobile layouts", async (
 
 test("sheet reading context changes topology and the lab returns to measure", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
+  await expect(page.getByTestId("causal-lab").getByRole("button", { name: "Reset lab", exact: true }))
+    .toBeEnabled();
   for (const width of [320, 390, 768, 1152, 1153, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.evaluate(() => document.fonts.ready);
-    const title = await page.getByRole("heading", { level: 1 }).boundingBox();
     const opening = page.locator(".sheet-opening");
-    const continuation = page.locator(".sheet-continuation");
-    const prose = await opening.boundingBox();
-    const after = await continuation.boundingBox();
-    const lab = await page.getByTestId("causal-lab").boundingBox();
-    expect(prose).not.toBeNull();
-    expect(after).not.toBeNull();
-    expect(lab).not.toBeNull();
-    expect(title!.x).toBe(prose!.x);
-    expect(after!.x).toBe(prose!.x);
-    expect(after!.width).toBe(prose!.width);
-    expect(lab!.y).toBeGreaterThanOrEqual(prose!.y + prose!.height);
-    expect(after!.y).toBeGreaterThanOrEqual(lab!.y + lab!.height);
+    const { title, prose, after, lab } = await page.evaluate(() => {
+      const bounds = (selector: string) => {
+        const element = document.querySelector(selector);
+        if (!element) throw new Error(`Missing layout element: ${selector}`);
+        const { x, y, width, height } = element.getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      return {
+        title: bounds("h1"),
+        prose: bounds(".sheet-opening"),
+        after: bounds(".sheet-continuation"),
+        lab: bounds('[data-testid="causal-lab"]'),
+      };
+    });
+    expect(title.x).toBe(prose.x);
+    expect(after.x).toBe(prose.x);
+    expect(after.width).toBe(prose.width);
+    expect(lab.y).toBeGreaterThanOrEqual(prose.y + prose.height);
+    expect(after.y).toBeGreaterThanOrEqual(lab.y + lab.height);
     expect(await opening.evaluate((element) => {
       const measure = document.createElement("div");
       measure.style.width = "68ch";
@@ -142,10 +150,10 @@ test("sheet reading context changes topology and the lab returns to measure", as
       await expect(rail.locator(".sheet-contents > summary")).toBeHidden();
       const left = await rail.boundingBox();
       const right = await terms.boundingBox();
-      expect(left!.x + left!.width).toBeLessThanOrEqual(prose!.x);
-      expect(right!.x).toBeGreaterThanOrEqual(prose!.x + prose!.width);
-      expect(lab!.x).toBe(left!.x);
-      expect(lab!.width).toBeGreaterThan(prose!.width);
+      expect(left!.x + left!.width).toBeLessThanOrEqual(prose.x);
+      expect(right!.x).toBeGreaterThanOrEqual(prose.x + prose.width);
+      expect(lab.x).toBe(left!.x);
+      expect(lab.width).toBeGreaterThan(prose.width);
       await expect(rail.locator(".sheet-local-inner")).toHaveCSS("position", "sticky");
       for (const note of await page.locator(".sheet-term-note").all()) await expect(note).toBeHidden();
     } else {
@@ -202,7 +210,7 @@ test("sheet reading context resumes sticky contents after the unobstructed lab w
       await page.locator(".sheet-continuation").evaluate((element) =>
         window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + 300));
       const resumed = page.locator(".sheet-local").last();
-      await expect(resumed.getByText("Structure-first trail · 3 of 7", { exact: true })).toBeInViewport();
+      await expect(resumed.getByRole("navigation", { name: "On this sheet", exact: true })).toBeInViewport();
       await resumed.getByRole("link", { name: "Field notes", exact: true }).click();
       await expect(page).toHaveURL(/#field-notes$/);
       await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
@@ -331,17 +339,17 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
 
-    const hero = page.getByRole("region", { name: "Start with a structure you already know" });
+    const hero = page.getByRole("region", { name: "Explore replicated data structures" });
     const headline = page.getByRole("heading", { level: 1 });
-    const recommended = page.getByText(/Begin with additions that merge without a winner/);
-    const primary = page.getByRole("link", { name: "Start with counters", exact: true });
+    const summary = hero.locator("header p");
+    const primary = page.getByRole("link", { name: "Browse structures", exact: true });
     const secondary = page.getByRole("link", { name: "Open the reference atlas", exact: true });
     const sectionTwo = page.getByRole("region", { name: "Learn the behavior before the bookkeeping", exact: true });
     await expect(hero).toBeVisible();
 
     const sectionBox = await sectionTwo.boundingBox();
     expect(sectionBox).not.toBeNull();
-    for (const element of [headline, recommended, primary, secondary]) {
+    for (const element of [headline, summary, primary, secondary]) {
       await expect(element).toBeVisible();
       const box = await element.boundingBox();
       expect(box).not.toBeNull();
@@ -357,11 +365,12 @@ for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844
   });
 }
 
-test("the landing page makes counters the single recommended start", async ({ page }) => {
+test("the landing page offers direct browsing without a recommended lesson sequence", async ({ page }) => {
   await page.goto("/");
-  const hero = page.getByRole("region", { name: "Start with a structure you already know" });
-  await expect(hero.getByRole("heading", { level: 2 })).toHaveText("Counters");
-  await expect(hero.getByRole("link")).toHaveCount(3);
+  const hero = page.getByRole("region", { name: "Explore replicated data structures" });
+  await expect(hero.getByRole("heading", { level: 2 })).toHaveCount(0);
+  await expect(hero.getByRole("link")).toHaveCount(2);
+  await expect(hero.getByRole("link", { name: "Browse structures" })).toHaveAttribute("href", "/structures/");
 });
 
 test("the observation rail wraps without horizontal overflow", async ({ page }) => {
@@ -417,19 +426,18 @@ test("working navigation stays visible in a broad publication band", async ({ pa
   }
 });
 
-test("structure chooser and atlas trail fit narrow and wide screens", async ({ page }) => {
+test("structure browsing fits narrow and wide screens", async ({ page }) => {
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     for (const [route, navName] of [
       ["/structures/", "Choose by need"],
-      ["/atlas/", "Causal evidence trail"],
-      ["/structures/g-counter/", "Continue through structures"],
-      ["/structures/json-ot/", "Continue through structures"],
+      ["/structures/g-counter/", "Browse structures"],
+      ["/structures/json-ot/", "Browse structures"],
     ]) {
       await page.goto(route);
       const nav = page.getByRole("navigation", { name: navName });
       await expect(nav).toBeVisible();
-      if (navName === "Continue through structures") {
+      if (navName === "Browse structures") {
         await expect(nav).toHaveCSS("display", "flex");
       }
       for (const link of await nav.getByRole("link").all()) {

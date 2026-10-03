@@ -1,22 +1,14 @@
 <section class="landing-signal instrument-panel" aria-labelledby="landing-title">
   <header class="landing-premise">
-    <h1 id="landing-title">Start with a structure you already know</h1>
+    <h1 id="landing-title">Explore replicated data structures</h1>
     <p>
-      Start with counters, then move to richer shared state. Open the
-      reference atlas when you need a specific mechanism or failure mode.
+      Compare counters, sets, registers, and maps. Use the demos to inspect
+      shared state, or open a reference sheet for a specific mechanism.
     </p>
   </header>
 
-  <div class="starting-path">
-    <h2><a href="/structures/counters/">Counters</a></h2>
-    <p>
-      Begin with additions that merge without a winner. Then add corrections,
-      sequencing, removal, and conflict rules as each lesson needs them.
-    </p>
-  </div>
-
   <div class="landing-actions">
-    <a class="trail-entry" href="/structures/counters/">Start with counters</a>
+    <a class="structure-entry" href="/structures/">Browse structures</a>
     <a class="atlas-entry" href="/atlas/">Open the reference atlas</a>
   </div>
 </section>
@@ -49,27 +41,6 @@
     color: var(--clear);
   }
 
-  .starting-path {
-    max-width: 44rem;
-    padding-block: var(--space-6);
-    border-bottom: var(--rule-width) solid var(--clear);
-  }
-
-  .starting-path h2 {
-    margin: 0;
-    color: var(--clear);
-    font-size: clamp(1.8rem, 3vw, 2.5rem);
-  }
-
-  .starting-path h2 a {
-    color: inherit;
-  }
-
-  .starting-path > p:last-child {
-    margin: var(--space-3) 0 0;
-    color: var(--clear);
-  }
-
   .landing-actions {
     display: flex;
     flex-wrap: wrap;
@@ -78,7 +49,7 @@
     padding-top: var(--space-5);
   }
 
-  .trail-entry {
+  .structure-entry {
     padding: 0.75rem 1rem;
     color: var(--instrument-deep);
     background: var(--signal);
@@ -88,7 +59,7 @@
     text-decoration-thickness: 1px;
   }
 
-  .trail-entry:hover {
+  .structure-entry:hover {
     background: var(--clear);
     text-decoration-thickness: 2px;
   }

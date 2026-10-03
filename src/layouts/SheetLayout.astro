@@ -6,7 +6,7 @@ import CorrectnessWarning from "../components/CorrectnessWarning.astro";
 import LessonIllustration from "../components/LessonIllustration.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
-import { firstTrail, pairedLessonForSheet, trailPosition } from "../lib/atlas/trail";
+import { pairedLessonForSheet } from "../lib/atlas/trail";
 import type { MarkdownHeading } from "astro";
 
 interface Props {
@@ -39,11 +39,6 @@ const territories = {
   failures: "Failure modes",
   systems: "Systems",
 };
-const position = trailPosition(entry.id);
-const nextStep = position >= 0 ? firstTrail[position + 1] : undefined;
-const next = nextStep
-  ? byId.get(nextStep.id) ?? { id: nextStep.id, title: nextStep.title, status: "planned" as const }
-  : undefined;
 const pairedLesson = pairedLessonForSheet(entry.id);
 ---
 
@@ -52,13 +47,8 @@ const pairedLesson = pairedLessonForSheet(entry.id);
   description={entry.data.summary}
   territory={territories[entry.data.territory]}
   sheetTitle={entry.data.title}
-  trailStep={position >= 0 ? { current: position + 1, total: firstTrail.length } : undefined}
 >
-  <article
-    class="sheet"
-    data-next-href={next?.status === "published" ? `/atlas/${next.id}/` : "/atlas/"}
-    data-next-title={next?.status === "published" ? next.title : "Reference atlas"}
-  >
+  <article class="sheet">
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
       <CorrectnessWarning />
@@ -70,7 +60,6 @@ const pairedLesson = pairedLessonForSheet(entry.id);
         <ComplexityBadge complexity={entry.data.complexity} />
         <span>{readingMinutes} min read</span>
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No lab on this sheet"}</span>
-        {position >= 0 && <span>Structure-first trail · {position + 1} of {firstTrail.length}</span>}
       </p>
       {entry.data.requires.length > 0
         ? <SheetLinks heading="Background, if needed" sheets={entry.data.requires.map(resolve)} />
@@ -89,7 +78,6 @@ const pairedLesson = pairedLessonForSheet(entry.id);
               </ul>
             </nav>
           </details>
-          {position >= 0 && <p class="sheet-trail">Structure-first trail · {position + 1} of {firstTrail.length}</p>}
         </div>
       </div>
     ))}
@@ -126,7 +114,6 @@ const pairedLesson = pairedLessonForSheet(entry.id);
         </section>
       )}
       <SheetLinks heading="Related sheets" sheets={entry.data.related.map(resolve)} emptyText="No related sheets" />
-      {next && <SheetLinks heading="Next in the structure-first trail" sheets={[next]} />}
     </footer>
   </article>
 </BaseLayout>

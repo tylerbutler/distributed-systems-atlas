@@ -9,10 +9,10 @@ import { structureGroup, structureGroups } from "../../lib/structure-demo/struct
   sheetTitle="Structures"
 >
   <header class="page-intro">
-    <h1>Learn through structures</h1>
+    <h1>Structures</h1>
     <p>
-      Start with counters, then follow the families in order. Each lesson adds
-      one new problem and shows how the structure handles it.
+      Compare replicated data structures by the updates they support and the
+      rules they use to combine shared state.
     </p>
     <a class="atlas-entry" href="/structures/models/">
       Compare CRDT, DDS, and OT structures
@@ -20,21 +20,20 @@ import { structureGroup, structureGroups } from "../../lib/structure-demo/struct
   </header>
 
   <nav class="structure-guide" aria-label="Choose by need">
-    <h2>Not sure where to start?</h2>
+    <h2>Compare by need</h2>
     <p>A changing total? <a href={structureGroup("counters").href}>Compare counters</a>.
       Membership with removals? <a href={structureGroup("sets").href}>Compare sets</a>.
       Several answers to one question? <a href={structureGroup("registers").href}>Compare registers</a>.</p>
   </nav>
 
-  <ol class="structure-index" aria-label="Structure lessons">
-    {structureGroups.map((group, index) => (
+  <ul class="structure-index" aria-label="Structure lessons">
+    {structureGroups.map((group) => (
       <li><a href={group.href}>
         <h2>{group.title}</h2>
         <p>{group.summary}</p>
-        {index === 0 && <span class="status">Start here</span>}
       </a></li>
     ))}
-  </ol>
+  </ul>
 </BaseLayout>
 
 <style>
@@ -58,12 +57,10 @@ import { structureGroup, structureGroups } from "../../lib/structure-demo/struct
   .structure-index {
     padding: 0;
     list-style: none;
-    counter-reset: structures;
   }
 
   .structure-index li {
     border-top: var(--rule-width) solid var(--line);
-    counter-increment: structures;
   }
 
   .structure-index li > a {
@@ -80,17 +77,6 @@ import { structureGroup, structureGroups } from "../../lib/structure-demo/struct
   .structure-index h2,
   .structure-index p {
     margin: 0;
-  }
-
-  .structure-index .status {
-    grid-column: 1 / -1;
-  }
-
-  .structure-index h2::before {
-    content: counter(structures) ". ";
-    color: var(--muted);
-    font-family: var(--font-data);
-    font-size: 0.875rem;
   }
 
   @media (width < 48rem) {

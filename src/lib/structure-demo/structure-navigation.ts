@@ -79,39 +79,24 @@ export function structureLocation(path: string) {
   throw new Error(`Unknown structure route: ${path}`);
 }
 
-export function structureNextLinks(path: string) {
+export function structureBrowseLinks(path: string) {
   const location = structureLocation(path);
   if (path.replace(/\/$/, "") === "/structures/models") {
     return [
       { href: "/structures/", label: "Browse structure families" },
-      { href: structureGroups[0].href, label: `Start with ${structureGroups[0].title.toLowerCase()}` },
     ];
   }
   if (!location || !("group" in location) || !location.group) {
     throw new Error(`No structure navigation for ${path}`);
   }
-  const { group, index } = location;
-  const previousGroup = structureGroups[index - 1];
-  const nextGroup = structureGroups[index + 1];
+  const { group } = location;
   if (!("lessonIndex" in location)) {
     return [
-      ...(previousGroup ? [{ href: previousGroup.href, label: `Back to ${previousGroup.title}` }] : []),
       { href: "/structures/", label: "Browse all structure families" },
-      { href: `/structures/${group.lessons[0][1]}/`, label: `Start the ${group.title.toLowerCase()} lessons` },
-      ...(nextGroup ? [{ href: nextGroup.href, label: `Continue to ${nextGroup.title}` }] : []),
     ];
   }
-  const lessonIndex = location.lessonIndex;
-  if (lessonIndex === undefined) throw new Error(`Missing lesson position for ${path}`);
-  const previous = group.lessons[lessonIndex - 1];
-  const next = group.lessons[lessonIndex + 1];
   return [
-    ...(previous ? [{ href: `/structures/${previous[1]}/`, label: `Back to ${previous[0]}` }] : []),
     { href: group.href, label: `Browse ${group.title.toLowerCase()} family` },
-    ...(next
-      ? [{ href: `/structures/${next[1]}/`, label: `Continue to ${next[0]}` }]
-      : nextGroup
-        ? [{ href: nextGroup.href, label: `Continue to ${nextGroup.title}` }]
-        : [{ href: "/structures/", label: "Return to structures" }]),
+    { href: "/structures/", label: "Browse all structure families" },
   ];
 }

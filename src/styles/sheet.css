@@ -68,7 +68,6 @@
 
 .sheet-reading-meta,
 .sheet-prerequisites,
-.sheet-trail,
 .sheet-local,
 .sheet-terms,
 .sheet-data,
@@ -149,11 +148,6 @@
 .sheet-local a:hover,
 .sheet-links a:hover {
   text-decoration-thickness: 2px;
-}
-
-.sheet-trail {
-  margin-block: var(--space-4) 0;
-  color: var(--muted);
 }
 
 .sheet-terms {
@@ -392,11 +386,12 @@
 
   .sheet:has(.sheet-continuation) > .sheet-local-continuation {
     display: block;
-    grid-row: 4;
+    grid-row: 5;
   }
 
+  /* The lab label and the lab occupy separate rows between reading sections. */
   .sheet-continuation {
-    grid-row: 4;
+    grid-row: 5;
   }
 
   .sheet-term-note {

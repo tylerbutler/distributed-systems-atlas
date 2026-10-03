@@ -10,8 +10,8 @@ web
 
 Engineers studying distributed systems who can write software and understand
 common data structures. Readers need no prior knowledge of causal ordering,
-CRDT metadata, Gleam, or Watershed. Learners can follow a curated trail;
-experienced engineers can open a sheet as a reference.
+CRDT metadata, Gleam, or Watershed. Readers can browse structures by family or
+open a sheet as a reference. Curated learning paths are not part of the current UI.
 
 ## Product Purpose
 
@@ -41,17 +41,15 @@ under Mechanisms, Structures, Failure modes, and Systems.
 
 The publication contains the landing page, a structures index, the focused
 G-counter, PN-counter, and SharedCounter lessons, atlas index, generated
-glossary and bibliography, and all seven sheets in the first concurrency
-trail.
+glossary and bibliography, and seven concurrency reference sheets.
 Each sheet includes a complete article and a deterministic browser lab.
 Unpublished topics retain planned labels without placeholder routes.
 
 The site leads with familiar data structures: counters, sets, registers, maps,
-and later structure families. The first complete trail starts with Multi-value
-registers and Observed-remove sets, then introduces Dots and causal context,
-Local history, Partial order, Lamport clocks, and Vector clocks as the
-bookkeeping that explains those structures. Supporting-idea, related-sheet, and
-next-step links support both structure-first learning and direct reference.
+and later structure families. Reference sheets cover Multi-value registers,
+Observed-remove sets, Dots and causal context, Local history, Partial order,
+Lamport clocks, and Vector clocks. Readers can use background and related-sheet
+links without a prescribed sequence or trail-progress indicator.
 Published sheet metadata and standalone structure lessons supply glossary
 definitions. Sheet metadata also supplies bibliography entries; the build
 rejects conflicting entries and broken internal references.
@@ -59,8 +57,8 @@ rejects conflicting entries and broken internal references.
 Each structure family has an overview page that compares the structures in
 that family. Each implemented structure also has its own lesson page.
 
-The Sets overview follows Counters and places Registers third in the structure
-path. A ranger sends Alice, Bob, and Carol along separate trails to survey
+The structure catalogue lists Counters, Sets, Registers, then Maps.
+A ranger sends Alice, Bob, and Carol along separate trails to survey
 beacons in their own field notebooks. Their story moves from a permanent record
 of every beacon observed, through an irreversible retirement, to a replacement
 beacon that needs a fresh identity. The lessons show each hiker's local members,

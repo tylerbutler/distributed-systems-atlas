@@ -248,15 +248,40 @@ p {
 
 .site-main {
   padding-block: clamp(2.5rem, 6vw, 5rem);
+  padding-block-start: clamp(1.5rem, 4vw, 3rem);
 }
 
 .page-intro {
-  padding-block: var(--space-6);
+  padding-block: var(--space-5);
 }
 
 .page-intro p,
 .sheet-summary {
   font-size: 1.125rem;
+}
+
+@media (width >= 64rem) {
+  .page-intro:has(> .lesson-illustration) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 12rem;
+    column-gap: var(--space-5);
+  }
+
+  .page-intro:has(> .lesson-illustration) > :not(.lesson-illustration) {
+    grid-column: 1;
+  }
+
+  .page-intro > .lesson-illustration {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+    width: 100%;
+    margin: 0;
+  }
+
+  .page-intro:has(> .lesson-illustration) > .lesson-map {
+    grid-column: 1 / -1;
+  }
 }
 
 .atlas-entry {
@@ -376,12 +401,13 @@ p {
   .publication-header {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--space-3);
-    padding-block: var(--space-3);
+    gap: var(--space-1);
+    padding-block: var(--space-2);
   }
 
   .site-name {
     gap: var(--space-3);
+    font-size: 1rem;
   }
 
   .site-nav {

@@ -15,6 +15,7 @@ test("native optimistic edits use numbered signed echoes once and recover missin
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-counter/?room=EAGLE7");
   const demo = page.getByTestId("shared-counter-demo");
+  await expect(demo.locator("[data-room-disclosure]")).toHaveAttribute("open", "");
   const totals = demo.locator("[data-shared-total]");
   const broadcast = demo.getByRole("checkbox", { name: "Broadcast" });
   await expect(demo.getByRole("button", { name: "Send +3 for Alice" })).toBeEnabled();

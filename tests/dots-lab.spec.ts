@@ -19,8 +19,8 @@ test("guided run leads to the completed observation and keeps evidence optional 
   await expect(guide).toContainText("8 of 8 steps complete");
   const completion = lab.getByRole("region", { name: "Observation complete" });
   await expect(completion).toContainText("The new B dot survives");
-  await expect(completion.getByRole("link", { name: "Continue to Local history", exact: true }))
-    .toHaveAttribute("href", "/atlas/local-history/");
+  await expect(completion.getByRole("link", { name: "Browse the reference atlas", exact: true }))
+    .toHaveAttribute("href", "/atlas/");
 });
 
 test("one frame updates every observation view", async ({ page }) => {

@@ -426,8 +426,8 @@ const componentLabels = {
   .operation-log :global(li) {
     color: color-mix(in oklch, var(--clear) 76%, var(--instrument));
     font-family: var(--font-data);
-    font-size: 0.68rem;
-    line-height: 1.45;
+    font-size: 1rem;
+    line-height: 1.5;
     text-align: center;
   }
 
@@ -483,7 +483,7 @@ const componentLabels = {
 
   .pn-result,
   .pn-error {
-    max-width: none;
+    max-width: var(--measure-reading);
     margin: 0;
     padding: var(--space-4);
     color: var(--instrument-deep);

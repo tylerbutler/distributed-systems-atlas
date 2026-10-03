@@ -1,17 +1,9 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import LandingSignal from "../components/LandingSignal.astro";
-import type { SheetMeta } from "../lib/atlas/graph";
-import { buildTrail } from "../lib/atlas/trail";
-
-const sheets: SheetMeta[] = (await getCollection("sheet")).map(
-  (entry) => ({ id: entry.id, ...entry.data }),
-);
-const trail = buildTrail(sheets);
 ---
 
-<BaseLayout description="Start with counters, registers, sets, and maps. Use illustrated essays and deterministic labs to see which causal machinery each replicated data structure needs.">
+<BaseLayout description="Compare counters, sets, registers, and maps. Use illustrated essays and deterministic labs to see which causal machinery each replicated data structure needs.">
   <LandingSignal />
 
   <div class="landing-reading">
@@ -48,21 +40,6 @@ const trail = buildTrail(sheets);
         The reference atlas connects structures to dots, histories, orders,
         and clocks. Each sheet includes an article and a deterministic lab.
       </p>
-      <details class="learning-trail-disclosure">
-        <summary>See the seven-sheet causal evidence trail</summary>
-        <ol class="learning-trail" aria-label="Causal evidence trail">
-          {trail.map((sheet) => (
-            <li>
-              {sheet.status === "published"
-                ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
-                : <>
-                    <span>{sheet.title}</span>
-                    <span class="status">Planned</span>
-                  </>}
-            </li>
-          ))}
-        </ol>
-      </details>
     </section>
 
     <section aria-labelledby="read-title">
@@ -116,48 +93,6 @@ const trail = buildTrail(sheets);
 
   dd {
     margin: 0;
-  }
-
-  .learning-trail {
-    padding-inline-start: 1.5rem;
-    margin-block: var(--space-3) 0;
-    font-family: var(--font-ui);
-  }
-
-  .learning-trail-disclosure {
-    margin-top: var(--space-5);
-    border-block: var(--rule-width) solid var(--line);
-  }
-
-  .learning-trail-disclosure summary {
-    min-height: 44px;
-    padding-block: var(--space-3);
-    font-family: var(--font-ui);
-    font-weight: 650;
-    cursor: pointer;
-  }
-
-  .learning-trail li {
-    border-bottom: var(--rule-width) solid var(--line);
-  }
-
-  .learning-trail a {
-    display: flex;
-    min-height: 44px;
-    padding: var(--space-3);
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-  }
-
-  .learning-trail li::marker {
-    color: var(--muted);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .learning-trail .status {
-    display: inline-block;
-    flex: 0 0 auto;
   }
 
   @media (width < 48rem) {

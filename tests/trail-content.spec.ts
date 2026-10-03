@@ -1,6 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { scenarioById, scenarioTrace } from "../src/lib/lab/scenarios";
-import { firstTrail } from "../src/lib/atlas/trail";
 import { complexityLabels } from "../src/lib/learning-complexity";
 
 const lessons = [
@@ -156,13 +155,9 @@ for (const lesson of lessons) {
       }
       expect(await page.getByRole("navigation", { name: "Related sheets", exact: true })
         .getByRole("link").count()).toBeGreaterThan(0);
-      const next = firstTrail[firstTrail.findIndex(({ id }) => id === lesson.id) + 1];
-      if (next) {
-        await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true }).getByRole("link"))
-          .toHaveAttribute("href", `/atlas/${next.id}/`);
-      } else {
-        await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true })).toHaveCount(0);
-      }
+      await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true }))
+        .toHaveCount(0);
+      await expect(page.locator(".sheet-header")).not.toContainText("Structure-first trail");
       const destinations = await page.locator("article a[href^='/']").evaluateAll((links) =>
         [...new Set(links.map((link) => link.getAttribute("href")!))]);
       for (const href of destinations) {

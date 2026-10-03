@@ -1,7 +1,7 @@
 # Distributed Systems Atlas
 
 An illustrated publication for engineers studying distributed systems. You can
-follow a learning trail or open a sheet to inspect one mechanism. The articles
+browse structures by family or open a sheet to inspect one mechanism. The articles
 assume you can write software and understand common data structures; they do
 not assume CRDT vocabulary, Gleam, or Watershed knowledge.
 
@@ -16,8 +16,8 @@ agreed count of 10: Alice records 3 new birds while Bob corrects 1 duplicate,
 and all three PN-counter replicas converge on 12. A third lesson sends those
 signed changes through a ranger sequencer. It assigns sequence numbers and
 broadcasts each operation so every SharedCounter applies it once. Each
-structure has its own page and a quick-facts label. The first trail also
-contains seven published reference sheets, each with a deterministic browser lab:
+structure has its own page and a quick-facts label. Seven published reference
+sheets each include a deterministic browser lab:
 Local history, Partial order, Lamport clocks, Vector clocks, Dots and causal
 context, Multi-value registers, and Observed-remove sets.
 The observatory setting helps you compare what each replica has observed; it
@@ -288,7 +288,8 @@ reference; there is no separate reference-page catalogue.
 
 The content loader rejects conflicting definitions, conflicting reference
 keys, duplicate anchors, missing scenarios, invalid sheet links, and
-prerequisite cycles. `firstTrail` fixes the seven-step reading order.
+prerequisite cycles. The reference atlas sorts topics by title within each
+territory. The site does not prescribe learning paths or display trail progress.
 Unpublished topics remain labeled as planned without placeholder routes.
 
 ## Project boundaries

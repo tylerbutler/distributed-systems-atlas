@@ -17,6 +17,7 @@ test("room counts update before confirmation and merge echoed state once", async
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/g-counter/?room=EAGLE7");
   const demo = page.getByTestId("g-counter-demo");
+  await expect(demo.locator("[data-room-disclosure]")).toHaveAttribute("open", "");
   const totals = demo.locator("[data-total]");
   const broadcast = demo.getByRole("checkbox", { name: "Broadcast" });
   const alice = demo.getByRole("button", { name: "Record 7 birds for Alice" });

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { SheetMeta } from "./graph";
-import { buildAtlasEntries, buildTrail, firstTrail } from "./trail";
+import { buildAtlasEntries, firstTrail } from "./trail";
 
 const sheet = (
   id: string,
@@ -20,15 +20,16 @@ const sheet = (
   references: [],
 });
 
-describe("first trail", () => {
-  test("synthesizes missing planned steps while content is incomplete", () => {
+describe("reference catalogue", () => {
+  test("does not synthesize unauthored learning-path entries", () => {
     const entries = [sheet("dots-and-causal-context")];
-    expect(buildTrail(entries).map(({ id, status }) => ({ id, status }))).toEqual(
-      firstTrail.map(({ id }) => ({
-        id,
-        status: id === "dots-and-causal-context" ? "published" : "planned",
-      })),
-    );
+    expect(buildAtlasEntries(entries)).toEqual(entries);
+  });
+
+  test("sorts topics by title without mutating content order", () => {
+    const entries = [sheet("vector-clocks"), sheet("local-history", "planned")];
+    expect(buildAtlasEntries(entries)).toEqual([entries[1], entries[0]]);
+    expect(entries.map(({ id }) => id)).toEqual(["vector-clocks", "local-history"]);
   });
 
   test("uses the seven content entries without synthesized replacements when complete", () => {
@@ -36,6 +37,6 @@ describe("first trail", () => {
     const atlasEntries = buildAtlasEntries(entries);
 
     expect(atlasEntries).toHaveLength(firstTrail.length);
-    expect(atlasEntries.every((entry) => entries.includes(entry as SheetMeta))).toBe(true);
+    expect(atlasEntries.every((entry) => entries.some((sheet) => sheet === entry))).toBe(true);
   });
 });

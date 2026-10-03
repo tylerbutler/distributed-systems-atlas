@@ -1,10 +1,10 @@
 ---
-import { structureNextLinks } from "../lib/structure-demo/structure-navigation";
+import { structureBrowseLinks } from "../lib/structure-demo/structure-navigation";
 
-const links = structureNextLinks(Astro.url.pathname);
+const links = structureBrowseLinks(Astro.url.pathname);
 ---
 
-<nav class="structure-next" aria-label="Continue through structures">
+<nav class="structure-next" aria-label="Browse structures">
   {links.map(({ href, label }) => <a {href}>{label}</a>)}
 </nav>
 

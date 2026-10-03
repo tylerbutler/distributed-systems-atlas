@@ -4,13 +4,9 @@ import { structureLocation } from "../lib/structure-demo/structure-navigation";
 interface Props {
   territory?: string;
   sheetTitle?: string;
-  trailStep?: {
-    current: number;
-    total: number;
-  };
 }
 
-const { territory, sheetTitle, trailStep } = Astro.props;
+const { territory, sheetTitle } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "");
 const structure = structureLocation(path);
 const group = structure && "group" in structure ? structure.group : undefined;
@@ -46,11 +42,6 @@ const territoryHref = `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
       )}
       {group && group.href !== `${path}/` && <li><a href={group.href}>{group.title}</a></li>}
       {currentTitle && currentTitle !== rootTitle && <li aria-current="page">{currentTitle}</li>}
-      {trailStep && (
-        <li>
-          Trail <span class="observation-data">{trailStep.current}</span> of <span class="observation-data">{trailStep.total}</span>
-        </li>
-      )}
     </ol>
     <span class="observation-trace" aria-hidden="true"></span>
   </div>

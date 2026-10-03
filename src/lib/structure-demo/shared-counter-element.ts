@@ -164,6 +164,7 @@ class SharedCounterDemoElement extends HTMLElement {
       this.roomStatus("Enter a room code with at least four letters or numbers.");
       return;
     }
+    this.querySelector<HTMLDetailsElement>("[data-room-disclosure]")!.open = true;
     this.roomClient?.close();
     this.resetFlow();
     this.roomCode = room;
