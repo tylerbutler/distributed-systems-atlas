@@ -138,6 +138,10 @@ build image. Wrangler reads
 `wrangler.jsonc`, uploads `dist/`, deploys the Worker, and applies Durable
 Object migrations. No Cloudflare credentials are stored in GitHub.
 
+Add `GITHUB_TOKEN` as a secret build variable so mise can authenticate GitHub
+API requests when verifying downloaded tools. Public-repository access is
+sufficient; write and private-repository permissions are not needed.
+
 Production deploys run when `main` changes. Leave branch previews disabled
 until preview Durable Object bindings are configured; previews do not inherit
 production bindings.
