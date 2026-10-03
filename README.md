@@ -132,7 +132,9 @@ Actions:
 6. Push a commit to `main` to trigger a build and deployment.
 
 Cloudflare installs the pnpm version declared in `package.json`. The build
-command installs mise and the tools declared in `mise.toml`. Wrangler reads
+command installs mise and the Gleam, Node.js, and pnpm versions declared in
+`mise.toml`. It ignores global and parent tool configuration supplied by the
+build image. Wrangler reads
 `wrangler.jsonc`, uploads `dist/`, deploys the Worker, and applies Durable
 Object migrations. No Cloudflare credentials are stored in GitHub.
 
