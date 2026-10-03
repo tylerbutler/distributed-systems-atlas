@@ -1,7 +1,7 @@
 {
   "collection": "Distributed Systems Atlas lesson illustrations",
   "status": "illustrated",
-  "scope": "21 individual structure lessons, seven structure-family overviews, and seven published reference sheets. Navigation indexes, glossary, and bibliography are excluded.",
+  "scope": "21 individual structure lessons, seven structure-family overviews, and eight published reference sheets. Navigation indexes, glossary, and bibliography are excluded.",
   "artDirection": {
     "name": "Field observations in ink",
     "purpose": "Opening illustrations that give each lesson a memorable physical scene. These accompany the precise diagrams and labs; they do not replace them or claim to display live simulation state.",
@@ -9,7 +9,7 @@
     "continuity": "Across the field stories, Alice wears a broad-brimmed hat and carries a round-patched notebook; Bob wears a knitted cap and carries a diamond-patched notebook; Carol wears a short-brimmed cap and carries a hexagon-patched notebook. Patches identify notebooks by shape, not color. Reuse those silhouettes and the same compact metal trail-beacon design. The ranger is a separate fieldworker at a plain station desk. Include the ranger as an ordering authority only when the lesson explicitly uses a sequencer. Mechanism sheets use the same notebooks, envelopes, desks, and ink treatment in a sparse observation room.",
     "composition": "1536 by 1024 pixels, landscape 3:2. Keep the main subject inside the central 80 percent with at least 8 percent clear space on every edge. No full-page scene or baked-in heading. Vary the viewpoint and action between lessons while holding line weight and object design constant.",
     "referenceUse": "Once a pilot is approved, provide it as a visual reference for subsequent images. Inherit linework, character silhouettes, and prop design, not the pilot's composition or subject.",
-    "svgAdaptation": "All 35 illustrations use directly authored SVGs, not generated rasters or automatic tracing. Adapt the scene briefs into prop-led vignettes without figures: notebooks, field reports, equipment, and consistently drawn beacons. Circle, diamond, and hexagon marks identify the hikers' records in place of their silhouettes. Preserve the mechanism and distinguish identity with tag shape. Use a transparent 900 by 600 canvas intended for a white backing, white paper and equipment fills, mineral-blue outlines (#264653), fine hatch lines (#78909a), pale blue-gray surfaces (#f0f5f6), and small sulfur-yellow record marks (#ebcd42). Exact numerical examples remain in the lessons."
+    "svgAdaptation": "All 36 illustrations use directly authored SVGs, not generated rasters or automatic tracing. Adapt the scene briefs into prop-led vignettes without figures: notebooks, field reports, equipment, and consistently drawn beacons. Circle, diamond, and hexagon marks identify the hikers' records in place of their silhouettes. Preserve the mechanism and distinguish identity with tag shape. Use a transparent 900 by 600 canvas intended for a white backing, white paper and equipment fills, mineral-blue outlines (#264653), fine hatch lines (#78909a), pale blue-gray surfaces (#f0f5f6), and small sulfur-yellow record marks (#ebcd42). Exact numerical examples remain in the lessons."
   },
   "production": {
     "promptAssembly": "Join artDirection.sharedPrompt, artDirection.continuity, artDirection.composition, the entry's scenePrompt, and its semanticGuardrails with blank lines. Give the renderer that complete text. Titles, routes, and source paths are catalog metadata, not text to draw.",
@@ -18,7 +18,7 @@
       "structures-observed-remove-set",
       "atlas-local-history"
     ],
-    "sequence": "The first eight assets cover counters and sets in art/counters-and-sets.html. The other 27 extend the same SVG treatment to registers, maps, sequences, coordination, transforms, and reference sheets in art/remaining-lessons.html. Each entry retains its original scene brief alongside the asset and its actual alt text.",
+    "sequence": "The first eight assets cover counters and sets in art/counters-and-sets.html. The other 28 extend the same SVG treatment to registers, maps, sequences, coordination, transforms, and reference sheets in art/remaining-lessons.html. Each entry retains its original scene brief alongside the asset and its actual alt text.",
     "preview": "art/remaining-lessons.html",
     "intendedOutputDirectory": "public/illustrations/lessons",
     "filenameRule": "<id>.svg for authored vectors; <id>.webp for any future raster assets",
@@ -371,6 +371,18 @@
       "scenePrompt": "A report lies on an editing desk. One hand uses a broad pen to strengthen the heading's abstract horizontal strokes while another appends a small triangular trail marker at the end of the page's final writing strip. Retain the rest of the page intact. Draw the heading as blank typographic guides, not generated words, and distinguish the two actions clearly.",
       "semanticGuardrails": "Formatting and insertion survive together after operation transformation. Bold is a retained attribute, not a replacement string. Do not delete existing content, imply arbitrary overlapping edits never conflict, or substitute a font-style comparison for the actual editing scene.",
       "altDraft": "One editor emphasizes a report heading while another adds a triangular marker to the end."
+    },
+    {
+      "id": "atlas-multi-device-g-counter",
+      "kind": "reference",
+      "route": "/atlas/multi-device-g-counter/",
+      "title": "How multi-device G-counter rooms work",
+      "source": "src/content/sheets/multi-device-g-counter.mdx",
+      "asset": "/illustrations/lessons/atlas-multi-device-g-counter.svg",
+      "alt": "Three shape-marked notebooks each have a three-row record beside an archive box of retained receipt slips and outgoing copies.",
+      "scenePrompt": "On an observation bench, arrange three field notebooks marked with a circle, diamond, and hexagon. Each notebook contains the same blank three-row record. Beside them, an open archive box preserves a sequence of receipt slips, with one yellow-tabbed fresh slip and outgoing envelope copies on the bench. Draw the notebooks as separate records and the box as retained history, using the existing ink treatment.",
+      "semanticGuardrails": "The central archive represents the real room service's accepted increment log, not a shared mutable counter or a requirement of the G-counter merge rule. Each browser runs all three counter copies. Keep receipt identities and numerical values blank; do not imply that broadcasting guarantees receipt or that browsers persist their model locally.",
+      "altDraft": "Separate field notebooks beside a retained receipt archive and copies for distribution."
     },
     {
       "id": "atlas-local-history",

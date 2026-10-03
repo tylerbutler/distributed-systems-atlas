@@ -5,7 +5,7 @@ import catalog from "../art/lesson-illustrations.json" with { type: "json" };
 const { illustrations } = catalog;
 
 test("the complete catalog has accessible, self-contained SVG masters", async ({ page, request }) => {
-  expect(illustrations).toHaveLength(35);
+  expect(illustrations).toHaveLength(36);
   expect(new Set(illustrations.map(({ id }) => id)).size).toBe(illustrations.length);
   const files = readdirSync(new URL("../public/illustrations/lessons/", import.meta.url));
   expect(files.filter((file) => file.endsWith(".svg")).sort()).toEqual(

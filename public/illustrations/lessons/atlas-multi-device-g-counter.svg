@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="room-title room-desc">
+  <title id="room-title">Multi-device rooms: notebooks and a stored receipt archive</title>
+  <desc id="room-desc">Three field notebooks marked with a circle, diamond, and hexagon each contain a three-row record. Beside them, an open archive box holds retained receipt slips and a fresh yellow-tabbed slip, with outgoing copies on the bench.</desc>
+  <defs>
+    <pattern id="room-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
+      <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <style>
+    .ink{fill:none;stroke:#264653;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+    .paper{fill:#fff;stroke:#264653;stroke-width:2.6;stroke-linejoin:round}
+    .fine{fill:none;stroke:#78909a;stroke-width:1.5;stroke-linecap:round}
+    .light{fill:#f0f5f6;stroke:#264653;stroke-width:2.2;stroke-linejoin:round}
+  </style>
+  <path class="fine" d="M103 449L331 483M438 470L799 504"/>
+  <g transform="translate(118 141)">
+    <path class="light" d="M0 17L145 0L204 30V44L58 64L0 33Z"/>
+    <path class="paper" d="M0 17L145 0L204 30L58 49Z"/>
+    <path d="M0 19L58 49V61L0 32Z" fill="url(#room-hatch)"/>
+    <path class="ink" d="M96 7L111 41"/>
+    <circle class="ink" cx="42" cy="26" r="8"/>
+    <path class="fine" d="M119 13L155 9M124 21L168 16M128 29L180 22"/>
+  </g>
+  <g transform="translate(118 246)">
+    <path class="light" d="M0 17L145 0L204 30V44L58 64L0 33Z"/>
+    <path class="paper" d="M0 17L145 0L204 30L58 49Z"/>
+    <path d="M0 19L58 49V61L0 32Z" fill="url(#room-hatch)"/>
+    <path class="ink" d="M96 7L111 41M42 16L52 26L42 36L32 26Z"/>
+    <path class="fine" d="M119 13L155 9M124 21L168 16M128 29L180 22"/>
+  </g>
+  <g transform="translate(118 351)">
+    <path class="light" d="M0 17L145 0L204 30V44L58 64L0 33Z"/>
+    <path class="paper" d="M0 17L145 0L204 30L58 49Z"/>
+    <path d="M0 19L58 49V61L0 32Z" fill="url(#room-hatch)"/>
+    <path class="ink" d="M96 7L111 41M37 17H47L53 26L47 35H37L31 26Z"/>
+    <path class="fine" d="M119 13L155 9M124 21L168 16M128 29L180 22"/>
+  </g>
+  <path class="light" d="M478 294L666 255L789 318V431L598 473L478 407Z"/>
+  <path d="M480 309L598 369V469L480 405Z" fill="url(#room-hatch)"/>
+  <path class="paper" d="M478 294L666 255L789 318L598 359Z"/>
+  <path class="light" d="M500 297L665 264L767 317L600 350Z"/>
+  <path class="paper" d="M523 271L650 245L699 270V311L572 338L523 312Z"/>
+  <path class="paper" d="M529 247L656 221L705 247V306L578 333L529 306Z"/>
+  <path class="paper" d="M535 223L662 197L711 223V301L584 328L535 300Z"/>
+  <path class="paper" d="M541 199L668 173L717 199V296L590 323L541 296Z"/>
+  <path d="M644 178L661 175L670 180V195L653 199L644 194Z" fill="#ebcd42"/>
+  <path class="fine" d="M602 225L691 206M602 243L691 224M602 261L691 242"/>
+  <path class="ink" d="M598 359V473M478 321L598 382L789 339"/>
+  <path class="paper" d="M656 382L725 367L740 376V401L670 417L656 409Z"/>
+  <path class="fine" d="M675 388L721 378M675 399L721 389"/>
+  <g transform="rotate(-12 400 229)">
+    <path class="light" d="M358 203H443V263H358Z"/>
+    <path class="paper" d="M353 196H438V256H353Z"/>
+    <path class="ink" d="M353 196L395 230L438 196"/>
+    <circle class="ink" cx="371" cy="241" r="6"/>
+  </g>
+  <g transform="rotate(9 400 366)">
+    <path class="light" d="M358 340H443V400H358Z"/>
+    <path class="paper" d="M353 333H438V393H353Z"/>
+    <path class="ink" d="M353 333L395 367L438 333M367 374L373 380L367 386L361 380Z"/>
+  </g>
+</svg>

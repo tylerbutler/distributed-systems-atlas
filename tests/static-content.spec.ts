@@ -19,6 +19,39 @@ const trailTitles = [
   "Vector clocks",
 ];
 
+test("the multi-device demo links to its storage explainer without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+  try {
+    const page = await context.newPage();
+    await page.goto("/structures/g-counter/");
+    const room = page.getByRole("region", { name: "Use three devices" });
+    const explanation = room.getByRole("link", { name: "How multi-device rooms and storage work" });
+    await expect(explanation).toHaveAttribute("href", "/atlas/multi-device-g-counter/");
+    await explanation.click();
+    await expect(page.getByRole("heading", { level: 1 }))
+      .toHaveText("How multi-device G-counter rooms work");
+    await expect(page.locator(".sheet-header [data-complexity]"))
+      .toHaveText(/Complexity\s+Intermediate/);
+    await expect(page.getByRole("heading", { name: "Each browser runs all three counters" }))
+      .toBeVisible();
+    await expect(page.locator(".sheet-body")).toContainText("1,000 increments");
+    for (const term of ["Durable Object", "WebSocket", "event log", "replay", "hibernation"]) {
+      await expect(page.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
+    }
+    await expect(page.getByRole("link", { name: "Return to the G-counter demo" }))
+      .toHaveAttribute("href", "/structures/g-counter/");
+    await page.goto("/atlas/");
+    await expect(page.locator("#systems").getByRole("link", { name: "How multi-device G-counter rooms work" }))
+      .toHaveAttribute("href", "/atlas/multi-device-g-counter/");
+    await page.goto("/glossary/");
+    for (const anchor of ["durable-object", "websocket", "event-log", "replay", "hibernation"]) {
+      await expect(page.locator(`#${anchor}`)).toBeVisible();
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test("a sheet exposes its reading context and next step", async ({ page }) => {
   await page.goto("/atlas/dots-and-causal-context/");
 
