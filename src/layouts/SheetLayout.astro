@@ -2,6 +2,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import ComplexityBadge from "../components/ComplexityBadge.astro";
+import CorrectnessWarning from "../components/CorrectnessWarning.astro";
 import LessonIllustration from "../components/LessonIllustration.astro";
 import SheetLinks from "../components/SheetLinks.astro";
 import { entryAnchor, sheetReferenceId, type SheetMeta, type SheetReference } from "../lib/atlas/graph";
@@ -60,6 +61,7 @@ const pairedLesson = pairedLessonForSheet(entry.id);
   >
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
+      <CorrectnessWarning />
       <p class="territory-label">
         Territory: <a href={`/atlas/#${entry.data.territory}`}>{territories[entry.data.territory]}</a>
       </p>

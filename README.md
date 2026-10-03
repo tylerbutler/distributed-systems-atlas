@@ -29,6 +29,9 @@ LWWMap, OR-map, SharedDirectory, SequenceCrdt, TextCrdt, Claims,
 FifoWorkQueue, TaskManager, PactMap, JsonOt, and RichTextOt lessons,
 plus the seven family overview pages, atlas index, glossary, and bibliography.
 
+The reference pages and browser labs display a prominent "Not yet reviewed for
+correctness" warning. These warnings are also visible without JavaScript.
+
 ## Lesson illustrations
 
 [`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the

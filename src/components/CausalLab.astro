@@ -1,6 +1,7 @@
 ---
 import TraceFallback from "./TraceFallback.astro";
 import ComplexityBadge from "./ComplexityBadge.astro";
+import CorrectnessWarning from "./CorrectnessWarning.astro";
 import { createEngine } from "../lib/lab/engine-registry";
 import { presentFrame } from "../lib/lab/present-frame";
 import { scenarioById } from "../lib/lab/scenarios";
@@ -17,6 +18,7 @@ const frame = presentFrame(engine.current(), engine.history(), definition.presen
 ---
 
 <div class="lab-complexity">
+  <CorrectnessWarning />
   <ComplexityBadge complexity={definition.complexity} />
 </div>
 <causal-lab scenario={scenario} data-testid="causal-lab">

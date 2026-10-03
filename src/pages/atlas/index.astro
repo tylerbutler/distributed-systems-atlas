@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import AtlasTerritory from "../../components/AtlasTerritory.astro";
 import ComplexityBadge from "../../components/ComplexityBadge.astro";
+import CorrectnessWarning from "../../components/CorrectnessWarning.astro";
 import {
   sheetReferenceId,
   validateSheetGraph,
@@ -36,6 +37,7 @@ const territories = [
 <BaseLayout title="Reference atlas" description="Find replicated structures, causal mechanisms, failure modes, and systems by topic.">
   <header class="page-intro">
     <h1>Reference atlas</h1>
+    <CorrectnessWarning />
     <p>Use this map to find a structure, mechanism, failure mode, or system by topic.</p>
     <p>New to the subject? <a href="/structures/">Explore the structure lessons.</a></p>
   </header>

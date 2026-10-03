@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import CorrectnessWarning from "../components/CorrectnessWarning.astro";
 import { buildGlossary, entryAnchor, type SheetMeta } from "../lib/atlas/graph";
 import { standaloneTerms } from "../lib/atlas/standalone-terms";
 
@@ -14,6 +15,7 @@ const terms = [...buildGlossary(sheets), ...standaloneTerms]
 <BaseLayout title="Glossary" description="Definitions for terms used in the published reference sheets.">
   <header class="page-intro">
     <h1>Glossary</h1>
+    <CorrectnessWarning />
     <p>Definitions collected from published atlas sheets.</p>
   </header>
   <dl class="reference-list">
