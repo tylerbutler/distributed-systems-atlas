@@ -9,7 +9,10 @@
     "toolkit:test": "cd toolkit && gleam test",
     "toolkit:check": "tsc --ignoreConfig --noEmit --strict --skipLibCheck false --target ES2022 --module NodeNext --moduleResolution NodeNext toolkit/index.ts",
     "toolkit:smoke": "node --experimental-strip-types toolkit/smoke.mjs",
-    "check": "pnpm toolkit:build && pnpm toolkit:check && pnpm toolkit:smoke && astro check && tsc --noEmit",
+    "room:check": "tsc -p worker/tsconfig.json",
+    "cloudflare:dev": "pnpm toolkit:build && astro build && wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "pnpm toolkit:build && pnpm toolkit:check && pnpm toolkit:smoke && pnpm room:check && astro check && tsc --noEmit",
     "test": "pnpm toolkit:test && vitest run",
     "test:browser": "pnpm toolkit:build && playwright test",
     "verify": "pnpm check && pnpm test && pnpm test:browser && astro build",
@@ -29,9 +32,11 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@cloudflare/workers-types": "^5.20260925.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.1",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.139.0"
   }
 }

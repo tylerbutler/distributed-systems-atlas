@@ -108,24 +108,58 @@ For a narrower check, use `pnpm check`, `pnpm test`, or `pnpm test:browser`.
 tests. Playwright starts Astro dev on `127.0.0.1:4321` and can reuse a server
 there outside CI. Stop an unrelated server on that port before verification.
 
-## Netlify
+## Cloudflare deployment
 
-GitHub Actions builds and deploys `main` with
-`.github/workflows/deploy-netlify.yml`. Add these GitHub Actions repository
-secrets:
+Cloudflare Workers serves the static Astro build and the live-room Worker from
+one deployment. Static files normally bypass Worker execution. Requests to
+`/rooms/*` and `/health` run the Worker first.
 
-- `NETLIFY_AUTH_TOKEN`: a Netlify personal access token
-- `NETLIFY_SITE_ID`: the site's Project ID from **Project configuration >
-  General > Project information**
+Use Cloudflare Workers Builds to deploy pushes from GitHub without GitHub
+Actions secrets:
 
-In Netlify, select **Project configuration > Build & deploy > Continuous
-deployment > Stop builds**. This prevents each push from also starting a
-Netlify build. Manual CLI and API deploys still work when builds are stopped.
+1. In **Workers & Pages**, import `tylerbutler/distributed-systems-atlas`.
+2. Set the production branch to `main` and the root directory to `/`.
+3. Set the build command to:
 
-The workflow installs the tools from `mise.toml`, runs `pnpm build`, and
-uploads `dist` with `netlify deploy --no-build`. `netlify.toml` keeps the
-Netlify build command as a fallback if automatic Netlify builds are enabled
-again.
+   ```sh
+   curl -fsSL https://mise.run | sh && "$HOME/.local/bin/mise" install && "$HOME/.local/bin/mise" exec -- pnpm build
+   ```
+
+4. Set the deploy command to `pnpm deploy`.
+5. Enable build caching, then save and deploy.
+
+Cloudflare installs the pnpm version declared in `package.json`. The build
+command installs the Gleam version declared in `mise.toml`. Wrangler reads
+`wrangler.jsonc`, uploads `dist/`, deploys the Worker, and applies Durable
+Object migrations. No Cloudflare credentials are stored in GitHub.
+
+Production deploys run when `main` changes. Leave branch previews disabled
+until preview Durable Object bindings are configured; previews do not inherit
+production bindings.
+
+## Live G-counter rooms
+
+The G-counter lesson can connect three browsers through a Cloudflare Durable
+Object. The static site still works when the room service is unavailable. Each
+connected browser runs the existing Watershed-backed G-counter model. The
+Durable Object assigns Alice, Bob, or Carol, relays increments, and stores the
+room operations for replay. A room accepts up to 1,000 operations before it
+must be reset.
+
+Use Astro alone for normal content and interface work:
+
+```sh
+pnpm dev
+```
+
+To test the combined static site, Worker, and Durable Object locally, run:
+
+```sh
+pnpm cloudflare:dev
+```
+
+This builds `dist/` first, then starts Wrangler. Live rooms use the current
+site origin, so production needs no public endpoint variable or CORS secret.
 
 ### Release checks
 

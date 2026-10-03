@@ -3,6 +3,7 @@ dist/
 /toolkit/build/
 # generated types
 .astro/
+.wrangler/
 
 # dependencies
 node_modules/

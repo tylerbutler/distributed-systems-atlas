@@ -17,10 +17,17 @@ import {
 } from "./demo-transport-controls";
 import { animateDemoOperation } from "./demo-operation-flight";
 import { isDemoReplicaId } from "./replicas";
+import {
+  GCounterRoomClient,
+  normalizeRoomCode,
+  type RoomIncrement,
+} from "./g-counter-room-client";
 
 type Action = "race" | "resend" | "reset";
+type RoomAction = "create" | "join" | "copy" | "leave";
 const HOP_LATENCY_MS = 1000;
 const FIFO_GAP_MS = 25;
+const ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function node<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -43,6 +50,11 @@ class GCounterDemoElement extends HTMLElement {
   private activeBroadcasts = new Set<Promise<void>>();
   private activeAnimations = new Set<Animation>();
   private deliveryFocus: HTMLElement | null = null;
+  private roomClient?: GCounterRoomClient;
+  private roomCode = "";
+  private roomReplica: ReplicaId | null = null;
+  private roomConnected = false;
+  private roomPresence = 0;
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
@@ -51,6 +63,16 @@ class GCounterDemoElement extends HTMLElement {
       button.addEventListener("click", async () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.increment);
+        if (this.roomConnected) {
+          if (replica !== this.roomReplica) return;
+          try {
+            this.roomClient?.increment(amount);
+            this.roomStatus(`Sent ${gCounterUserName(replica)}'s +${amount} update to room ${this.roomCode}.`);
+          } catch (error) {
+            this.roomError(error);
+          }
+          return;
+        }
         const result = incrementReplica(this.state, replica, amount);
         this.apply(result, button);
         if (result.ok) {
@@ -71,6 +93,14 @@ class GCounterDemoElement extends HTMLElement {
       await this.applyAnimated(resendUserCount(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
+      if (this.roomConnected) {
+        try {
+          this.roomClient?.reset();
+        } catch (error) {
+          this.roomError(error);
+        }
+        return;
+      }
       this.resetFlow();
       this.state = createGCounterDemo();
       this.render();
@@ -99,8 +129,15 @@ class GCounterDemoElement extends HTMLElement {
         this.clearGuidedMarks();
       }
     });
+    this.setupRoom();
     this.querySelector<HTMLElement>("[data-enhancement-note]")!.hidden = true;
     this.render();
+  }
+
+  disconnectedCallback(): void {
+    this.roomClient?.close();
+    this.resetFlow();
+    this.clearGuidedMarks();
   }
 
   private button(action: Action): HTMLButtonElement {
@@ -115,6 +152,177 @@ class GCounterDemoElement extends HTMLElement {
     );
     if (!controls) throw new Error("Missing G-counter transport controls");
     return controls;
+  }
+
+  private roomButton(action: RoomAction): HTMLButtonElement {
+    const button = this.querySelector<HTMLButtonElement>(`[data-room-action="${action}"]`);
+    if (!button) throw new Error(`Missing G-counter room ${action} control`);
+    return button;
+  }
+
+  private setupRoom(): void {
+    const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
+    input.addEventListener("input", () => {
+      const normalized = normalizeRoomCode(input.value);
+      if (input.value !== normalized) input.value = normalized;
+      this.renderRoom();
+    });
+    this.roomButton("create").addEventListener("click", () => {
+      const bytes = crypto.getRandomValues(new Uint8Array(6));
+      input.value = [...bytes]
+        .map((value) => ROOM_ALPHABET[value % ROOM_ALPHABET.length])
+        .join("");
+      this.connectRoom(input.value);
+    });
+    this.roomButton("join").addEventListener("click", () => this.connectRoom(input.value));
+    this.roomButton("leave").addEventListener("click", () => this.leaveRoom());
+    this.roomButton("copy").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(this.roomLink());
+        this.roomStatus(`Copied the link for room ${this.roomCode}.`);
+      } catch (error) {
+        this.roomError(error);
+      }
+    });
+    input.disabled = false;
+    this.roomButton("create").disabled = false;
+    this.roomStatus("Create a room, or enter a room code from another hiker.");
+    const requested = normalizeRoomCode(new URL(location.href).searchParams.get("room") ?? "");
+    if (requested.length >= 4) {
+      input.value = requested;
+      this.connectRoom(requested);
+    } else {
+      this.renderRoom();
+    }
+  }
+
+  private connectRoom(value: string): void {
+    const room = normalizeRoomCode(value);
+    if (room.length < 4) {
+      this.roomStatus("Enter a room code with at least four letters or numbers.");
+      return;
+    }
+    this.roomClient?.close();
+    this.roomCode = room;
+    this.roomReplica = null;
+    this.roomConnected = false;
+    this.roomStatus(`Connecting to room ${room}...`);
+    this.renderRoom();
+    this.roomClient = new GCounterRoomClient(location.origin, {
+      hello: (message) => {
+        this.roomCode = message.room;
+        this.roomReplica = message.replica;
+        this.roomPresence = message.connected;
+        this.roomConnected = true;
+        this.replayRoom(message.events);
+        const url = new URL(location.href);
+        url.searchParams.set("room", this.roomCode);
+        history.replaceState(null, "", url);
+        this.renderRoom();
+      },
+      increment: (event) => this.receiveRoomIncrement(event),
+      reset: () => {
+        this.resetFlow();
+        this.state = createGCounterDemo();
+        this.render();
+        this.roomStatus(`Room ${this.roomCode} was reset.`);
+      },
+      presence: (connected) => {
+        this.roomPresence = connected;
+        this.renderRoom();
+      },
+      status: (message) => this.roomStatus(message),
+      closed: () => {
+        if (!this.roomConnected && this.roomReplica === null) return;
+        this.roomConnected = false;
+        this.roomReplica = null;
+        this.roomStatus(`Disconnected from room ${this.roomCode}.`);
+        this.render();
+      },
+    });
+    this.roomClient.connect(room);
+  }
+
+  private leaveRoom(): void {
+    this.roomClient?.close();
+    this.roomClient = undefined;
+    this.roomConnected = false;
+    this.roomReplica = null;
+    this.roomPresence = 0;
+    const url = new URL(location.href);
+    url.searchParams.delete("room");
+    history.replaceState(null, "", url);
+    this.roomStatus("Left the live room. This browser now controls all three hikers.");
+    this.render();
+  }
+
+  private replayRoom(events: readonly RoomIncrement[]): void {
+    this.resetFlow();
+    this.state = createGCounterDemo();
+    for (const event of events) {
+      const incremented = incrementReplica(this.state, event.replica, event.amount);
+      if (!incremented.ok) {
+        this.roomStatus(incremented.error);
+        break;
+      }
+      const delivered = deliverNextOperation(incremented.state);
+      if (!delivered.ok) {
+        this.roomStatus(delivered.error);
+        break;
+      }
+      this.state = delivered.state;
+    }
+    this.render();
+  }
+
+  private receiveRoomIncrement(event: RoomIncrement): void {
+    const result = incrementReplica(this.state, event.replica, event.amount);
+    if (!result.ok) {
+      this.roomStatus(result.error);
+      return;
+    }
+    this.state = result.state;
+    this.render();
+    this.queueOutbound(event.replica, `+${event.amount}`);
+    if (this.transport.autoDeliver) {
+      const focus = this.querySelector<HTMLButtonElement>(
+        `[data-replica="${event.replica}"][data-increment="${event.amount}"]`,
+      )!;
+      void this.deliverQueued(focus);
+    }
+  }
+
+  private roomLink(): string {
+    const url = new URL(location.href);
+    url.searchParams.set("room", this.roomCode);
+    return url.toString();
+  }
+
+  private roomError(error: unknown): void {
+    this.roomStatus(error instanceof Error ? error.message : String(error));
+  }
+
+  private roomStatus(message: string): void {
+    this.querySelector<HTMLElement>("[data-room-status]")!.textContent = message;
+  }
+
+  private renderRoom(): void {
+    const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
+    const validCode = normalizeRoomCode(input.value).length >= 4;
+    input.disabled = this.roomConnected;
+    this.roomButton("create").disabled = this.roomConnected;
+    this.roomButton("join").disabled = this.roomConnected || !validCode;
+    this.roomButton("copy").disabled = !this.roomConnected;
+    this.roomButton("leave").disabled = !this.roomConnected;
+    if (!this.roomConnected) return;
+    const role = this.roomReplica
+      ? `This device controls ${gCounterUserName(this.roomReplica)}.`
+      : "This device is observing because Alice, Bob, and Carol are connected.";
+    this.roomStatus(
+      `Room ${this.roomCode}: ${role} ${this.roomPresence} ${
+        this.roomPresence === 1 ? "device is" : "devices are"
+      } connected.`,
+    );
   }
 
   private async runRace(): Promise<void> {
@@ -449,19 +657,20 @@ class GCounterDemoElement extends HTMLElement {
     }
     this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.disabled = false;
+      button.disabled = this.roomConnected && button.dataset.replica !== this.roomReplica;
     }
-    this.button("race").disabled = false;
+    this.button("race").disabled = this.roomConnected;
     this.button("race").textContent = this.transport.autoDeliver
       ? "Leave Alice +7 and Bob +3 together"
       : "Hold Alice +7 and Bob +3 notes";
     this.button("resend").disabled =
-      this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
+      this.roomConnected || this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Repeat ${gCounterUserName(view.latestAuthor)}'s note`
       : "Repeat latest checkpoint note";
     this.button("reset").disabled = false;
     this.querySelector<HTMLInputElement>("[data-guided-observations]")!.disabled = false;
+    this.renderRoom();
   }
 }
 
