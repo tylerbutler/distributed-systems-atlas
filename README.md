@@ -124,7 +124,7 @@ Actions:
 3. Set the build command to:
 
    ```sh
-   curl -fsSL https://mise.run | sh && "$HOME/.local/bin/mise" install && "$HOME/.local/bin/mise" exec -- pnpm build
+   pnpm run cloudflare:build
    ```
 
 4. Set the deploy command to `pnpm run deploy`.
@@ -132,7 +132,7 @@ Actions:
 6. Push a commit to `main` to trigger a build and deployment.
 
 Cloudflare installs the pnpm version declared in `package.json`. The build
-command installs the Gleam version declared in `mise.toml`. Wrangler reads
+command installs mise and the tools declared in `mise.toml`. Wrangler reads
 `wrangler.jsonc`, uploads `dist/`, deploys the Worker, and applies Durable
 Object migrations. No Cloudflare credentials are stored in GitHub.
 
