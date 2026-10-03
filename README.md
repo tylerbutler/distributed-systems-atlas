@@ -125,7 +125,7 @@ Actions secrets:
    curl -fsSL https://mise.run | sh && "$HOME/.local/bin/mise" install && "$HOME/.local/bin/mise" exec -- pnpm build
    ```
 
-4. Set the deploy command to `pnpm deploy`.
+4. Set the deploy command to `pnpm run deploy`.
 5. Enable build caching, then save and deploy.
 
 Cloudflare installs the pnpm version declared in `package.json`. The build
