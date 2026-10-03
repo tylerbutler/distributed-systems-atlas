@@ -3,6 +3,13 @@
   "name": "distributed-systems-atlas",
   "main": "worker/index.ts",
   "compatibility_date": "2026-09-30",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "dsa.tylerbutler.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

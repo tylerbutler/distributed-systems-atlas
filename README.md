@@ -111,7 +111,9 @@ there outside CI. Stop an unrelated server on that port before verification.
 ## Cloudflare deployment
 
 Cloudflare Workers serves the static Astro build and the live-room Worker from
-one deployment. Static files normally bypass Worker execution. Requests to
+one deployment at `https://dsa.tylerbutler.com`. Wrangler configures the custom
+domain, DNS record, and HTTPS certificate. The `workers.dev` address remains
+available. Static files normally bypass Worker execution. Requests to
 `/rooms/*` and `/health` run the Worker first.
 
 Use Cloudflare Workers Builds to deploy pushes from GitHub without GitHub
