@@ -10,19 +10,21 @@ test("room counts update before confirmation and merge echoed state once", async
     connection = socket;
     socket.onMessage((message) => sent.push(JSON.parse(String(message))));
     socket.send(JSON.stringify({
-      type: "hello", room: "EAGLE7", replica: "A", connected: 3,
+      type: "hello", room: "EAGLE7", replica: "A", connected: 3, replicas: ["A", "B", "C"],
       state: { epoch, counts: { A: 0, B: 0, C: 0 } },
     }));
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/g-counter/?room=EAGLE7");
   const demo = page.getByTestId("g-counter-demo");
-  await expect(demo.locator("[data-room-disclosure]")).toHaveAttribute("open", "");
+  await expect(page).toHaveURL(/\/labs\/g-counter\/\?room=EAGLE7$/);
+  await expect(demo.getByRole("heading", { name: "Room connection" })).toBeVisible();
+  await demo.locator(".live-delivery-controls > summary").click();
   const totals = demo.locator("[data-total]");
   const broadcast = demo.getByRole("checkbox", { name: "Broadcast" });
-  const alice = demo.getByRole("button", { name: "Record 7 birds for Alice" });
+  const alice = demo.locator('[data-replica="A"][data-increment="7"]');
   await expect(alice).toBeEnabled();
-  await expect(demo.getByRole("button", { name: "Record 3 birds for Bob" })).toBeDisabled();
+  await expect(demo.locator('[data-replica="B"][data-increment="3"]')).toBeDisabled();
   await broadcast.uncheck();
   await alice.click();
   await expect(totals).toHaveText(["7", "0", "0"]);
@@ -63,20 +65,21 @@ test("room counts update before confirmation and merge echoed state once", async
   await expect(demo.getByRole("button", { name: "Reset", exact: true })).toBeDisabled();
   await expect(demo.locator("[data-room-status]")).toContainText("unconfirmed changes");
   await demo.getByRole("button", { name: "Leave room" }).click();
-  await expect(alice).toBeEnabled();
+  await expect(alice).toBeDisabled();
+  await expect(demo.locator("[data-room-status]")).toContainText("Create or join a room");
 });
 
 test("an observer restores a snapshot and cannot reset the room", async ({ page }) => {
   await page.routeWebSocket(/\/rooms\/EAGLE7$/, (socket) => {
     socket.send(JSON.stringify({
-      type: "hello", room: "EAGLE7", replica: null, connected: 4,
+      type: "hello", room: "EAGLE7", replica: null, connected: 4, replicas: ["A", "B", "C"],
       state: { epoch, counts: { A: 7, B: 3, C: 1 } },
     }));
   });
-  await page.goto("/structures/g-counter/?room=EAGLE7");
+  await page.goto("/labs/g-counter/?room=EAGLE7");
   const demo = page.getByTestId("g-counter-demo");
   await expect(demo.locator("[data-total]")).toHaveText(["11", "11", "11"]);
-  await expect(demo.getByRole("button", { name: "Record 1 bird for Alice" })).toBeDisabled();
+  await expect(demo.locator('[data-replica="A"][data-increment="1"]')).toBeDisabled();
   await expect(demo.getByRole("button", { name: "Reset", exact: true })).toBeDisabled();
   await expect(demo.getByLabel("Notes left at checkpoint")).toHaveText("0 notes");
 });

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 for (const width of [320, 390, 768, 1440]) {
-  test(`counter evidence and optional rooms remain usable at ${width}px`, async ({ page }) => {
+  test(`counter evidence and live-lab links remain usable at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     for (const [slug, action, resultClass] of [
@@ -24,18 +24,12 @@ for (const width of [320, 390, 768, 1440]) {
       });
       expect(measure.width).toBeLessThanOrEqual(measure.max);
       if (slug !== "pn-counter") {
-        const room = demo.locator("[data-room-disclosure]");
-        await expect(room).not.toHaveAttribute("open", "");
-        expect(await room.evaluate((element) => {
-          const workedExample = element.closest(".structure-demo-root")?.querySelector('[data-action="race"]');
-          if (!workedExample) throw new Error("Missing worked-example control");
-          return Boolean(workedExample.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING);
-        })).toBe(true);
-        await room.locator("summary").focus();
-        await page.keyboard.press("Enter");
-        await expect(room).toHaveAttribute("open", "");
-        await expect(room.getByRole("button", { name: "Create room" })).toBeVisible();
-        await expect(room.locator("summary")).toHaveCSS("outline-style", "solid");
+        await expect(demo.locator("[data-room-code]")).toHaveCount(0);
+        const lab = demo.getByRole("link", { name: "Try this across three tabs or devices" });
+        await expect(lab).toHaveAttribute("href", `/labs/${slug}/`);
+        await page.keyboard.press("Tab");
+        await lab.focus();
+        await expect(lab).toHaveCSS("outline-style", "solid");
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     }

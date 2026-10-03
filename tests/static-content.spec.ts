@@ -24,11 +24,12 @@ test("the multi-device demo links to its storage explainer without JavaScript", 
   try {
     const page = await context.newPage();
     await page.goto("/structures/g-counter/");
-    const disclosure = page.locator("[data-room-disclosure]");
-    await expect(disclosure).not.toHaveAttribute("open", "");
-    await disclosure.locator("summary").click();
-    const room = page.getByRole("region", { name: "Use three devices" });
-    const explanation = room.getByRole("link", { name: "How multi-device rooms and storage work" });
+    await expect(page.locator("[data-room-code]")).toHaveCount(0);
+    await page.getByRole("link", { name: "Try this across three tabs or devices" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("G-counter live lab");
+    await expect(page.getByRole("button", { name: "Create room" })).toBeDisabled();
+    await page.locator(".lab-notes > summary").click();
+    const explanation = page.getByRole("link", { name: "How multi-device rooms and storage work" });
     await expect(explanation).toHaveAttribute("href", "/atlas/multi-device-g-counter/");
     await explanation.click();
     await expect(page.getByRole("heading", { level: 1 }))
@@ -43,8 +44,8 @@ test("the multi-device demo links to its storage explainer without JavaScript", 
     for (const term of ["Durable Object", "WebSocket", "optimistic update", "state snapshot", "epoch", "hibernation"]) {
       await expect(page.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "Return to the G-counter demo" }))
-      .toHaveAttribute("href", "/structures/g-counter/");
+    await expect(page.getByRole("link", { name: "Return to the G-counter live lab" }))
+      .toHaveAttribute("href", "/labs/g-counter/");
     await page.goto("/atlas/");
     await expect(page.locator("#systems").getByRole("link", { name: "How multi-device G-counter rooms work" }))
       .toHaveAttribute("href", "/atlas/multi-device-g-counter/");
@@ -263,7 +264,7 @@ test("footer navigation links to every published page without JavaScript", async
     .filter((file) => file.endsWith(".mdx") &&
       /^status: published$/m.test(readFileSync(new URL(`../src/content/sheets/${file}`, import.meta.url), "utf8")))
     .map((file) => `/atlas/${file.replace(/\.mdx$/, "")}/`);
-  const expected = [...pages, ...lessons, ...sheets].sort();
+  const expected = [...pages, ...lessons, ...sheets, "/labs/g-counter/", "/labs/shared-counter/"].sort();
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();

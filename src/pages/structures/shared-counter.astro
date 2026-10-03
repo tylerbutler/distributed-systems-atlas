@@ -140,60 +140,13 @@ import {
     <SharedCounterDemo />
 
     <section aria-labelledby="live-room-title">
-      <h2 id="live-room-title">The real sequencer and storage</h2>
+      <h2 id="live-room-title">Try the real sequencer</h2>
       <p>
-        Create a room and open its link on three devices. The server assigns
-        Alice, Bob, and Carol to the first three connections. Further devices
-        can observe. Each browser keeps three Watershed counter-kernel states,
-        so you can compare your hiker's optimistic value with the other copies.
-        Each device can send changes only for its assigned hiker.
-      </p>
-      <p>
-        When Alice clicks <code>+3</code>, her browser calls the kernel's
-        increment operation immediately. It sends the signed amount and a
-        unique action ID to one Cloudflare{" "}
-        <dfn><a href="/glossary/#durable-object">Durable Object</a></dfn>.
-        This service receives the room's requests, assigns consecutive sequence numbers,
-        and stores each operation in SQLite before broadcasting it. The
-        operation includes its action ID, author, signed amount, and sequence
-        number. The server does not broadcast cumulative counter values.
-      </p>
-      <TermCallout
-        term="Durable Object"
-        definition="A Cloudflare service that combines coordination for one named object with storage private to that object."
-      />
-      <p>
-        A <dfn><a href="/glossary/#websocket">WebSocket</a></dfn> keeps the
-        browser's connection open so the server can send numbered operations
-        without waiting for another browser request.
-      </p>
-      <TermCallout
-        term="WebSocket"
-        definition="A persistent connection over which a browser and a server can send messages to each other."
-      />
-      <p>
-        Alice's browser matches its pending edit with the numbered echo and
-        calls the kernel's acknowledgement operation. Her count does not
-        increase twice. Other copies apply the signed amount through the
-        kernel's remote-operation path. The browser transport ignores
-        repeated sequence numbers. If a later number arrives first, it holds
-        that operation and requests the missing prefix before applying it.
-      </p>
-      <p>
-        SQLite retains up to 1,000 operations per room. Rejoining starts the
-        kernels from the agreed count of 10 and replays the stored log in
-        sequence order. Reset clears the log, restores 10, and creates a new
-        room epoch. The server rejects requests from the old epoch. An
-        operation rejected by the server causes the browser to roll back
-        pending edits and reload the stored log.
-      </p>
-      <p>
-        Broadcast, Speed, and Jitter control the local delivery display.
-        They do not delay the real Durable Object's sequencing or storage.
-        There is no persistent offline outbox or automatic reconnect. If
-        the connection closes, controls stop accepting edits and values may
-        still include unconfirmed changes. Rejoin to recover the stored log.
-        Room roles belong to connections, not authenticated identities.
+        In the <a href="/labs/shared-counter/">SharedCounter live lab</a>,
+        open one room across three tabs or devices. Each connection controls
+        one hiker. The room service numbers and stores signed changes, so
+        Carol can request a missing operation from the real log. The lab
+        explains the connection, storage, and recovery limits.
       </p>
     </section>
 

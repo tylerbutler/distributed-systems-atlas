@@ -25,3 +25,134 @@
   z-index: var(--demo-operation-layer-z, 2);
   pointer-events: none;
 }
+
+.live-lab-link {
+  margin-block: var(--space-5) 0;
+  font-family: var(--font-ui);
+}
+
+.live-lab-link a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+}
+
+[data-live].structure-demo-root {
+  width: 100%;
+  margin: var(--space-5) 0;
+  transform: none;
+}
+
+.structure-demo-root[data-live] .operation-key {
+  display: none;
+}
+
+.structure-demo-root[data-live] [data-client] {
+  width: 100%;
+  justify-self: stretch;
+}
+
+.structure-demo-root[data-live] [data-client] :is(.gcounter-total, .shared-total) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+}
+
+.structure-demo-root[data-live] [data-your-replica="true"] {
+  border-color: var(--signal);
+}
+
+.structure-demo-root[data-live] [data-your-replica="true"] :is(.gcounter-total, .shared-total) {
+  font-size: clamp(3rem, 6vw, 6rem);
+}
+
+.structure-demo-root[data-live] .replica-ownership {
+  margin-top: var(--space-3);
+  color: var(--signal);
+  font: 0.875rem/1.5 var(--font-ui);
+}
+
+.structure-demo-root[data-live] :is(.gcounter-network, .shared-network) {
+  grid-template-columns: minmax(0, 1.2fr) minmax(12rem, 0.8fr) minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.structure-demo-root[data-live][data-room-role="A"] :is(.gcounter-network, .shared-network) {
+  grid-template-areas: "a sequencer b" "a sequencer c";
+}
+
+.structure-demo-root[data-live][data-room-role="B"] :is(.gcounter-network, .shared-network) {
+  grid-template-areas: "b sequencer a" "b sequencer c";
+}
+
+.structure-demo-root[data-live][data-room-role="C"] :is(.gcounter-network, .shared-network) {
+  grid-template-areas: "c sequencer a" "c sequencer b";
+}
+
+.structure-demo-root[data-live] .sequencer-channel {
+  padding-top: 0;
+}
+
+.structure-demo-root[data-live] .operation-log {
+  max-height: 28rem;
+  min-height: 14rem;
+  mask-image: none;
+}
+
+.structure-demo-root[data-live] [data-your-replica="false"] .replica-actions {
+  display: none;
+}
+
+.structure-demo-root[data-live] :is([data-action="race"], [data-action="resend"], .guided-toggle) {
+  display: none;
+}
+
+.structure-demo-root[data-live] :is(.gcounter-controls, .shared-controls) {
+  display: block;
+}
+
+.structure-demo-root[data-live] [data-action="reset"] {
+  margin-bottom: var(--space-3);
+}
+
+.structure-demo-root[data-live] .live-delivery-controls {
+  margin-top: var(--space-5);
+  border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
+}
+
+.live-delivery-controls summary {
+  min-height: 44px;
+  padding-block: var(--space-3);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.live-delivery-controls p {
+  margin: 0;
+}
+
+@media (width < 64rem) {
+  .structure-demo-root[data-live] :is(.gcounter-network, .shared-network) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .structure-demo-root[data-live] [data-client] {
+    order: 2;
+  }
+
+  .structure-demo-root[data-live] [data-your-replica="true"] {
+    order: 0;
+  }
+
+  .structure-demo-root[data-live] .sequencer-channel {
+    order: 1;
+    width: 100%;
+  }
+
+  .structure-demo-root[data-live] .operation-log {
+    width: 100%;
+    max-height: 20rem;
+    min-height: 10rem;
+  }
+}

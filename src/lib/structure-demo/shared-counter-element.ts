@@ -22,6 +22,7 @@ import { animateDemoOperation } from "./demo-operation-flight";
 import { SharedCounterRoomClient } from "./shared-counter-room-client";
 import { normalizeRoomCode } from "./room-socket";
 import { MAX_SHARED_OPERATIONS, type SharedCounterHistory } from "../../../worker/shared-counter-protocol";
+import { renderLiveRoom } from "./live-room-view";
 
 type Action = "race" | "reset";
 const HOP_LATENCY_MS = 1000;
@@ -46,6 +47,7 @@ class SharedCounterDemoElement extends HTMLElement {
   private roomReplica: ReplicaId | null = null;
   private roomConnected = false;
   private roomPresence = 0;
+  private roomReplicas?: readonly ReplicaId[];
 
   connectedCallback(): void {
     if (this.dataset.ready) return;
@@ -54,7 +56,7 @@ class SharedCounterDemoElement extends HTMLElement {
       button.addEventListener("click", () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.update);
-        if (this.roomClient && (!this.roomConnected || replica !== this.roomReplica)) return;
+        if (this.live && (!this.roomConnected || replica !== this.roomReplica)) return;
         const result = updateSharedReplica(this.state, replica, amount);
         this.apply(result, button);
         if (!result.ok) return;
@@ -77,6 +79,7 @@ class SharedCounterDemoElement extends HTMLElement {
       await this.runRace();
     });
     this.button("reset").addEventListener("click", () => {
+      if (this.live && (!this.roomConnected || !this.roomReplica)) return;
       if (this.roomClient) {
         try {
           this.roomClient.reset();
@@ -112,7 +115,19 @@ class SharedCounterDemoElement extends HTMLElement {
     return this.querySelector<HTMLButtonElement>(`[data-room-action="${action}"]`)!;
   }
 
+  private get live(): boolean {
+    return this.hasAttribute("data-live");
+  }
+
   private setupRoom(): void {
+    if (!this.live) {
+      const url = new URL(location.href);
+      if (normalizeRoomCode(url.searchParams.get("room") ?? "").length >= 4) {
+        url.pathname = "/labs/shared-counter/";
+        location.replace(url);
+      }
+      return;
+    }
     const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
     input.addEventListener("input", () => {
       input.value = normalizeRoomCode(input.value);
@@ -130,13 +145,15 @@ class SharedCounterDemoElement extends HTMLElement {
       this.roomClient = undefined;
       this.roomConnected = false;
       this.roomReplica = null;
+      this.roomReplicas = undefined;
+      this.roomPresence = 0;
       this.resetFlow();
       this.state = createSharedCounterDemo();
       const url = new URL(location.href);
       url.searchParams.delete("room");
       history.replaceState(null, "", url);
       this.render();
-      this.roomStatus("Left the live room. This browser now controls all three hikers in a fresh local demo.");
+      this.roomStatus("Left the live room. Create or join a room to edit a notebook.");
     });
     this.roomButton("copy").addEventListener("click", async () => {
       try {
@@ -164,17 +181,18 @@ class SharedCounterDemoElement extends HTMLElement {
       this.roomStatus("Enter a room code with at least four letters or numbers.");
       return;
     }
-    this.querySelector<HTMLDetailsElement>("[data-room-disclosure]")!.open = true;
     this.roomClient?.close();
     this.resetFlow();
     this.roomCode = room;
     this.roomReplica = null;
     this.roomConnected = false;
+    this.roomReplicas = undefined;
     this.roomClient = new SharedCounterRoomClient(location.origin, {
       hello: (message) => {
         this.restoreRoom(message);
         this.roomReplica = message.replica;
         this.roomPresence = message.connected;
+        this.roomReplicas = message.replicas;
         this.roomConnected = true;
         const url = new URL(location.href);
         url.searchParams.set("room", room);
@@ -199,8 +217,9 @@ class SharedCounterDemoElement extends HTMLElement {
         this.restoreRoom(history);
         this.roomStatus(`${message} Reloaded the stored log; unconfirmed local changes were discarded.`);
       },
-      presence: (connected) => {
+      presence: (connected, replicas) => {
         this.roomPresence = connected;
+        this.roomReplicas = replicas;
         this.renderRoom();
       },
       status: (message) => this.roomStatus(message),
@@ -228,6 +247,8 @@ class SharedCounterDemoElement extends HTMLElement {
   }
 
   private renderRoom(): void {
+    if (!this.live) return;
+    renderLiveRoom(this, this.roomConnected, this.roomReplica, this.roomReplicas);
     const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
     input.disabled = this.roomConnected;
     this.roomButton("create").disabled = this.roomConnected;
@@ -237,7 +258,7 @@ class SharedCounterDemoElement extends HTMLElement {
     if (!this.roomConnected) return;
     const role = this.roomReplica
       ? `This device controls ${sharedCounterUserName(this.roomReplica)}.`
-      : "This device is observing because Alice, Bob, and Carol are connected.";
+      : "This device is observing. Rejoin to request an available hiker role.";
     let waiting = "";
     if (this.state.mode === "live" && this.state.live.pending.length > 0) {
       const { pending, incoming } = this.state.live;
@@ -266,7 +287,7 @@ class SharedCounterDemoElement extends HTMLElement {
   }
 
   private async runRace(): Promise<void> {
-    if (this.roomClient) return;
+    if (this.live) return;
     this.resetFlow();
     this.state = createSharedCounterDemo();
     const staged = stageSharedRace(this.state);
@@ -403,12 +424,12 @@ class SharedCounterDemoElement extends HTMLElement {
 
   private renderControls(): void {
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-update]")) {
-      button.disabled = !!this.roomClient && (!this.roomConnected
+      button.disabled = this.live && (!this.roomConnected
         || button.dataset.replica !== this.roomReplica
         || this.state.view.sequenceNumber >= MAX_SHARED_OPERATIONS);
     }
-    this.button("race").disabled = this.delivering || !!this.roomClient;
-    this.button("reset").disabled = !!this.roomClient && (!this.roomConnected || !this.roomReplica);
+    this.button("race").disabled = this.delivering || this.live;
+    this.button("reset").disabled = this.live && (!this.roomConnected || !this.roomReplica);
     this.renderRoom();
   }
 
@@ -449,7 +470,10 @@ class SharedCounterDemoElement extends HTMLElement {
       )]));
     this.querySelector<HTMLOutputElement>("[data-sequence-counter]")!.value =
       `SN ${view.sequenceNumber}`;
-    this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
+    this.querySelector<HTMLElement>('[role="status"]')!.textContent =
+      this.live && !this.roomClient
+        ? "Join a room to send signed changes. Each notebook is a local copy in this browser."
+        : view.result;
     this.renderControls();
   }
 }

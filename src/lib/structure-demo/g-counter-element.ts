@@ -27,6 +27,7 @@ import {
 } from "./g-counter-room-client";
 import { REPLICA_IDS } from "./replicas";
 import { MAX_COMPONENT } from "../../../worker/protocol";
+import { renderLiveRoom } from "./live-room-view";
 
 type Action = "race" | "resend" | "reset";
 type RoomAction = "create" | "join" | "copy" | "leave";
@@ -60,6 +61,7 @@ class GCounterDemoElement extends HTMLElement {
   private roomReplica: ReplicaId | null = null;
   private roomConnected = false;
   private roomPresence = 0;
+  private roomReplicas?: readonly ReplicaId[];
   private roomEpoch = "";
   private roomConfirmedCounts: Counts = { A: 0, B: 0, C: 0 };
 
@@ -70,7 +72,7 @@ class GCounterDemoElement extends HTMLElement {
       button.addEventListener("click", async () => {
         const replica = button.dataset.replica as ReplicaId;
         const amount = Number(button.dataset.increment);
-        if (this.roomClient && (!this.roomConnected || replica !== this.roomReplica)) return;
+        if (this.live && (!this.roomConnected || replica !== this.roomReplica)) return;
         if (this.roomClient && this.state.authoredCounts[replica] > MAX_COMPONENT - amount) {
           this.roomStatus("This hiker's count reached the numeric limit. Reset the room before adding more.");
           return;
@@ -104,6 +106,7 @@ class GCounterDemoElement extends HTMLElement {
       await this.applyAnimated(resendUserCount(this.state), this.button("resend"));
     });
     this.button("reset").addEventListener("click", () => {
+      if (this.live && (!this.roomConnected || !this.roomReplica)) return;
       if (this.roomClient) {
         try {
           this.roomClient.reset(this.roomEpoch);
@@ -171,7 +174,19 @@ class GCounterDemoElement extends HTMLElement {
     return button;
   }
 
+  private get live(): boolean {
+    return this.hasAttribute("data-live");
+  }
+
   private setupRoom(): void {
+    if (!this.live) {
+      const url = new URL(location.href);
+      if (normalizeRoomCode(url.searchParams.get("room") ?? "").length >= 4) {
+        url.pathname = "/labs/g-counter/";
+        location.replace(url);
+      }
+      return;
+    }
     const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
     input.addEventListener("input", () => {
       const normalized = normalizeRoomCode(input.value);
@@ -213,17 +228,18 @@ class GCounterDemoElement extends HTMLElement {
       this.roomStatus("Enter a room code with at least four letters or numbers.");
       return;
     }
-    this.querySelector<HTMLDetailsElement>("[data-room-disclosure]")!.open = true;
     this.roomClient?.close();
     this.roomCode = room;
     this.roomReplica = null;
     this.roomConnected = false;
+    this.roomReplicas = undefined;
     this.roomStatus(`Connecting to room ${room}...`);
     this.roomClient = new GCounterRoomClient(location.origin, {
       hello: (message) => {
         this.roomCode = message.room;
         this.roomReplica = message.replica;
         this.roomPresence = message.connected;
+        this.roomReplicas = message.replicas;
         this.roomConnected = true;
         this.restoreRoomState(message.state);
         const url = new URL(location.href);
@@ -244,8 +260,9 @@ class GCounterDemoElement extends HTMLElement {
         this.restoreRoomState(state);
         this.roomStatus(message);
       },
-      presence: (connected) => {
+      presence: (connected, replicas) => {
         this.roomPresence = connected;
+        this.roomReplicas = replicas;
         this.renderRoom();
       },
       status: (message) => this.roomStatus(message),
@@ -269,11 +286,14 @@ class GCounterDemoElement extends HTMLElement {
     this.roomConnected = false;
     this.roomReplica = null;
     this.roomPresence = 0;
+    this.roomReplicas = undefined;
+    this.resetFlow();
+    this.state = createGCounterDemo();
     const url = new URL(location.href);
     url.searchParams.delete("room");
     history.replaceState(null, "", url);
-    this.roomStatus("Left the live room. This browser now controls all three hikers.");
     this.render();
+    this.roomStatus("Left the live room. Create or join a room to edit a notebook.");
   }
 
   private restoreRoomState(snapshot: RoomState): void {
@@ -340,6 +360,8 @@ class GCounterDemoElement extends HTMLElement {
   }
 
   private renderRoom(): void {
+    if (!this.live) return;
+    renderLiveRoom(this, this.roomConnected, this.roomReplica, this.roomReplicas);
     const input = this.querySelector<HTMLInputElement>("[data-room-code]")!;
     const validCode = normalizeRoomCode(input.value).length >= 4;
     input.disabled = this.roomConnected;
@@ -350,7 +372,7 @@ class GCounterDemoElement extends HTMLElement {
     if (!this.roomConnected) return;
     const role = this.roomReplica
       ? `This device controls ${gCounterUserName(this.roomReplica)}.`
-      : "This device is observing because Alice, Bob, and Carol are connected.";
+      : "This device is observing. Rejoin to request an available hiker role.";
     this.roomStatus(
       `Room ${this.roomCode}: ${role} ${this.roomPresence} ${
         this.roomPresence === 1 ? "device is" : "devices are"
@@ -363,6 +385,7 @@ class GCounterDemoElement extends HTMLElement {
   }
 
   private async runRace(): Promise<void> {
+    if (this.live) return;
     this.resetFlow();
     this.state = createGCounterDemo();
     const staged = stageRace(this.state);
@@ -692,21 +715,24 @@ class GCounterDemoElement extends HTMLElement {
       void sequenceCounter.offsetWidth;
       sequenceCounter.classList.add("stamped");
     }
-    this.querySelector<HTMLElement>('[role="status"]')!.textContent = view.result;
+    this.querySelector<HTMLElement>('[role="status"]')!.textContent =
+      this.live && !this.roomClient
+        ? "Join a room to record sightings. Each notebook is a local copy in this browser."
+        : view.result;
     for (const button of this.querySelectorAll<HTMLButtonElement>("[data-increment]")) {
-      button.disabled = Boolean(this.roomClient)
+      button.disabled = this.live
         && (!this.roomConnected || button.dataset.replica !== this.roomReplica);
     }
-    this.button("race").disabled = Boolean(this.roomClient);
+    this.button("race").disabled = this.live;
     this.button("race").textContent = this.transport.autoDeliver
       ? "Leave Alice +7 and Bob +3 together"
       : "Hold Alice +7 and Bob +3 notes";
     this.button("resend").disabled =
-      Boolean(this.roomClient) || this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
+      this.live || this.delivering || this.activeBroadcasts.size > 0 || !view.canResend;
     this.button("resend").textContent = view.latestAuthor
       ? `Repeat ${gCounterUserName(view.latestAuthor)}'s note`
       : "Repeat latest checkpoint note";
-    this.button("reset").disabled = Boolean(this.roomClient)
+    this.button("reset").disabled = this.live
       && (!this.roomConnected || this.roomReplica === null);
     this.querySelector<HTMLInputElement>("[data-guided-observations]")!.disabled = false;
     this.renderRoom();

@@ -1,0 +1,149 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ComplexityBadge from "../../components/ComplexityBadge.astro";
+import GCounterDemo from "../../components/GCounterDemo.astro";
+import SharedCounterDemo from "../../components/SharedCounterDemo.astro";
+import TermCallout from "../../components/TermCallout.astro";
+
+export function getStaticPaths() {
+  return ["g-counter", "shared-counter"].map((counter) => ({
+    params: { counter },
+    props: { counter },
+  }));
+}
+
+interface Props { counter: string }
+const { counter } = Astro.props;
+const growOnly = counter === "g-counter";
+const name = growOnly ? "G-counter" : "SharedCounter";
+---
+
+<BaseLayout
+  title={`${name} live lab`}
+  description={`Run the ${name} across three tabs or devices with a real room service and Watershed kernels.`}
+>
+  <article class="live-counter-lab">
+    <header class="lab-intro">
+      <a href={`/structures/${counter}/`}>Return to the {name} lesson</a>
+      <h1>{name} live lab</h1>
+      <ComplexityBadge complexity="intermediate" />
+      <p>Open one room across three tabs or devices. You control one hiker and compare the local notebooks as you exchange updates.</p>
+    </header>
+
+    {growOnly ? <GCounterDemo live /> : <SharedCounterDemo live />}
+
+    <section class="lab-experiment" aria-labelledby="experiment-title">
+      <h2 id="experiment-title">Try a concurrent update</h2>
+      <ol>
+        <li>Create a room. Open its link in two more tabs, or share the link with two other devices. Check that Alice, Bob, and Carol have connected.</li>
+        <li>{growOnly
+          ? "In Alice's tab, record +7. In Bob's tab, record +3. Make both changes before comparing the notebooks."
+          : "In Alice's tab, send +3. In Bob's tab, send -1. Make both changes before comparing the notebooks."}</li>
+        <li>{growOnly
+          ? "From a reset count of 0, all copies should reach 10. Leave the room and join again to load the stored counts."
+          : "From a reset count of 10, all copies should reach 12. Compare the numbered log, then leave and rejoin to replay it."}</li>
+      </ol>
+      <p>Reset clears the shared room for all connected hikers. An observer can read the room but cannot edit or reset it.</p>
+    </section>
+
+    <details class="lab-notes">
+      <summary>How the real connection and storage work</summary>
+      <section aria-labelledby="live-room-title">
+        <h2 id="live-room-title">{growOnly ? "Stored counts and local copies" : "The real sequencer and storage"}</h2>
+        <p>
+          Each browser runs three Watershed kernel states. The server assigns
+          Alice, Bob, and Carol to the first three connections. Further connections
+          can observe. You can send changes only for your assigned hiker.
+          Roles belong to connections, not authenticated identities.
+        </p>
+        <p>
+          One Cloudflare <dfn><a href="/glossary/#durable-object">Durable Object</a></dfn>
+          {" "}provides the room service and its private SQLite storage.
+          A <dfn><a href="/glossary/#websocket">WebSocket</a></dfn> keeps your
+          browser connected so the server can send updates.
+        </p>
+        <TermCallout
+          term="Durable Object"
+          definition="A Cloudflare service that combines coordination for one named object with storage private to that object."
+          inlineOnly
+        />
+        <TermCallout
+          term="WebSocket"
+          definition="A persistent connection over which a browser and a server can send messages to each other."
+          inlineOnly
+        />
+        {growOnly ? (
+          <Fragment>
+            <p>
+              Your browser applies a new count before the server replies. It
+              sends your hiker's cumulative component count. The server stores
+              the largest count for each hiker and broadcasts the state.
+              Your browser merges that state through the G-counter kernel.
+              Repeated or older state does not add the same birds twice.
+            </p>
+            <p>
+              Rejoining loads the stored three component counts. Reset
+              clears them to zero and creates a new <dfn><a href="/glossary/#epoch">epoch</a></dfn>. The server rejects
+              changes from the old epoch.
+            </p>
+            <p><a href="/atlas/multi-device-g-counter/">How multi-device rooms and storage work</a></p>
+          </Fragment>
+        ) : (
+          <Fragment>
+            <p>
+              When Alice clicks <code>+3</code>, her browser calls the kernel's
+              increment operation and sends the signed amount with a unique
+              action ID. The server assigns the next sequence number and stores
+              the operation before broadcasting it. Each operation contains
+              its action ID, author, signed amount, and sequence number.
+              The server does not broadcast cumulative counter values.
+            </p>
+            <p>
+              Alice's browser matches its pending edit with the numbered echo
+              and calls the kernel's acknowledgement operation. Her count does
+              not increase twice. Other copies apply the amount through the
+              kernel's remote-operation path. The browser ignores repeated
+              sequence numbers. If a later number arrives first, it holds that
+              operation and requests the missing prefix.
+            </p>
+            <p>
+              SQLite retains up to 1,000 operations per room. Rejoining starts
+              from the agreed count of 10 and replays the stored log in order.
+              Reset clears the log, restores 10, and creates a new <dfn><a href="/glossary/#epoch">epoch</a></dfn>.
+              The server rejects requests from the old epoch. After a rejected
+              edit, the browser rolls back pending edits and reloads the log.
+            </p>
+          </Fragment>
+        )}
+        <TermCallout
+          term="epoch"
+          definition="An identifier for one generation of a room's counter state. Reset creates a new epoch."
+          inlineOnly
+        />
+        <p>
+          The optional Speed, Jitter, and Broadcast controls affect delivery
+          among the local copies in this browser. They do not delay the real
+          server's storage or message exchange. The center log shows the
+          operations in this local model; it is not a network packet trace.
+        </p>
+        <p>
+          There is no persistent offline outbox or automatic reconnect.
+          If the connection closes, you cannot make further edits. Values may
+          include unconfirmed changes. Rejoin to recover
+          {growOnly ? " the stored counts." : " the stored log."}
+        </p>
+      </section>
+    </details>
+  </article>
+</BaseLayout>
+
+<style>
+  .lab-intro > a { display: inline-flex; min-height: 44px; align-items: center; }
+  .lab-intro h1 { margin-block: var(--space-3); }
+  .lab-intro > p { margin-block: var(--space-4) 0; }
+  .lab-experiment { max-width: var(--measure-reading); margin-block: var(--space-6); }
+  .lab-experiment li { padding-block: var(--space-2); }
+  .lab-notes { border-block: var(--rule-width) solid var(--line); }
+  .lab-notes summary { min-height: 44px; padding-block: var(--space-4); font-family: var(--font-ui); font-weight: 650; cursor: pointer; }
+  .lab-notes section { padding-bottom: var(--space-4); }
+</style>

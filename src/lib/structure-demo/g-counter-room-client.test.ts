@@ -37,5 +37,7 @@ describe("G-counter room client", () => {
     expect(isRoomMessage({ type: "state", state: { ...state, counts: { A: -1, B: 3, C: 0 } } }))
       .toBe(false);
     expect(isRoomMessage({ type: "presence", connected: -1 })).toBe(false);
+    expect(isRoomMessage({ type: "presence", connected: 2, replicas: ["A", "C"] })).toBe(true);
+    expect(isRoomMessage({ type: "presence", connected: 2, replicas: ["A", "A"] })).toBe(false);
   });
 });

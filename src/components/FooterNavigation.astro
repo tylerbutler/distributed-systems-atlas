@@ -31,6 +31,13 @@ const sheets = (await getCollection("sheet", ({ data }) => data.status === "publ
       </section>
     ))}
     <section>
+      <h3>Live labs</h3>
+      <ul>
+        <li><a href="/labs/g-counter/">G-counter live lab</a></li>
+        <li><a href="/labs/shared-counter/">SharedCounter live lab</a></li>
+      </ul>
+    </section>
+    <section>
       <h3>Reference sheets</h3>
       <ul>
         {sheets.map((sheet) => (

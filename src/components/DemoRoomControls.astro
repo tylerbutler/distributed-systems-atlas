@@ -5,10 +5,10 @@ interface Props {
 const { id } = Astro.props;
 ---
 
-<details class="demo-room-disclosure" data-room-disclosure>
-  <summary id={id}>Use three devices</summary>
-  <section class="demo-room" aria-labelledby={id}>
+<section class="demo-room" aria-labelledby={id}>
     <div class="room-description">
+      <h2 id={id} data-room-title>Create or join a room</h2>
+      <p>Create a room, then open its link in two more tabs or on two other devices. Each connection controls one hiker.</p>
       <slot />
     </div>
     <div class="room-controls">
@@ -22,30 +22,37 @@ const { id } = Astro.props;
       <button type="button" data-room-action="leave" disabled>Leave room</button>
     </div>
     <p data-room-status aria-live="polite">Enable JavaScript to connect to a live room.</p>
-  </section>
-</details>
+    <a data-room-link target="_blank" rel="noopener" hidden>Open room in another tab</a>
+    <ul class="room-presence" aria-label="Hiker connections">
+      {["Alice", "Bob", "Carol"].map((name, index) => (
+        <li><strong>{name}</strong><span data-room-presence={["A", "B", "C"][index]}>Join to check</span></li>
+      ))}
+    </ul>
+</section>
 
 <style>
-  .demo-room-disclosure {
-    margin-top: var(--space-5);
-    border-block: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
-  }
-  .demo-room-disclosure summary {
-    min-height: 44px;
-    padding-block: var(--space-4);
-    font-family: var(--font-ui);
-    font-weight: 650;
-    cursor: pointer;
-  }
-  .demo-room-disclosure summary:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
   .demo-room {
     display: grid;
-    padding-bottom: var(--space-4);
+    padding-bottom: var(--space-5);
+    margin-bottom: var(--space-5);
+    border-bottom: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
     gap: var(--space-3);
+    font-family: var(--font-ui);
   }
+  .demo-room h2 { margin: 0; font-size: 1.4rem; }
+  .demo-room [hidden] { display: none; }
+  .room-presence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    padding: 0;
+    margin: var(--space-2) 0 0;
+    list-style: none;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+  }
+  .room-presence li { display: grid; gap: var(--space-1); }
+  .room-presence span { color: color-mix(in oklch, var(--clear) 80%, var(--instrument)); }
   .demo-room p,
   .room-description :global(p) {
     margin: 0;
@@ -71,8 +78,36 @@ const { id } = Astro.props;
     min-height: 44px;
     padding-inline: var(--space-2);
     text-transform: uppercase;
+    border: var(--rule-width) solid currentColor;
+    border-radius: 0;
+    color: var(--clear);
+    background: transparent;
+    font: 1rem/1.4 var(--font-data);
+    caret-color: var(--signal);
   }
   .room-controls button {
     min-height: 44px;
+    padding: 0.65rem 0.85rem;
+    border: var(--rule-width) solid currentColor;
+    border-radius: 0;
+    color: var(--clear);
+    background: transparent;
+    font: 1rem/1.4 var(--font-ui);
+    cursor: pointer;
+  }
+  .room-controls button:is(:hover, :active):not(:disabled),
+  .room-controls [data-room-action="create"]:not(:disabled) {
+    color: var(--instrument-deep);
+    background: var(--signal);
+  }
+  .room-controls :is(button, input):disabled {
+    color: color-mix(in oklch, var(--clear) 65%, var(--instrument));
+    border-style: dashed;
+    cursor: not-allowed;
+  }
+  [data-room-link] { width: fit-content; min-height: 44px; padding-block: var(--space-2); }
+  :global([data-room-connected="true"]) .room-description p,
+  :global([data-room-connected="true"]) .room-description :global(p) {
+    display: none;
   }
 </style>

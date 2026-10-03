@@ -10,17 +10,19 @@ test("native optimistic edits use numbered signed echoes once and recover missin
   await page.routeWebSocket(/\/rooms\/shared-counter\/EAGLE7$/, (socket) => {
     connection = socket;
     socket.onMessage((raw) => sent.push(JSON.parse(String(raw))));
-    socket.send(JSON.stringify({ type: "hello", room: "EAGLE7", replica: "A", connected: 3, epoch, operations: [] }));
+    socket.send(JSON.stringify({ type: "hello", room: "EAGLE7", replica: "A", connected: 3, replicas: ["A", "B", "C"], epoch, operations: [] }));
   });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/structures/shared-counter/?room=EAGLE7");
   const demo = page.getByTestId("shared-counter-demo");
-  await expect(demo.locator("[data-room-disclosure]")).toHaveAttribute("open", "");
+  await expect(page).toHaveURL(/\/labs\/shared-counter\/\?room=EAGLE7$/);
+  await expect(demo.getByRole("heading", { name: "Room connection" })).toBeVisible();
+  await demo.locator(".live-delivery-controls > summary").click();
   const totals = demo.locator("[data-shared-total]");
   const broadcast = demo.getByRole("checkbox", { name: "Broadcast" });
   await expect(demo.getByRole("button", { name: "Send +3 for Alice" })).toBeEnabled();
-  await expect(demo.getByRole("button", { name: "Send -1 for Bob" })).toBeDisabled();
-  await expect(demo.getByRole("button", { name: "Race Alice +3 and Bob -1" })).toBeDisabled();
+  await expect(demo.locator('[data-replica="B"][data-update="-1"]')).toBeDisabled();
+  await expect(demo.locator('[data-action="race"]')).toBeHidden();
   await broadcast.uncheck();
   await demo.getByRole("button", { name: "Send +3 for Alice" }).click();
   await demo.getByRole("button", { name: "Send +1 for Alice" }).click();
@@ -58,40 +60,40 @@ test("native optimistic edits use numbered signed echoes once and recover missin
   connection.send(JSON.stringify({ type: "operation", epoch, operation: third }));
   await expect(totals).toHaveText(["10", "10", "10"]);
   connection.close({ code: 1000 });
-  await expect(demo.getByRole("button", { name: "Send +1 for Alice" })).toBeDisabled();
+  await expect(demo.locator('[data-replica="A"][data-update="1"]')).toBeDisabled();
   await expect(demo.getByRole("button", { name: "Reset", exact: true })).toBeDisabled();
   await demo.getByRole("button", { name: "Leave room" }).click();
-  await expect(demo.getByRole("button", { name: "Send +1 for Alice" })).toBeEnabled();
+  await expect(demo.locator('[data-replica="A"][data-update="1"]')).toBeDisabled();
 });
 
 test("observers restore the real ordered log but cannot send or reset", async ({ page }) => {
   await page.routeWebSocket(/\/rooms\/shared-counter\/EAGLE7$/, (socket) => {
     socket.send(JSON.stringify({
-      type: "hello", room: "EAGLE7", replica: null, connected: 4, epoch,
+      type: "hello", room: "EAGLE7", replica: null, connected: 4, replicas: ["A", "B", "C"], epoch,
       operations: [
         { id: crypto.randomUUID(), sequenceNumber: 1, author: "A", amount: 3 },
         { id: crypto.randomUUID(), sequenceNumber: 2, author: "B", amount: -1 },
       ],
     }));
   });
-  await page.goto("/structures/shared-counter/?room=EAGLE7");
+  await page.goto("/labs/shared-counter/?room=EAGLE7");
   const demo = page.getByTestId("shared-counter-demo");
   await expect(demo.locator("[data-shared-total]")).toHaveText(["12", "12", "12"]);
   await expect(demo.getByLabel("Latest sequence number")).toHaveText("SN 2");
-  await expect(demo.getByRole("button", { name: "Send +1 for Alice" })).toBeDisabled();
+  await expect(demo.locator('[data-replica="A"][data-update="1"]')).toBeDisabled();
   await expect(demo.getByRole("button", { name: "Reset", exact: true })).toBeDisabled();
 });
 
 test("the largest permitted log remains readable without document overflow", async ({ page }) => {
   await page.routeWebSocket(/\/rooms\/shared-counter\/EAGLE7$/, (socket) => {
     socket.send(JSON.stringify({
-      type: "hello", room: "EAGLE7", replica: "A", connected: 1, epoch,
+      type: "hello", room: "EAGLE7", replica: "A", connected: 1, replicas: ["A"], epoch,
       operations: Array.from({ length: 1000 }, (_, index) => ({
         id: crypto.randomUUID(), sequenceNumber: index + 1, author: "C", amount: MAX_SHARED_AMOUNT,
       })),
     }));
   });
-  await page.goto("/structures/shared-counter/?room=EAGLE7");
+  await page.goto("/labs/shared-counter/?room=EAGLE7");
   const demo = page.getByTestId("shared-counter-demo");
   const value = String(10 + MAX_SHARED_AMOUNT * 1000);
   await expect(demo.locator("[data-shared-total]")).toHaveText([value, value, value]);

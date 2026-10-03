@@ -10,18 +10,25 @@ import {
 import "../styles/structure-demo-shell.css";
 
 const initial = presentSharedCounterDemo(createSharedCounterDemo());
+interface Props { live?: boolean }
+const { live = false } = Astro.props;
 ---
 
-<shared-counter-demo class="structure-demo-root" data-testid="shared-counter-demo">
+<shared-counter-demo class="structure-demo-root" data-testid="shared-counter-demo" data-live={live ? "" : undefined} data-room-role={live ? "unassigned" : undefined}>
   <section class="shared-instrument structure-demo-instrument" aria-labelledby="shared-counter-demo-title">
     <div class="operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
+    {live && (
+      <DemoRoomControls id="shared-counter-room-title">
+        <p>The room service numbers signed changes, stores each operation, and broadcasts it. Your browser applies the numbered stream through the counter kernel.</p>
+      </DemoRoomControls>
+    )}
     <header class="shared-heading">
       <div>
-        <h2 id="shared-counter-demo-title">Send signed changes through the ranger</h2>
-        <p>
+        <h2 id="shared-counter-demo-title">{live ? "Your browser's local notebooks" : "Send signed changes through the ranger"}</h2>
+        {live ? <p>Your assigned notebook has the controls. The other two are local copies in this browser, not views into the other devices.</p> : <p>
           The ranger receives every note before another hiker does. The ranger
           stamps one sequence number, then broadcasts numbered copies.
-        </p>
+        </p>}
       </div>
       <p class="sequence-rule">
         Application rule
@@ -54,6 +61,7 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
               <p data-replica-state={replica.id}>Applied through baseline</p>
             </div>
           </header>
+          {live && <p class="replica-ownership" data-replica-ownership>Local copy in this browser</p>}
           <output
             class="shared-total observation-data"
             data-shared-total={replica.id}
@@ -108,7 +116,13 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       </div>
     </div>
 
-    <DemoTransportControls />
+    {live ? (
+      <details class="live-delivery-controls">
+        <summary>Optional: local delivery model</summary>
+        <p>Speed, Jitter, and Broadcast affect delivery among the three copies in this browser. They do not pause the WebSocket connection or the server's sequencing and storage. Rejoin to recover the stored log.</p>
+        <DemoTransportControls />
+      </details>
+    ) : <DemoTransportControls />}
 
     <section class="shared-controls" aria-label="SharedCounter lesson controls">
       <button type="button" data-action="race" disabled>
@@ -145,14 +159,7 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       </div>
     </details>
 
-    <DemoRoomControls id="shared-counter-room-title">
-      <p>
-        Join one room on three devices. Each device controls one hiker.
-        Your signed change applies locally first. The real room service
-        assigns the sequence number, stores the operation, and broadcasts it.
-      </p>
-      <p><a href="#live-room-title">How the real sequencer and storage work</a></p>
-    </DemoRoomControls>
+    {!live && <p class="live-lab-link"><a href="/labs/shared-counter/">Try this across three tabs or devices</a></p>}
   </section>
 </shared-counter-demo>
 

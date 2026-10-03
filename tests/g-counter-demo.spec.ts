@@ -270,7 +270,6 @@ test("G-counter controls meet the keyboard and responsive layout contract", asyn
   expect(await controls.evaluate((element) => (
     element as HTMLElement & { nextDuration: (latency: number) => number }
   ).nextDuration(500))).toBe(500);
-  await demo.locator("[data-room-disclosure] > summary").click();
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(

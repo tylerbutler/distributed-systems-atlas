@@ -1,9 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { isRoomState, MAX_COMPONENT, parseClientMessage, ROOM_CODE } from "./protocol";
+import { isRoomPresence, isRoomState, MAX_COMPONENT, parseClientMessage, ROOM_CODE } from "./protocol";
 
 const epoch = "9df10f6c-c764-46d8-a3c8-54eec6227005";
 
 describe("G-counter room protocol", () => {
+  test("validates occupied roles without inferring them from the connection count", () => {
+    expect(isRoomPresence({ connected: 3, replicas: ["A", "C"] })).toBe(true);
+    expect(isRoomPresence({ connected: 4, replicas: ["A", "B", "C"] })).toBe(true);
+    expect(isRoomPresence({ connected: 1 })).toBe(true);
+    for (const replicas of [["A", "A"], ["D"], ["A", "B"]]) {
+      expect(isRoomPresence({ connected: 1, replicas })).toBe(false);
+    }
+    expect(isRoomPresence({ connected: -1, replicas: [] })).toBe(false);
+  });
   test("accepts cumulative component state and epoch-scoped reset", () => {
     expect(parseClientMessage(JSON.stringify({
       type: "state", epoch, count: 10,

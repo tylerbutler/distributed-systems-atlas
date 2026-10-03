@@ -8,10 +8,11 @@ interface Props {
 
 const { territory, sheetTitle } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, "");
-const structure = structureLocation(path);
+const isLiveLab = path.startsWith("/labs/");
+const structure = structureLocation(isLiveLab ? path.replace("/labs/", "/structures/") : path);
 const group = structure && "group" in structure ? structure.group : undefined;
-const currentTitle = sheetTitle ?? structure?.title ?? (group?.href === `${path}/` ? group.title : undefined);
-const currentTerritory = territory ?? (path.startsWith("/structures") ? "Structures" : undefined);
+const currentTitle = sheetTitle ?? (isLiveLab && structure ? `${structure.title} live lab` : structure?.title) ?? (group?.href === `${path}/` ? group.title : undefined);
+const currentTerritory = territory ?? (path.startsWith("/structures") || isLiveLab ? "Structures" : undefined);
 const territoryAnchors: Record<string, string> = {
   Structures: "structures",
   Mechanisms: "mechanisms",
@@ -21,7 +22,7 @@ const territoryAnchors: Record<string, string> = {
 if (currentTerritory && !territoryAnchors[currentTerritory]) {
   throw new Error(`Unknown breadcrumb territory: ${currentTerritory}`);
 }
-const isStructure = path === "/structures" || path.startsWith("/structures/");
+const isStructure = path === "/structures" || path.startsWith("/structures/") || isLiveLab;
 const rootTitle = isStructure ? "Structures" : path === "/atlas" || currentTerritory ? "Reference atlas" : path === "/glossary" ? "Glossary" : path === "/bibliography" ? "Bibliography" : "Home";
 const rootHref = isStructure ? "/structures/" : path === "/atlas" || currentTerritory ? "/atlas/" : "/";
 const territoryHref = `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
@@ -41,6 +42,7 @@ const territoryHref = `/atlas/#${territoryAnchors[currentTerritory ?? ""]}`;
         </li>
       )}
       {group && group.href !== `${path}/` && <li><a href={group.href}>{group.title}</a></li>}
+      {isLiveLab && structure && <li><a href={`${path.replace("/labs/", "/structures/")}/`}>{structure.title}</a></li>}
       {currentTitle && currentTitle !== rootTitle && <li aria-current="page">{currentTitle}</li>}
     </ol>
     <span class="observation-trace" aria-hidden="true"></span>

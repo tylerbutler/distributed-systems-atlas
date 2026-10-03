@@ -157,8 +157,9 @@ Multiplayer demos must use the demonstrated structure's native synchronization
 mechanism. Keep the transport consistent with the kernel's update and merge
 semantics.
 
-The G-counter lesson can connect three browsers through a Cloudflare Durable
-Object. The static site still works when the room service is unavailable. Each
+The G-counter live lab at `/labs/g-counter/` connects three tabs or devices
+through a Cloudflare Durable Object. The single-browser lesson at
+`/structures/g-counter/` works without the room service. Each
 connected browser runs the existing Watershed-backed G-counter model. The
 Durable Object assigns Alice, Bob, or Carol and relays cumulative counter
 state. A click updates the browser's Watershed model before the server replies.
@@ -172,8 +173,8 @@ so late state from before the reset cannot restore cleared counts. Room roles
 belong to active connections; disconnected devices cannot keep writing, and
 unconfirmed changes have no persistent browser outbox.
 
-The SharedCounter lesson has a separate real-room mode at
-`/structures/shared-counter/`. Its Durable Object assigns consecutive sequence
+The SharedCounter live lab is at `/labs/shared-counter/`; its single-browser
+lesson remains at `/structures/shared-counter/`. Its Durable Object assigns consecutive sequence
 numbers and stores signed increments/decrements, not cumulative state.
 The browser uses Watershed's counter kernel for optimistic edits, FIFO
 acknowledgements, remote application, and LIFO rollback. Repeated sequence
@@ -181,6 +182,14 @@ numbers are ignored; gaps trigger a request for missing operations.
 Rejoining replays the SQLite log from the agreed value of 10. Each room
 retains at most 1,000 operations; reset clears the log and creates a new epoch.
 Three connections control the hikers and further connections observe.
+
+Both labs put room setup first and highlight the assigned hiker's notebook.
+The other notebooks are local kernel copies, not remote browser views.
+The server reports occupied hiker roles with each greeting and presence update.
+Older servers that report only a connection count show "Presence unavailable"
+instead of inferred role occupancy. Optional Speed, Jitter, and Broadcast controls
+affect only the local delivery model; they do not pause the real connection.
+Lesson links with an existing `?room=` parameter redirect to the matching lab.
 
 `worker/sluice.ts` is a small concrete Durable Object facade shared by both
 room classes. It manages hibernatable sockets, connection roles, presence,

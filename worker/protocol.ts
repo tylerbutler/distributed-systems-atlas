@@ -1,5 +1,9 @@
 export const ROOM_CODE = /^[A-Z0-9]{4,8}$/;
 export type RoomReplica = "A" | "B" | "C";
+export type RoomPresence = {
+  readonly connected: number;
+  readonly replicas?: readonly RoomReplica[];
+};
 export const MAX_COMPONENT = Math.floor(Number.MAX_SAFE_INTEGER / 3);
 const EPOCH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -12,6 +16,19 @@ export type RoomState = {
 export type ClientMessage =
   | { readonly type: "state"; readonly epoch: string; readonly count: number }
   | { readonly type: "reset"; readonly epoch: string };
+
+export function isRoomPresence(value: unknown): value is RoomPresence {
+  if (!value || typeof value !== "object") return false;
+  const presence = value as Record<string, unknown>;
+  return typeof presence.connected === "number"
+    && Number.isSafeInteger(presence.connected) && presence.connected >= 0
+    && (presence.replicas === undefined || (
+      Array.isArray(presence.replicas)
+      && presence.replicas.length <= Math.min(3, presence.connected)
+      && new Set(presence.replicas).size === presence.replicas.length
+      && presence.replicas.every((replica) => replica === "A" || replica === "B" || replica === "C")
+    ));
+}
 
 export function isEpoch(value: unknown): value is string {
   return typeof value === "string" && EPOCH.test(value);

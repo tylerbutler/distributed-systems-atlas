@@ -45,6 +45,14 @@ function room() {
 }
 
 describe("SharedCounter real-room protocol", () => {
+  test("receives validated hiker presence", () => {
+    const { socket, handlers } = room();
+    socket.receive({ type: "presence", connected: 2, replicas: ["A", "C"] });
+    expect(handlers.presence).toHaveBeenLastCalledWith(2, ["A", "C"]);
+    socket.receive({ type: "presence", connected: 2, replicas: ["A", "A"] });
+    expect(handlers.closed).toHaveBeenCalled();
+    expect(handlers.status).toHaveBeenLastCalledWith("The live room sent an invalid message.");
+  });
   test("accepts only bounded signed operations, reset epochs, and valid recovery cursors", () => {
     const input = { type: "increment", epoch, id: crypto.randomUUID(), amount: -3 };
     expect(parseSharedCounterMessage(JSON.stringify(input))).toEqual(input);

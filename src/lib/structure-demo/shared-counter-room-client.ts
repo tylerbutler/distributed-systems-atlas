@@ -1,4 +1,4 @@
-import { isEpoch, ROOM_CODE, type RoomReplica } from "../../../worker/protocol";
+import { isEpoch, isRoomPresence, ROOM_CODE, type RoomPresence, type RoomReplica } from "../../../worker/protocol";
 import {
   isSequencedCounterOperation,
   isSharedAmount,
@@ -8,9 +8,9 @@ import {
 } from "../../../worker/shared-counter-protocol";
 import { RoomSocket } from "./room-socket";
 
-type Hello = SharedCounterHistory & {
+type Hello = SharedCounterHistory & RoomPresence & {
   readonly type: "hello"; readonly room: string;
-  readonly replica: RoomReplica | null; readonly connected: number;
+  readonly replica: RoomReplica | null;
 };
 type Message =
   | Hello
@@ -18,13 +18,13 @@ type Message =
   | (SharedCounterHistory & { readonly type: "reset" })
   | (SharedCounterHistory & { readonly type: "error"; readonly message: string })
   | { readonly type: "operation"; readonly epoch: string; readonly operation: SequencedCounterOperation }
-  | { readonly type: "presence"; readonly connected: number };
+  | (RoomPresence & { readonly type: "presence" });
 export type SharedCounterRoomHandlers = {
   hello(message: Hello): void;
   operation(operation: SequencedCounterOperation): void;
   reset(history: SharedCounterHistory): void;
   rejected(message: string, history: SharedCounterHistory): void;
-  presence(connected: number): void;
+  presence(connected: number, replicas?: readonly RoomReplica[]): void;
   status(message: string): void;
   closed(): void;
 };
@@ -32,9 +32,7 @@ export type SharedCounterRoomHandlers = {
 export function isSharedCounterRoomMessage(value: unknown): value is Message {
   if (!value || typeof value !== "object") return false;
   const message = value as Record<string, unknown>;
-  const connected = typeof message.connected === "number"
-    && Number.isSafeInteger(message.connected) && message.connected >= 0;
-  if (message.type === "presence") return connected;
+  if (message.type === "presence") return isRoomPresence(message);
   if (message.type === "operation") {
     return isEpoch(message.epoch) && isSequencedCounterOperation(message.operation);
   }
@@ -42,9 +40,10 @@ export function isSharedCounterRoomMessage(value: unknown): value is Message {
   if (message.type === "history") return true;
   if (message.type === "reset") return value.operations.length === 0;
   if (message.type === "error") return typeof message.message === "string";
-  return message.type === "hello" && connected
+  return message.type === "hello"
     && typeof message.room === "string" && ROOM_CODE.test(message.room)
-    && (message.replica === null || message.replica === "A" || message.replica === "B" || message.replica === "C");
+    && (message.replica === null || message.replica === "A" || message.replica === "B" || message.replica === "C")
+    && isRoomPresence(message);
 }
 
 export class SharedCounterRoomClient {
@@ -113,7 +112,7 @@ export class SharedCounterRoomClient {
     try {
       if (!isSharedCounterRoomMessage(value)) throw new Error("The live room sent an invalid message.");
       if (value.type === "presence") {
-        this.handlers.presence(value.connected);
+        this.handlers.presence(value.connected, value.replicas);
         return;
       }
       if (value.type === "hello" || value.type === "error" || value.type === "reset") {

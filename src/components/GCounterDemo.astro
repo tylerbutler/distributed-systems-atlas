@@ -11,22 +11,31 @@ import { REPLICA_IDS } from "../lib/structure-demo/replicas";
 import "../styles/structure-demo-shell.css";
 
 const initial = presentGCounterDemo(createGCounterDemo());
+interface Props { live?: boolean }
+const { live = false } = Astro.props;
 ---
 
 <g-counter-demo
   class="structure-demo-root"
   data-testid="g-counter-demo"
+  data-live={live ? "" : undefined}
+  data-room-role={live ? "unassigned" : undefined}
 >
   <section class="gcounter-instrument structure-demo-instrument" aria-labelledby="gcounter-demo-title">
     <div class="operation-layer structure-demo-operation-layer" data-operation-layer aria-hidden="true"></div>
+    {live && (
+      <DemoRoomControls id="gcounter-room-title">
+        <p>The room service stores and shares cumulative counts. Your browser merges them through the G-counter kernel.</p>
+      </DemoRoomControls>
+    )}
     <header class="gcounter-heading">
       <div>
-        <h2 id="gcounter-demo-title">Record sightings on three hikes</h2>
-        <p>
+        <h2 id="gcounter-demo-title">{live ? "Your browser's local notebooks" : "Record sightings on three hikes"}</h2>
+        {live ? <p>Your assigned notebook has the controls. The other two are local copies in this browser, not views into the other devices.</p> : <p>
           Use the controls in each notebook to explore the counter. Each hiker
           leaves their running count at a known checkpoint. Turn off
           Broadcast to hold several notes before delivery.
-        </p>
+        </p>}
       </div>
       <p class="merge-rule">
         Merge rule
@@ -60,6 +69,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
                 <p data-replica-state={replica.id}>Connected to checkpoint network</p>
               </div>
             </header>
+            {live && <p class="replica-ownership" data-replica-ownership>Local copy in this browser</p>}
             <output class="gcounter-total observation-data" data-total={replica.id}>
               {replica.value}
             </output>
@@ -100,11 +110,17 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </p>
     <p class="gcounter-error" role="alert" hidden></p>
 
-    <DemoTransportControls />
+    {live ? (
+      <details class="live-delivery-controls">
+        <summary>Optional: local delivery model</summary>
+        <p>Speed, Jitter, and Broadcast affect delivery among the three copies in this browser. They do not pause the WebSocket connection or the server's storage. Rejoin to load the stored counts.</p>
+        <DemoTransportControls />
+      </details>
+    ) : <DemoTransportControls />}
 
     <section class="gcounter-controls" aria-label="Worked example controls">
-      <h3>Run the worked example</h3>
-      <p>
+      <h3 hidden={live}>Run the worked example</h3>
+      <p hidden={live}>
         Reset the sandbox and leave Alice's and Bob's notes together, or adjust
         how the notes travel.
       </p>
@@ -188,18 +204,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
       </div>
     </details>
 
-    <DemoRoomControls id="gcounter-room-title">
-      <p>
-        Join the same room on three devices. Each device controls one hiker,
-        and every browser runs the G-counter. Your hiker's count changes
-        before the server replies; the room shares cumulative counts.
-      </p>
-      <p>
-        <a href="/atlas/multi-device-g-counter/">
-          How multi-device rooms and storage work
-        </a>
-      </p>
-    </DemoRoomControls>
+    {!live && <p class="live-lab-link"><a href="/labs/g-counter/">Try this across three tabs or devices</a></p>}
   </section>
 </g-counter-demo>
 
