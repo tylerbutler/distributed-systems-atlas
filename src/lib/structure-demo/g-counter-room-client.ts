@@ -1,5 +1,7 @@
 import type { ReplicaId } from "./g-counter";
 import { isCount, isEpoch, isRoomState, ROOM_CODE, type RoomState } from "../../../worker/protocol";
+import { RoomSocket } from "./room-socket";
+export { normalizeRoomCode, roomWebSocketUrl } from "./room-socket";
 export type { RoomCounts, RoomState } from "../../../worker/protocol";
 
 type RoomHello = {
@@ -48,73 +50,39 @@ export type GCounterRoomHandlers = {
   closed(): void;
 };
 
-export function normalizeRoomCode(value: string): string {
-  return value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
-}
-
-export function roomWebSocketUrl(origin: string, room: string): string {
-  const url = new URL(`/rooms/${normalizeRoomCode(room)}`, origin);
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-  return url.toString();
-}
-
 export class GCounterRoomClient {
-  private socket?: WebSocket;
+  private readonly socket: RoomSocket;
 
   constructor(
-    private readonly origin: string,
+    origin: string,
     private readonly handlers: GCounterRoomHandlers,
-  ) {}
+  ) {
+    this.socket = new RoomSocket(origin, {
+      message: (message) => this.receive(message),
+      status: (message) => handlers.status(message),
+      closed: () => handlers.closed(),
+    });
+  }
 
   connect(room: string): void {
-    this.close();
-    const socket = new WebSocket(roomWebSocketUrl(this.origin, room));
-    this.socket = socket;
-    socket.addEventListener("message", (event) => {
-      if (this.socket === socket) this.receive(String(event.data));
-    });
-    socket.addEventListener("error", () => {
-      if (this.socket === socket) this.handlers.status("Could not connect to the live room.");
-    });
-    socket.addEventListener("close", () => {
-      if (this.socket === socket) {
-        this.socket = undefined;
-        this.handlers.closed();
-      }
-    });
+    this.socket.connect(room);
   }
 
   publish(count: number, epoch: string): void {
     if (!isCount(count) || !isEpoch(epoch)) throw new Error("Invalid G-counter room state.");
-    this.send({ type: "state", epoch, count });
+    this.socket.send({ type: "state", epoch, count });
   }
 
   reset(epoch: string): void {
     if (!isEpoch(epoch)) throw new Error("Invalid G-counter reset epoch.");
-    this.send({ type: "reset", epoch });
+    this.socket.send({ type: "reset", epoch });
   }
 
   close(): void {
-    const socket = this.socket;
-    this.socket = undefined;
-    socket?.close(1000, "left room");
+    this.socket.close();
   }
 
-  private send(message: object): void {
-    if (this.socket?.readyState !== WebSocket.OPEN) {
-      throw new Error("The live room is not connected.");
-    }
-    this.socket.send(JSON.stringify(message));
-  }
-
-  private receive(raw: string): void {
-    let message: unknown;
-    try {
-      message = JSON.parse(raw);
-    } catch {
-      this.handlers.status("The live room sent an invalid message.");
-      return;
-    }
+  private receive(message: unknown): void {
     if (!isRoomMessage(message)) {
       this.handlers.status("The live room sent an invalid message.");
       return;

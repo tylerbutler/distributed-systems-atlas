@@ -21,6 +21,10 @@
       {
         "name": "G_COUNTER_ROOMS",
         "class_name": "GCounterRoom"
+      },
+      {
+        "name": "SHARED_COUNTER_ROOMS",
+        "class_name": "SharedCounterRoom"
       }
     ]
   },
@@ -28,6 +32,10 @@
     {
       "tag": "v1",
       "new_sqlite_classes": ["GCounterRoom"]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["SharedCounterRoom"]
     }
   ]
 }

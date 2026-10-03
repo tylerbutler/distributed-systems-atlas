@@ -148,7 +148,7 @@ Production deploys run when `main` changes. Leave branch previews disabled
 until preview Durable Object bindings are configured; previews do not inherit
 production bindings.
 
-## Live G-counter rooms
+## Live counter rooms
 
 Multiplayer demos must use the demonstrated structure's native synchronization
 mechanism. Keep the transport consistent with the kernel's update and merge
@@ -168,6 +168,24 @@ initialize it from their earlier stored increments. Reset creates a new epoch,
 so late state from before the reset cannot restore cleared counts. Room roles
 belong to active connections; disconnected devices cannot keep writing, and
 unconfirmed changes have no persistent browser outbox.
+
+The SharedCounter lesson has a separate real-room mode at
+`/structures/shared-counter/`. Its Durable Object assigns consecutive sequence
+numbers and stores signed increments/decrements, not cumulative state.
+The browser uses Watershed's counter kernel for optimistic edits, FIFO
+acknowledgements, remote application, and LIFO rollback. Repeated sequence
+numbers are ignored; gaps trigger a request for missing operations.
+Rejoining replays the SQLite log from the agreed value of 10. Each room
+retains at most 1,000 operations; reset clears the log and creates a new epoch.
+Three connections control the hikers and further connections observe.
+
+`worker/sluice.ts` is a small concrete Durable Object facade shared by both
+room classes. It manages hibernatable sockets, connection roles, presence,
+and broadcasts. `room-socket.ts` shares browser connection handling, and
+`DemoRoomControls.astro` shares room controls. Each structure keeps its own
+native synchronization protocol and storage. This facade is not a replacement
+for Watershed's full document runtime. There is no offline outbox or automatic
+reconnect in either real-room demo.
 
 Use Astro alone for normal content and interface work:
 

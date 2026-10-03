@@ -1,8 +1,9 @@
 import { DurableObject } from "cloudflare:workers";
 import { parseClientMessage, ROOM_CODE, type RoomState } from "./protocol";
+import { DurableObjectSluice } from "./sluice";
+import { SharedCounterRoom } from "./shared-counter-room";
+export { SharedCounterRoom };
 
-type ReplicaId = "A" | "B" | "C";
-type Session = { readonly replica: ReplicaId | null };
 type StoredCounter = {
   readonly epoch: string;
   readonly a: number;
@@ -12,13 +13,15 @@ type StoredCounter = {
 
 interface Env {
   G_COUNTER_ROOMS: DurableObjectNamespace<GCounterRoom>;
+  SHARED_COUNTER_ROOMS: DurableObjectNamespace<SharedCounterRoom>;
 }
 
-const replicas: readonly ReplicaId[] = ["A", "B", "C"];
-
 export class GCounterRoom extends DurableObject<Env> {
+  private readonly sluice: DurableObjectSluice;
+
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
+    this.sluice = new DurableObjectSluice(ctx);
     this.ctx.storage.sql.exec(`
       CREATE TABLE IF NOT EXISTS counter (
         singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
@@ -49,41 +52,17 @@ export class GCounterRoom extends DurableObject<Env> {
   }
 
   fetch(request: Request): Response {
-    const upgrade = request.headers.get("Upgrade");
-    if (upgrade?.toLowerCase() !== "websocket") {
-      return new Response("Expected a WebSocket upgrade.", { status: 426 });
-    }
-
-    const pair = new WebSocketPair();
-    const [client, server] = Object.values(pair);
-    const used = new Set(
-      this.ctx.getWebSockets()
-        .map((socket) => socket.deserializeAttachment() as Session | null)
-        .map((session) => session?.replica)
-        .filter((replica): replica is ReplicaId => replica !== null && replica !== undefined),
-    );
-    const replica = replicas.find((candidate) => !used.has(candidate)) ?? null;
-    server.serializeAttachment({ replica } satisfies Session);
-    this.ctx.acceptWebSocket(server);
-    server.send(JSON.stringify({
-      type: "hello",
-      room: new URL(request.url).pathname.split("/").at(-1),
-      replica,
-      state: this.snapshot(),
-      connected: this.ctx.getWebSockets().length,
-    }));
-    this.broadcastPresence();
-    return new Response(null, { status: 101, webSocket: client });
+    return this.sluice.connect(request, { state: this.snapshot() });
   }
 
   webSocketMessage(socket: WebSocket, value: string | ArrayBuffer): void {
-    const session = socket.deserializeAttachment() as Session | null;
+    const replica = this.sluice.replica(socket);
     const message = parseClientMessage(value);
     if (!message) {
       this.reject(socket, "The room rejected invalid state. Reload the page if it uses an older room protocol.");
       return;
     }
-    if (!session?.replica) {
+    if (!replica) {
       this.reject(socket, "This device is observing. Three hikers are already connected.");
       return;
     }
@@ -97,31 +76,27 @@ export class GCounterRoom extends DurableObject<Env> {
         "UPDATE counter SET epoch = ?, a = 0, b = 0, c = 0 WHERE singleton = 1",
         crypto.randomUUID(),
       );
-      this.broadcast({ type: "reset", state: this.snapshot() });
+      this.sluice.broadcast({ type: "reset", state: this.snapshot() });
       return;
     }
-    if (message.count <= current.counts[session.replica]) {
+    if (message.count <= current.counts[replica]) {
       socket.send(JSON.stringify({ type: "state", state: current }));
       return;
     }
-    const column = { A: "a", B: "b", C: "c" }[session.replica];
+    const column = { A: "a", B: "b", C: "c" }[replica];
     this.ctx.storage.sql.exec(
       `UPDATE counter SET ${column} = MAX(${column}, ?) WHERE singleton = 1`,
       message.count,
     );
-    this.broadcast({ type: "state", state: this.snapshot() });
+    this.sluice.broadcast({ type: "state", state: this.snapshot() });
   }
 
   webSocketClose(): void {
-    this.broadcastPresence();
+    this.sluice.presence();
   }
 
   webSocketError(): void {
-    this.broadcastPresence();
-  }
-
-  private broadcastPresence(): void {
-    this.broadcast({ type: "presence", connected: this.ctx.getWebSockets().length });
+    this.sluice.presence();
   }
 
   private snapshot(): RoomState {
@@ -136,24 +111,21 @@ export class GCounterRoom extends DurableObject<Env> {
     socket.send(JSON.stringify({ type: "error", message, state: this.snapshot() }));
   }
 
-  private broadcast(message: object): void {
-    const encoded = JSON.stringify(message);
-    for (const socket of this.ctx.getWebSockets()) socket.send(encoded);
-  }
 }
 
 export default {
   fetch(request: Request, env: Env): Response | Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/health") return new Response("ok");
-    const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{4,8})$/);
-    if (!match || !ROOM_CODE.test(match[1])) {
+    const match = url.pathname.match(/^\/rooms\/(shared-counter\/)?([A-Z0-9]{4,8})$/);
+    if (!match || !ROOM_CODE.test(match[2])) {
       return new Response("Not found.", { status: 404 });
     }
     const origin = request.headers.get("Origin");
     if (origin && origin !== url.origin) {
       return new Response("Origin not allowed.", { status: 403 });
     }
-    return env.G_COUNTER_ROOMS.getByName(match[1]).fetch(request);
+    const namespace = match[1] ? env.SHARED_COUNTER_ROOMS : env.G_COUNTER_ROOMS;
+    return namespace.getByName(match[2]).fetch(request);
   },
 } satisfies ExportedHandler<Env>;

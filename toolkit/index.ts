@@ -1,6 +1,8 @@
 import * as core from "./build/dev/javascript/atlas_toolkit/atlas_toolkit.mjs";
 import * as sluiceCore from "./sluice-runtime.mjs";
-import { Result$isOk, Result$Ok$0, type Result as GleamResult } from "./build/dev/javascript/prelude.mjs";
+import * as counterCore from "./build/dev/javascript/watershed/watershed/counter_kernel.mjs";
+import { length as gleamListLength } from "./build/dev/javascript/gleam_stdlib/gleam/list.mjs";
+import { Result$isOk, Result$Ok$0, Result$Error$0, type Result as GleamResult } from "./build/dev/javascript/prelude.mjs";
 
 export * from "./remaining-structures.js";
 
@@ -75,6 +77,89 @@ export type SharedCounterTransportResult = {
   view: SharedCounterRoomView;
   deliveries: TransportDelivery[];
 };
+declare const sharedCounterBrand: unique symbol;
+export type SharedCounter = { readonly [sharedCounterBrand]: true };
+const sharedCounters = new WeakMap<SharedCounter, counterCore.CounterState$>();
+
+function sharedCounterHandle(input: unknown): counterCore.CounterState$ {
+  requireInput(input !== null && typeof input === "object" && sharedCounters.has(input as SharedCounter),
+    "expected a Watershed SharedCounter kernel state");
+  return sharedCounters.get(input as SharedCounter)!;
+}
+
+function sharedCounterBox(state: counterCore.CounterState$): SharedCounter {
+  const boxed = Object.freeze({}) as SharedCounter;
+  sharedCounters.set(boxed, state);
+  return boxed;
+}
+
+function counterKernel<T>(result: GleamResult<T, counterCore.KernelError$>): T {
+  if (!Result$isOk(result)) {
+    throw new InputError("invalid-state", counterCore.KernelError$detail(Result$Error$0(result)!));
+  }
+  return Result$Ok$0(result)!;
+}
+
+export function createSharedCounter(initialValue: unknown = 0): Result<SharedCounter> {
+  return attempt(() => sharedCounterBox(counterCore.from_summary(signedInteger(initialValue))));
+}
+
+export function inspectSharedCounter(input: unknown): Result<{ value: number; pending: number }> {
+  return attempt(() => {
+    const state = sharedCounterHandle(input);
+    return {
+      value: counterCore.summary_value(state),
+      pending: gleamListLength(counterCore.CounterState$CounterState$pending(state)),
+    };
+  });
+}
+
+export function incrementSharedCounter(input: unknown, amount: unknown): Result<{
+  state: SharedCounter; amount: number; messageId: number;
+}> {
+  return attempt(() => {
+    const state = sharedCounterHandle(input);
+    const delta = signedInteger(amount, "invalid-input");
+    requireInput(Number.isSafeInteger(counterCore.summary_value(state) + delta),
+      "SharedCounter value exceeds the safe integer range", "counter-exhausted");
+    const [next, , operation, messageId] = counterCore.increment(state, delta);
+    return {
+      state: sharedCounterBox(next),
+      amount: counterCore.CounterOperation$Increment$increment_amount(operation),
+      messageId,
+    };
+  });
+}
+
+export function applySharedCounterOperation(input: unknown, amount: unknown): Result<SharedCounter> {
+  return attempt(() => {
+    const state = sharedCounterHandle(input);
+    const delta = signedInteger(amount, "invalid-input");
+    requireInput(Number.isSafeInteger(counterCore.summary_value(state) + delta),
+      "SharedCounter value exceeds the safe integer range", "counter-exhausted");
+    return sharedCounterBox(counterCore.apply_remote(state, counterCore.CounterOperation$Increment(delta))[0]);
+  });
+}
+
+export function acknowledgeSharedCounter(
+  input: unknown, amount: unknown, messageId: unknown,
+): Result<SharedCounter> {
+  return attempt(() => sharedCounterBox(counterKernel(counterCore.ack_local_with_message_id(
+    sharedCounterHandle(input),
+    counterCore.CounterOperation$Increment(signedInteger(amount, "invalid-input")),
+    counter(messageId),
+  ))));
+}
+
+export function rollbackSharedCounter(
+  input: unknown, amount: unknown, messageId: unknown,
+): Result<SharedCounter> {
+  return attempt(() => sharedCounterBox(counterKernel(counterCore.rollback(
+    sharedCounterHandle(input),
+    counterCore.CounterOperation$Increment(signedInteger(amount, "invalid-input")),
+    counter(messageId),
+  ))[0]));
+}
 export type SetRoomKind = "g-set" | "two-p-set" | "or-set";
 export type SetRoomAction = "add" | "remove";
 declare const setRoomBrand: unique symbol;

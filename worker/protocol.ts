@@ -1,4 +1,5 @@
 export const ROOM_CODE = /^[A-Z0-9]{4,8}$/;
+export type RoomReplica = "A" | "B" | "C";
 export const MAX_COMPONENT = Math.floor(Number.MAX_SAFE_INTEGER / 3);
 const EPOCH = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

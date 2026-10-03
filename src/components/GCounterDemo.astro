@@ -1,5 +1,6 @@
 ---
 import DemoTransportControls from "./DemoTransportControls.astro";
+import DemoRoomControls from "./DemoRoomControls.astro";
 import StationMark from "./StationMark.astro";
 import {
   createGCounterDemo,
@@ -99,9 +100,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
     </p>
     <p class="gcounter-error" role="alert" hidden></p>
 
-    <section class="gcounter-room" aria-labelledby="gcounter-room-title">
-      <div>
-        <h3 id="gcounter-room-title">Use three devices</h3>
+    <DemoRoomControls id="gcounter-room-title">
         <p>
           Join the same room on three devices. Each device controls one hiker,
           and every browser runs the G-counter. Your hiker's count changes
@@ -112,28 +111,7 @@ const initial = presentGCounterDemo(createGCounterDemo());
             How multi-device rooms and storage work
           </a>
         </p>
-      </div>
-      <div class="gcounter-room-controls">
-        <label>
-          <span>Room code</span>
-          <input
-            type="text"
-            inputmode="text"
-            autocomplete="off"
-            maxlength="8"
-            data-room-code
-            disabled
-          />
-        </label>
-        <button type="button" data-room-action="create" disabled>Create room</button>
-        <button type="button" data-room-action="join" disabled>Join room</button>
-        <button type="button" data-room-action="copy" disabled>Copy room link</button>
-        <button type="button" data-room-action="leave" disabled>Leave room</button>
-      </div>
-      <p data-room-status aria-live="polite">
-        Live rooms are not configured on this deployment.
-      </p>
-    </section>
+    </DemoRoomControls>
 
     <DemoTransportControls />
 
@@ -290,44 +268,6 @@ const initial = presentGCounterDemo(createGCounterDemo());
   .operation-key strong {
     display: block;
     color: var(--clear);
-  }
-
-  .gcounter-room {
-    display: grid;
-    margin-block: var(--space-4);
-    padding: var(--space-4);
-    border: var(--rule-width) solid color-mix(in oklch, var(--clear) 35%, var(--instrument));
-    gap: var(--space-3);
-  }
-
-  .gcounter-room h3,
-  .gcounter-room p {
-    margin: 0;
-  }
-
-  .gcounter-room-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: end;
-    gap: var(--space-2);
-  }
-
-  .gcounter-room-controls label {
-    display: grid;
-    gap: var(--space-1);
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-  }
-
-  .gcounter-room-controls input {
-    width: 10ch;
-    min-height: 44px;
-    padding-inline: var(--space-2);
-    text-transform: uppercase;
-  }
-
-  .gcounter-room-controls button {
-    min-height: 44px;
   }
 
   .operation-key-mark {

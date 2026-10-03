@@ -1,5 +1,6 @@
 ---
 import DemoTransportControls from "./DemoTransportControls.astro";
+import DemoRoomControls from "./DemoRoomControls.astro";
 import StationMark from "./StationMark.astro";
 import {
   createSharedCounterDemo,
@@ -107,6 +108,15 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
       </div>
     </div>
 
+    <DemoRoomControls id="shared-counter-room-title">
+      <p>
+        Join one room on three devices. Each device controls one hiker.
+        Your signed change applies locally first. The real room service
+        assigns the sequence number, stores the operation, and broadcasts it.
+      </p>
+      <p><a href="#live-room-title">How the real sequencer and storage work</a></p>
+    </DemoRoomControls>
+
     <DemoTransportControls />
 
     <section class="shared-controls" aria-label="SharedCounter lesson controls">
@@ -132,11 +142,14 @@ const initial = presentSharedCounterDemo(createSharedCounterDemo());
           A network can repeat a stamped copy. Each hiker records the
           sequence numbers they have applied and ignores repeated copies.
         </p>
-        <pre aria-label="SharedCounter sequence-number rule"><code>new SN → apply signed delta
-seen SN → ignore duplicate</code></pre>
+        <pre aria-label="SharedCounter sequence-number rule"><code>        next SN → apply remote delta or acknowledge own edit
+        seen SN → ignore duplicate
+        missing SN → hold later operations and request history</code></pre>
         <p>
-          This demo keeps the log in memory. Durable storage and reconnect
-          recovery are separate runtime responsibilities.
+          The single-browser mode keeps its log in memory. Three-device
+          mode uses durable storage for up to 1,000 numbered operations. Rejoining
+          replays that log from the agreed count of 10. Broadcast pauses local
+          delivery animation, not the real server's sequencing or storage.
         </p>
       </div>
     </details>
@@ -309,11 +322,13 @@ seen SN → ignore duplicate</code></pre>
   .shared-total {
     display: block;
     width: fit-content;
+    max-width: 100%;
     margin-top: var(--space-4);
     color: var(--signal);
     font-size: clamp(3rem, 7vw, 6rem);
     font-weight: 650;
     line-height: 0.95;
+    overflow-wrap: anywhere;
   }
 
   .shared-total + p {
