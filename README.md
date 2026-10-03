@@ -115,9 +115,11 @@ one deployment. Static files normally bypass Worker execution. Requests to
 `/rooms/*` and `/health` run the Worker first.
 
 Use Cloudflare Workers Builds to deploy pushes from GitHub without GitHub
-Actions secrets:
+Actions:
 
-1. In **Workers & Pages**, import `tylerbutler/distributed-systems-atlas`.
+1. In **Workers & Pages**, select `distributed-systems-atlas`. Open
+   **Settings > Builds > Connect** and connect
+   `tylerbutler/distributed-systems-atlas`.
 2. Set the production branch to `main` and the root directory to `/`.
 3. Set the build command to:
 
@@ -126,7 +128,8 @@ Actions secrets:
    ```
 
 4. Set the deploy command to `pnpm run deploy`.
-5. Enable build caching, then save and deploy.
+5. Enable build caching, disable non-production branch builds, then save.
+6. Push a commit to `main` to trigger a build and deployment.
 
 Cloudflare installs the pnpm version declared in `package.json`. The build
 command installs the Gleam version declared in `mise.toml`. Wrangler reads
