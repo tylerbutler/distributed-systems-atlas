@@ -31,7 +31,7 @@ for (const width of [390, 1440]) {
     await expect(page.locator(".sheet-opening > p").first())
       .toHaveCSS("font-family", /Encode Sans Variable/);
     await expect(page.getByRole("complementary", { name: "Correctness review warning" }))
-      .toBeInViewport();
+      .toHaveCount(0);
 
     const contrast = await page.evaluate(() => {
       const context = document.createElement("canvas").getContext("2d");
@@ -87,6 +87,27 @@ for (const width of [390, 1440]) {
       .toBe(fieldColors.index);
   });
 }
+
+test("the multiplayer note keeps every definition visible on phones, tablets, and desktops", async ({ page }) => {
+  await page.goto("/atlas/multiplayer-rooms/");
+  const terms = [
+    "CRDT", "DDS", "sequencer", "Durable Object", "WebSocket",
+    "optimistic update", "state snapshot", "hibernation", "epoch",
+  ];
+  await expect(page.locator(".sheet-body .term-callout")).toHaveCount(terms.length);
+  for (const width of [390, 1024, 1152, 1180, 1194, 1366, 1440]) {
+    await page.setViewportSize({ width, height: 820 });
+    for (const term of terms) {
+      const definition = page.getByLabel(`${term} definition`, { exact: true });
+      await expect(definition).toBeVisible();
+      await definition.scrollIntoViewIfNeeded();
+      await expect(definition).toBeInViewport();
+    }
+    expect(await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ), `Definitions at ${width}px`).toBe(0);
+  }
+});
 
 test("Systems and the reference index reflow at narrow and wide widths", async ({ page }) => {
   for (const route of ["/atlas/", "/atlas/multiplayer-rooms/"]) {

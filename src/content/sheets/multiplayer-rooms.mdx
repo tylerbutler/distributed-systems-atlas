@@ -4,6 +4,7 @@ summary: Compare CRDT merging and DDS sequencing over shared room connections an
 territory: systems
 status: published
 complexity: intermediate
+showCorrectnessWarning: false
 requires: []
 introduces: [CRDT, DDS, sequencer, Durable Object, WebSocket, optimistic update, state snapshot, epoch, hibernation]
 related: [local-history]
@@ -95,14 +96,14 @@ private SQLite database. A structure's namespace and the room code select
 the object. The same code in different namespaces selects separate rooms
 and databases. The code is not a column in the storage tables.
 
-<SheetTermCallout sheet="multiplayer-rooms" term="Durable Object" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="Durable Object" />
 
 A <dfn><a href="/glossary/#websocket">WebSocket</a></dfn> keeps each browser
 connected so the server can send updates without another browser request.
 For example, the current G-counter room `EAGLE7` uses `/rooms/EAGLE7`,
 while SharedCounter uses `/rooms/shared-counter/EAGLE7` on the same origin.
 
-<SheetTermCallout sheet="multiplayer-rooms" term="WebSocket" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="WebSocket" />
 
 The current rooms assign the first available role: Alice, Bob, or Carol.
 Further connections can observe but cannot edit or reset. The first
@@ -132,7 +133,7 @@ replies. This is an
 <dfn><a href="/glossary/#optimistic-update">optimistic update</a></dfn>.
 Her browser sends her cumulative component, not a command to add seven:
 
-<SheetTermCallout sheet="multiplayer-rooms" term="optimistic update" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="optimistic update" />
 
 ```json
 {
@@ -197,7 +198,7 @@ format required by the structure. The existing CRDT room uses a snapshot
 and the DDS room uses a log, but those storage choices are not universal
 requirements of their data models.
 
-<SheetTermCallout sheet="multiplayer-rooms" term="state snapshot" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="state snapshot" />
 
 <div class="sheet-table-scroll" role="region" aria-label="Room data lifetimes" tabindex="0">
 
@@ -217,7 +218,7 @@ accepted WebSockets open. The shared connection helper uses
 do not survive that lifecycle. Presence is computed from open sockets;
 there is no participant table.
 
-<SheetTermCallout sheet="multiplayer-rooms" term="hibernation" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="hibernation" />
 
 ### Example: G-counter snapshot
 
@@ -317,7 +318,7 @@ Any connected hiker can reset the current rooms. Reset creates a new
 requests from the previous generation. Browsers ignore old-generation
 updates. Reset waits for server confirmation and retains active roles.
 
-<SheetTermCallout sheet="multiplayer-rooms" term="epoch" inlineOnly />
+<SheetTermCallout sheet="multiplayer-rooms" term="epoch" />
 
 For G-counter, reset keeps the row, sets `a`, `b`, and `c` to zero,
 and replaces the epoch. Reset is outside the grow-only merge rule:

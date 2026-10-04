@@ -54,7 +54,7 @@ const pairedLesson = pairedLessonForSheet(entry.id);
   <article class:list={["sheet", { "systems-sheet": isSystems }]}>
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
-      <CorrectnessWarning />
+      {entry.data.showCorrectnessWarning && <CorrectnessWarning />}
       {isSystems ? (
         <p class="territory-label systems-context">
           <a href="/atlas/#systems">Systems</a>

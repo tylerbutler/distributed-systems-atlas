@@ -6,7 +6,6 @@ const referenceRoutes = [
   "/atlas/",
   "/glossary/",
   "/bibliography/",
-  "/atlas/multiplayer-rooms/",
   ...firstTrail.map(({ id }) => `/atlas/${id}/`),
 ];
 
@@ -41,6 +40,12 @@ for (const width of [390, 1440]) {
       await page.goto("/structures/g-counter/");
       await expect(page.getByRole("complementary", { name: "Correctness review warning" }))
         .toHaveCount(0);
+      for (const route of ["/atlas/multiplayer-rooms/", "/atlas/multi-device-g-counter/"]) {
+        await page.goto(route);
+        await expect(page.getByRole("complementary", { name: "Correctness review warning" }))
+          .toHaveCount(0);
+        await expect(page.getByText(warningText, { exact: true })).toHaveCount(0);
+      }
     } finally {
       await context.close();
     }

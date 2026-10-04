@@ -49,6 +49,7 @@ const sheet = defineCollection({
     territory: z.enum(["mechanisms", "structures", "failures", "systems"]),
     status: z.enum(["published", "planned"]),
     complexity: z.enum(complexityLevels),
+    showCorrectnessWarning: z.boolean().default(true),
     requires: z.array(sheetReference).default([]),
     introduces: z.array(z.string()).default([]),
     related: z.array(sheetReference).default([]),

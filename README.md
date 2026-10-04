@@ -30,7 +30,7 @@ FifoWorkQueue, TaskManager, PactMap, JsonOt, and RichTextOt lessons,
 plus the seven family overview pages, atlas index, glossary, and bibliography.
 
 The reference pages and browser labs display a prominent "Not yet reviewed for
-correctness" warning. These warnings are also visible without JavaScript.
+correctness" warning by default. These warnings are also visible without JavaScript.
 
 ## Lesson illustrations
 
@@ -281,6 +281,8 @@ the multiplayer reference and live labs reuse the same definitions.
 Sheets with `territory: systems` use the distinct "Inside the Atlas"
 implementation-note styling from `src/styles/systems.css`. Systems remains
 within the reference index; ordinary lessons keep their existing appearance.
+`showCorrectnessWarning` defaults to `true`; the multiplayer-room implementation
+note sets it to `false`. This controls label visibility, not review status.
 
 The content loader rejects conflicting definitions, conflicting reference
 keys, duplicate anchors, missing scenarios, invalid sheet links, and
