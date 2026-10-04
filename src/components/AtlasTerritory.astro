@@ -37,7 +37,7 @@ const { id, title, summary, sheets } = Astro.props;
               <ComplexityBadge complexity={sheet.complexity} />
               {sheet.summary && <p class="station-summary">{sheet.summary}</p>}
               {sheet.prerequisiteTitles.length > 0 && (
-                <p class="incoming-label">Requires: {sheet.prerequisiteTitles.join(", ")}</p>
+                <p class="incoming-label">Helpful background: {sheet.prerequisiteTitles.join(", ")}</p>
               )}
             </li>
           ))}

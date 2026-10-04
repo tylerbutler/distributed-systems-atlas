@@ -144,7 +144,7 @@ test("a sheet exposes its reading context without a prescribed next step", async
   await expect(page.locator(".sheet-header [data-complexity]"))
     .toHaveText(/Complexity\s+Advanced/);
   await expect(page.locator(".sheet-header")).toContainText("Lab available");
-  await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
+  await expect(page.locator(".sheet-header")).toContainText("No background sheet listed");
   await expect(page.locator(".sheet-header")).not.toContainText("Structure-first trail");
   await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeVisible();
   const related = page.getByRole("navigation", { name: "Related sheets", exact: true });
@@ -868,7 +868,7 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("heading", { name: "Local history", exact: true })).toHaveCount(1);
     await expect(chart.getByRole("link", { name: "Local history", exact: true })).toBeVisible();
     const dots = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Dots and causal context", exact: true }) });
-    await expect(dots).toContainText("Requires: Local history, Failure detectors");
+    await expect(dots).toContainText("Helpful background: Local history, Failure detectors");
     await expect(dots.getByRole("link")).toHaveCount(1);
     await expect(page.getByRole("region", { name: "Systems", exact: true }).getByRole("link", { name: "Replicated log" })).toBeVisible();
     await expect(page.getByRole("region", { name: "Failure modes", exact: true })).toContainText("Failure detectors");
@@ -884,7 +884,7 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
       .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
     await expect(page.getByRole("heading", { name: "Fixture article" })).toBeVisible();
-    const supportingIdeas = page.getByRole("navigation", { name: "Background, if needed" });
+    const supportingIdeas = page.getByRole("navigation", { name: "Helpful background" });
     await expect(supportingIdeas.getByRole("link", { name: "Local history" })).toHaveAttribute("href", "/atlas/local-history/");
     await expect(supportingIdeas).toContainText("Failure detectors");
     await expect(supportingIdeas).toContainText("Planned");
@@ -900,7 +900,7 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(rail.getByRole("listitem")).toHaveText([
       "Reference atlas", "Mechanisms", "Local history",
     ]);
-    await expect(page.getByText("No supporting sheet required", { exact: true })).toBeVisible();
+    await expect(page.getByText("No background sheet listed", { exact: true })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Next in the structure-first trail" })).toHaveCount(0);
     await page.setContent(await readFile(path.join(root, "dist/atlas/replicated-log/index.html"), "utf8"));
     await expect(page.locator(".sheet-header")).toContainText("3 min read");

@@ -72,8 +72,8 @@ const pairedLesson = pairedLessonForSheet(entry.id);
         <span>{entry.data.scenarios.length > 0 ? "Lab available" : "No embedded lab"}</span>
       </p>
       {entry.data.requires.length > 0
-        ? <SheetLinks heading="Background, if needed" sheets={entry.data.requires.map(resolve)} />
-        : <p class="sheet-prerequisites">No supporting sheet required</p>}
+        ? <SheetLinks heading="Helpful background" sheets={entry.data.requires.map(resolve)} />
+        : <p class="sheet-prerequisites">No background sheet listed</p>}
       <LessonIllustration id={`atlas-${entry.id}`} />
     </header>
     {["opening", "continuation"].map((section) => (

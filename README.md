@@ -39,6 +39,7 @@ Published sheets use the `structureLessons` frontmatter list to name the lesson
 slugs they support. Each link includes the sheet's summary; these are optional
 references, not a prescribed reading order. The content schema rejects unknown
 lesson slugs. Keep each lesson's references to one to three relevant sheets.
+Atlas entries and sheet headers label the `requires` links **Helpful background**.
 
 The glossary groups definitions by their first letter. Its jump index lists
 only letters with entries and works without JavaScript. Existing term anchors

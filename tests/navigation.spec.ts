@@ -39,6 +39,26 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
   }
 });
 
+test("atlas and sheets describe the same optional background", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/");
+    const topic = page.getByTestId("territory-chart").getByRole("listitem")
+      .filter({ has: page.getByRole("heading", { name: "Multi-value registers", exact: true }) });
+    await expect(topic).toContainText("Helpful background: Vector clocks, Dots and causal context");
+    await expect(topic).not.toContainText("Requires:");
+    await topic.getByRole("link", { name: "Multi-value registers", exact: true }).click();
+    const background = page.getByRole("navigation", { name: "Helpful background", exact: true });
+    await expect(background.getByRole("link")).toHaveText(["Vector clocks", "Dots and causal context"]);
+    await page.goto("/atlas/local-history/");
+    await expect(page.locator(".sheet-header")).toContainText("No background sheet listed");
+    await expect(page.getByRole("navigation", { name: "Helpful background", exact: true })).toHaveCount(0);
+  } finally {
+    await context.close();
+  }
+});
+
 test("glossary letters group all terms and support keyboard jumps without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {

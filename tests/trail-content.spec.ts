@@ -148,9 +148,9 @@ for (const lesson of lessons) {
       await expect(page.locator(".sheet-references a").first())
         .toHaveAttribute("href", `/bibliography/#${lesson.reference}`);
       if (["local-history", "dots-and-causal-context"].includes(lesson.id)) {
-        await expect(page.locator(".sheet-header")).toContainText("No supporting sheet required");
+        await expect(page.locator(".sheet-header")).toContainText("No background sheet listed");
       } else {
-        expect(await page.getByRole("navigation", { name: "Background, if needed", exact: true })
+        expect(await page.getByRole("navigation", { name: "Helpful background", exact: true })
           .getByRole("link").count()).toBeGreaterThan(0);
       }
       expect(await page.getByRole("navigation", { name: "Related sheets", exact: true })
