@@ -282,6 +282,21 @@ Each territory is one band with an index, purpose, connected stops, status, and 
 
 The header keeps title, territory, summary, reading time, lab availability, and background links in the reading field. Local contents and terms become side rails only at wide widths. The correctness-review warning stays visible below the title, with a neutral clear field and an explicit text label; it does not use the sulfur action color. Break-it sections use a thin vermilion left rule and literal warning copy; cost sections remain dense ledgers rather than alerts; Field notes close quietly under a neutral rule.
 
+### Systems Implementation Notes
+
+Systems remains in the reference index but uses an "Inside the Atlas" treatment
+for implementation notes. Warm-gray reading fields, charcoal navigation, copper
+links and rules, and Encode Sans prose distinguish it from the blue, serif
+lesson pages. Monospace remains reserved for code and data.
+
+`src/styles/systems.css` scopes these tokens to Systems pages and their index
+section. The metadata value `territory: systems` selects the page treatment,
+not a specific article route. The existing reading measure, contents disclosure,
+definition rails, review warning, and navigation remain available without
+JavaScript. The header uses a compact illustration beside its summary on wider
+screens; narrow screens retain linear reading order. Square index stops and the
+visible "Inside the Atlas" label supplement the palette difference.
+
 ### Observation Console
 
 The console anatomy is fixed: lesson controls, replica stations, message lane, vector comparison, trace navigation/history, state inspector, invariant ledger, and status or error. Station records expose visible value, live dots, clock, and causal context. Partitions add `Partition active`, a dashed vermilion route, and a visible break. Errors retain the last valid frame and identify the action, engine, and error.

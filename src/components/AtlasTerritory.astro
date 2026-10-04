@@ -14,9 +14,10 @@ interface Props {
 const { id, title, summary, sheets } = Astro.props;
 ---
 
-<section class="atlas-territory" id={id} aria-labelledby={`${id}-title`} data-testid={`territory-${id}`}>
+<section class:list={["atlas-territory", { "systems-surface": id === "systems" }]} id={id} aria-labelledby={`${id}-title`} data-testid={`territory-${id}`}>
   <header class="territory-index">
     <h2 id={`${id}-title`}>{title}</h2>
+    {id === "systems" && <p class="systems-context">Inside the Atlas</p>}
     <p>{summary}</p>
   </header>
   <div class="territory-field">

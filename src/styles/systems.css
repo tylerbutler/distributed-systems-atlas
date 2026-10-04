@@ -1,0 +1,125 @@
+:root[data-section="systems"],
+.systems-surface {
+  --sky-sheet: oklch(97% 0.007 75);
+  --instrument: oklch(31% 0.028 60);
+  --instrument-deep: oklch(23% 0.017 60);
+  --signal: oklch(86% 0.11 72);
+  --graphite: oklch(28% 0.012 60);
+  --muted: oklch(46% 0.014 60);
+  --line: oklch(55% 0.024 60 / 0.32);
+  --line-faint: oklch(55% 0.024 60 / 0.14);
+  --clear: oklch(99% 0.003 75);
+  --systems-accent: oklch(43% 0.11 52);
+  --font-reading: var(--font-ui);
+  --focus-color: var(--systems-accent);
+  --link-color: var(--systems-accent);
+  color: var(--graphite);
+  background: var(--sky-sheet);
+  font-family: var(--font-reading);
+  color-scheme: light;
+  accent-color: var(--systems-accent);
+  scrollbar-color: var(--systems-accent) var(--sky-sheet);
+}
+
+:root[data-section="systems"] .observation-trace::after {
+  border-radius: 0;
+}
+
+.systems-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  font: 0.9375rem / 1.5 var(--font-ui);
+}
+
+.systems-context span {
+  color: var(--muted);
+}
+
+.systems-sheet .sheet-header {
+  padding-block-end: var(--space-5);
+  border-block-end: var(--rule-signal) solid var(--systems-accent);
+}
+
+.systems-sheet .sheet-header h1 {
+  font-size: clamp(2rem, 3.2vw, 3rem);
+  font-weight: 700;
+  font-variation-settings: "wdth" 98;
+  letter-spacing: -0.02em;
+}
+
+.systems-sheet .sheet-header .systems-context {
+  padding-block: var(--space-3);
+  border-block: var(--rule-width) solid var(--line);
+}
+
+.systems-sheet .sheet-header .lesson-illustration {
+  width: min(100%, 9rem);
+  margin-block: var(--space-4) 0;
+}
+
+.systems-sheet :is(.sheet-opening, .sheet-continuation) > h2 {
+  font-weight: 700;
+  font-variation-settings: "wdth" 98;
+}
+
+.systems-sheet .term-callout {
+  background: var(--clear);
+  padding-inline: var(--space-3);
+}
+
+.atlas-territory.systems-surface {
+  margin-block-start: var(--space-6);
+  padding: var(--space-5);
+  border: var(--rule-width) solid var(--line);
+  border-block-start: var(--rule-signal) solid var(--systems-accent);
+}
+
+.atlas-territory.systems-surface .territory-index .systems-context {
+  margin-block: 0 var(--space-3);
+  color: var(--systems-accent);
+  font-weight: 650;
+}
+
+.atlas-territory.systems-surface .territory-station {
+  padding-block-start: var(--space-4);
+}
+
+.atlas-territory.systems-surface .station-stop {
+  border-radius: 0;
+}
+
+.atlas-territory.systems-surface .territory-connector {
+  border-bottom-left-radius: 0;
+}
+
+@media (width >= 48rem) {
+  .systems-sheet .sheet-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 9rem;
+    column-gap: var(--space-5);
+    align-items: start;
+  }
+
+  .systems-sheet .sheet-header > * {
+    grid-column: 1;
+  }
+
+  .systems-sheet .sheet-header > :is(h1, .correctness-warning, .systems-context) {
+    grid-column: 1 / -1;
+  }
+
+  .systems-sheet .sheet-header > .lesson-illustration {
+    grid-column: 2;
+    grid-row: 4 / span 3;
+    margin: 0;
+    align-self: center;
+  }
+}
+
+@media (width < 40rem) {
+  .atlas-territory.systems-surface .territory-station {
+    padding-block-start: 0;
+  }
+}

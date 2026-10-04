@@ -28,15 +28,15 @@ const territories = [
   ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
   ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
   ["failures", "Failure modes", "Reproducible bugs and the mechanisms that cause or prevent them."],
-  ["systems", "Systems", "Individual mechanisms connected into larger architectures."],
+  ["systems", "Systems", "Implementation notes on the Atlas, its demos, and their infrastructure."],
 ] as const satisfies readonly (readonly [Territory, string, string])[];
 ---
 
-<BaseLayout title="Reference atlas" description="Find replicated structures, causal mechanisms, failure modes, and systems by topic.">
+<BaseLayout title="Reference atlas" description="Find replicated structures, causal mechanisms, failure modes, and behind-the-scenes Atlas implementation notes.">
   <header class="page-intro">
     <h1>Reference atlas</h1>
     <CorrectnessWarning />
-    <p>Use this map to find a structure, mechanism, failure mode, or system by topic.</p>
+    <p>Find a structure, mechanism, or failure mode by topic. Use Systems for a behind-the-scenes look at the Atlas and its demos.</p>
   </header>
   <div class="territory-chart" id="territories" data-testid="territory-chart">
     {territories.map(([id, title, summary]) => (

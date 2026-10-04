@@ -15,6 +15,9 @@ interface Props {
 }
 
 const { entry, headings } = Astro.props;
+const isSystems = entry.data.territory === "systems";
+const contentsLabel = isSystems ? "In this note" : "On this sheet";
+const termsLabel = isSystems ? "Terms in this note" : "Terms on this sheet";
 const contents = headings.filter(({ depth }) => depth === 2);
 const prose = (entry.body ?? "")
   .replace(/```[\s\S]*?```/g, "")
@@ -48,13 +51,20 @@ const pairedLesson = pairedLessonForSheet(entry.id);
   territory={territories[entry.data.territory]}
   sheetTitle={entry.data.title}
 >
-  <article class="sheet">
+  <article class:list={["sheet", { "systems-sheet": isSystems }]}>
     <header class="sheet-header">
       <h1>{entry.data.title}</h1>
       <CorrectnessWarning />
-      <p class="territory-label">
-        Territory: <a href={`/atlas/#${entry.data.territory}`}>{territories[entry.data.territory]}</a>
-      </p>
+      {isSystems ? (
+        <p class="territory-label systems-context">
+          <a href="/atlas/#systems">Systems</a>
+          <span>Inside the Atlas</span>
+        </p>
+      ) : (
+        <p class="territory-label">
+          Territory: <a href={`/atlas/#${entry.data.territory}`}>{territories[entry.data.territory]}</a>
+        </p>
+      )}
       <p class="sheet-summary">{entry.data.summary}</p>
       <p class="sheet-reading-meta">
         <ComplexityBadge complexity={entry.data.complexity} />
@@ -70,9 +80,9 @@ const pairedLesson = pairedLessonForSheet(entry.id);
       <div class={`sheet-local sheet-local-${section}`}>
         <div class="sheet-local-inner">
           <details class="sheet-contents">
-            <summary>On this sheet</summary>
-            <nav aria-label="On this sheet">
-              <h2>On this sheet</h2>
+            <summary>{contentsLabel}</summary>
+            <nav aria-label={contentsLabel}>
+              <h2>{contentsLabel}</h2>
               <ul>
                 {contents.map(({ slug, text }) => <li><a href={`#${slug}`}>{text}</a></li>)}
               </ul>
@@ -82,8 +92,8 @@ const pairedLesson = pairedLessonForSheet(entry.id);
       </div>
     ))}
     {entry.data.terms.length > 0 && (
-      <aside class="sheet-terms" aria-label="Terms on this sheet">
-        <h2>Terms on this sheet</h2>
+      <aside class="sheet-terms" aria-label={termsLabel}>
+        <h2>{termsLabel}</h2>
         <dl>
           {entry.data.terms.map(({ term, definition }) => (
             <><dt><a href={`/glossary/#${entryAnchor(term)}`}>{term}</a></dt><dd>{definition}</dd></>

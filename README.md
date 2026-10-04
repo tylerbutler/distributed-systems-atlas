@@ -278,6 +278,9 @@ function as those pages. Change the source metadata to change a definition or
 reference; there is no separate reference-page catalogue.
 `SheetTermCallout.astro` reads a named definition from sheet metadata, so
 the multiplayer reference and live labs reuse the same definitions.
+Sheets with `territory: systems` use the distinct "Inside the Atlas"
+implementation-note styling from `src/styles/systems.css`. Systems remains
+within the reference index; ordinary lessons keep their existing appearance.
 
 The content loader rejects conflicting definitions, conflicting reference
 keys, duplicate anchors, missing scenarios, invalid sheet links, and

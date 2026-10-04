@@ -36,6 +36,8 @@ Readers can study an article without JavaScript. Interactive labs run in the
 browser and let readers perform local operations, control delivery, partition
 or heal a connection, and revisit recorded frames. The atlas groups topics
 under Mechanisms, Structures, Failure modes, and Systems.
+Systems stays within the reference index as a visually distinct section for
+behind-the-scenes Atlas implementation notes, rather than general lessons.
 
 ## Capabilities and Constraints
 

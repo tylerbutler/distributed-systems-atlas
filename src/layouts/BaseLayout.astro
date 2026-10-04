@@ -4,6 +4,7 @@ import FooterNavigation from "../components/FooterNavigation.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import ObservationRail from "../components/ObservationRail.astro";
 import "../styles/global.css";
+import "../styles/systems.css";
 
 interface Props {
   title?: string;
@@ -17,7 +18,7 @@ const siteTitle = "Distributed Systems Atlas";
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-section={territory === "Systems" ? "systems" : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
