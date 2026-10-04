@@ -7,6 +7,7 @@ export default defineConfig({
   prerenderConflictBehavior: "error",
   redirects: {
     "/structures/transforms": "/structures/",
+    "/atlas/multi-device-g-counter/": "/atlas/multiplayer-rooms/",
   },
   integrations: [mdx()],
   devToolbar: { enabled: false },

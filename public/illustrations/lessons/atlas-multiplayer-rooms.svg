@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600" role="img" aria-labelledby="room-title room-desc">
-  <title id="room-title">Multi-device rooms: notebooks and a stored counter snapshot</title>
-  <desc id="room-desc">Three field notebooks marked with a circle, diamond, and hexagon each contain a three-row record. Beside them, a storage box holds one yellow-tabbed three-row snapshot, with outgoing copies on the bench.</desc>
+  <title id="room-title">Multiplayer rooms: local notebooks and durable storage</title>
+  <desc id="room-desc">Three field notebooks marked with a circle, diamond, and hexagon each contain a local record. Beside them, a storage box holds a yellow-tabbed shared record, with outgoing copies on the bench.</desc>
   <defs>
     <pattern id="room-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(32)">
       <path d="M0 0V8" stroke="#78909a" stroke-width="1"/>

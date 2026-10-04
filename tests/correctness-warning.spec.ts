@@ -6,7 +6,7 @@ const referenceRoutes = [
   "/atlas/",
   "/glossary/",
   "/bibliography/",
-  "/atlas/multi-device-g-counter/",
+  "/atlas/multiplayer-rooms/",
   ...firstTrail.map(({ id }) => `/atlas/${id}/`),
 ];
 

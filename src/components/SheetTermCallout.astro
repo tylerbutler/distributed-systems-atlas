@@ -1,0 +1,19 @@
+---
+import { getEntry } from "astro:content";
+import TermCallout from "./TermCallout.astro";
+
+interface Props {
+  sheet: string;
+  term: string;
+  inlineOnly?: boolean;
+}
+
+const { sheet, term, inlineOnly = false } = Astro.props;
+const entry = await getEntry("sheet", sheet);
+const definition = entry?.data.terms.find((candidate) => candidate.term === term);
+if (!definition) {
+  throw new Error(`Missing definition for "${term}" in sheet "${sheet}"`);
+}
+---
+
+<TermCallout {...definition} {inlineOnly} />

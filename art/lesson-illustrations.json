@@ -373,15 +373,15 @@
       "altDraft": "One editor emphasizes a report heading while another adds a triangular marker to the end."
     },
     {
-      "id": "atlas-multi-device-g-counter",
+      "id": "atlas-multiplayer-rooms",
       "kind": "reference",
-      "route": "/atlas/multi-device-g-counter/",
-      "title": "How multi-device G-counter rooms work",
-      "source": "src/content/sheets/multi-device-g-counter.mdx",
-      "asset": "/illustrations/lessons/atlas-multi-device-g-counter.svg",
-      "alt": "Three shape-marked notebooks each have a three-row record beside a storage box holding one current counter snapshot and outgoing copies.",
+      "route": "/atlas/multiplayer-rooms/",
+      "title": "How multiplayer rooms work",
+      "source": "src/content/sheets/multiplayer-rooms.mdx",
+      "asset": "/illustrations/lessons/atlas-multiplayer-rooms.svg",
+      "alt": "Three shape-marked notebooks each have a local record beside a storage box with shared room records and outgoing copies.",
       "scenePrompt": "On an observation bench, arrange three field notebooks marked with a circle, diamond, and hexagon. Each notebook contains the same blank three-row record. Beside them, an open storage box holds one yellow-tabbed snapshot with three component rows and outgoing envelope copies on the bench. Draw the notebooks as separate local records and the box as the latest stored state, using the existing ink treatment.",
-      "semanticGuardrails": "The central box represents the room service's current component-state snapshot, not an increment history or a requirement of the G-counter merge rule. Each browser runs all three counter copies. Keep numerical values blank; do not imply that broadcasting guarantees receipt or that browsers persist their model locally.",
+      "semanticGuardrails": "The central box represents durable room storage. The G-counter example stores a component-state snapshot; the SharedCounter example stores an operation log. The drawing does not prescribe one storage format for every CRDT or DDS. Each notebook represents local state, not a remote browser view. Keep numerical values blank; do not imply that broadcasting guarantees receipt or that browsers persist their model locally.",
       "altDraft": "Separate field notebooks beside a stored counter snapshot and copies for distribution."
     },
     {

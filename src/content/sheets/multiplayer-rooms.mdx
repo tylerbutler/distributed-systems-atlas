@@ -1,0 +1,373 @@
+---
+title: How multiplayer rooms work
+summary: Compare CRDT merging and DDS sequencing over shared room connections and durable storage.
+territory: systems
+status: published
+complexity: intermediate
+requires: []
+introduces: [CRDT, DDS, sequencer, Durable Object, WebSocket, optimistic update, state snapshot, epoch, hibernation]
+related: [local-history]
+scenarios: []
+terms:
+  - term: Durable Object
+    definition: A Cloudflare service that combines coordination for one named object with storage private to that object.
+  - term: WebSocket
+    definition: A persistent connection over which a browser and a server can send messages to each other.
+  - term: optimistic update
+    definition: A local change shown before the server confirms that it has accepted the update.
+  - term: state snapshot
+    definition: A stored copy of the current state used to initialize or restore a replica.
+  - term: epoch
+    definition: An identifier for one generation of a room's shared state. Reset creates a new epoch.
+  - term: hibernation
+    definition: A Durable Object lifecycle state in which Cloudflare keeps accepted WebSocket connections open without keeping the object's code in memory.
+references:
+  - key: cloudflare-durable-objects
+    title: Cloudflare Durable Objects
+    url: https://developers.cloudflare.com/durable-objects/
+  - key: cloudflare-sqlite-storage
+    title: Durable Object SQLite storage API
+    url: https://developers.cloudflare.com/durable-objects/api/sqlite-storage-api/
+  - key: cloudflare-websocket-hibernation
+    title: Durable Object WebSocket hibernation
+    url: https://developers.cloudflare.com/durable-objects/best-practices/websockets/
+---
+
+import SheetTermCallout from "../../components/SheetTermCallout.astro";
+import TermCallout from "../../components/TermCallout.astro";
+import { crdtTerm, ddsTerm, sequencerTerm } from "../../lib/atlas/standalone-terms";
+
+<div class="sheet-opening">
+
+## Separate the data structure from the room service
+
+A multiplayer demo needs connections between browsers, a way to recover
+stored data, and a rule for combining concurrent changes. The room service
+provides connections and storage. The demonstrated data structure determines
+which information to exchange and how each browser applies it.
+
+For a <dfn><a href="/glossary/#crdt">CRDT</a></dfn>, replicas combine updates
+through the structure's merge rule. A room can relay and store those updates
+without deciding one shared operation order.
+
+<TermCallout {...crdtTerm} />
+
+For a <dfn><a href="/glossary/#dds">DDS</a></dfn>, each replica applies the
+same accepted operations in the same order. The room also acts as a
+<dfn><a href="/glossary/#sequencer">sequencer</a></dfn>.
+
+<TermCallout {...ddsTerm} />
+<TermCallout {...sequencerTerm} />
+
+The [CRDT, DDS, and OT comparison](/structures/models/) explains these
+data models. This sheet explains their room infrastructure. The
+[G-counter live lab](/labs/g-counter/) and
+[SharedCounter live lab](/labs/shared-counter/) are working examples of
+the merge and sequencing paths.
+
+## One room, separate browser models
+
+Each current lab browser runs three local Watershed kernel copies. Your
+connection controls one hiker's notebook; the other notebooks are local
+copies, not views into other devices. The browser executes the same Gleam
+code as the single-device lesson.
+
+<figure aria-label="The two transport layers">
+  <dl class="sheet-data">
+    <dt>Between browsers</dt>
+    <dd>The room service stores shared data and sends state or numbered
+    operations over real connections.</dd>
+    <dt>Inside one browser</dt>
+    <dd>The structure's kernel applies received updates. A local delivery
+    model shows exchange among the browser's three copies.</dd>
+  </dl>
+  <figcaption>The center log and animated notes show the local model.
+  They are not a trace of network packets between devices.</figcaption>
+</figure>
+
+**Speed**, **Jitter**, and **Broadcast** affect only local delivery. Turning
+off **Broadcast** can leave notes queued on your screen. It does not pause
+the room connection, server storage, or sequencing.
+
+Each room has one Cloudflare
+<dfn><a href="/glossary/#durable-object">Durable Object</a></dfn> with a
+private SQLite database. A structure's namespace and the room code select
+the object. The same code in different namespaces selects separate rooms
+and databases. The code is not a column in the storage tables.
+
+<SheetTermCallout sheet="multiplayer-rooms" term="Durable Object" inlineOnly />
+
+A <dfn><a href="/glossary/#websocket">WebSocket</a></dfn> keeps each browser
+connected so the server can send updates without another browser request.
+For example, the current G-counter room `EAGLE7` uses `/rooms/EAGLE7`,
+while SharedCounter uses `/rooms/shared-counter/EAGLE7` on the same origin.
+
+<SheetTermCallout sheet="multiplayer-rooms" term="WebSocket" inlineOnly />
+
+The current rooms assign the first available role: Alice, Bob, or Carol.
+Further connections can observe but cannot edit or reset. The first
+message, `hello`, supplies the assigned role, stored data, and presence.
+Roles belong to connections, not accounts or stable replica identities.
+After a disconnect, another connection can take that role. An observer
+must leave and rejoin to acquire an available role.
+
+These three roles are a demo convention, not a requirement of CRDTs or
+DDSes. A room code also provides no private-room authorization:
+anyone with the code can join.
+
+## CRDT path: merge the structure's native updates
+
+The browser sends the information required by its CRDT, which may be
+state, a delta, or operations with causal metadata. The receiving browser
+uses that structure's merge or application rule. A room relay does not
+make arbitrary commands safe to repeat.
+
+CRDTs do not require one total operation order for convergence. Some
+operation-based CRDTs still require causal delivery or duplicate
+suppression. Preserve those requirements rather than assume that every
+CRDT accepts every message in any order.
+
+In the G-counter example, Alice records seven birds before the server
+replies. This is an
+<dfn><a href="/glossary/#optimistic-update">optimistic update</a></dfn>.
+Her browser sends her cumulative component, not a command to add seven:
+
+<SheetTermCallout sheet="multiplayer-rooms" term="optimistic update" inlineOnly />
+
+```json
+{
+  "type": "state",
+  "epoch": "9df10f6c-c764-46d8-a3c8-54eec6227005",
+  "count": 7
+}
+```
+
+The server reads Alice's role from the connection metadata, validates the
+count and reset generation, then stores the larger of her submitted and
+stored counts. Bob's and Carol's components remain unchanged. It sends
+the full component state after storage, including back to Alice.
+Her browser merges the echo through the kernel: `max(7, 7)` remains seven.
+Duplicate or older state cannot count the same birds twice.
+
+If Bob records three, each browser merges the received state and queues
+newly observed growth in its local model. After local delivery finishes,
+each displayed copy reads ten. Local checkpoint note numbers are not
+global sequence numbers in this room protocol.
+
+This room uses `G_COUNTER_ROOMS`. Its component-wise merge needs neither
+server approval nor a sequencer. Using a central relay is an application
+choice. Other CRDTs need their own metadata and storage formats; the
+three-count snapshot is not a general CRDT room schema.
+
+## DDS path: apply one accepted operation stream
+
+The browser submits a structure-specific operation. The room validates
+it, assigns the next sequence number, stores it, and broadcasts the
+accepted operation. Clients apply a consecutive prefix of that stream.
+They ignore repeated sequence numbers, hold later operations when a
+number is missing, and request the missing prefix.
+
+Local visibility depends on the DDS. Some kernels show pending edits and
+later acknowledge or reconcile them. Others wait for sequencing before
+changing readable state. Optimistic updates are not exclusive to CRDTs,
+and a DDS room must preserve its kernel's pending-edit rules.
+
+In the SharedCounter example, Alice applies `+3` locally and submits
+the signed amount with a unique action ID. The room uses
+`SHARED_COUNTER_ROOMS` and stores the action ID, author, amount, and
+sequence number. It broadcasts operations, not cumulative totals.
+
+Alice's kernel acknowledges its pending edit when the numbered echo
+arrives; it does not add three again. Other copies use the kernel's
+remote-operation path. This kernel uses FIFO acknowledgement and LIFO
+rollback. Those rules belong to SharedCounter, not every DDS.
+
+A repeated submission with the same action ID, author, and amount reuses
+the stored operation. Reusing an ID with different contents is rejected.
+After a rejected edit, the browser rolls back pending changes and reloads
+the server's log. A sequencer alone does not define conflict handling:
+each DDS still needs its own acceptance and application rules.
+
+## Durable data, connection metadata, and browser memory
+
+The room's SQLite database stores the data needed to restore shared state.
+A <dfn><a href="/glossary/#state-snapshot">state snapshot</a></dfn> records
+current state; an operation log records accepted changes. Use the recovery
+format required by the structure. The existing CRDT room uses a snapshot
+and the DDS room uses a log, but those storage choices are not universal
+requirements of their data models.
+
+<SheetTermCallout sheet="multiplayer-rooms" term="state snapshot" inlineOnly />
+
+<div class="sheet-table-scroll" role="region" aria-label="Room data lifetimes" tabindex="0">
+
+| Location | Current contents | Lifetime |
+| --- | --- | --- |
+| Private SQLite database | Shared component state or accepted operations, plus a reset generation | Survives closing tabs and unloading object code; reset replaces the shared state |
+| WebSocket attachment | Connection role, such as `{ "replica": "A" }` or `{ "replica": null }` for an observer | Survives hibernation while that connection remains open |
+| Browser memory | Three kernel copies, pending edits, delivery queues, and visual settings | Rebuilt on reload or rejoin; no persistent offline outbox |
+
+</div>
+
+Cloudflare can unload idle object code through
+<dfn><a href="/glossary/#hibernation">hibernation</a></dfn> while keeping
+accepted WebSockets open. The shared connection helper uses
+`acceptWebSocket`, `serializeAttachment`, `deserializeAttachment`, and
+`getWebSockets` to retain roles across a wake. Ordinary instance fields
+do not survive that lifecycle. Presence is computed from open sockets;
+there is no participant table.
+
+<SheetTermCallout sheet="multiplayer-rooms" term="hibernation" inlineOnly />
+
+### Example: G-counter snapshot
+
+The `counter` table permits one row with the fixed `singleton` key `1`:
+
+<div class="sheet-table-scroll" role="region" aria-label="G-counter storage fields" tabindex="0">
+
+| Field | Stored value |
+| --- | --- |
+| `singleton` | Fixed primary key `1`, enforced by `CHECK (singleton = 1)` |
+| `epoch` | Current reset generation |
+| `a`, `b`, `c` | Alice's, Bob's, and Carol's cumulative components |
+
+</div>
+
+Example database records, shown as JSON. This is illustrative data, not a
+live view of your room:
+
+```json
+{
+  "counter": {
+    "singleton": 1,
+    "epoch": "9df10f6c-c764-46d8-a3c8-54eec6227005",
+    "a": 7,
+    "b": 3,
+    "c": 0
+  }
+}
+```
+
+The browser computes `7 + 3 + 0 = 10`. The database stores no separate
+total, click history, local checkpoint log, or animation state. A new
+update changes the same row. Each component is limited to one third of
+JavaScript's largest safe integer, rounded down, so the sum stays exact.
+The handler reads and updates with synchronous SQL, without an `await`
+between those statements, and stores state before broadcasting it.
+
+### Example: SharedCounter operation log
+
+The `room` table has one row with `singleton = 1` and the current `epoch`.
+The `operations` table has one row for each accepted signed change:
+
+<div class="sheet-table-scroll" role="region" aria-label="SharedCounter storage fields" tabindex="0">
+
+| Field | Stored value |
+| --- | --- |
+| `sequenceNumber` | Unique primary key: `1`, `2`, and so on |
+| `id` | Unique browser action ID used to detect repeated submissions |
+| `author` | Assigned hiker: `A`, `B`, or `C` |
+| `amount` | Signed change, such as `3` or `-1` |
+
+</div>
+
+```json
+{
+  "room": {
+    "singleton": 1,
+    "epoch": "9df10f6c-c764-46d8-a3c8-54eec6227005"
+  },
+  "operations": [
+    { "sequenceNumber": 1, "id": "11111111-1111-4111-8111-111111111111", "author": "A", "amount": 3 },
+    { "sequenceNumber": 2, "id": "22222222-2222-4222-8222-222222222222", "author": "B", "amount": -1 }
+  ]
+}
+```
+
+The server derives the next sequence number from the largest stored
+number. The epoch belongs to the room row, not each operation. Browsers
+start from the lab baseline of 10 and replay the log:
+`10 + 3 - 1 = 12`. Neither the baseline nor a running total is stored.
+At 1,000 operations, the server refuses new changes until reset; it does
+not discard older operations to make space.
+
+## Join, disconnect, and reset
+
+On join, `hello` supplies stored data to a fresh browser model. The
+G-counter merges its snapshot and finishes local delivery before showing
+the restored state. Its local checkpoint log starts empty. A new Alice
+connection restores her component of seven before its first `+1` submits
+eight. SharedCounter starts from 10 and replays operations in sequence
+order. Observers use the same recovery paths.
+
+Closing all tabs leaves the SQLite data intact. The current rooms have no
+automatic expiry, persistent browser outbox, retry of unconfirmed edits,
+or automatic reconnect. After a disconnect, the controls prevent further
+edits. Rejoin or reload the room link to recover stored data. A displayed
+change that never reached server storage is lost.
+
+For G-counter, the room status marks local changes as waiting for storage
+confirmation until the server echoes them. A rejection restores the
+returned snapshot and shows the reason. SharedCounter marks changes as
+waiting for sequencing; rejection rolls back pending edits and reloads
+the log.
+
+Any connected hiker can reset the current rooms. Reset creates a new
+<dfn><a href="/glossary/#epoch">epoch</a></dfn>, and the server rejects
+requests from the previous generation. Browsers ignore old-generation
+updates. Reset waits for server confirmation and retains active roles.
+
+<SheetTermCallout sheet="multiplayer-rooms" term="epoch" inlineOnly />
+
+For G-counter, reset keeps the row, sets `a`, `b`, and `c` to zero,
+and replaces the epoch. Reset is outside the grow-only merge rule:
+without a new generation, merging zero with an old seven would restore
+seven. For SharedCounter, one storage transaction deletes operation rows
+and replaces the room epoch. Browsers restart from 10; the next operation
+has sequence number 1.
+
+These are limits of the current room applications, not inherent CRDT or
+DDS limits. Offline writing would also need persistent pending work,
+stable writer identities, and a recovery policy. In a CRDT with
+per-writer components, independent offline writers must not reuse one
+component: two writers who each record seven could otherwise merge to
+seven instead of fourteen.
+
+## Try the recovery path
+
+Open either live lab with three browsers and a new room:
+
+1. Make changes from two participants. Wait for storage or sequencing
+   confirmation and local delivery, then compare the notebooks.
+2. Reload one browser using the room link. It should recover the stored
+   result, even if its assigned role changes.
+3. Join from a fourth browser. It should show the stored result as an
+   observer, with edit and reset controls disabled.
+4. Tell the participants, then reset from a hiker's browser. All connected
+   displays should return to the lab baseline, and a new join should
+   receive that baseline in the new epoch.
+
+## Implementation boundaries
+
+The [room Worker](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/worker/index.ts)
+selects a namespace and room object. Its `GCounterRoom` validates and
+stores component state. The
+[SharedCounter room](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/worker/shared-counter-room.ts)
+validates, sequences, and stores signed operations. Their protocol
+parsers define the accepted messages.
+
+Both use the
+[connection helper](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/worker/sluice.ts)
+for hibernatable sockets, roles, presence, and broadcasts.
+This small `DurableObjectSluice` facade is not Watershed's full document
+runtime. Browser clients share
+[socket handling](https://github.com/tylerbutler/distributed-systems-atlas/blob/main/src/lib/structure-demo/room-socket.ts);
+each structure keeps its own protocol, kernel adapter, and storage format.
+
+The browser runs the demonstrated Watershed kernels through the Gleam
+toolkit. A new multiplayer demo can reuse connections and room controls,
+but must exchange that structure's native updates and preserve its merge,
+sequencing, acknowledgement, and recovery requirements. Shared transport
+does not make distinct data structures interchangeable.
+
+</div>

@@ -8,7 +8,7 @@ const { id } = Astro.props;
 <section class="demo-room" aria-labelledby={id}>
     <div class="room-description">
       <h2 id={id} data-room-title>Create or join a room</h2>
-      <p>Create a room, then open its link in two more tabs or on two other devices. Each connection controls one hiker.</p>
+      <p>Create a room, then open its link in two more tabs or on two other devices. The first three connections control the hikers; further connections observe.</p>
       <slot />
     </div>
     <div class="room-controls">

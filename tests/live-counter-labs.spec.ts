@@ -3,43 +3,31 @@ import { expect, test, type WebSocketRoute } from "@playwright/test";
 const epoch = "9df10f6c-c764-46d8-a3c8-54eec6227005";
 
 for (const counter of ["g-counter", "shared-counter"]) {
-  test(`${counter} documents persisted fields and data lifetimes without JavaScript`, async ({ browser }) => {
+  test(`${counter} keeps essential recovery limits and links to shared documentation without JavaScript`, async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     try {
       const page = await context.newPage();
       await page.goto(`/labs/${counter}/`);
-      const storage = page.getByRole("region", { name: "What the Durable Object stores", exact: true });
+      const storage = page.getByRole("region", { name: "Storage and recovery", exact: true });
       await expect(storage).toBeVisible();
-      await expect(storage).toContainText("not a live view of your room");
-      const sample = JSON.parse(await storage.locator(".storage-example code").innerText());
       if (counter === "g-counter") {
-        await expect(storage.getByRole("table", { name: "counter table" }).locator("tbody th"))
-          .toHaveText(["singleton", "epoch", "a", "b", "c"]);
-        expect(sample).toEqual({ counter: { singleton: 1, epoch, a: 7, b: 3, c: 0 } });
-        await expect(storage).toContainText("7 + 3 + 0 = 10");
-        await expect(storage).toContainText("sets a, b, and c to zero");
+        await expect(storage).toContainText("one stored row");
+        await expect(storage).toContainText("Reset clears them to zero");
       } else {
-        await expect(storage.getByRole("table", { name: "room table" }).locator("tbody th"))
-          .toHaveText(["singleton", "epoch"]);
-        await expect(storage.getByRole("table", { name: "operations table" }).locator("tbody th"))
-          .toHaveText(["sequenceNumber", "id", "author", "amount"]);
-        expect(sample).toEqual({
-          room: { singleton: 1, epoch },
-          operations: [
-            { sequenceNumber: 1, id: "11111111-1111-4111-8111-111111111111", author: "A", amount: 3 },
-            { sequenceNumber: 2, id: "22222222-2222-4222-8222-222222222222", author: "B", amount: -1 },
-          ],
-        });
-        await expect(storage).toContainText("10 + 3 - 1 = 12");
-        await expect(storage).toContainText("At 1,000 operations, the server refuses new changes");
-        await expect(storage).toContainText("Reset deletes all operation rows");
+        await expect(storage).toContainText("numbered signed operations");
+        await expect(storage).toContainText("Reset clears it and restores 10");
+        await expect(storage).toContainText("At 1,000 operations");
       }
-      for (const term of ["Durable Object", "epoch", "hibernation"]) {
-        await expect(storage.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
-      }
-      await expect(storage).toContainText("Closing all tabs leaves the SQLite data intact");
-      await expect(storage).toContainText("attachments are not SQLite rows");
-      await expect(storage).toContainText("Hiker roles identify connections, not user accounts");
+      await expect(storage.getByLabel("Durable Object definition", { exact: true })).toBeVisible();
+      await expect(storage).toContainText("Closing all tabs does not clear stored data");
+      await expect(storage).toContainText("no persistent offline outbox or automatic reconnect");
+      await expect(storage).toContainText("Anyone with the room code can join");
+      await expect(page.getByRole("region", { name: "Try a concurrent update" }))
+        .toContainText("Reset clears the shared room for all connected hikers");
+      await expect(storage.getByRole("link", { name: "How multiplayer rooms work", exact: true }))
+        .toHaveAttribute("href", "/atlas/multiplayer-rooms/");
+      await expect(storage.locator("table")).toHaveCount(0);
+      await expect(page.locator(".lab-notes")).toHaveCount(0);
       for (const width of [320, 390, 1440]) {
         await page.setViewportSize({ width, height: 1000 });
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);

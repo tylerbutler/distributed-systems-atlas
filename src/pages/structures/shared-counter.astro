@@ -139,17 +139,6 @@ import {
 
     <SharedCounterDemo />
 
-    <section aria-labelledby="live-room-title">
-      <h2 id="live-room-title">Try the real sequencer</h2>
-      <p>
-        In the <a href="/labs/shared-counter/">SharedCounter live lab</a>,
-        open one room across three tabs or devices. Each connection controls
-        one hiker. The room service numbers and stores signed changes, so
-        Carol can request a missing operation from the real log. The lab
-        explains the connection, storage, and recovery limits.
-      </p>
-    </section>
-
     <section aria-labelledby="comparison-title">
       <h2 id="comparison-title">The number moved; the safety mechanism changed</h2>
       <p>
@@ -184,11 +173,10 @@ import {
         <strong>Implementation:</strong> The single-browser mode calls the API
         through the Gleam toolkit and connects three documents through{" "}
         <dfn><a href="/glossary/#sluice">Sluice</a></dfn>. The real room calls the same
-        counter kernel through a typed toolkit boundary. A small Durable Object
-        Sluice facade shares WebSocket connections, hiker assignment, and
-        broadcasts with the G-counter rooms. SharedCounter-specific code
-        stores and replays numbered signed operations; it does not implement
-        Watershed's full document transport.
+        counter kernel through a typed toolkit boundary.{" "}
+        <a href="/atlas/multiplayer-rooms/">How multiplayer rooms work</a>
+        {" "}explains the shared connection service, sequencing, storage,
+        and recovery.
       </p>
       <TermCallout {...sluiceTerm} />
     </section>

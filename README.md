@@ -151,53 +151,35 @@ Production deploys run when `main` changes. Leave branch previews disabled
 until preview Durable Object bindings are configured; previews do not inherit
 production bindings.
 
-## Live counter rooms
+## Multiplayer room infrastructure
 
 Multiplayer demos must use the demonstrated structure's native synchronization
 mechanism. Keep the transport consistent with the kernel's update and merge
 semantics.
 
-The G-counter live lab at `/labs/g-counter/` connects three tabs or devices
-through a Cloudflare Durable Object. The single-browser lesson at
-`/structures/g-counter/` works without the room service. Each
-connected browser runs the existing Watershed-backed G-counter model. The
-Durable Object assigns Alice, Bob, or Carol and relays cumulative counter
-state. A click updates the browser's Watershed model before the server replies.
-The browser merges echoed and remote state through the Watershed G-counter
-kernel, so duplicate or older state does not count twice.
+[How multiplayer rooms work](https://dsa.tylerbutler.com/atlas/multiplayer-rooms/)
+is the reader-facing reference for CRDT merging, DDS sequencing, storage,
+roles, and recovery. Current examples are `/labs/g-counter/` and
+`/labs/shared-counter/`. Their single-browser lessons work without the room
+service. Lesson URLs with an existing `?room=` parameter redirect to the
+matching lab. The former `/atlas/multi-device-g-counter/` route redirects
+to the shared reference.
 
-SQLite stores one snapshot: three component counts and a reset epoch. A join
-loads that snapshot instead of replaying an operation log. Existing rooms
-initialize it from their earlier stored increments. Reset creates a new epoch,
-so late state from before the reset cannot restore cleared counts. Room roles
-belong to active connections; disconnected devices cannot keep writing, and
-unconfirmed changes have no persistent browser outbox.
+| Implementation | Responsibility |
+| --- | --- |
+| `worker/index.ts` | Selects a room namespace and object; implements the current G-counter state relay and snapshot storage |
+| `worker/shared-counter-room.ts` | Implements the current DDS sequencer and accepted-operation log |
+| `worker/sluice.ts` | Shares hibernatable sockets, connection roles, presence, and broadcasts |
+| `src/lib/structure-demo/room-socket.ts` | Shares browser socket handling |
+| `src/components/DemoRoomControls.astro` | Shares room setup and presence controls |
 
-The SharedCounter live lab is at `/labs/shared-counter/`; its single-browser
-lesson remains at `/structures/shared-counter/`. Its Durable Object assigns consecutive sequence
-numbers and stores signed increments/decrements, not cumulative state.
-The browser uses Watershed's counter kernel for optimistic edits, FIFO
-acknowledgements, remote application, and LIFO rollback. Repeated sequence
-numbers are ignored; gaps trigger a request for missing operations.
-Rejoining replays the SQLite log from the agreed value of 10. Each room
-retains at most 1,000 operations; reset clears the log and creates a new epoch.
-Three connections control the hikers and further connections observe.
-
-Both labs put room setup first and highlight the assigned hiker's notebook.
-The other notebooks are local kernel copies, not remote browser views.
-The server reports occupied hiker roles with each greeting and presence update.
-Older servers that report only a connection count show "Presence unavailable"
-instead of inferred role occupancy. Optional Speed, Jitter, and Broadcast controls
-affect only the local delivery model; they do not pause the real connection.
-Lesson links with an existing `?room=` parameter redirect to the matching lab.
-
-`worker/sluice.ts` is a small concrete Durable Object facade shared by both
-room classes. It manages hibernatable sockets, connection roles, presence,
-and broadcasts. `room-socket.ts` shares browser connection handling, and
-`DemoRoomControls.astro` shares room controls. Each structure keeps its own
-native synchronization protocol and storage. This facade is not a replacement
-for Watershed's full document runtime. There is no offline outbox or automatic
-reconnect in either real-room demo.
+New demos can reuse connection handling and room controls. Keep each
+structure's native protocol, kernel adapter, storage, and recovery rules
+separate. CRDT rooms relay the metadata required by their merge rules;
+DDS rooms order accepted operations and preserve the kernel's acknowledgement
+and reconciliation rules. Snapshot versus log storage and optimistic versus
+confirmed local visibility depend on the structure. The shared facade does
+not implement Watershed's full document runtime.
 
 Use Astro alone for normal content and interface work:
 
@@ -294,6 +276,8 @@ the standalone terms, while the bibliography page uses sheet references.
 Sheet sidebars, term callouts, and citations use the same `entryAnchor`
 function as those pages. Change the source metadata to change a definition or
 reference; there is no separate reference-page catalogue.
+`SheetTermCallout.astro` reads a named definition from sheet metadata, so
+the multiplayer reference and live labs reuse the same definitions.
 
 The content loader rejects conflicting definitions, conflicting reference
 keys, duplicate anchors, missing scenarios, invalid sheet links, and

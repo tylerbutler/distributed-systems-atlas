@@ -19,39 +19,103 @@ const trailTitles = [
   "Vector clocks",
 ];
 
-test("the multi-device demo links to its storage explainer without JavaScript", async ({ browser }) => {
+test("both multiplayer demos link to one architecture explainer without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
   try {
     const page = await context.newPage();
-    await page.goto("/structures/g-counter/");
-    await expect(page.locator("[data-room-code]")).toHaveCount(0);
-    await page.getByRole("link", { name: "Try this across three tabs or devices" }).click();
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("G-counter live lab");
-    await expect(page.getByRole("button", { name: "Create room" })).toBeDisabled();
-    await page.locator(".lab-notes > summary").click();
-    const explanation = page.getByRole("link", { name: "How multi-device rooms and storage work" });
-    await expect(explanation).toHaveAttribute("href", "/atlas/multi-device-g-counter/");
-    await explanation.click();
-    await expect(page.getByRole("heading", { level: 1 }))
-      .toHaveText("How multi-device G-counter rooms work");
+    for (const [counter, name] of [["g-counter", "G-counter"], ["shared-counter", "SharedCounter"]]) {
+      await page.goto(`/structures/${counter}/`);
+      await expect(page.locator("[data-room-code]")).toHaveCount(0);
+      await page.getByRole("link", { name: "Try this across three tabs or devices" }).click();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(`${name} live lab`);
+      await expect(page.getByRole("button", { name: "Create room" })).toBeDisabled();
+      const explanation = page.getByRole("main")
+        .getByRole("link", { name: "How multiplayer rooms work", exact: true });
+      await expect(explanation).toHaveAttribute("href", "/atlas/multiplayer-rooms/");
+      await expect(explanation).toBeVisible();
+      await explanation.click();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("How multiplayer rooms work");
+    }
     await expect(page.locator(".sheet-header [data-complexity]"))
       .toHaveText(/Complexity\s+Intermediate/);
-    await expect(page.getByRole("heading", { name: "Each browser runs all three counters" }))
+    await expect(page.locator(".sheet-header")).toContainText("No embedded lab");
+    await expect(page.getByRole("heading", { name: "Separate the data structure from the room service" }))
       .toBeVisible();
-    await expect(page.getByRole("heading", { name: "Alice updates before the server replies" }))
+    await expect(page.getByRole("heading", { name: "CRDT path: merge the structure’s native updates" }))
       .toBeVisible();
-    await expect(page.locator(".sheet-body")).toContainText("waiting for an echo is not a G-counter requirement");
+    await expect(page.getByRole("heading", { name: "DDS path: apply one accepted operation stream" }))
+      .toBeVisible();
+    await expect(page.locator(".sheet-body")).toContainText("Some operation-based CRDTs still require causal delivery");
+    await expect(page.locator(".sheet-body")).toContainText("Local visibility depends on the DDS");
+    await expect(page.locator(".sheet-body")).toContainText("storage choices are not universal requirements");
+    await expect(page.locator(".sheet-body")).toContainText("not a requirement of CRDTs or DDSes");
+    for (const term of ["CRDT", "DDS", "sequencer"]) {
+      await expect(page.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
+    }
     for (const term of ["Durable Object", "WebSocket", "optimistic update", "state snapshot", "epoch", "hibernation"]) {
       await expect(page.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
     }
-    await expect(page.getByRole("link", { name: "Return to the G-counter live lab" }))
+    await expect(page.locator(".sheet-body").getByRole("link", { name: "G-counter live lab", exact: true }))
       .toHaveAttribute("href", "/labs/g-counter/");
+    await expect(page.locator(".sheet-body").getByRole("link", { name: "SharedCounter live lab", exact: true }))
+      .toHaveAttribute("href", "/labs/shared-counter/");
+    const roomDefinition = await page.getByLabel("Durable Object definition", { exact: true })
+      .locator(".term-callout-copy").innerText();
+    await page.goto("/labs/shared-counter/");
+    await expect(page.getByLabel("Durable Object definition", { exact: true }).locator(".term-callout-copy"))
+      .toHaveText(roomDefinition);
     await page.goto("/atlas/");
-    await expect(page.locator("#systems").getByRole("link", { name: "How multi-device G-counter rooms work" }))
-      .toHaveAttribute("href", "/atlas/multi-device-g-counter/");
+    await expect(page.locator("#systems").getByRole("link", { name: "How multiplayer rooms work" }))
+      .toHaveAttribute("href", "/atlas/multiplayer-rooms/");
     await page.goto("/glossary/");
     for (const anchor of ["durable-object", "websocket", "optimistic-update", "state-snapshot", "epoch", "hibernation"]) {
       await expect(page.locator(`#${anchor}`)).toBeVisible();
+    }
+    await expect(page.locator("#epoch")).toContainText("room's shared state");
+    await page.goto("/atlas/multi-device-g-counter/");
+    await expect(page).toHaveURL(/\/atlas\/multiplayer-rooms\/$/);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("How multiplayer rooms work");
+  } finally {
+    await context.close();
+  }
+});
+
+test("the multiplayer reference preserves storage examples and lifetimes without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/multiplayer-rooms/");
+    const body = page.locator(".sheet-body");
+    const epoch = "9df10f6c-c764-46d8-a3c8-54eec6227005";
+    const counter = JSON.parse(await body.locator("pre code").filter({ hasText: '"counter":' }).innerText());
+    expect(counter).toEqual({ counter: { singleton: 1, epoch, a: 7, b: 3, c: 0 } });
+    const history = JSON.parse(await body.locator("pre code").filter({ hasText: '"operations":' }).innerText());
+    expect(history).toEqual({
+      room: { singleton: 1, epoch },
+      operations: [
+        { sequenceNumber: 1, id: "11111111-1111-4111-8111-111111111111", author: "A", amount: 3 },
+        { sequenceNumber: 2, id: "22222222-2222-4222-8222-222222222222", author: "B", amount: -1 },
+      ],
+    });
+    await expect(page.getByRole("region", { name: "G-counter storage fields" })
+      .locator("tbody tr td:first-child code")).toHaveText(["singleton", "epoch", "a", "b", "c"]);
+    await expect(page.getByRole("region", { name: "SharedCounter storage fields" })
+      .locator("tbody tr td:first-child code")).toHaveText(["sequenceNumber", "id", "author", "amount"]);
+    await expect(page.getByRole("region", { name: "Room data lifetimes" }))
+      .toContainText("Survives hibernation while that connection remains open");
+    for (const text of [
+      "not a live view of your room", "7 + 3 + 0 = 10", "10 + 3 - 1 = 12",
+      "At 1,000 operations", "Closing all tabs leaves the SQLite data intact",
+      "one storage transaction deletes operation rows", "sets a, b, and c to zero",
+      "independent offline writers must not reuse one component",
+    ]) {
+      await expect(body).toContainText(text);
+    }
+    for (const width of [320, 390, 1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      expect(await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )).toBe(0);
     }
   } finally {
     await context.close();
@@ -660,8 +724,8 @@ test("the atlas presents territories as one connected chart without JavaScript",
     await expect(page.getByRole("navigation", { name: "Causal evidence trail", exact: true }))
       .toHaveCount(0);
     await expect(chart.getByRole("link")).toHaveCount(8);
-    await expect(chart.getByRole("link", { name: "How multi-device G-counter rooms work", exact: true }))
-      .toHaveAttribute("href", "/atlas/multi-device-g-counter/");
+    await expect(chart.getByRole("link", { name: "How multiplayer rooms work", exact: true }))
+      .toHaveAttribute("href", "/atlas/multiplayer-rooms/");
     const published = chart.getByRole("link", { name: "Dots and causal context", exact: true });
     await expect(published).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
     await published.focus();
@@ -723,7 +787,9 @@ test.describe("collection build fixtures", () => {
     await symlink(path.resolve("node_modules"), path.join(root, "node_modules"), "dir");
     await mkdir(path.join(root, "src/content/sheets"), { recursive: true });
     for (const file of await readdir(path.join(root, "src/content/sheets"))) {
-      if (/\.mdx?$/.test(file)) await rm(path.join(root, "src/content/sheets", file));
+      if (/\.mdx?$/.test(file) && file !== "multiplayer-rooms.mdx") {
+        await rm(path.join(root, "src/content/sheets", file));
+      }
     }
     const sheets = [
       {
@@ -814,7 +880,7 @@ import VectorComparison from "../components/VectorComparison.astro";
     await expect(page.getByRole("article")).toContainText("Mechanisms");
     await expect(page.getByRole("article")).toContainText("Explore dots and causal context.");
     await expect(page.locator(".sheet-header")).toContainText("1 min read");
-    await expect(page.locator(".sheet-header")).toContainText("No lab on this sheet");
+    await expect(page.locator(".sheet-header")).toContainText("No embedded lab");
     await expect(page.getByRole("complementary", { name: "Terms on this sheet" })
       .getByRole("link", { name: "dot", exact: true })).toHaveAttribute("href", "/glossary/#dot");
     await expect(page.getByRole("heading", { name: "Fixture article" })).toBeVisible();
