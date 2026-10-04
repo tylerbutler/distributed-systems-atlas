@@ -16,6 +16,16 @@ interface Props { counter: string }
 const { counter } = Astro.props;
 const growOnly = counter === "g-counter";
 const name = growOnly ? "G-counter" : "SharedCounter";
+const exampleEpoch = "9df10f6c-c764-46d8-a3c8-54eec6227005";
+const storedExample = growOnly
+  ? { counter: { singleton: 1, epoch: exampleEpoch, a: 7, b: 3, c: 0 } }
+  : {
+      room: { singleton: 1, epoch: exampleEpoch },
+      operations: [
+        { sequenceNumber: 1, id: "11111111-1111-4111-8111-111111111111", author: "A", amount: 3 },
+        { sequenceNumber: 2, id: "22222222-2222-4222-8222-222222222222", author: "B", amount: -1 },
+      ],
+    };
 ---
 
 <BaseLayout
@@ -46,6 +56,145 @@ const name = growOnly ? "G-counter" : "SharedCounter";
       <p>Reset clears the shared room for all connected hikers. An observer can read the room but cannot edit or reset it.</p>
     </section>
 
+    <section class="lab-storage" aria-labelledby="storage-title">
+      <h2 id="storage-title">What the Durable Object stores</h2>
+      <p>
+        Each room has a private SQLite database in one Cloudflare{" "}
+        <dfn><a href="/glossary/#durable-object">Durable Object</a></dfn>.
+        The G-counter and SharedCounter labs use separate room services.
+        The same room code in the two labs selects separate objects and databases.
+        The code selects the object; it is not a column in these tables.
+      </p>
+      <TermCallout
+        term="Durable Object"
+        definition="A Cloudflare service that combines coordination for one named object with storage private to that object."
+      />
+      <p>
+        Both databases contain a reset identifier, called an{" "}
+        <dfn><a href="/glossary/#epoch">epoch</a></dfn>. When a hiker resets
+        the room, the server creates a new identifier and rejects requests
+        from the previous epoch.
+      </p>
+      <TermCallout
+        term="epoch"
+        definition="An identifier for one generation of a room's counter state. Reset creates a new epoch."
+      />
+
+      {growOnly ? (
+        <Fragment>
+          <h3>One row of cumulative counts</h3>
+          <p>
+            The server updates one row in the <code>counter</code> table.
+            It keeps the largest submitted count for each hiker. A new
+            sighting changes that row; the server does not append a record
+            for each new click.
+          </p>
+          <table>
+            <caption><code>counter</code> table</caption>
+            <thead><tr><th scope="col">Field</th><th scope="col">Stored value</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>singleton</code></th><td>The fixed key <code>1</code>. The table permits only this one row.</td></tr>
+              <tr><th scope="row"><code>epoch</code></th><td>The identifier for the current reset generation.</td></tr>
+              <tr><th scope="row"><code>a</code></th><td>Alice's cumulative count.</td></tr>
+              <tr><th scope="row"><code>b</code></th><td>Bob's cumulative count.</td></tr>
+              <tr><th scope="row"><code>c</code></th><td>Carol's cumulative count.</td></tr>
+            </tbody>
+          </table>
+          <p>
+            Each browser computes the total from these three components.
+            With Alice at 7, Bob at 3, and Carol at 0, the total is{" "}
+            <code>7 + 3 + 0 = 10</code>. The database has no separate total
+            column and does not store the local checkpoint log or animation state.
+          </p>
+        </Fragment>
+      ) : (
+        <Fragment>
+          <h3>A room row and a numbered operation log</h3>
+          <p>
+            The <code>room</code> table contains one row for the reset
+            generation. The <code>operations</code> table contains one row
+            for each accepted signed change.
+          </p>
+          <table>
+            <caption><code>room</code> table</caption>
+            <thead><tr><th scope="col">Field</th><th scope="col">Stored value</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>singleton</code></th><td>The fixed key <code>1</code>. The table permits only this one row.</td></tr>
+              <tr><th scope="row"><code>epoch</code></th><td>The identifier for the current reset generation, shared by the whole log.</td></tr>
+            </tbody>
+          </table>
+          <table>
+            <caption><code>operations</code> table</caption>
+            <thead><tr><th scope="col">Field</th><th scope="col">Stored value</th></tr></thead>
+            <tbody>
+              <tr><th scope="row"><code>sequenceNumber</code></th><td>The operation's unique position in the shared order: <code>1</code>, <code>2</code>, and so on.</td></tr>
+              <tr><th scope="row"><code>id</code></th><td>A unique action identifier from the browser. The server uses it to detect a repeated submission.</td></tr>
+              <tr><th scope="row"><code>author</code></th><td>The assigned hiker: <code>A</code> for Alice, <code>B</code> for Bob, or <code>C</code> for Carol.</td></tr>
+              <tr><th scope="row"><code>amount</code></th><td>The signed change, such as <code>3</code> or <code>-1</code>.</td></tr>
+            </tbody>
+          </table>
+          <p>
+            The server derives the next sequence number from the largest
+            stored number. It keeps the epoch in the <code>room</code> row,
+            rather than repeating it in each operation. A repeated action
+            with the same identifier, author, and amount reuses the existing
+            operation instead of adding another row.
+          </p>
+          <p>
+            Each browser starts its kernel from the lab's baseline of 10
+            and replays the stored changes. Alice's <code>+3</code> followed
+            by Bob's <code>-1</code> gives <code>10 + 3 - 1 = 12</code>.
+            The database stores neither the baseline nor a running total.
+            At 1,000 operations, the server refuses new changes until a hiker
+            resets the room; it does not discard older operations to make space.
+          </p>
+        </Fragment>
+      )}
+
+      <figure class="storage-example">
+        <figcaption>Example database records, shown as JSON. This is illustrative data, not a live view of your room.</figcaption>
+        <pre><code>{JSON.stringify(storedExample, null, 2)}</code></pre>
+      </figure>
+
+      <h3>What survives a disconnect or reset</h3>
+      <p>
+        Closing all tabs leaves the SQLite data intact. The demo has no
+        automatic room expiry. Rejoining{" "}
+        {growOnly
+          ? "loads the stored component counts into a fresh browser model."
+          : "replays the stored operations in sequence order into a fresh browser model."}
+        {" "}A change that never reached server storage cannot be recovered.
+      </p>
+      <p>
+        {growOnly
+          ? "Reset keeps the counter row, sets a, b, and c to zero, and replaces the epoch."
+          : "Reset deletes all operation rows and replaces the room epoch in one storage transaction. Browsers restart from 10, and the next operation receives sequence number 1."}
+        {" "}Active connections keep their assigned hiker roles.
+      </p>
+
+      <h3>Connection metadata and browser memory</h3>
+      <p>
+        The server saves a connection's hiker role in a WebSocket attachment,
+        such as <code>{'{ "replica": "A" }'}</code>. An observer has{" "}
+        <code>{'{ "replica": null }'}</code>. These attachments are not
+        SQLite rows. Cloudflare preserves them during{" "}
+        <dfn><a href="/glossary/#hibernation">hibernation</a></dfn>, while
+        the connection stays open. After it closes, another connection can
+        take that hiker role. The server computes presence from the active
+        sockets; it does not store a participant list in either SQL table.
+      </p>
+      <TermCallout
+        term="hibernation"
+        definition="A Durable Object lifecycle state in which Cloudflare keeps accepted WebSocket connections open without keeping the object's code in memory."
+      />
+      <p>
+        Your browser keeps its three kernel copies, pending edits, local
+        delivery queues, and Speed, Jitter, and Broadcast settings in memory.
+        The room does not persist those browser states or keep an offline
+        outbox. Hiker roles identify connections, not user accounts.
+      </p>
+    </section>
+
     <details class="lab-notes">
       <summary>How the real connection and storage work</summary>
       <section aria-labelledby="live-room-title">
@@ -57,20 +206,12 @@ const name = growOnly ? "G-counter" : "SharedCounter";
           Roles belong to connections, not authenticated identities.
         </p>
         <p>
-          One Cloudflare <dfn><a href="/glossary/#durable-object">Durable Object</a></dfn>
-          {" "}provides the room service and its private SQLite storage.
           A <dfn><a href="/glossary/#websocket">WebSocket</a></dfn> keeps your
           browser connected so the server can send updates.
         </p>
         <TermCallout
-          term="Durable Object"
-          definition="A Cloudflare service that combines coordination for one named object with storage private to that object."
-          inlineOnly
-        />
-        <TermCallout
           term="WebSocket"
           definition="A persistent connection over which a browser and a server can send messages to each other."
-          inlineOnly
         />
         {growOnly ? (
           <Fragment>
@@ -83,7 +224,7 @@ const name = growOnly ? "G-counter" : "SharedCounter";
             </p>
             <p>
               Rejoining loads the stored three component counts. Reset
-              clears them to zero and creates a new <dfn><a href="/glossary/#epoch">epoch</a></dfn>. The server rejects
+              clears them to zero and creates a new epoch. The server rejects
               changes from the old epoch.
             </p>
             <p><a href="/atlas/multi-device-g-counter/">How multi-device rooms and storage work</a></p>
@@ -109,17 +250,12 @@ const name = growOnly ? "G-counter" : "SharedCounter";
             <p>
               SQLite retains up to 1,000 operations per room. Rejoining starts
               from the agreed count of 10 and replays the stored log in order.
-              Reset clears the log, restores 10, and creates a new <dfn><a href="/glossary/#epoch">epoch</a></dfn>.
+              Reset clears the log, restores 10, and creates a new epoch.
               The server rejects requests from the old epoch. After a rejected
               edit, the browser rolls back pending edits and reloads the log.
             </p>
           </Fragment>
         )}
-        <TermCallout
-          term="epoch"
-          definition="An identifier for one generation of a room's counter state. Reset creates a new epoch."
-          inlineOnly
-        />
         <p>
           The optional Speed, Jitter, and Broadcast controls affect delivery
           among the local copies in this browser. They do not delay the real
@@ -143,6 +279,16 @@ const name = growOnly ? "G-counter" : "SharedCounter";
   .lab-intro > p { margin-block: var(--space-4) 0; }
   .lab-experiment { max-width: var(--measure-reading); margin-block: var(--space-6); }
   .lab-experiment li { padding-block: var(--space-2); }
+  .lab-storage { max-width: var(--measure-reading); margin-block: var(--space-6); }
+  .lab-storage table { width: 100%; margin-block: var(--space-5); border-collapse: collapse; table-layout: fixed; }
+  .lab-storage caption { margin-bottom: var(--space-3); text-align: left; font-family: var(--font-ui); font-weight: 650; }
+  .lab-storage :is(th, td) { padding: var(--space-3); border-block: var(--rule-width) solid var(--line); text-align: left; vertical-align: top; }
+  .lab-storage th { font-family: var(--font-ui); }
+  .lab-storage thead th:first-child { width: 32%; }
+  .lab-storage th code { font-size: 0.85em; }
+  .storage-example { margin: var(--space-5) 0; }
+  .storage-example figcaption { max-width: none; font-family: var(--font-ui); font-size: 0.875rem; }
+  .storage-example pre { padding: var(--space-4); border-block: var(--rule-width) solid var(--line); background: var(--clear); font-size: 0.875rem; }
   .lab-notes { border-block: var(--rule-width) solid var(--line); }
   .lab-notes summary { min-height: 44px; padding-block: var(--space-4); font-family: var(--font-ui); font-weight: 650; cursor: pointer; }
   .lab-notes section { padding-bottom: var(--space-4); }

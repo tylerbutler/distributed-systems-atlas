@@ -3,6 +3,52 @@ import { expect, test, type WebSocketRoute } from "@playwright/test";
 const epoch = "9df10f6c-c764-46d8-a3c8-54eec6227005";
 
 for (const counter of ["g-counter", "shared-counter"]) {
+  test(`${counter} documents persisted fields and data lifetimes without JavaScript`, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      const page = await context.newPage();
+      await page.goto(`/labs/${counter}/`);
+      const storage = page.getByRole("region", { name: "What the Durable Object stores", exact: true });
+      await expect(storage).toBeVisible();
+      await expect(storage).toContainText("not a live view of your room");
+      const sample = JSON.parse(await storage.locator(".storage-example code").innerText());
+      if (counter === "g-counter") {
+        await expect(storage.getByRole("table", { name: "counter table" }).locator("tbody th"))
+          .toHaveText(["singleton", "epoch", "a", "b", "c"]);
+        expect(sample).toEqual({ counter: { singleton: 1, epoch, a: 7, b: 3, c: 0 } });
+        await expect(storage).toContainText("7 + 3 + 0 = 10");
+        await expect(storage).toContainText("sets a, b, and c to zero");
+      } else {
+        await expect(storage.getByRole("table", { name: "room table" }).locator("tbody th"))
+          .toHaveText(["singleton", "epoch"]);
+        await expect(storage.getByRole("table", { name: "operations table" }).locator("tbody th"))
+          .toHaveText(["sequenceNumber", "id", "author", "amount"]);
+        expect(sample).toEqual({
+          room: { singleton: 1, epoch },
+          operations: [
+            { sequenceNumber: 1, id: "11111111-1111-4111-8111-111111111111", author: "A", amount: 3 },
+            { sequenceNumber: 2, id: "22222222-2222-4222-8222-222222222222", author: "B", amount: -1 },
+          ],
+        });
+        await expect(storage).toContainText("10 + 3 - 1 = 12");
+        await expect(storage).toContainText("At 1,000 operations, the server refuses new changes");
+        await expect(storage).toContainText("Reset deletes all operation rows");
+      }
+      for (const term of ["Durable Object", "epoch", "hibernation"]) {
+        await expect(storage.getByLabel(`${term} definition`, { exact: true })).toBeVisible();
+      }
+      await expect(storage).toContainText("Closing all tabs leaves the SQLite data intact");
+      await expect(storage).toContainText("attachments are not SQLite rows");
+      await expect(storage).toContainText("Hiker roles identify connections, not user accounts");
+      for (const width of [320, 390, 1440]) {
+        await page.setViewportSize({ width, height: 1000 });
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
   test(`${counter} lab creates a room and keeps setup separate from the local model`, async ({ page, context }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
