@@ -210,7 +210,7 @@ test("sheet reading context resumes sticky contents after the unobstructed lab w
       await page.locator(".sheet-continuation").evaluate((element) =>
         window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top + 300));
       const resumed = page.locator(".sheet-local").last();
-      await expect(resumed.getByRole("navigation", { name: "On this sheet", exact: true })).toBeInViewport();
+      await expect(resumed.getByRole("navigation", { name: "Continue reading", exact: true })).toBeInViewport();
       await resumed.getByRole("link", { name: "Field notes", exact: true }).click();
       await expect(page).toHaveURL(/#field-notes$/);
       await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();

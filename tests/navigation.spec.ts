@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { structureGroups } from "../src/lib/structure-demo/structure-navigation";
+import { firstTrail } from "../src/lib/atlas/trail";
 
 test("lessons expose contextual reference sheets without JavaScript", async ({ browser, request }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
@@ -34,6 +35,41 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
       .toHaveAttribute("href", "/atlas/multi-value-registers/");
     await page.goto("/structures/counters/");
     await expect(page.getByRole("navigation", { name: "Related reference sheets", exact: true })).toHaveCount(0);
+  } finally {
+    await context.close();
+  }
+});
+
+test("opening and continuation contents have distinct accessible names", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    for (const { id } of firstTrail) {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto(`/atlas/${id}/`);
+      const opening = page.getByRole("navigation", { name: "On this sheet", exact: true });
+      const continuation = page.getByRole("navigation", { name: "Continue reading", exact: true });
+      await expect(opening).toHaveCount(1);
+      await expect(continuation).toHaveCount(1);
+      expect(await continuation.getByRole("link").evaluateAll((links) =>
+        links.map((link) => link.getAttribute("href")),
+      )).toEqual(await opening.getByRole("link").evaluateAll((links) =>
+        links.map((link) => link.getAttribute("href")),
+      ));
+      await continuation.getByRole("link", { name: "Field notes", exact: true }).focus();
+      await page.keyboard.press("Enter");
+      await expect(page.getByRole("heading", { name: "Field notes", exact: true })).toBeInViewport();
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(continuation).toHaveCount(0);
+      const summary = page.locator(".sheet-local-opening summary");
+      await summary.focus();
+      await page.keyboard.press("Enter");
+      await expect(opening).toHaveCount(1);
+    }
+    await page.goto("/atlas/multiplayer-rooms/");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(page.getByRole("navigation", { name: "In this note", exact: true })).toHaveCount(1);
+    await expect(page.getByRole("navigation", { name: "Continue reading", exact: true })).toHaveCount(0);
   } finally {
     await context.close();
   }

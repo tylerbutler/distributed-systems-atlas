@@ -76,13 +76,16 @@ const pairedLesson = pairedLessonForSheet(entry.id);
         : <p class="sheet-prerequisites">No background sheet listed</p>}
       <LessonIllustration id={`atlas-${entry.id}`} />
     </header>
-    {["opening", "continuation"].map((section) => (
+    {[
+      { section: "opening", label: contentsLabel },
+      { section: "continuation", label: "Continue reading" },
+    ].map(({ section, label }) => (
       <div class={`sheet-local sheet-local-${section}`}>
         <div class="sheet-local-inner">
           <details class="sheet-contents">
-            <summary>{contentsLabel}</summary>
-            <nav aria-label={contentsLabel}>
-              <h2>{contentsLabel}</h2>
+            <summary>{label}</summary>
+            <nav aria-label={label}>
+              <h2>{label}</h2>
               <ul>
                 {contents.map(({ slug, text }) => <li><a href={`#${slug}`}>{text}</a></li>)}
               </ul>
