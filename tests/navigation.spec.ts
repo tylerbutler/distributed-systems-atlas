@@ -39,6 +39,39 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
   }
 });
 
+test("secondary navigation retains 44px targets and works by touch", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, hasTouch: true });
+  try {
+    const page = await context.newPage();
+    for (const width of [320, 390, 820, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const route of ["/structures/", "/atlas/multiplayer-rooms/"]) {
+        await page.goto(route);
+        await page.evaluate(() => document.fonts.ready);
+        const targets = await page.locator(".site-name, .footer-navigation h3 a, .structure-guide a")
+          .evaluateAll((links) => links.map((link) => {
+            const { width, height } = link.getBoundingClientRect();
+            return { text: link.textContent, width, height };
+          }));
+        for (const target of targets) {
+          expect(target.height, `${route}: ${target.text}`).toBeGreaterThanOrEqual(44);
+          expect(target.width, `${route}: ${target.text}`).toBeGreaterThanOrEqual(44);
+        }
+        expect(await page.evaluate(() =>
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        )).toBe(0);
+      }
+      await page.locator(".footer-navigation h3 a").filter({ hasText: "Counters" }).tap();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText("Counters");
+      await page.locator(".site-name").tap();
+      await expect(page).toHaveURL("http://127.0.0.1:4321/");
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    }
+  } finally {
+    await context.close();
+  }
+});
+
 test("atlas and sheets describe the same optional background", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {

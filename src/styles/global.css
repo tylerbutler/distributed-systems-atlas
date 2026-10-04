@@ -199,6 +199,7 @@ p {
 
 .site-name {
   display: flex;
+  min-height: 44px;
   align-items: center;
   gap: 1rem;
   color: inherit;

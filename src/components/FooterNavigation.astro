@@ -79,8 +79,10 @@ const sheets = (await getCollection("sheet", ({ data }) => data.status === "publ
     list-style: none;
   }
 
-  li a {
+  li a,
+  h3 a {
     display: inline-flex;
+    min-width: 44px;
     min-height: 44px;
     align-items: center;
   }
