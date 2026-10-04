@@ -45,6 +45,12 @@ The glossary groups definitions by their first letter. Its jump index lists
 only letters with entries and works without JavaScript. Existing term anchors
 remain available for direct links from lessons and sheets.
 
+The observation rail uses the **Page position** landmark on every page.
+Reference sheets distinguish opening contents from **Continue reading**
+contents after the lab. On narrow screens, opening contents use a native
+disclosure. The structure index labels its three shortcuts **Common starting
+points**, separate from the complete family catalogue.
+
 ## Lesson illustrations
 
 [`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the

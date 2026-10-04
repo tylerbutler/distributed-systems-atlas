@@ -377,7 +377,7 @@ test("the observation rail wraps without horizontal overflow", async ({ page }) 
   await page.goto("/atlas/dots-and-causal-context/");
   for (const width of [320, 390, 767, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 844 });
-    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    const rail = page.getByRole("navigation", { name: "Page position", exact: true });
     await expect(rail).toBeVisible();
     await expect(page.locator("body")).toHaveJSProperty(
       "scrollWidth",
@@ -430,7 +430,7 @@ test("structure browsing fits narrow and wide screens", async ({ page }) => {
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 844 });
     for (const [route, navName] of [
-      ["/structures/", "Choose by need"],
+      ["/structures/", "Common starting points"],
       ["/structures/g-counter/", "Browse structures"],
       ["/structures/json-ot/", "Browse structures"],
     ]) {

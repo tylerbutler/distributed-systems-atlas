@@ -55,7 +55,7 @@ for (const counter of ["g-counter", "shared-counter"]) {
       },
     );
     await page.goto(`/labs/${counter}/`);
-    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    const rail = page.getByRole("navigation", { name: "Page position", exact: true });
     await expect(rail.getByRole("link", { name: "Counters", exact: true })).toHaveAttribute("href", "/structures/counters/");
     await expect(rail.locator('[aria-current="page"]')).toContainText("live lab");
     const demo = page.getByTestId(`${counter}-demo`);

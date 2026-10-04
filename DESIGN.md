@@ -214,6 +214,20 @@ The root content field is 72rem wide with fluid horizontal padding. The landing 
 
 The observation rail persists below primary navigation. Structure breadcrumbs show Structures → family → lesson; reference breadcrumbs show Reference atlas → territory → sheet. The shared structure navigation model supplies the catalogue and links back to the containing family. The UI has no learning trails, numbered family steps, prescribed next lessons, or trail-progress counts. The current page remains text, followed by a thin trace and a sulfur current point. Below 48rem, the rail wraps and the header uses compact spacing; the four primary navigation links stay visible.
 
+The rail uses the **Page position** landmark on every route. Structure lessons
+end with an optional **Related reference sheets** section, separate from family
+navigation. Each reference includes its summary. The index's three shortcuts
+are **Common starting points**, not a complete need-based catalogue.
+Atlas entries and sheet headers use **Helpful background** for supporting
+sheet links. Repeated desktop contents use distinct landmarks: **On this sheet**
+(**In this note** for Systems) and **Continue reading** after the lab.
+
+The glossary groups terms by first letter and provides an alphabetical jump
+index with 44px targets. Letter headings accept native anchor focus, and each
+term retains its original deep-link anchor. No JavaScript is required.
+The site-name link, footer family headings, and starting-point shortcuts also
+retain a minimum 44px clickable height without larger type.
+
 Lesson and family introductions place their illustration beside the text from 64rem. The G-counter's local section links follow its summary and precede the illustration in document order. On wide screens those links span the introduction below the text and artwork. Below that width, the art remains in reading order and shrinks to 12rem below 48rem. The site keeps the original artwork, aspect ratio, and alt text.
 
 The territory chart uses a fixed 14rem index column beside connected sheet stops. At 64rem and below, the territory summary moves above the chart field. Below 40rem, connectors simplify into a vertical station list; order and status remain explicit.

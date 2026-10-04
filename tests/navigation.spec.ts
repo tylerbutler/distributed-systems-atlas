@@ -40,6 +40,31 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
   }
 });
 
+test("navigation labels describe pages and optional starting points accurately", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    for (const route of [
+      "/", "/structures/", "/structures/g-counter/", "/atlas/",
+      "/atlas/multi-value-registers/", "/glossary/", "/bibliography/", "/labs/g-counter/",
+    ]) {
+      await page.goto(route);
+      const position = page.getByRole("navigation", { name: "Page position", exact: true });
+      await expect(position).toHaveCount(1);
+      await expect(position.locator('[aria-current="page"]')).toHaveCount(1);
+      await expect(page.getByRole("navigation", { name: "Sheet position", exact: true })).toHaveCount(0);
+    }
+    await page.goto("/structures/");
+    const guide = page.getByRole("navigation", { name: "Common starting points", exact: true });
+    await expect(guide.getByRole("heading")).toHaveText("Common starting points");
+    await expect(guide.getByRole("link")).toHaveText(["Compare counters", "Compare sets", "Compare registers"]);
+    await page.goto("/atlas/");
+    await expect(page.locator(".publication-note")).toHaveText("Published sheets link to pages.");
+  } finally {
+    await context.close();
+  }
+});
+
 test("opening and continuation contents have distinct accessible names", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {

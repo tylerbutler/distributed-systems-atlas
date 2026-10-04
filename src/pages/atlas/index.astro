@@ -53,7 +53,10 @@ const territories = [
       />
     ))}
   </div>
-  <p class="publication-note">Only completed sheets link to routes. Planned sheets mark the next stops, not unfinished pages.</p>
+  <p class="publication-note">
+    Published sheets link to pages.
+    {entries.some(({ status }) => status === "planned") && " Planned sheets have no page links."}
+  </p>
 </BaseLayout>
 
 <style>

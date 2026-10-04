@@ -207,7 +207,7 @@ test("the observation rail shows route context without JavaScript", async ({ bro
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
-    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    const rail = page.getByRole("navigation", { name: "Page position", exact: true });
     await page.goto("/");
     await expect(rail.getByRole("listitem")).toHaveText(["Home"]);
     await page.goto("/atlas/");
@@ -224,7 +224,7 @@ test("the observation rail shows route context without JavaScript", async ({ bro
 });
 
 test("breadcrumbs link to the relevant structure and reference indexes", async ({ page }) => {
-  const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+  const rail = page.getByRole("navigation", { name: "Page position", exact: true });
   for (const [route, family] of [
     ["/structures/g-counter/", "Counters"],
     ["/structures/observed-remove-set/", "Sets"],
@@ -401,7 +401,7 @@ test("readers can open reference topics without a learning path or JavaScript", 
       await page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true }).click();
       await expect(page).toHaveURL(new RegExp(`/atlas/${id}/$`));
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
-      await expect(page.getByRole("navigation", { name: "Sheet position", exact: true }))
+      await expect(page.getByRole("navigation", { name: "Page position", exact: true }))
         .not.toContainText(/Trail \d+ of/);
       await expect(page.getByRole("navigation", { name: "Next in the structure-first trail", exact: true }))
         .toHaveCount(0);
@@ -896,7 +896,7 @@ import VectorComparison from "../components/VectorComparison.astro";
       .toHaveCount(0);
 
     await page.setContent(await readFile(path.join(root, "dist/atlas/local-history/index.html"), "utf8"));
-    const rail = page.getByRole("navigation", { name: "Sheet position", exact: true });
+    const rail = page.getByRole("navigation", { name: "Page position", exact: true });
     await expect(rail.getByRole("listitem")).toHaveText([
       "Reference atlas", "Mechanisms", "Local history",
     ]);
