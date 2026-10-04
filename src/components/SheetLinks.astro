@@ -3,11 +3,12 @@ import type { SheetMeta } from "../lib/atlas/graph";
 
 interface Props {
   heading: string;
-  sheets: Pick<SheetMeta, "id" | "title" | "status">[];
+  sheets: Pick<SheetMeta, "id" | "title" | "status" | "summary">[];
   emptyText?: string;
+  showSummaries?: boolean;
 }
 
-const { heading, sheets, emptyText } = Astro.props;
+const { heading, sheets, emptyText, showSummaries = false } = Astro.props;
 ---
 
 {(sheets.length > 0 || emptyText) && (
@@ -19,8 +20,21 @@ const { heading, sheets, emptyText } = Astro.props;
           {sheet.status === "published"
             ? <a href={`/atlas/${sheet.id}/`}>{sheet.title}</a>
             : <><span>{sheet.title}</span> <span class="status">Planned</span></>}
+          {showSummaries && <p class="sheet-link-summary">{sheet.summary}</p>}
         </li>
       ))}
     </ul> : <p class="sheet-empty">{emptyText}</p>}
   </nav>
 )}
+
+<style>
+  .sheet-link-summary {
+    margin: 0 0 var(--space-4);
+    font-family: var(--font-reading);
+  }
+
+  .sheet-links:has(.sheet-link-summary) a {
+    min-height: 44px;
+    align-content: center;
+  }
+</style>

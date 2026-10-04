@@ -2,6 +2,11 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "zod";
 import { complexityLevels } from "./lib/learning-complexity";
+import { structureGroups } from "./lib/structure-demo/structure-navigation";
+
+const structureLessonSlugs = new Set(
+  structureGroups.flatMap(({ lessons }) => lessons.map(([, slug]) => slug)),
+);
 
 function uniqueIdGlob(options: Parameters<typeof glob>[0]): ReturnType<typeof glob> {
   const loader = glob(options);
@@ -51,6 +56,10 @@ const sheet = defineCollection({
     complexity: z.enum(complexityLevels),
     showCorrectnessWarning: z.boolean().default(true),
     requires: z.array(sheetReference).default([]),
+    structureLessons: z.array(z.string().refine(
+      (slug) => structureLessonSlugs.has(slug),
+      "Unknown structure lesson",
+    )).default([]),
     introduces: z.array(z.string()).default([]),
     related: z.array(sheetReference).default([]),
     scenarios: z.array(z.string()).default([]),

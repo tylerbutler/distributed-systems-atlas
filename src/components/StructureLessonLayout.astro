@@ -1,7 +1,9 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ComplexityBadge from "./ComplexityBadge.astro";
 import LessonIllustration from "./LessonIllustration.astro";
+import SheetLinks from "./SheetLinks.astro";
 import StructureNext from "./StructureNext.astro";
 import { structureComplexity } from "../lib/learning-complexity";
 
@@ -21,6 +23,11 @@ const {
   title,
 } = Astro.props;
 const complexity = structureComplexity(Astro.url.pathname);
+const slug = Astro.url.pathname.split("/").filter(Boolean).at(-1);
+const referenceSheets = (await getCollection("sheet", ({ data }) =>
+  data.status === "published" && data.structureLessons.some((lesson) => lesson === slug),
+)).map(({ id, data }) => ({ id, ...data }))
+  .sort((a, b) => a.title.localeCompare(b.title, "en"));
 ---
 
 <BaseLayout
@@ -42,6 +49,9 @@ const complexity = structureComplexity(Astro.url.pathname);
     </header>
 
     <slot />
+    <div class="structure-references">
+      <SheetLinks heading="Related reference sheets" sheets={referenceSheets} showSummaries />
+    </div>
     <StructureNext />
   </article>
 </BaseLayout>
@@ -58,6 +68,12 @@ const complexity = structureComplexity(Astro.url.pathname);
 
   .structure-summary {
     font-size: 1.2rem;
+  }
+
+  .structure-references:has(nav) {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: var(--rule-width) solid var(--line);
   }
 
   .lesson-meta {

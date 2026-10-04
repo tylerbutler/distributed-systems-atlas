@@ -32,6 +32,14 @@ plus the seven family overview pages, atlas index, glossary, and bibliography.
 The reference pages and browser labs display a prominent "Not yet reviewed for
 correctness" warning by default. These warnings are also visible without JavaScript.
 
+## Navigation
+
+Structure lessons end with a separate **Related reference sheets** section.
+Published sheets use the `structureLessons` frontmatter list to name the lesson
+slugs they support. Each link includes the sheet's summary; these are optional
+references, not a prescribed reading order. The content schema rejects unknown
+lesson slugs. Keep each lesson's references to one to three relevant sheets.
+
 ## Lesson illustrations
 
 [`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the
