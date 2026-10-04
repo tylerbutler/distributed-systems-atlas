@@ -40,6 +40,10 @@ slugs they support. Each link includes the sheet's summary; these are optional
 references, not a prescribed reading order. The content schema rejects unknown
 lesson slugs. Keep each lesson's references to one to three relevant sheets.
 
+The glossary groups definitions by their first letter. Its jump index lists
+only letters with entries and works without JavaScript. Existing term anchors
+remain available for direct links from lessons and sheets.
+
 ## Lesson illustrations
 
 [`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the

@@ -10,6 +10,13 @@ const sheets: SheetMeta[] = (await getCollection("sheet")).map(
 );
 const terms = [...buildGlossary(sheets), ...standaloneTerms]
   .sort((a, b) => a.term.localeCompare(b.term));
+const groups = new Map<string, typeof terms>();
+for (const term of terms) {
+  const letter = term.term.charAt(0).toUpperCase();
+  const group = groups.get(letter) ?? [];
+  group.push(term);
+  groups.set(letter, group);
+}
 ---
 
 <BaseLayout title="Glossary" description="Definitions for terms used in the published reference sheets.">
@@ -18,12 +25,54 @@ const terms = [...buildGlossary(sheets), ...standaloneTerms]
     <CorrectnessWarning />
     <p>Definitions collected from published atlas sheets.</p>
   </header>
-  <dl class="reference-list">
-    {terms.map(({ term, definition }) => (
-      <div id={entryAnchor(term)}>
-        <dt>{term}</dt>
-        <dd>{definition}</dd>
-      </div>
-    ))}
-  </dl>
+  <nav class="glossary-index" aria-label="Glossary letters">
+    <ul>
+      {[...groups.keys()].map((letter) => (
+        <li><a href={`#glossary-${letter.toLowerCase()}`}>{letter}</a></li>
+      ))}
+    </ul>
+  </nav>
+  {[...groups].map(([letter, entries]) => (
+    <section class="glossary-group" aria-labelledby={`glossary-${letter.toLowerCase()}`}>
+      <h2 id={`glossary-${letter.toLowerCase()}`} tabindex="-1">{letter}</h2>
+      <dl class="reference-list">
+        {entries.map(({ term, definition }) => (
+          <div id={entryAnchor(term)}>
+            <dt>{term}</dt>
+            <dd>{definition}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  ))}
 </BaseLayout>
+
+<style>
+  .glossary-index,
+  .glossary-group {
+    max-width: var(--measure-reading);
+  }
+
+  .glossary-index ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0;
+    padding: var(--space-3) 0;
+    border-block: var(--rule-width) solid var(--line);
+    list-style: none;
+  }
+
+  .glossary-index a {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    font-weight: 650;
+  }
+
+  .glossary-group h2 {
+    scroll-margin-top: var(--space-5);
+  }
+</style>

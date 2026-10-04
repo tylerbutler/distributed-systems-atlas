@@ -38,3 +38,41 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
     await context.close();
   }
 });
+
+test("glossary letters group all terms and support keyboard jumps without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/glossary/");
+    const terms = page.locator(".reference-list dt");
+    const expectedLetters = [...new Set(
+      (await terms.allTextContents()).map((term) => term.charAt(0).toUpperCase()),
+    )];
+    const index = page.getByRole("navigation", { name: "Glossary letters", exact: true });
+    await expect(index.getByRole("link")).toHaveText(expectedLetters);
+    for (const letter of expectedLetters) {
+      const group = page.getByRole("region", { name: letter, exact: true });
+      expect(await group.locator("dt").count()).toBeGreaterThan(0);
+      expect((await group.locator("dt").allTextContents())
+        .every((term) => term.charAt(0).toUpperCase() === letter)).toBe(true);
+      await expect(index.getByRole("link", { name: letter, exact: true }))
+        .toHaveAttribute("href", `#glossary-${letter.toLowerCase()}`);
+    }
+    for (const width of [320, 390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await index.getByRole("link", { name: "V", exact: true }).focus();
+      await page.keyboard.press("Enter");
+      await expect(page.locator("#glossary-v")).toBeFocused();
+      await expect(page.locator("#glossary-v")).toBeInViewport();
+      expect(await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )).toBe(0);
+    }
+    await page.goto("/glossary/#vector-clock");
+    await expect(page.locator("#vector-clock")).toBeInViewport();
+    await expect(page.locator("#vector-clock")).toContainText("one counter per tracked process");
+    await expect(page.locator("#replica")).toContainText("A local copy of shared data");
+  } finally {
+    await context.close();
+  }
+});
