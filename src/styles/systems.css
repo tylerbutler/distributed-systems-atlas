@@ -82,18 +82,6 @@
   font-weight: 650;
 }
 
-.atlas-territory.systems-surface .territory-station {
-  padding-block-start: var(--space-4);
-}
-
-.atlas-territory.systems-surface .station-stop {
-  border-radius: 0;
-}
-
-.atlas-territory.systems-surface .territory-connector {
-  border-bottom-left-radius: 0;
-}
-
 @media (width >= 48rem) {
   .systems-sheet .sheet-header {
     display: grid;
@@ -119,11 +107,5 @@
 
   .systems-sheet .sheet-header:has(.correctness-warning) > .lesson-illustration {
     grid-row: 4 / span 3;
-  }
-}
-
-@media (width < 40rem) {
-  .atlas-territory.systems-surface .territory-station {
-    padding-block-start: 0;
   }
 }

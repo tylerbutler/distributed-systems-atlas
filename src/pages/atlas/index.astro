@@ -6,14 +6,15 @@ import CorrectnessWarning from "../../components/CorrectnessWarning.astro";
 import {
   sheetReferenceId,
   validateSheetGraph,
-  type SheetMeta,
+  type SheetReference,
   type Territory,
 } from "../../lib/atlas/graph";
 import { buildAtlasEntries } from "../../lib/atlas/trail";
 import { scenarioIds } from "../../lib/lab/scenarios";
+import { structureGroups } from "../../lib/structure-demo/structure-navigation";
 
 const sheets = await getCollection("sheet");
-const metadata: SheetMeta[] = sheets.map((entry) => ({ id: entry.id, ...entry.data }));
+const metadata = sheets.map((entry) => ({ id: entry.id, ...entry.data }));
 const issues = validateSheetGraph(metadata, scenarioIds());
 if (issues.length > 0) {
   throw new Error(
@@ -24,70 +25,134 @@ if (issues.length > 0) {
 }
 
 const entries = buildAtlasEntries(metadata);
+const published = entries.filter((entry) => entry.status === "published");
+const planned = entries.filter((entry) => entry.status === "planned");
+const byId = new Map(metadata.map((entry) => [entry.id, entry]));
+const resolveSheet = (reference: SheetReference) => {
+  const id = sheetReferenceId(reference);
+  const sheet = byId.get(id);
+  if (!sheet) throw new Error(`Missing reference sheet: ${id}`);
+  return sheet;
+};
+const lessonTitles = new Map(
+  structureGroups.flatMap(({ lessons }) => lessons.map(([title, slug]) => [slug, title] as const)),
+);
 const territories = [
-  ["structures", "Structures", "Replicated data types and the tradeoffs they make."],
-  ["mechanisms", "Mechanisms", "The causal bookkeeping that explains each structure's behavior."],
+  ["structures", "Structures", "Study concurrent writes and removals beyond the structure lessons."],
+  ["mechanisms", "Mechanisms", "Understand local events, causal order, and the metadata used to compare them."],
   ["failures", "Failure modes", "Reproducible bugs and the mechanisms that cause or prevent them."],
   ["systems", "Systems", "Implementation notes on the Atlas, its demos, and their infrastructure."],
 ] as const satisfies readonly (readonly [Territory, string, string])[];
+const publishedTerritories = territories.filter(([id]) =>
+  published.some((entry) => entry.territory === id),
+);
 ---
 
 <BaseLayout title="Reference atlas" description="Find replicated structures, causal mechanisms, failure modes, and behind-the-scenes Atlas implementation notes.">
   <header class="page-intro">
     <h1>Reference atlas</h1>
     <CorrectnessWarning />
-    <p>Find a structure, mechanism, or failure mode by topic. Use Systems for a behind-the-scenes look at the Atlas and its demos.</p>
+    <p>Look up a concept or study the reasoning behind a merge rule. Each article lists its complexity and links to relevant lessons and background reading.</p>
+    <p class="lesson-entry">For a specific data type and its demo, <a href="/structures/">browse the structure lessons</a>.</p>
   </header>
+  {publishedTerritories.length > 0 && (
+    <nav class="reference-topics" aria-label="Reference topics">
+      <ul>
+        {publishedTerritories.map(([id, title]) => (
+          <li><a href={`#${id}`}>{title}</a></li>
+        ))}
+      </ul>
+    </nav>
+  )}
   <div class="territory-chart" id="territories" data-testid="territory-chart">
-    {territories.map(([id, title, summary]) => (
+    {publishedTerritories.map(([id, title, summary]) => (
       <AtlasTerritory
         {id}
         {title}
         {summary}
-        sheets={entries.filter((entry) => entry.territory === id).map((sheet) => ({
+        sheets={published.filter((entry) => entry.territory === id).map((sheet) => ({
           ...sheet,
-          prerequisiteTitles: sheet.requires.map((required) =>
-            metadata.find((entry) => entry.id === sheetReferenceId(required))!.title
-          ),
+          prerequisites: sheet.requires.map(resolveSheet),
+          lessons: resolveSheet(sheet.id).structureLessons.map((slug) => {
+            const title = lessonTitles.get(slug);
+            if (!title) throw new Error(`Unknown structure lesson: ${slug}`);
+            return { title, href: `/structures/${slug}/` };
+          }),
         }))}
       />
     ))}
+    {published.length === 0 && <p>No reference articles published yet.</p>}
   </div>
-  <p class="publication-note">
-    Published sheets link to pages.
-    {entries.some(({ status }) => status === "planned") && " Planned sheets have no page links."}
-  </p>
+  {planned.length > 0 && (
+    <details class="planned-sheets">
+      <summary>Planned articles ({planned.length})</summary>
+      <p>These topics do not have published pages yet.</p>
+      <ul>
+        {planned.map((sheet) => (
+          <li>
+            <span>{sheet.title}</span>
+            <span class="status">{territories.find(([id]) => id === sheet.territory)?.[1]}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )}
 </BaseLayout>
 
 <style>
-  .territory-chart {
-    position: relative;
+  .lesson-entry {
+    font-family: var(--font-ui);
   }
 
-  .territory-chart::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 14rem;
-    border-left: var(--rule-width) solid var(--instrument);
+  .reference-topics ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: 0;
+    padding: var(--space-3) 0;
+    border-top: var(--rule-width) solid var(--line);
+    list-style: none;
   }
 
-  .publication-note {
-    margin: var(--space-5) 0 0;
-    color: var(--muted);
+  .reference-topics a,
+  .lesson-entry a {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .reference-topics a {
+    font-weight: 650;
+  }
+
+  .planned-sheets {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: var(--rule-width) solid var(--line);
     font: 1rem / 1.6 var(--font-ui);
   }
 
-  @media (width <= 64rem) {
-    .territory-chart::before {
-      left: 0;
-    }
+  .planned-sheets summary {
+    width: fit-content;
+    min-height: 44px;
+    align-content: center;
+    cursor: pointer;
   }
 
-  @media (width < 40rem) {
-    .territory-chart::before {
-      display: none;
-    }
+  .planned-sheets p {
+    margin-top: var(--space-3);
+  }
+
+  .planned-sheets ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .planned-sheets li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-3);
   }
 </style>

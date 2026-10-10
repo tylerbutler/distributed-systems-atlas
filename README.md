@@ -41,6 +41,14 @@ references, not a prescribed reading order. The content schema rejects unknown
 lesson slugs. Keep each lesson's references to one to three relevant sheets.
 Atlas entries and sheet headers label the `requires` links **Helpful background**.
 
+The reference atlas groups published articles into single-column lists by topic.
+Each row has a summary, complexity badge, linked background reading, and structure
+lesson links from `structureLessons`. Lists of more than three lesson links use
+a native disclosure. The topic jump links include only groups with published
+articles. Planned articles appear in a separate disclosure without page links.
+Systems retains its distinct implementation-note treatment. These controls work
+without JavaScript.
+
 The glossary groups definitions by their first letter. Its jump index lists
 only letters with entries and works without JavaScript. Existing term anchors
 remain available for direct links from lessons and sheets.

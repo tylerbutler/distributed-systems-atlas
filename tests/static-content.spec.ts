@@ -398,7 +398,8 @@ test("readers can open reference topics without a learning path or JavaScript", 
     for (const { id, title } of firstTrail) {
       await page.goto("/atlas/");
       await expect(page.getByRole("navigation", { name: "Causal evidence trail" })).toHaveCount(0);
-      await page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true }).click();
+      await page.getByTestId("territory-chart").getByRole("heading", { name: title, exact: true })
+        .getByRole("link").click();
       await expect(page).toHaveURL(new RegExp(`/atlas/${id}/$`));
       await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
       await expect(page.getByRole("navigation", { name: "Page position", exact: true }))
@@ -484,7 +485,8 @@ test("Dots sheet is a complete article without JavaScript", async ({ browser, re
   try {
     const page = await context.newPage();
     await page.goto("/atlas/");
-    const sheetLink = page.getByTestId("territory-chart").getByRole("link", { name: "Dots and causal context", exact: true });
+    const sheetLink = page.getByTestId("territory-chart")
+      .getByRole("heading", { name: "Dots and causal context", exact: true }).getByRole("link");
     await expect(sheetLink).toBeVisible();
     await sheetLink.click();
     await expect(page).toHaveURL(/\/atlas\/dots-and-causal-context\/$/);
@@ -676,14 +678,16 @@ test("landing page works without client JavaScript", async ({ browser }) => {
   await context.close();
 });
 
-test("atlas exposes four territories and published sheets without dead links", async ({ page, request }) => {
+test("atlas exposes populated territories and published sheets without dead links", async ({ page, request }) => {
   await page.goto("/atlas/");
-  for (const name of ["Mechanisms", "Structures", "Failure modes", "Systems"]) {
+  for (const name of ["Mechanisms", "Structures", "Systems"]) {
     await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   }
   for (const title of trailTitles) {
-    await expect(page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true })).toBeVisible();
+    await expect(page.getByTestId("territory-chart").getByRole("heading", { name: title, exact: true })
+      .getByRole("link")).toBeVisible();
   }
+  await expect(page.getByTestId("territory-failures")).toHaveCount(0);
   const nav = page.getByRole("navigation", { name: "Primary" });
   await expect(nav.getByRole("link")).toHaveCount(4);
   await expect(nav.getByRole("link", { name: "Structures", exact: true })).toHaveAttribute(
@@ -700,7 +704,7 @@ test("atlas exposes four territories and published sheets without dead links", a
   }
 });
 
-test("the atlas presents territories as one connected chart without JavaScript", async ({ browser }) => {
+test("the atlas presents published article rows without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   try {
     const page = await context.newPage();
@@ -708,7 +712,7 @@ test("the atlas presents territories as one connected chart without JavaScript",
     const chart = page.getByTestId("territory-chart");
     await expect(chart).toBeVisible();
     await expect(chart.getByRole("heading", { level: 2 })).toHaveText([
-      "Structures", "Mechanisms", "Failure modes", "Systems",
+      "Structures", "Mechanisms", "Systems",
     ]);
     const mechanisms = page.getByTestId("territory-mechanisms");
     await expect(mechanisms.getByRole("heading", { level: 3 })).toHaveText([
@@ -723,10 +727,10 @@ test("the atlas presents territories as one connected chart without JavaScript",
     }
     await expect(page.getByRole("navigation", { name: "Causal evidence trail", exact: true }))
       .toHaveCount(0);
-    await expect(chart.getByRole("link")).toHaveCount(8);
-    await expect(chart.getByRole("link", { name: "How multiplayer rooms work", exact: true }))
+    await expect(chart.getByRole("heading", { level: 3 }).getByRole("link")).toHaveCount(8);
+    await expect(chart.getByRole("heading", { name: "How multiplayer rooms work", exact: true }).getByRole("link"))
       .toHaveAttribute("href", "/atlas/multiplayer-rooms/");
-    const published = chart.getByRole("link", { name: "Dots and causal context", exact: true });
+    const published = chart.getByRole("heading", { name: "Dots and causal context", exact: true }).getByRole("link");
     await expect(published).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
     await published.focus();
     await expect(published).toHaveCSS("outline-style", "solid");
@@ -754,6 +758,7 @@ test.describe("collection build fixtures", () => {
   test.beforeAll(async () => {
     root = await realpath(await mkdtemp(path.join(tmpdir(), "atlas-shell-")));
     await cp("src", path.join(root, "src"), { recursive: true });
+    await cp("worker", path.join(root, "worker"), { recursive: true });
     await cp("art", path.join(root, "art"), { recursive: true });
     await cp("public", path.join(root, "public"), { recursive: true });
     const catalogPath = path.join(root, "art/lesson-illustrations.json");
@@ -818,7 +823,7 @@ test.describe("collection build fixtures", () => {
         ? "word ".repeat(399)
         : `An event belongs to one replica.\n\n\`\`\`text\n${"code ".repeat(400)}\n\`\`\``;
       await writeFile(path.join(root, `src/content/sheets/${id}.md`),
-        `---\n${JSON.stringify({ ...data, summary: `Explore ${data.title.toLowerCase()}.` })}\n---\n\n## Fixture article\n\n${body}\n`);
+        `---\n${JSON.stringify({ ...data, complexity: "intermediate", summary: `Explore ${data.title.toLowerCase()}.` })}\n---\n\n## Fixture article\n\n${body}\n`);
     }
   });
 
@@ -864,14 +869,25 @@ import VectorComparison from "../components/VectorComparison.astro";
     await page.setContent(await readFile(path.join(root, "dist/atlas/index.html"), "utf8"));
     const chart = page.getByTestId("territory-chart");
     await expect(chart.getByRole("link", { name: "Dots and causal context", exact: true })).toHaveAttribute("href", "/atlas/dots-and-causal-context/");
-    await expect(chart.getByText("Lamport clocks").locator("..")).toContainText("Planned");
+    await expect(chart.getByRole("heading", { name: "Failure detectors", exact: true })).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Local history", exact: true })).toHaveCount(1);
-    await expect(chart.getByRole("link", { name: "Local history", exact: true })).toBeVisible();
+    await expect(chart.getByRole("heading", { name: "Local history", exact: true })
+      .getByRole("link")).toBeVisible();
     const dots = chart.getByRole("listitem").filter({ has: page.getByRole("heading", { name: "Dots and causal context", exact: true }) });
     await expect(dots).toContainText("Helpful background: Local history, Failure detectors");
-    await expect(dots.getByRole("link")).toHaveCount(1);
+    await expect(dots.getByRole("link")).toHaveCount(2);
+    await expect(dots.getByRole("link", { name: "Local history", exact: true }))
+      .toHaveAttribute("href", "/atlas/local-history/");
     await expect(page.getByRole("region", { name: "Systems", exact: true }).getByRole("link", { name: "Replicated log" })).toBeVisible();
-    await expect(page.getByRole("region", { name: "Failure modes", exact: true })).toContainText("Failure detectors");
+    await expect(page.getByRole("region", { name: "Failure modes", exact: true })).toHaveCount(0);
+    const planned = page.locator(".planned-sheets");
+    await expect(planned.locator("summary")).toHaveText("Planned articles (1)");
+    await expect(planned.getByRole("list")).toHaveCount(0);
+    await planned.locator("summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(planned.getByRole("list")).toContainText("Failure detectors");
+    await expect(planned.getByRole("list")).toContainText("Failure modes");
+    await expect(planned.getByRole("link")).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Failure detectors" })).toHaveCount(0);
 
     await page.setContent(await readFile(path.join(root, "dist/atlas/dots-and-causal-context/index.html"), "utf8"));

@@ -288,9 +288,16 @@ Small curved geometry appears only where the territory connector physically turn
 
 One broad Mineral Instrument band contains wrapping location text and a separate trace. It is navigation, not decoration: `Atlas`, territory, family, and sheet remain selectable text, with links on ancestor crumbs. The sulfur endpoint marks current position, while `aria-current` and weight provide redundant state.
 
-### Territory Chart
+### Reference Article Index
 
-Each territory is one band with an index, purpose, connected stops, status, and prerequisites. Published stops fill with Sulfur Signal and link to a sheet. Planned stops remain hollow and unlinked with a visible `Planned` label. On mobile, preserve semantic list order and remove curves before reducing text.
+The reference index uses one column of article rows within each published topic.
+Topic jump links precede the lists. On wide screens, the topic heading and purpose
+occupy the left column; at 64rem and below, they precede the articles in reading
+order. Each row places its title beside the complexity badge, followed by its
+summary, linked background reading, and relevant structure lessons. Long lesson
+lists use native disclosures. Thin horizontal rules separate articles without
+decorative connectors. Empty topics stay out of the index; planned articles use a
+separate disclosure without page links.
 
 ### Sheet Reading Topology
 
@@ -308,8 +315,9 @@ section. The metadata value `territory: systems` selects the page treatment,
 not a specific article route. The existing reading measure, contents disclosure,
 definition rails, review warning, and navigation remain available without
 JavaScript. The header uses a compact illustration beside its summary on wider
-screens; narrow screens retain linear reading order. Square index stops and the
-visible "Inside the Atlas" label supplement the palette difference.
+screens; narrow screens retain linear reading order. The index section uses a
+copper top rule and the visible "Inside the Atlas" label to supplement the palette
+difference.
 
 ### Observation Console
 

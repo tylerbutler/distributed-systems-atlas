@@ -265,67 +265,51 @@ test("sheet reading context gives records distinct readable treatments", async (
   }
 });
 
-test("the connected chart reflows to vertical stations below 40rem", async ({ page }) => {
+test("reference articles remain single-column rows with usable links at each width", async ({ page }) => {
   await page.goto("/atlas/");
   for (const width of [320, 390, 639, 640, 768, 1024, 1025, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.evaluate(() => document.fonts.ready);
     const chart = page.getByTestId("territory-chart");
     const mechanisms = page.getByTestId("territory-mechanisms");
-    const stations = mechanisms.getByRole("listitem");
-    await expect(stations).toHaveCount(5);
+    const articles = mechanisms.getByRole("listitem");
+    await expect(articles).toHaveCount(5);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
-    const first = await stations.nth(0).boundingBox();
-    const second = await stations.nth(1).boundingBox();
+    const first = await articles.nth(0).boundingBox();
+    const second = await articles.nth(1).boundingBox();
     const heading = await mechanisms.getByRole("heading", { name: "Mechanisms", exact: true }).boundingBox();
     const list = await mechanisms.getByRole("list").boundingBox();
     expect(first).not.toBeNull();
     expect(second).not.toBeNull();
     expect(heading).not.toBeNull();
     expect(list).not.toBeNull();
-    if (width < 640) {
-      expect(second!.x).toBe(first!.x);
-      expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height);
-      for (const trace of await chart.locator(".territory-connector").all()) {
-        await expect(trace).toBeHidden();
-      }
-    } else {
-      expect(second!.x).toBeGreaterThan(first!.x);
-      expect(second!.y).toBe(first!.y);
-      for (const trace of await chart.locator(".territory-connector").all()) {
-        await expect(trace).toBeVisible();
-        await expect(trace).toHaveAttribute("aria-hidden", "true");
-      }
-      const field = await mechanisms.locator(".territory-field").boundingBox();
-      for (const station of (await stations.all()).slice(1)) {
-        const box = await station.boundingBox();
-        if (box!.x === first!.x) {
-          const trace = station.locator(".station-trace");
-          await expect(trace).toBeVisible();
-          await expect(trace).toHaveAttribute("aria-hidden", "true");
-          const traceBox = await trace.boundingBox();
-          expect(traceBox!.x).toBe(field!.x);
-          expect(traceBox!.x + traceBox!.width).toBe(box!.x);
-        }
-      }
-    }
+    expect(second!.x).toBe(first!.x);
+    expect(second!.y).toBeGreaterThanOrEqual(first!.y + first!.height);
+    await expect(chart.locator(".territory-connector, .station-trace, .station-stop")).toHaveCount(0);
     if (width > 1024) {
       expect(heading!.x + heading!.width).toBeLessThanOrEqual(list!.x);
     } else {
       expect(heading!.y + heading!.height).toBeLessThanOrEqual(list!.y);
     }
-    for (const station of await chart.getByRole("listitem").all()) {
-      await expect(station).toBeVisible();
-      const box = await station.boundingBox();
+    for (const article of await chart.getByRole("listitem").all()) {
+      await expect(article).toBeVisible();
+      const box = await article.boundingBox();
       expect(box!.x).toBeGreaterThanOrEqual(0);
       expect(box!.x + box!.width).toBeLessThanOrEqual(width);
-      const fontSize = await station.getByRole("heading").evaluate((element) =>
+      const fontSize = await article.getByRole("heading").evaluate((element) =>
         parseFloat(getComputedStyle(element).fontSize),
       );
       expect(fontSize).toBeGreaterThanOrEqual(18);
     }
-    const link = chart.getByRole("link", { name: "Dots and causal context", exact: true });
-    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    for (const link of await chart.getByRole("link").all()) {
+      expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    }
+    for (const details of await chart.locator(".article-lessons").all()) {
+      const summary = details.locator("summary");
+      expect((await summary.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      if (await details.getAttribute("open") === null) await summary.click();
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     const dense = await mechanisms.boundingBox();
     const empty = await page.getByTestId("territory-systems").boundingBox();
     expect(dense!.height).toBeGreaterThan(empty!.height);

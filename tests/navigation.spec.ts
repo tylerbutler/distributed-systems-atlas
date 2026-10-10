@@ -7,6 +7,22 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
   try {
     const page = await context.newPage();
     const destinations = new Set<string>();
+    await page.goto("/atlas/");
+    for (const summary of await page.locator(".article-lessons summary").all()) {
+      await summary.click();
+    }
+    const atlasReferences = new Map<string, string[]>();
+    for (const row of await page.locator(".reference-article").all()) {
+      const article = await row.getByRole("heading").getByRole("link").getAttribute("href");
+      if (!article) throw new Error("Reference article has no destination.");
+      for (const link of await row.locator('a[href^="/structures/"]').all()) {
+        const lesson = await link.getAttribute("href");
+        if (!lesson) throw new Error("Structure lesson has no destination.");
+        const references = atlasReferences.get(lesson) ?? [];
+        references.push(article);
+        atlasReferences.set(lesson, references);
+      }
+    }
     for (const group of structureGroups) {
       for (const [, slug] of group.lessons) {
         await page.goto(`/structures/${slug}/`);
@@ -17,6 +33,9 @@ test("lessons expose contextual reference sheets without JavaScript", async ({ b
         expect(count).toBeGreaterThanOrEqual(1);
         expect(count).toBeLessThanOrEqual(3);
         await expect(related.locator(".sheet-link-summary")).toHaveCount(count);
+        expect((await links.evaluateAll((items) =>
+          items.map((item) => item.getAttribute("href")),
+        )).sort()).toEqual(atlasReferences.get(`/structures/${slug}/`)?.sort());
         for (const href of await links.evaluateAll((items) => items.map((item) => item.getAttribute("href")))) {
           expect(href).toMatch(/^\/atlas\/[^/]+\/$/);
           if (href) destinations.add(href);
@@ -59,7 +78,9 @@ test("navigation labels describe pages and optional starting points accurately",
     await expect(guide.getByRole("heading")).toHaveText("Common starting points");
     await expect(guide.getByRole("link")).toHaveText(["Compare counters", "Compare sets", "Compare registers"]);
     await page.goto("/atlas/");
-    await expect(page.locator(".publication-note")).toHaveText("Published sheets link to pages.");
+    await expect(page.getByRole("navigation", { name: "Reference topics", exact: true })
+      .getByRole("link")).toHaveText(["Structures", "Mechanisms", "Systems"]);
+    await expect(page.locator(".publication-note, .planned-sheets")).toHaveCount(0);
   } finally {
     await context.close();
   }
@@ -142,12 +163,60 @@ test("atlas and sheets describe the same optional background", async ({ browser 
       .filter({ has: page.getByRole("heading", { name: "Multi-value registers", exact: true }) });
     await expect(topic).toContainText("Helpful background: Vector clocks, Dots and causal context");
     await expect(topic).not.toContainText("Requires:");
+    await expect(topic.getByRole("link", { name: "Vector clocks", exact: true }))
+      .toHaveAttribute("href", "/atlas/vector-clocks/");
+    await expect(topic.getByRole("link", { name: "Dots and causal context", exact: true }))
+      .toHaveAttribute("href", "/atlas/dots-and-causal-context/");
     await topic.getByRole("link", { name: "Multi-value registers", exact: true }).click();
     const background = page.getByRole("navigation", { name: "Helpful background", exact: true });
     await expect(background.getByRole("link")).toHaveText(["Vector clocks", "Dots and causal context"]);
     await page.goto("/atlas/local-history/");
     await expect(page.locator(".sheet-header")).toContainText("No background sheet listed");
     await expect(page.getByRole("navigation", { name: "Helpful background", exact: true })).toHaveCount(0);
+  } finally {
+    await context.close();
+  }
+});
+
+test("reference topics and long lesson lists work by keyboard without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  try {
+    const page = await context.newPage();
+    await page.goto("/atlas/");
+    const topics = page.getByRole("navigation", { name: "Reference topics", exact: true });
+    for (const title of ["Structures", "Mechanisms", "Systems"]) {
+      const link = topics.getByRole("link", { name: title, exact: true });
+      await link.focus();
+      await expect(link).toHaveCSS("outline-style", "solid");
+      await page.keyboard.press("Enter");
+      const section = page.getByRole("region", { name: title, exact: true });
+      await expect(section).toBeFocused();
+      await expect(section.getByRole("heading", { level: 2 })).toBeInViewport();
+    }
+    const history = page.locator(".reference-article").filter({
+      has: page.getByRole("heading", { name: "Local history", exact: true }),
+    });
+    const lessons = history.locator(".article-lessons");
+    const summary = lessons.locator("summary");
+    await expect(summary).toHaveText("Structure lessons (16)");
+    await expect(lessons.getByRole("link")).toHaveCount(0);
+    await summary.focus();
+    await expect(summary).toHaveCSS("outline-style", "solid");
+    await page.keyboard.press("Enter");
+    await expect(lessons.getByRole("link")).toHaveCount(16);
+    const counter = lessons.getByRole("link", { name: "G-counter", exact: true });
+    await counter.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(/\/structures\/g-counter\/$/);
+    await expect(page.getByRole("navigation", { name: "Related reference sheets", exact: true })
+      .getByRole("link", { name: "Local history", exact: true }))
+      .toHaveAttribute("href", "/atlas/local-history/");
+    await page.goto("/atlas/");
+    const register = page.locator(".reference-article").filter({
+      has: page.getByRole("heading", { name: "Multi-value registers", exact: true }),
+    });
+    await expect(register.getByRole("link", { name: "MvRegister", exact: true }))
+      .toHaveAttribute("href", "/structures/multi-value-register/");
   } finally {
     await context.close();
   }
