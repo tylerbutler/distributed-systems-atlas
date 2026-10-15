@@ -305,6 +305,12 @@ required. The existing formatting race and raw-offset counterexample remain.
 
 **Status: Not started as a teaching family.**
 
+The [Presence lessons design](2026-10-15-presence-lessons-design.md) specifies
+a family overview, two focused lessons for roster liveness and typing
+freshness, and the paired stale-user comparison in Task 14. It distinguishes
+native Server and Ripple modes and records the application policy needed to
+clear typing metadata before reconnect. This is a design, not shipped scope.
+
 - [ ] Add a dedicated article and focused demo for cursor movement,
   disconnect expiry, and typing-state expiry.
 - [ ] Explain ephemeral freshness versus durable replicated state.
