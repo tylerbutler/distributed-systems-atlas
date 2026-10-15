@@ -11,6 +11,18 @@ import {
   createSetRoom,
   createRegisterDemoRoom,
   createMapRoom,
+  createRemainingDemoRoom,
+  stageRemainingDemoRace,
+  deliverRemainingDemo,
+  acquireRemainingQueueJob,
+  completeRemainingQueueJob,
+  releaseRemainingQueueJob,
+  volunteerRemainingTask,
+  disconnectRemainingTaskClient,
+  completeRemainingTask,
+  proposeRemainingPact,
+  acceptRemainingPact,
+  disconnectRemainingPactClient,
   deliverGCounterRace,
   deliverPNCounterOperations,
   deliverSharedCounterOperations,
@@ -184,4 +196,70 @@ assert.ok(transported.deliveries.length >= 3);
 const resent = unwrap(resendGCounterComponent(room));
 assert.deepEqual(resent.view.replicas.map(({ value }) => value), [10, 10, 10]);
 assert.ok(resent.deliveries.length >= 3);
+
+function remainingView(view, expected, sequenceNumber) {
+  assert.deepEqual(view.replicas.map(({ id }) => id), ["A", "B", "C"]);
+  assert.deepEqual(view.replicas.map(({ values }) => values), [expected, expected, expected]);
+  assert.equal(view.pending, 0);
+  assert.equal(view.sequenceNumber, sequenceNumber);
+}
+
+for (const [kind, initial, expected, sequenceNumber] of [
+  ["sequence-crdt", ["Bridge", "Weir", "North gate"], ["Bridge", "Falls", "Marsh", "Weir", "North gate"], 0],
+  ["text-crdt", ["The weir is clear."], ["The still calm weir is clear."], 2],
+  ["claims", ["gate-key: unclaimed"], ["gate-key: Alice"], 3],
+  ["json-ot",
+    ['{"crew":["Ada","Ben"],"gauge":{"stage":24,"trend":"steady"},"site":"Mill Race"}'],
+    ['{"crew":["Cy","Dot","Ada","Ben"],"gauge":{"stage":25,"trend":"steady"},"site":"Mill Race"}'], 3],
+  ["rich-text-ot", ["Hello World"], ["Hello [bold] World ▲"], 2],
+]) {
+  const created = unwrap(createRemainingDemoRoom(kind));
+  remainingView(created.view, initial, 0);
+  assert.ok(unwrap(stageRemainingDemoRace(created.room)).view.pending > 0);
+  remainingView(unwrap(deliverRemainingDemo(created.room)).view, expected, sequenceNumber);
+  remainingView(unwrap(createRemainingDemoRoom(kind)).view, initial, 0);
+}
+
+const queue = unwrap(createRemainingDemoRoom("fifo-work-queue"));
+remainingView(queue.view, [
+  "Queue: inspect bridge", "Queue: clear fallen branch", "Queue: restock first-aid cache",
+], 0);
+for (const [act, replica] of [
+  [acquireRemainingQueueJob, "A"],
+  [acquireRemainingQueueJob, "B"],
+  [releaseRemainingQueueJob, "A"],
+  [acquireRemainingQueueJob, "C"],
+  [completeRemainingQueueJob, "B"],
+]) {
+  unwrap(act(queue.room, replica));
+  unwrap(deliverRemainingDemo(queue.room));
+}
+remainingView(unwrap(deliverRemainingDemo(queue.room)).view, [
+  "Carol owns restock first-aid cache", "Queue: inspect bridge",
+], 5);
+
+const task = unwrap(createRemainingDemoRoom("task-manager"));
+remainingView(task.view, ["dispatcher: unassigned"], 0);
+for (const replica of ["A", "B", "C"]) unwrap(volunteerRemainingTask(task.room, replica));
+remainingView(unwrap(deliverRemainingDemo(task.room)).view, [
+  "dispatcher: Alice", "waiting: Bob, Carol",
+], 3);
+remainingView(unwrap(disconnectRemainingTaskClient(task.room, "A")).view, [
+  "dispatcher: Bob", "waiting: Carol",
+], 3);
+unwrap(completeRemainingTask(task.room, "B"));
+remainingView(unwrap(deliverRemainingDemo(task.room)).view, ["dispatcher: unassigned"], 4);
+
+const pact = unwrap(createRemainingDemoRoom("pact-map"));
+remainingView(pact.view, ["accepted: north-gate"], 0);
+unwrap(proposeRemainingPact(pact.room, "A", "ridge-pass"));
+remainingView(unwrap(deliverRemainingDemo(pact.room)).view, [
+  "accepted: north-gate", "pending: ridge-pass", "needs signoff: Alice, Bob, Carol",
+], 1);
+unwrap(acceptRemainingPact(pact.room, "A"));
+unwrap(acceptRemainingPact(pact.room, "B"));
+remainingView(unwrap(deliverRemainingDemo(pact.room)).view, [
+  "accepted: north-gate", "pending: ridge-pass", "needs signoff: Carol",
+], 3);
+remainingView(unwrap(disconnectRemainingPactClient(pact.room, "C")).view, ["accepted: ridge-pass"], 4);
 console.log("Toolkit package smoke passed (generated JavaScript through @atlas/toolkit).");

@@ -109,10 +109,10 @@ The original requirement to use `sluice_js` for every focused demo is only
 partly implemented. Register and later-family transport follows the separate
 paths described above.
 
-`toolkit/smoke.mjs` exercises counters, sets, registers, and maps. It does not
-exercise the exported sequence, coordination, and OT facades. Those have
-Gleam and browser coverage, but the planned per-family package smoke coverage
-is incomplete.
+`toolkit/smoke.mjs` exercises counters, sets, registers, maps, and all eight
+later-family kinds through the public package entry. It checks concrete
+three-client initial/final states and sequence numbers, including queue
+release/completion, task promotion, and pact signoff/roster lifecycles.
 
 **Evidence:** `toolkit/index.ts`, `toolkit/remaining-structures.js`,
 `toolkit/remaining-structures.d.ts`,
@@ -373,6 +373,6 @@ catalogue and most teaching demos have shipped.
 
 The remaining planned scope is Presence, the full failure-comparison set,
 move-versus-edit, matched OT/CRDT editing, authored-frame deep links,
-per-family package smoke coverage, transport consistency, and release review.
+transport consistency, and release review.
 The revised guided-example contract still needs measurement. These gaps have
 no new priority order or deadline assigned by this reconciliation.
