@@ -27,7 +27,10 @@ dedicated G-counter, PN-counter, SharedCounter, GSet, TwoPSet,
 observed-remove set, LWWRegister, MvRegister, RegisterMap, SharedMap,
 LWWMap, OR-map, SharedDirectory, SequenceCrdt, TextCrdt, Claims,
 FifoWorkQueue, TaskManager, PactMap, JsonOt, and RichTextOt lessons,
-plus the seven family overview pages, atlas index, glossary, and bibliography.
+plus six family overview pages, atlas index, glossary, and bibliography.
+JsonOt belongs to Maps and RichTextOt to Sequences. The eighth reference
+article, "How multiplayer rooms work," explains the two live counter labs
+without an embedded lab.
 
 The reference pages and browser labs display a prominent "Not yet reviewed for
 correctness" warning by default. These warnings are also visible without JavaScript.
@@ -65,10 +68,12 @@ points**, separate from the complete family catalogue.
 pen-and-ink art direction and 35 scene prompts: one for each individual
 structure lesson, family overview, and published reference sheet.
 
-All 35 pages now have an authored SVG in their introductions. Open
+The catalog contains 35 authored SVG scenes, including the historical
+Transforms overview. Current illustrated lessons, family overviews, and the
+seven reference-lab articles use these assets in their introductions. Open
 [`art/counters-and-sets.html`](art/counters-and-sets.html) for the first eight,
 or [`art/remaining-lessons.html`](art/remaining-lessons.html) for registers,
-maps, sequences, coordination, transforms, and the seven reference sheets.
+maps, sequences, coordination, OT, and the seven reference-lab articles.
 You can open either preview in a browser without a server. Each image is
 self-contained and editable, with no scripts, fonts, or external assets.
 
@@ -108,7 +113,7 @@ Open the local URL printed by Astro. The publication includes `/`,
 `/structures/sequence-crdt/`, `/structures/text-crdt/`,
 `/structures/coordination/`, `/structures/claims/`,
 `/structures/fifo-work-queue/`, `/structures/task-manager/`,
-`/structures/pact-map/`, `/structures/transforms/`, `/structures/json-ot/`,
+`/structures/pact-map/`, `/structures/json-ot/`,
 `/structures/rich-text-ot/`, `/atlas/`, `/glossary/`, `/bibliography/`,
 and these sheet routes:
 
@@ -119,6 +124,7 @@ and these sheet routes:
 - `/atlas/dots-and-causal-context/`
 - `/atlas/multi-value-registers/`
 - `/atlas/observed-remove-sets/`
+- `/atlas/multiplayer-rooms/` (architecture article, no embedded lab)
 
 ```sh
 pnpm verify
@@ -327,6 +333,18 @@ Unpublished topics remain labeled as planned without placeholder routes.
 | Presentation | `src/lib/lab/present-frame.ts` converts a `TraceFrame` and the scenario's presentation rules into a `PresentedFrame`: typed controls, labeled observation fields, replica shapes, message routes, comparisons, and invariant results. Only history up to the selected frame can supply a lesson conclusion. It does not dispatch actions or change engine state. |
 | Renderer | `CausalLab.astro` supplies the lab shell. `TraceFallback.astro` renders the initial frame at build time. `causal-lab-element.ts` handles controls, focus, history selection, and optional animation, using the same frame presentation as the fallback. |
 | Focused structure demos | `src/lib/structure-demo/` owns small deterministic lesson models. Each structure component renders useful static state and adds only the controls required for its rule. Structure demos use at least three clients. The G-counter, PN-counter, and SharedCounter lessons add per-client updates and animated delivery over the real `watershed/sluice_js` transport without using the broad causal console. |
+
+All focused structure families use real public Watershed kernels through
+`@atlas/toolkit`. Counter, set, and map rooms use `watershed/sluice_js`;
+registers and later families use explicit authored queues around their kernels.
+TypeScript owns presentation and schedules, not an alternative merge algorithm.
+
+Primary guided examples must reach their stated result in at most three user
+actions from a fresh or reset demo with default settings. Waiting for delivery,
+Reset itself, live-room setup, and optional exploration do not count. There is
+no global six-control cap: keep useful per-client sandbox actions and put
+secondary experiments or detailed evidence after the main lesson or in a
+native disclosure.
 
 **Labs render from trace frames.** Replica values, clocks, dots, causal
 context, messages, inspector records, explanations, and invariant results

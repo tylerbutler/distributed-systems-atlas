@@ -70,7 +70,7 @@ Documentation reconciliation remains under Task 15.
 
 ## Task 2: Add the Focused Demo Boundary
 
-**Status: Shipped with changes; original UI limits are not met.**
+**Status: Shipped with changes; interaction contract revised.**
 
 Dedicated counter, set, register, map, sequence, queue, task, agreement, and
 JSON components render three clients, authored examples, results, and static
@@ -84,9 +84,11 @@ contract or generic plugin system.
 
 The shipped UI exposes notebook evidence, operation logs, and transport
 controls directly. It does not put all metadata behind an "Explain why"
-disclosure. Some demos exceed six enabled controls: G-counter alone offers
-three increment buttons for each of three clients. The original three-primary-
-action and six-enabled-control limits are not a verified site-wide contract.
+disclosure. The global six-control cap is retired: preserve useful per-client
+sandbox controls. Primary guided examples must reach their stated result in
+at most three user actions from fresh/reset default state. Waiting, Reset
+itself, live-room setup, and optional exploration do not count. Site-wide
+measurement of that contract remains part of Task 15.
 
 **Evidence:** `src/components/GCounterDemo.astro`,
 `src/components/RemainingStructureDemo.astro`,
@@ -332,13 +334,14 @@ This reconciliation did not run a fresh release verification.
 - [ ] Complete technical correctness review. Reference articles and labs
   still carry the default "Not yet reviewed for correctness" warning.
   `showCorrectnessWarning: false` controls visibility, not review status.
-- [ ] Resolve the original site-wide three-action and six-control limits.
-  Do not mark them complete without measuring the shipped demos.
+- [x] Replace the global six-control cap with the approved guided-example
+  contract above.
+- [ ] Measure each primary guided example against the three-action contract.
 - [ ] Audit per-demo static/live initial-state agreement and the remaining
   release acceptance requirements; add missing coverage where needed.
-- [ ] Update stale publication descriptions in `README.md` and `PRODUCT.md`,
-  including family counts, retired Transforms routes, and the claim that
-  later-family demos use only compact rule models.
+- [x] Update stale publication descriptions in `README.md` and `PRODUCT.md`,
+  including family counts, retired Transforms routes, actual live-room
+  behavior, and public-kernel provenance for later-family demos.
 - [ ] Run `pnpm verify` for the next release after its changes are complete.
 
 **Evidence:** `package.json`, `tests/accessibility.spec.ts`,
@@ -371,5 +374,5 @@ catalogue and most teaching demos have shipped.
 The remaining planned scope is Presence, the full failure-comparison set,
 move-versus-edit, matched OT/CRDT editing, authored-frame deep links,
 per-family package smoke coverage, transport consistency, and release review.
-The original UI limits still need a decision and measurement. These gaps have
+The revised guided-example contract still needs measurement. These gaps have
 no new priority order or deadline assigned by this reconciliation.

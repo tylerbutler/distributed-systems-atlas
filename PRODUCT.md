@@ -18,8 +18,8 @@ open a sheet as a reference. Curated learning paths are not part of the current 
 Distributed Systems Atlas is a standalone educational publication combining
 illustrated essays with deterministic browser labs. Readers inspect replicas,
 messages, clocks, causal metadata, and merge results to understand concurrency.
-The seven-sheet release teaches how distributed systems represent and preserve
-concurrency. Readers can predict a result, run the reference actions, and
+The structure lessons and seven reference labs teach how distributed systems
+represent and preserve concurrency. Readers can predict a result, run the reference actions, and
 inspect the state that explains it.
 
 ## Positioning
@@ -41,10 +41,11 @@ behind-the-scenes Atlas implementation notes, rather than general lessons.
 
 ## Capabilities and Constraints
 
-The publication contains the landing page, a structures index, the focused
-G-counter, PN-counter, and SharedCounter lessons, atlas index, generated
-glossary and bibliography, and seven concurrency reference sheets.
-Each sheet includes a complete article and a deterministic browser lab.
+The publication contains the landing page, a structures index, six family
+overviews, 21 structure lessons, a replication-model comparison, the reference
+atlas, generated glossary and bibliography, and eight reference articles.
+Seven reference articles include deterministic browser labs. The multiplayer
+architecture article explains the two live counter labs without an embedded lab.
 Unpublished topics retain planned labels without placeholder routes.
 
 The site leads with familiar data structures: counters, sets, registers, maps,
@@ -59,7 +60,8 @@ rejects conflicting entries and broken internal references.
 Each structure family has an overview page that compares the structures in
 that family. Each implemented structure also has its own lesson page.
 
-The structure catalogue lists Counters, Sets, Registers, then Maps.
+The structure catalogue lists Counters, Sets, Registers, Maps, Sequences,
+and Coordination.
 A ranger sends Alice, Bob, and Carol along separate trails to survey
 beacons in their own field notebooks. Their story moves from a permanent record
 of every beacon observed, through an irreversible retirement, to a replacement
@@ -82,8 +84,8 @@ preserves an unseen concurrent tally update, and SharedDirectory gives nested
 folders stable identities. Each structure has a dedicated three-client demo
 that runs through Watershed's public channel API.
 
-The Sequences overview follows the ordered inspection route into SequenceCrdt
-and TextCrdt. Stable item and grapheme identities explain why concurrent
+The Sequences overview follows the ordered inspection route into SequenceCrdt,
+TextCrdt, and RichTextOt. Stable item and grapheme identities explain why concurrent
 inserts can both survive even when local indexes change.
 
 The Coordination overview covers Claims, FifoWorkQueue, TaskManager, and
@@ -91,21 +93,29 @@ PactMap. These structures do not merge several valid answers. They use the
 sequencer, queue order, or connected roster to choose one owner, worker,
 assignee, or accepted value.
 
-The Transforms overview covers JsonOt and RichTextOt. Their lessons show
+JsonOt belongs to Maps and RichTextOt to Sequences; there is no separate
+Transforms overview. Their lessons show
 how concurrent document operations transform before application so edits to
 different paths, text, and formatting can survive together.
 
 Astro renders the content shell and useful initial lab state. Native custom
-elements use deterministic TypeScript lesson models for the focused G-counter,
+elements use deterministic TypeScript presentation models for the focused G-counter,
 PN-counter, SharedCounter, GSet, TwoPSet, observed-remove set, LWWRegister,
 MvRegister, RegisterMap, SharedMap, LWWMap, OR-map, and SharedDirectory
-demos, plus compact rule models for SequenceCrdt, TextCrdt, Claims,
+demos, as well as SequenceCrdt, TextCrdt, Claims,
 FifoWorkQueue, TaskManager, PactMap, JsonOt, and RichTextOt. Reference
 engines cover ordering, clocks, and Dots. Focused structure demos use at least
-three clients. Counter, set, register, and map lessons run pinned Watershed
-semantics through the site's Gleam toolkit and its stable `@atlas/toolkit` entry
-point. Later-family demos model the authored races documented by Watershed's
-public examples without importing private build paths.
+three clients. All these demos run real pinned Watershed kernels through the
+site's Gleam toolkit and its stable `@atlas/toolkit` entry point.
+Counters, sets, and maps use public Sluice transport. Registers and later
+families use explicit authored queues around their public kernels. Application
+code does not import private build paths.
+
+Each primary guided example reaches its stated result in at most three user
+actions from a fresh or reset demo with default settings. Waiting for delivery,
+Reset itself, live-room setup, and optional exploration are not counted.
+There is no global limit on sandbox controls across the three clients.
+Secondary experiments and detailed evidence must not obscure the main lesson.
 
 The G-counter lesson follows Alice, Bob, and Carol as they count birds on
 separate hikes and leave cumulative counts at known trail checkpoints.
@@ -138,9 +148,11 @@ a replica uses the stable sequence number to reject an operation it has
 already applied. A static ledger shows `SN 1` for Alice's `+3` and `SN 2` for
 Bob's `-1`. Carol misses `SN 1`, detects the gap when `SN 2` arrives, and asks
 the ranger to replay the missing operation. The article also names snapshot
-recovery as an alternative. The demo continues to deliver every broadcast, so
-message loss and recovery remain article-only examples. Direct controls remain
-active while earlier notes are in transit.
+recovery as an alternative. The local demo delivers every broadcast. The separate live lab uses Durable
+Objects to store signed operations and assign sequence numbers, with duplicate
+protection and gap recovery. The live G-counter lab instead broadcasts native
+cumulative state and merges optimistic updates. Direct controls remain active
+while earlier notes are in transit.
 
 The internal adapter registry selects Dots, ordering, MV-register, or OR-set
 engines from scenario metadata. The lab runtime owns schedules, queues, partitions,
@@ -157,7 +169,8 @@ partitions keep their established meanings.
 
 Accounts, saved progress, badges, quizzes, comments, a CMS, and a public plugin
 API are out of scope. The publication name is a working title; final naming
-and domain selection remain open pre-launch decisions.
+remains an open decision. Deployment uses the configured domain
+`dsa.tylerbutler.com`; that configuration does not settle the publication name.
 
 ## Brand Commitments
 

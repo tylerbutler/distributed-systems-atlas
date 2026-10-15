@@ -333,6 +333,11 @@ merge question, at least three client values, direct controls where the kernel
 supports an action, one authored race,
 any resolution action needed by the rule, reset, and a literal result sentence.
 The familiar value stays larger than its metadata.
+Each primary guided example reaches its stated result in at most three user
+actions from a fresh or reset demo with default settings. Waiting for delivery,
+Reset itself, live-room setup, and optional exploration do not count.
+Keep useful per-client sandbox controls; there is no global six-control cap.
+Secondary experiments follow the main lesson or use a native disclosure.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure unless item identity is the lesson's merge rule.
 
