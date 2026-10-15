@@ -2,7 +2,13 @@
 
 ## Status
 
-Proposed. This specification replaces the causal-first curriculum in
+Historical proposal, partly implemented with later changes. See the
+[reconciled implementation plan](2026-09-20-structure-demo-implementation-plan.md)
+for shipped behavior and remaining work as of 2026-10-15. In particular, the
+shipped catalogue has six families, groups OT by data shape, and keeps
+mechanism articles under `/atlas/`.
+
+This specification proposed replacing the causal-first curriculum in
 `2026-09-20-distributed-systems-atlas-design.md`. The existing seven sheets
 remain valid reference material, but their shared causal console is not the
 default interaction model for data-structure lessons.

@@ -371,11 +371,21 @@ files. The atlas is a separate publication, not Watershed product documentation.
 
 ## Approved design and plans
 
-The design and implementation plans belong to the
-[Watershed repository](https://github.com/tylerbutler/watershed). These are
-**local-development references** for sibling `distributed-systems-atlas/`
-and `watershed/` checkouts; they are not links to a deployed atlas or an
-assumed standalone remote:
+The [reconciled structure-demo implementation plan](docs/2026-09-20-structure-demo-implementation-plan.md)
+records shipped behavior, changes to the original proposal, and remaining
+work as of 2026-10-15. Use it instead of treating the original unchecked
+task lists as a current backlog.
+
+Local copies of the
+[original design](docs/2026-09-20-distributed-systems-atlas-design.md),
+[proof plan](docs/2026-09-20-distributed-systems-atlas-proof.md), and
+[structure-first proposal](docs/2026-09-20-structure-first-site-design.md)
+retain their historical context.
+
+The original source documents are in the
+[Watershed repository](https://github.com/tylerbutler/watershed). The following
+are **local-development references** for sibling `distributed-systems-atlas/`
+and `watershed/` checkouts:
 
 - [Approved design specification](../watershed/docs/superpowers/specs/2026-09-20-distributed-systems-atlas-design.md)
 - [Proof implementation plan](../watershed/docs/superpowers/plans/2026-09-20-distributed-systems-atlas-proof.md)
