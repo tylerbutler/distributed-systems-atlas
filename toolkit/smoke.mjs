@@ -12,6 +12,12 @@ import {
   createRegisterDemoRoom,
   createMapRoom,
   createRemainingDemoRoom,
+  createMoveComparison,
+  stageMoveComparison,
+  deliverMoveComparison,
+  createTextComparison,
+  stageTextComparison,
+  deliverTextComparison,
   stageRemainingDemoRace,
   deliverRemainingDemo,
   acquireRemainingQueueJob,
@@ -54,6 +60,41 @@ const unwrap = (result) => {
   assert.equal(result.ok, true, JSON.stringify(result));
   return result.value;
 };
+
+for (const reverse of [false, true]) {
+  const move = unwrap(createMoveComparison());
+  assert.deepEqual(move.view.clients.map(({ id }) => id), ["A", "B", "C"]);
+  for (const client of move.view.clients) {
+    assert.deepEqual(client.records, [
+      { id: "bridge", value: "open" },
+      { id: "weir", value: "open" },
+      { id: "north-gate", value: "open" },
+    ]);
+  }
+  unwrap(stageMoveComparison(move.room));
+  const moved = unwrap(deliverMoveComparison(move.room, reverse)).view;
+  assert.equal(moved.phase, "delivered");
+  for (const client of moved.clients) {
+    assert.deepEqual(client.records, [
+      { id: "weir", value: "blocked" },
+      { id: "bridge", value: "open" },
+      { id: "north-gate", value: "open" },
+    ]);
+  }
+  const text = unwrap(createTextComparison());
+  assert.deepEqual(text.view.clients.map(({ id }) => id), ["A", "B", "C"]);
+  for (const client of text.view.clients) {
+    assert.equal(client.crdt, "The weir is clear.");
+    assert.equal(client.ot, client.crdt);
+  }
+  unwrap(stageTextComparison(text.room));
+  const edited = unwrap(deliverTextComparison(text.room, reverse)).view;
+  assert.equal(edited.phase, "delivered");
+  for (const client of edited.clients) {
+    assert.equal(client.crdt, "The still calm weir is clear.");
+    assert.equal(client.ot, reverse ? "The calm still weir is clear." : client.crdt);
+  }
+}
 
 const red = unwrap(write(unwrap(createMvRegister("A")), "red"));
 const blue = unwrap(write(unwrap(createMvRegister("B")), "blue"));

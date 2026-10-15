@@ -5,6 +5,7 @@ import { length as gleamListLength } from "./build/dev/javascript/gleam_stdlib/g
 import { Result$isOk, Result$Ok$0, Result$Error$0, type Result as GleamResult } from "./build/dev/javascript/prelude.mjs";
 
 export * from "./remaining-structures.js";
+export * from "./teaching-comparisons.mjs";
 
 // Gleam emits $replica instead of $replica_id in lattice_registers declarations.
 declare global {

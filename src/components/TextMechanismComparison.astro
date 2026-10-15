@@ -1,0 +1,182 @@
+---
+import StationMark from "./StationMark.astro";
+import "../styles/structure-demo-shell.css";
+
+const initial = "The weir is clear.";
+const clients = [{ id: "A", name: "Alice" }, { id: "B", name: "Bob" }, { id: "C", name: "Carol" }];
+const paths = [
+  { id: "crdt", title: "TextCrdt: stable grapheme identities", explanation: "text_kernel.insert creates native deltas with grapheme identities. Each recipient merges those deltas; the original offset is diagnostic, not the remote target." },
+  { id: "ot", title: "RichTextOt: transform against ordered history", explanation: "rich_text_kernel.submit creates a retain-and-insert delta at reference 0. A sequencer orders the two messages. Each kernel transforms against that history, rebases pending work, and acknowledges the author's edit." },
+];
+---
+
+<text-mechanism-comparison data-testid="text-mechanism-comparison" data-stage="ready" class="structure-demo-root">
+  <section class="structure-demo-instrument" aria-labelledby="text-mechanism-title">
+    <h2 id="text-mechanism-title">Same edits, two native mechanisms</h2>
+    <p>
+      Every client in both paths starts with <code>{initial}</code>.
+      Alice inserts <code>"still "</code> at position 4; Bob concurrently
+      inserts <code>"calm "</code> at position 4. Carol waits for delivery.
+      No formatting is changed in this comparison.
+    </p>
+    <div class="authored" aria-label="Identical authored inputs for both models">
+      <strong>Shared inputs</strong>
+      <code data-input="initial">{initial}</code>
+      <code data-input="alice">Alice: insert(4, "still ")</code>
+      <code data-input="bob">Bob: insert(4, "calm ")</code>
+    </div>
+    <div class="controls">
+      <label>Sequencer order
+        <select data-order disabled>
+          <option value="forward">Alice, then Bob</option>
+          <option value="reverse">Bob, then Alice</option>
+        </select>
+      </label>
+      <button type="button" data-action="stage" disabled>Stage concurrent inserts</button>
+      <button type="button" data-action="deliver" disabled>Deliver both inserts</button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+    </div>
+    {paths.map((path) => (
+      <section class="path" data-path={path.id} aria-labelledby={`text-mechanism-${path.id}-title`}>
+        <h3 id={`text-mechanism-${path.id}-title`}>{path.title}</h3>
+        <p>{path.explanation}</p>
+        <div class="clients">
+          {clients.map((client) => (
+            <section data-client={client.id} aria-label={`${client.name}'s ${path.id === "crdt" ? "TextCrdt" : "RichTextOt"} copy`}>
+              <header><StationMark station={client.id as "A" | "B" | "C"} /><h4>{client.name}</h4></header>
+              <span class="value-label">Local plain text</span>
+              <code data-value>{initial}</code>
+            </section>
+          ))}
+        </div>
+        <p data-result>Three copies share the initial text.</p>
+      </section>
+    ))}
+    <p role="status" data-status>Ready: the same initial text and authored inserts are used in both paths.</p>
+    <p role="alert" data-error hidden></p>
+    <p data-enhancement>Enable JavaScript to run both native kernels. Both paths keep both inserts and converge within their own model.</p>
+    <p>
+      Convergence is a promise within each model, not between models. TextCrdt's
+      identity ordering and RichTextOt's sequenced transformation can choose
+      different word orders without losing either insert.
+    </p>
+    <details>
+      <summary>Inspect native operations, identities, and references</summary>
+      <p>
+        The CRDT evidence includes each native operation's diagnostic index and
+        authoritative grapheme delta. The OT evidence includes the actual wire
+        reference and delta, then Carol's transformed operation from the native
+        ordered log. Delivery runs native remote-apply and local-ack paths.
+      </p>
+      <div data-evidence><p>Stage the inserts to inspect the native operations.</p></div>
+    </details>
+  </section>
+</text-mechanism-comparison>
+
+<script>
+  import {
+    createTextComparison, stageTextComparison, deliverTextComparison,
+    type TextComparisonState, type ComparisonResult,
+  } from "@atlas/toolkit";
+
+  class TextMechanismComparison extends HTMLElement {
+    private current?: TextComparisonState;
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      const accept = (result: ComparisonResult<TextComparisonState>) => {
+        const error = this.querySelector<HTMLElement>("[data-error]")!;
+        if (!result.ok) {
+          error.textContent = `${result.error.message} Reset to try again.`;
+          error.hidden = false;
+          return;
+        }
+        error.hidden = true;
+        this.current = result.value;
+        this.render();
+      };
+      this.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.getAttribute("aria-disabled") === "true") return;
+          if (button.dataset.action === "reset") {
+            this.querySelector<HTMLSelectElement>("[data-order]")!.value = "forward";
+            accept(createTextComparison());
+          }
+          else if (this.current) {
+            accept(button.dataset.action === "stage"
+              ? stageTextComparison(this.current.room)
+              : deliverTextComparison(this.current.room, this.querySelector<HTMLSelectElement>("[data-order]")!.value === "reverse"));
+          }
+        });
+      });
+      accept(createTextComparison());
+      if (!this.current) return;
+      this.dataset.ready = "true";
+      this.querySelectorAll<HTMLButtonElement | HTMLSelectElement>("button, select").forEach((control) => { control.disabled = false; });
+      this.querySelector<HTMLElement>("[data-enhancement]")!.hidden = true;
+    }
+    private render() {
+      if (!this.current) return;
+      const { view } = this.current;
+      this.dataset.stage = view.phase;
+      for (const path of ["crdt", "ot"] as const) {
+        const root = this.querySelector<HTMLElement>(`[data-path="${path}"]`)!;
+        for (const client of view.clients) {
+          root.querySelector<HTMLElement>(`[data-client="${client.id}"] [data-value]`)!.textContent = client[path];
+        }
+        const converged = view.clients.every((client) => client[path] === view.clients[0][path]);
+        root.querySelector<HTMLElement>("[data-result]")!.textContent = view.phase === "ready"
+          ? "Three copies share the initial text."
+          : view.phase === "staged"
+            ? "Pending: Alice and Bob see only their own insert; Carol has neither."
+            : converged ? "Converged: all three copies retain both inserts." : "Copies do not yet agree.";
+        root.dataset.converged = String(converged);
+      }
+      for (const action of ["stage", "deliver"] as const) {
+        this.querySelector(`[data-action="${action}"]`)!.setAttribute("aria-disabled", String(view.phase !== (action === "stage" ? "ready" : "staged")));
+      }
+      this.querySelector<HTMLSelectElement>("[data-order]")!.disabled = view.phase === "delivered";
+      this.querySelector<HTMLElement>("[data-status]")!.textContent = view.phase === "ready"
+        ? "Ready: the same initial text and authored inserts are used in both paths."
+        : view.phase === "staged"
+          ? "Staged: both models show Alice's still insert, Bob's calm insert, and Carol's unchanged text."
+          : "Delivered: both native models keep both inserts and each converges across all three clients.";
+      const evidence = view.evidence.map((line) => {
+        const pre = document.createElement("pre");
+        pre.textContent = line;
+        return pre;
+      });
+      this.querySelector("[data-evidence]")!.replaceChildren(...evidence);
+    }
+  }
+  if (!customElements.get("text-mechanism-comparison")) customElements.define("text-mechanism-comparison", TextMechanismComparison);
+</script>
+
+<style>
+  text-mechanism-comparison { display: block; }
+  h2, h3, h4 { color: inherit; }
+  h2 { margin-top: 0; }
+  h3 { margin-top: 0; font-size: 1.3rem; }
+  h4 { margin: 0; font: 600 1.1rem/1.4 var(--font-ui); }
+  p { max-width: 72ch; }
+  .authored { display: grid; gap: 0.4rem; padding-block: 1rem; border-block: 1px solid color-mix(in oklch, var(--clear) 35%, transparent); }
+  .authored code { overflow-wrap: anywhere; }
+  .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; margin-block: 1.5rem 2rem; }
+  label { display: grid; gap: 0.3rem; font: 1rem/1.5 var(--font-ui); }
+  button, select { min-height: 44px; max-width: 100%; border: 1px solid var(--clear); padding: 0.5rem 0.75rem; color: var(--clear); background: var(--instrument-deep); font: 1rem/1.4 var(--font-ui); }
+  button { cursor: pointer; }
+  button:hover:not([aria-disabled="true"]) { background: var(--signal); color: var(--instrument-deep); }
+  button[aria-disabled="true"], button:disabled { opacity: 0.55; cursor: default; }
+  .path { padding-block: 1.5rem; border-top: 1px solid color-mix(in oklch, var(--clear) 35%, transparent); }
+  .clients { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .clients > section { min-width: 0; padding-block: 0.75rem; border-top: 1px solid var(--clear); }
+  .clients header { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; }
+  .value-label { display: block; margin-bottom: 0.5rem; font: 0.85rem/1.5 var(--font-ui); }
+  [data-value] { display: block; min-height: 4.5em; overflow-wrap: anywhere; color: var(--signal); font: 1rem/1.5 var(--font-data); white-space: pre-wrap; }
+  [data-result] { font: 0.95rem/1.5 var(--font-ui); }
+  details { margin-top: 1.5rem; border-top: 1px solid var(--clear); }
+  summary { min-height: 44px; padding-block: 0.75rem; cursor: pointer; font-family: var(--font-ui); }
+  [data-evidence] :global(pre) { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.8rem/1.6 var(--font-data); }
+  [role="status"], [role="alert"], [data-enhancement] { font-family: var(--font-ui); }
+  [role="alert"] { border: 1px solid var(--signal); padding: 0.75rem; }
+  @media (width < 48rem) { .clients { grid-template-columns: 1fr; } .controls { align-items: stretch; } }
+</style>

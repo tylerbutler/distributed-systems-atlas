@@ -3,6 +3,8 @@ import RemainingStructureDemo from "../../components/RemainingStructureDemo.astr
 import FifoWorkQueueDemo from "../../components/FifoWorkQueueDemo.astro";
 import JsonOtDemo from "../../components/JsonOtDemo.astro";
 import NaiveTextMergeDemo from "../../components/NaiveTextMergeDemo.astro";
+import SequenceMoveComparison from "../../components/SequenceMoveComparison.astro";
+import TextMechanismComparison from "../../components/TextMechanismComparison.astro";
 import PactMapDemo from "../../components/PactMapDemo.astro";
 import TaskManagerDemo from "../../components/TaskManagerDemo.astro";
 import StructureFacts from "../../components/StructureFacts.astro";
@@ -55,6 +57,9 @@ const operationNames = structure.operations.length === 1
           </a>
           <a href={isTextCrdt ? "#text-crdt-demo-title" : "#route-result"}>
             {isTextCrdt ? "Try the shared editor" : "Read the result"}
+          </a>
+          <a href={isTextCrdt ? "#text-mechanism-title" : "#sequence-move-title"}>
+            {isTextCrdt ? "Compare native OT and CRDT" : "Compare move and edit"}
           </a>
         </nav>
       )}
@@ -180,6 +185,7 @@ const operationNames = structure.operations.length === 1
           </section>
 
           <NaiveTextMergeDemo />
+          <TextMechanismComparison />
 
           <section aria-labelledby="grapheme-title">
             <h2 id="grapheme-title">Text is a sequence of graphemes</h2>
@@ -776,6 +782,8 @@ const operationNames = structure.operations.length === 1
             : isJsonOt
               ? <JsonOtDemo />
         : <RemainingStructureDemo structure={structure} />}
+
+      {isSequenceCrdt && <SequenceMoveComparison />}
 
       <section aria-labelledby="route-result">
         <h2 id="route-result">Read the result</h2>

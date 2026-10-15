@@ -1,0 +1,213 @@
+---
+import StationMark from "./StationMark.astro";
+import { moveInitialRecords } from "../lib/structure-demo/sequence-move-comparison";
+import "../styles/structure-demo-shell.css";
+
+const clients = [{ id: "A", name: "Alice" }, { id: "B", name: "Bob" }, { id: "C", name: "Carol" }];
+---
+
+<sequence-move-comparison data-testid="sequence-move-comparison" data-stage="ready" class="structure-demo-root">
+  <section class="structure-demo-instrument" aria-labelledby="sequence-move-title">
+    <h2 id="sequence-move-title">Move a record, not its field target</h2>
+    <p>
+      Both paths start with the same three trail records, all marked open.
+      Alice moves Weir from index 1 to index 0. From the original view, Bob
+      marks Weir blocked. Carol has received neither change.
+    </p>
+    <p class="authored">
+      <strong>Shared inputs</strong>
+      <code>Alice: move(1, 0)</code>
+      <code>Bob: index 1 = weir; status = blocked</code>
+    </p>
+    <div class="controls">
+      <label>Carol's delivery order
+        <select data-order disabled>
+          <option value="forward">Move, then edit</option>
+          <option value="reverse">Edit, then move</option>
+        </select>
+      </label>
+      <button type="button" data-action="stage" disabled>Stage concurrent changes</button>
+      <button type="button" data-action="deliver" disabled>Deliver both changes</button>
+      <button type="button" data-action="reset" disabled>Reset</button>
+    </div>
+    <section class="path" data-path="toy" aria-labelledby="sequence-toy-title">
+      <h3 id="sequence-toy-title">Naive toy: a stale numeric index</h3>
+      <p>
+        The toy applies <code>status[1] = blocked</code> to the record at index 1
+        when the edit arrives. After the move, that record is Bridge, not Weir.
+        This path intentionally uses no merge kernel.
+      </p>
+      <div class="clients">
+        {clients.map((client) => (
+          <section data-client={client.id} aria-label={`${client.name}'s numeric-index toy`}>
+            <header><StationMark station={client.id as "A" | "B" | "C"} /><h4>{client.name}</h4></header>
+            <ol start="0" data-records>
+              {moveInitialRecords.map((record, index) => (
+                <li data-record-id={record.id} data-index={index}><code>{index}: {record.id}</code><span data-value>{record.value}</span></li>
+              ))}
+            </ol>
+            <p class="target" data-target data-target-id="weir">Intended field target: weir at index 1</p>
+          </section>
+        ))}
+      </div>
+    </section>
+    <section class="path" data-path="native" aria-labelledby="sequence-native-title">
+      <h3 id="sequence-native-title">Composition: SequenceCrdt IDs + LWW-map fields</h3>
+      <p>
+        The native sequence stores stable application record IDs. A native
+        LWW-map stores each record's status under that ID. Bob sends
+        <code>p2p_set("weir", "blocked")</code>, not a field edit at index 1.
+        The move changes order; the map retains the intended field target.
+      </p>
+      <div class="clients">
+        {clients.map((client) => (
+          <section data-client={client.id} aria-label={`${client.name}'s native record composition`}>
+            <header><StationMark station={client.id as "A" | "B" | "C"} /><h4>{client.name}</h4></header>
+            <ol start="0" data-records>
+              {moveInitialRecords.map((record, index) => (
+                <li data-record-id={record.id} data-index={index}><code>{index}: {record.id}</code><span data-value>{record.value}</span></li>
+              ))}
+            </ol>
+            <p class="target" data-target data-target-id="weir">Map key: weir; current index: 1</p>
+          </section>
+        ))}
+      </div>
+    </section>
+    <p role="status" data-status>Ready: all three copies share the same IDs, order, and open status.</p>
+    <p role="alert" data-error hidden></p>
+    <p data-enhancement>Enable JavaScript to stage and deliver the changes. The native composition keeps Weir blocked in either delivery order.</p>
+    <details>
+      <summary>Inspect native identities and operations</summary>
+      <p>
+        <code>sequence_kernel.p2p_move</code> preserves the sequence item identity.
+        Application IDs link the sequence to map fields. In this pinned kernel,
+        <code>p2p_replace</code> is DELETE + INSERT: it does not preserve item
+        identity and is not an in-place field edit.
+      </p>
+      <div data-evidence><p>Run the comparison to inspect native summaries and authored operations.</p></div>
+    </details>
+  </section>
+</sequence-move-comparison>
+
+<script>
+  import {
+    createMoveComparison, stageMoveComparison, deliverMoveComparison,
+    type MoveComparisonState, type ComparisonResult,
+  } from "@atlas/toolkit";
+  import { moveToyClients } from "../lib/structure-demo/sequence-move-comparison";
+
+  class SequenceMoveComparison extends HTMLElement {
+    private current?: MoveComparisonState;
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      const accept = (result: ComparisonResult<MoveComparisonState>) => {
+        const error = this.querySelector<HTMLElement>("[data-error]")!;
+        if (!result.ok) {
+          error.textContent = `${result.error.message} Reset to try again.`;
+          error.hidden = false;
+          return;
+        }
+        error.hidden = true;
+        this.current = result.value;
+        this.render();
+      };
+      this.querySelectorAll<HTMLButtonElement>("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.getAttribute("aria-disabled") === "true") return;
+          if (button.dataset.action === "reset") {
+            this.querySelector<HTMLSelectElement>("[data-order]")!.value = "forward";
+            accept(createMoveComparison());
+          }
+          else if (this.current) {
+            accept(button.dataset.action === "stage"
+              ? stageMoveComparison(this.current.room)
+              : deliverMoveComparison(this.current.room, this.querySelector<HTMLSelectElement>("[data-order]")!.value === "reverse"));
+          }
+        });
+      });
+      accept(createMoveComparison());
+      if (!this.current) return;
+      this.dataset.ready = "true";
+      this.querySelectorAll<HTMLButtonElement | HTMLSelectElement>("button, select").forEach((control) => { control.disabled = false; });
+      this.querySelector<HTMLElement>("[data-enhancement]")!.hidden = true;
+    }
+    private render() {
+      if (!this.current) return;
+      const { view } = this.current;
+      const reverse = this.querySelector<HTMLSelectElement>("[data-order]")!.value === "reverse";
+      this.dataset.stage = view.phase;
+      for (const [path, clients] of [["toy", moveToyClients(view.phase, reverse)], ["native", view.clients]] as const) {
+        for (const client of clients) {
+          const root = this.querySelector<HTMLElement>(`[data-path="${path}"] [data-client="${client.id}"]`)!;
+          const list = root.querySelector<HTMLOListElement>("[data-records]")!;
+          const rows = client.records.map((record, index) => {
+            const row = document.createElement("li");
+            row.dataset.recordId = record.id;
+            row.dataset.index = String(index);
+            const id = document.createElement("code");
+            id.textContent = `${index}: ${record.id}`;
+            const value = document.createElement("span");
+            value.dataset.value = "";
+            value.textContent = record.value;
+            row.append(id, value);
+            return row;
+          });
+          list.replaceChildren(...rows);
+          const blocked = client.records.find((record) => record.value === "blocked");
+          const target = root.querySelector<HTMLElement>("[data-target]")!;
+          target.dataset.targetId = blocked?.id ?? "weir";
+          target.textContent = path === "native"
+            ? `Map key: weir; current index: ${client.records.findIndex((record) => record.id === "weir")}`
+            : `Intended: weir; ${blocked ? `actual blocked record: ${blocked.id}` : "no field edit received"}`;
+        }
+      }
+      for (const action of ["stage", "deliver"] as const) {
+        this.querySelector(`[data-action="${action}"]`)!.setAttribute("aria-disabled", String(view.phase !== (action === "stage" ? "ready" : "staged")));
+      }
+      this.querySelector<HTMLSelectElement>("[data-order]")!.disabled = view.phase === "delivered";
+      this.querySelector<HTMLElement>("[data-status]")!.textContent = view.phase === "ready"
+        ? "Ready: all three copies share the same IDs, order, and open status."
+        : view.phase === "staged"
+          ? "Staged: Alice sees Weir first; Bob sees Weir blocked; Carol has received neither change."
+          : "Delivered: the native copies agree on Weir first and blocked. Alice's stale-index toy blocks Bridge instead.";
+      const evidence = view.evidence.map((line) => {
+        const pre = document.createElement("pre");
+        pre.textContent = line;
+        return pre;
+      });
+      this.querySelector("[data-evidence]")!.replaceChildren(...evidence);
+    }
+  }
+  if (!customElements.get("sequence-move-comparison")) customElements.define("sequence-move-comparison", SequenceMoveComparison);
+</script>
+
+<style>
+  sequence-move-comparison { display: block; }
+  h2, h3, h4 { color: inherit; }
+  h2 { margin-top: 0; }
+  h3 { margin-top: 0; font-size: 1.3rem; }
+  h4 { margin: 0; font: 600 1.1rem/1.4 var(--font-ui); }
+  p { max-width: 72ch; }
+  .authored { display: grid; gap: 0.4rem; padding-block: 1rem; border-block: 1px solid color-mix(in oklch, var(--clear) 35%, transparent); }
+  .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; margin-block: 1.5rem 2rem; }
+  label { display: grid; gap: 0.3rem; font: 1rem/1.5 var(--font-ui); }
+  button, select { min-height: 44px; max-width: 100%; border: 1px solid var(--clear); padding: 0.5rem 0.75rem; color: var(--clear); background: var(--instrument-deep); font: 1rem/1.4 var(--font-ui); }
+  button { cursor: pointer; }
+  button:hover:not([aria-disabled="true"]) { background: var(--signal); color: var(--instrument-deep); }
+  button[aria-disabled="true"], button:disabled { opacity: 0.55; cursor: default; }
+  .path { padding-block: 1.5rem; border-top: 1px solid color-mix(in oklch, var(--clear) 35%, transparent); }
+  .clients { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .clients > section { min-width: 0; padding-block: 0.75rem; border-top: 1px solid var(--clear); }
+  .clients header { display: flex; gap: 0.6rem; align-items: center; margin-bottom: 1rem; }
+  ol { list-style: none; padding: 0; margin: 0; }
+  [data-records] :global(li) { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.75rem; padding-block: 0.5rem; border-bottom: 1px solid color-mix(in oklch, var(--clear) 25%, transparent); }
+  [data-records] :global(code) { overflow-wrap: anywhere; font-size: 0.8rem; }
+  .clients :global([data-value]) { color: var(--signal); font: 0.85rem/1.5 var(--font-data); }
+  .target { font: 0.9rem/1.5 var(--font-ui); }
+  details { margin-top: 1.5rem; border-top: 1px solid var(--clear); }
+  summary { min-height: 44px; padding-block: 0.75rem; cursor: pointer; font-family: var(--font-ui); }
+  [data-evidence] :global(pre) { max-width: 100%; white-space: pre-wrap; overflow-wrap: anywhere; font: 0.8rem/1.6 var(--font-data); }
+  [role="status"], [role="alert"], [data-enhancement] { font-family: var(--font-ui); }
+  [role="alert"] { border: 1px solid var(--signal); padding: 0.75rem; }
+  @media (width < 48rem) { .clients { grid-template-columns: 1fr; } .controls { align-items: stretch; } }
+</style>
