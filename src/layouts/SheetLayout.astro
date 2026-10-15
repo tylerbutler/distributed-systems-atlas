@@ -74,7 +74,7 @@ const pairedLesson = pairedLessonForSheet(entry.id);
       {entry.data.requires.length > 0
         ? <SheetLinks heading="Helpful background" sheets={entry.data.requires.map(resolve)} />
         : <p class="sheet-prerequisites">No background sheet listed</p>}
-      <LessonIllustration id={`atlas-${entry.id}`} />
+      {entry.data.showIllustration && <LessonIllustration id={`atlas-${entry.id}`} />}
     </header>
     {[
       { section: "opening", label: contentsLabel },

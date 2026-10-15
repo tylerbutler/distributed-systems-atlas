@@ -55,6 +55,7 @@ const sheet = defineCollection({
     status: z.enum(["published", "planned"]),
     complexity: z.enum(complexityLevels),
     showCorrectnessWarning: z.boolean().default(true),
+    showIllustration: z.boolean().default(true),
     requires: z.array(sheetReference).default([]),
     structureLessons: z.array(z.string().refine(
       (slug) => structureLessonSlugs.has(slug),

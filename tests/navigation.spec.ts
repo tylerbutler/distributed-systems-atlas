@@ -79,8 +79,21 @@ test("navigation labels describe pages and optional starting points accurately",
     await expect(guide.getByRole("link")).toHaveText(["Compare counters", "Compare sets", "Compare registers"]);
     await page.goto("/atlas/");
     await expect(page.getByRole("navigation", { name: "Reference topics", exact: true })
-      .getByRole("link")).toHaveText(["Structures", "Mechanisms", "Systems"]);
+      .getByRole("link")).toHaveText(["Structures", "Mechanisms", "Failure modes", "Systems"]);
     await expect(page.locator(".publication-note, .planned-sheets")).toHaveCount(0);
+    for (const [id, title] of [
+      ["network-partitions", "Network partitions"],
+      ["tracing-distributed-systems", "Tracing distributed systems"],
+    ]) {
+      const link = page.getByTestId("territory-chart").getByRole("link", { name: title, exact: true });
+      await expect(link).toHaveAttribute("href", `/atlas/${id}/`);
+      await link.click();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveText(title);
+      await expect(page.locator(".sheet-body")).toContainText("The lesson is not yet written.");
+      await expect(page.getByRole("heading", { name: "Planned scope", exact: true })).toBeVisible();
+      await expect(page.locator(".sheet-header .lesson-illustration")).toHaveCount(0);
+      await page.goto("/atlas/");
+    }
   } finally {
     await context.close();
   }

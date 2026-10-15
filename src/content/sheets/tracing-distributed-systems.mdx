@@ -1,0 +1,22 @@
+---
+title: Tracing distributed systems
+summary: Use event records and message links to investigate what happened across computers.
+territory: mechanisms
+status: published
+complexity: intermediate
+showIllustration: false
+requires: [local-history, partial-order]
+related: [lamport-clocks, vector-clocks]
+---
+
+This is a placeholder page. The lesson is not yet written.
+
+## Planned scope
+
+This lesson will explain how to collect and compare records from a running
+distributed system without assuming that the logs show every event.
+
+- Connect local event records through message sends and receives.
+- Distinguish an order supported by communication from a chosen display order.
+- Explain why missing log records cannot establish concurrency.
+- Keep event identities distinct across process restarts.

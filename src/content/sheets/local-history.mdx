@@ -28,31 +28,29 @@ import TermCallout from "../../components/TermCallout.astro";
 
 ## A delayed message can contain old news
 
-Station A records a draft signal report and sends its record to B. While the
-network delays delivery, A publishes the report. B then receives the message.
-Does B know that A published?
+Station A records a draft signal report and sends a copy to station B. While
+the network delays delivery, an operator at A publishes the report. B then
+receives the earlier message. Does B know that the report was published?
 
-The message contains the record that A sent. It does not acquire A's later
-changes before delivery. B can learn about the draft without learning about
-publication. A successful delivery therefore proves less than "B is up to
-date." You need to identify the information in that particular message.
+No. The message contains the record that A sent, not A's later changes.
+B learns about the draft, but not about publication. A delivered message does
+not mean that the receiver is up to date.
 
-This distinction applies to a replicated document, a cached record, or an
-asynchronous notification. A sender can change after sending. A receiver can
-act on an earlier state even when the connection works and no message is lost.
-The question is which events the receiver has observed.
+The same problem can occur when two computers keep copies of a document.
+One computer can change its copy while a message is still on its way to the
+other. No message needs to be lost for the copies to differ.
 
-We'll keep two records at each station: its local history and its observed
-events. The lab places both stations on one page so you can compare them.
-Neither station can read the other panel.
+In this lesson, each station represents a computer that keeps its own copy
+of the report. Such a computer is called a replica. You will compare what
+happened at each station with what it learned from a message.
+The lab shows both stations so you can see the difference. Neither station
+can read the other station's panel.
 
 ## Keep execution and observation separate
 
-A <dfn><a href="/glossary/#local-history">local history</a></dfn> lists events
-executed at one replica. In this experiment,
-`a1` is A's draft event and `a2` is A's publish event. A executes them in that
-order. B's receive event is `b1`; B does not execute `a1` when it receives
-information about it.
+A <dfn><a href="/glossary/#local-history">local history</a></dfn> is an ordered
+record of events at one station. An event is something that happens there,
+such as recording a draft or receiving a message.
 
 <TermCallout
   term="local history"
@@ -60,59 +58,71 @@ information about it.
   inlineOnly
 />
 
-An **observation** includes information learned from messages as well as local
-events. After delivery, B's local history contains `b1`, while its observed
-events contain `a1` and `b1`. Keeping these fields separate prevents a remote
-event from looking like local work.
+The lab gives each event a short name. `a1` is A's draft event, and `a2` is
+A's publish event. A records them in that order. B's receive event is `b1`.
+Receiving information about A's draft does not mean that B created the draft.
+
+An <dfn><a href="/glossary/#observation">observation</a></dfn> is information
+available at a station, either from its own events or from received messages.
+
+<TermCallout
+  term="observation"
+  definition="Information available to a replica through its own events and received messages."
+  inlineOnly
+/>
+
+After delivery, B's **Local history** lists `b1`: B received a message.
+Its **Observed events** lists `a1` and `b1`: B also learned about A's draft.
+Use the first field to ask "What happened here?" Use the second to ask
+"Which events does this station know about?"
 
 <figure aria-label="Send-time observation">
   <dl class="sheet-data">
     <dt><StationMark station="A" /> Station A</dt>
     <dd><code>a1: draft</code>, send <code>m1</code>, then <code>a2: publish</code></dd>
     <dt>Message m1 from A to B</dt>
-    <dd>Send-time observation: <code>a1</code></dd>
+    <dd>Copy made when A sends: <code>a1</code></dd>
     <dt><StationMark station="B" /> Station B</dt>
     <dd>Receive as <code>b1</code>; observe <code>a1, b1</code></dd>
   </dl>
-  <figcaption>A's later event a2 is outside m1. Reading the rows together does
-  not give either station the other station's record.</figcaption>
+  <figcaption>Message m1 contains the draft event a1, but not the later
+  publish event a2.</figcaption>
 </figure>
 
-Use this record through the experiment. A local event adds information at its
-own station. Sending copies known history into a message. Delivery makes that
-copy available at the receiver and records a receive event there.
+For this experiment, sending copies the station's observed events into a
+message. Delivery adds that information at the receiver and records a receive
+event there.
 
-For this lesson, sending does not create a separate local event. The lab
-records the send in its action ledger, but A's local history still contains
-only `a1` at that point. This keeps the first example small. The clock sheets
-count sends as events because a send must receive a timestamp in those models.
-Do not equate the ledger's frame number with an event counter.
+The lab records sending as an action, but does not give it a separate event
+name in this lesson. A's local history therefore still lists only `a1` just
+after the send. This is a teaching simplification, not a rule that sending
+cannot be an event.
 
 ## Hold the message while A changes
 
-Start with **Reset lab** if you have used other controls. The numbered
-reference controls supply the event IDs used in the article.
+Use the **Guided run** and its **Next:** button for all four steps. If you
+have already used other controls, choose **Reset lab** first.
 
-1. Choose **Reference step 1: local-event**. A records `a1` with value `draft`.
-2. Choose **Reference step 2: send**. Inspect `m1` in **Queued messages**.
-   Its observed history contains `a1`.
-3. Choose **Reference step 3: local-event**. A records `a2` with value `publish`.
-   Inspect `m1` again before delivery.
-4. Choose **Reference step 4: deliver**. B records `b1`. Compare **Local
-   history** and **Observed events** at each station.
+1. Record the draft at A. A's local history and observed events both contain
+   `a1`. B's records are still empty.
+2. Send from A to B. Find `m1` in **Queued messages**, the list of messages
+   waiting for delivery. It contains `a1`. B has not received it yet.
+3. Record publication at A. A now lists `a1, a2`. Inspect `m1` again:
+   it must still contain only `a1`.
+4. Deliver `m1`. B records `b1`. Compare **Local history** and **Observed
+   events** at each station.
 
-Use the numbered control for the receive too: it supplies the name `b1`.
-The ordinary **Deliver m1 from A to B** control performs delivery with a
-generated event ID, so its record has a different name.
+The guided buttons supply the event names used here. The separate delivery
+button uses a generated name instead of `b1`, so use **Next:** to match
+the example.
 
-**Back** and **Forward** select recorded frames without changing their state.
-Return to the latest frame before issuing another action. **Play** visits
-existing frames; it does not send or deliver anything. With reduced motion,
-**Next recorded frame** advances once per press.
+Before the last step, predict whether B will learn about publication.
+After delivery, check B's records rather than just checking that the message
+has left the queue.
 
-Without JavaScript, the initial panels below show empty histories and an empty
-queue. The figure above and the staged records below describe the complete
-run without requiring the controls.
+Without JavaScript, the lab shows the empty starting records. The figures
+above and below provide the example's message contents and final records
+without requiring the controls.
 
 </div>
 
@@ -122,17 +132,12 @@ run without requiring the controls.
 
 ## Account for the missing event
 
-Before the send, A has observed `a1`; B has observed nothing. Sending changes
-the queue, not B's knowledge. There is now a copy of A's observation in `m1`,
-but B cannot use it until delivery.
+Sending does not change B's records. The information is waiting in `m1`,
+and B cannot use it until delivery.
 
-After A publishes, A's history is `a1, a2`. The message still contains only
-`a1`. A send-time copy is part of the model: later changes to the sender do
-not mutate an existing message.
-
-After delivery, B knows `a1, b1`. Its receive has `a1` as a predecessor.
-A's publish also has `a1` as a predecessor. Both events follow the draft,
-but neither follows the other through a message or local history.
+Publication changes A's record, but not the copy already in `m1`.
+After delivery, B knows about the draft and its own receive event. It has no
+record of publication.
 
 <figure aria-label="Final local and observed histories">
   <table>
@@ -147,33 +152,25 @@ but neither follows the other through a message or local history.
   observed b1. Draining this queue does not make the histories equal.</figcaption>
 </figure>
 
-The final comparison calls `a2` and `b1` **concurrent**. Here that means there
-is no causal path between them. It does not require simultaneous execution.
-You clicked publish before receive, but that order exists in the experiment's
-controls, not as communication between A and B.
+An empty queue does not mean both stations have the same information.
+All you delivered was the earlier copy. Also, A has not learned that B
+received it: this run includes no reply from B.
 
-To give B information about `a2`, choose **Send from A to B** after the
-reference run, then deliver the new message. B now learns that event.
-This also creates another receive at B. It does not rewrite `b1` to pretend
-that the first delivery contained more information.
+To tell B about `a2`, choose **Send from A to B** after the guided run,
+then deliver the new message. B learns about publication and records another
+receive. The first receive still describes the first delivery.
 
 <section class="sheet-break" aria-labelledby="break-it-read-the-sender-at-delivery">
 
 ## Break it: read the sender at delivery
 
-Suppose delivery reads A's current history instead of the message's saved
-payload. Step 4 would give B both `a1` and `a2`. The displayed result might
-look convenient, but no message sent after `a2` exists.
+Suppose the lab read A's current record at delivery instead of using the
+saved message. B would learn about both the draft and publication from `m1`.
+That would be wrong: A sent `m1` before publication.
 
-That incorrect model replaces a delayed message with a remote read. It hides
-stale data and can make B appear to depend on an event it could not have
-observed. A test that checks only whether the queue becomes empty would miss
-the error.
-
-Check the payload at step 2 and step 3. It must remain `a1` even as A changes.
-Then check B after step 4. The absence of `a2` is the expected result, not a
-delivery failure. This test distinguishes message delivery from consulting a
-shared object that both replicas can read.
+Check the message at steps 2 and 3. Its contents must remain `a1` even as A
+changes. Then check B after step 4. The absence of `a2` is the expected
+result, not a delivery failure.
 
 </section>
 
@@ -181,26 +178,13 @@ shared object that both replicas can read.
 
 ## The cost of an explicit history
 
-The lab retains event IDs, predecessor relationships, and observed-event sets.
-Its messages copy known history. Storage and message size can grow with the
-number of events, even if an application only displays the latest report.
-This representation makes evidence visible; it is not a compact replication
-protocol.
+The lab keeps named events so you can inspect exactly what each station has
+observed. Longer runs need more space to store these records and send copies.
+A real application need not include its entire history in every message.
 
-The model assumes each station executes a sequence of local events and that
-event IDs are unique. A real process with internal concurrency needs a more
-precise definition of its local ordering. Reusing an event ID after a restart
-would make two events indistinguishable in this graph.
-
-You control delivery. Sending does not guarantee receipt, and healing a
-partition only permits delivery of pending messages. An empty queue here means
-there are no queued copies in this simulation. It does not prove that no
-external sender has an update or that all replicas have equal state.
-
-The full-page trace belongs to the teaching tool. A deployment would need
-instrumentation and a collection protocol to assemble comparable records.
-Even collected logs do not automatically establish an order between events
-that exchanged no information.
+You also control when delivery happens. Sending alone does not guarantee
+receipt. This example uses one delayed message to show the difference; you
+do not need a network failure to produce an out-of-date record at B.
 
 </section>
 
@@ -208,42 +192,29 @@ that exchanged no information.
 
 ## Field notes
 
-This pseudocode describes the history lesson. Each replica starts with an
-empty `history` sequence and `observed` set. `fresh_id` never reuses an event
-name. A predecessor edge states what the new event follows.
+Use this short record to check the result:
 
 ```text
-local(value):
-  event = fresh_id()
-  predecessors[event] = last(history), if present
-  history.append(event)
-  observed.add(event)
-
-send(peer):
-  queue(peer, copy(observed))
-
-receive(message):
-  event = fresh_id()
-  predecessors[event] =
-    message.observed union {last(history), if present}
-  history.append(event)
-  observed = observed union message.observed union {event}
+A records draft a1.
+A sends m1 containing a1.
+A records publication a2.
+B receives m1 as b1 and learns about a1.
+B has not learned about a2.
 ```
 
-The **receive** belongs to the receiver's local history. Its remote
-predecessors come from the message. The sender does not learn that the
-receive occurred merely because the tool shows it; that would require
-communication back to the sender.
+The distinction to keep is simple: a local history records what happened
+at one station. An observation can also include information received from
+another station. A message tells the receiver what was sent, not everything
+that happened afterward.
 
-Leslie Lamport's
+For further reading, Leslie Lamport's
 [Time, Clocks, and the Ordering of Events in a Distributed System](/bibliography/#lamport-time-clocks)
-defines ordering through process events and message transmission. The lab's
-explicit observed sets are a teaching representation of those dependencies,
-not a claim that Lamport requires every message to include an entire history.
+explains how local events and messages establish order in a distributed
+system. You do not need its formal rules for this lesson.
 
-Read [Partial order](/atlas/partial-order/) to compare events through these
-predecessor paths. Keep `a2` and `b1` in mind: sharing a
-predecessor did not put either event after the other.
+The lab also shows an event comparison. You can leave that aside here.
+[Partial order](/atlas/partial-order/) explains those comparisons in the
+next lesson.
 
 </section>
 </div>

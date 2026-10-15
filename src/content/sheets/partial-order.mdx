@@ -28,32 +28,42 @@ import TermCallout from "../../components/TermCallout.astro";
 
 ## Three stations do not make one log
 
-A records an event and sends its observation to B. C records an event without
-receiving that message. B then receives A's record. You want to combine the
-logs without claiming that C's event influenced B's receive.
+An operator at station A records a signal report. A sends a copy to station B.
+An operator at C records a separate report without exchanging messages with
+A or B. B then receives A's message.
 
-Sorting by the order in which you clicked the controls would put C before
-the receive at B. That list is a valid record of your actions at the browser,
-but it supplies no communication path from C to B. The replicas have separate
-histories.
+B can learn about A's report from that delivery. It cannot learn about C's
+report. Yet if you list events in the order you clicked the lab controls,
+C's report appears before B's receive. Does that mean B could use it?
 
-A **partial order** preserves the comparisons you can justify and leaves
-other pairs unordered. It lets you say that B's receive follows A's event
-while refusing to choose an order between the receive and C's independent
-event. Unordered pairs are part of the answer.
+No. Button order records your actions, not what each station knows.
+As in [Local history](/atlas/local-history/), each station represents a
+computer with its own record. The stations learn about other stations'
+events through messages.
+
+A **partial order** records which events must come before others while
+leaving some pairs unordered. Here, A's report must come before B receives
+it. The exchange gives no order between C's report and B's receive.
+Leaving that pair unordered preserves the difference between an earlier
+button click and information available at a station.
 
 ## Read edges as dependencies
 
-Use three station rows. Each row contains local events in execution order.
-A directed edge points from a predecessor to an event that follows it.
-Message delivery connects observations across rows.
+The lab gives the events short names: `a1` is A's report, `b1` is B's
+receive, and `c1` is C's report. It also records arrows between events.
+An arrow, or **edge**, points from an earlier event to one that follows it.
+A **path** is one or more arrows followed in their direction.
+
+Two kinds of connection matter: the order of events at one station, and
+the connection from sending a message to receiving it. Together, these
+connections describe how information could pass between events.
 
 <figure aria-label="One causal path and an independent event">
   <dl class="sheet-data">
     <dt><StationMark station="A" /> Station A</dt>
     <dd>A includes <code>a1</code> in message <code>m1</code> for B.</dd>
     <dt><StationMark station="B" /> Station B</dt>
-    <dd><code>b1</code> receives m1. The graph has the edge <code>a1 -&gt; b1</code>.</dd>
+    <dd>B receives m1 as <code>b1</code>. The lab records <code>a1 -&gt; b1</code>.</dd>
     <dt><StationMark station="C" /> Station C</dt>
     <dd><code>c1</code> has no edge to or from either event.</dd>
   </dl>
@@ -61,10 +71,14 @@ Message delivery connects observations across rows.
   neither A nor B has observed c1 in this trace.</figcaption>
 </figure>
 
-The strict <dfn><a href="/glossary/#happens-before">happens-before</a></dfn>
-relation follows three rules. Local execution orders events at one process.
-Sending a message precedes receiving it. Transitivity connects a path: if `x`
-precedes `y` and `y` precedes `z`, then `x` precedes `z`.
+The <dfn><a href="/glossary/#happens-before">happens-before</a></dfn>
+relation describes this order. It follows three rules:
+
+1. At one station, an earlier event happens before a later event.
+2. Sending a message happens before receiving that message.
+3. If `x` happens before `y`, and `y` happens before `z`, then `x` happens
+   before `z`. This rule is called **transitivity**: you can follow a path
+   through intermediate events.
 
 <TermCallout
   term="happens-before"
@@ -72,35 +86,36 @@ precedes `y` and `y` precedes `z`, then `x` precedes `z`.
   inlineOnly
 />
 
-This lesson collapses the send into a copy of A's observed history, as the
-local-history sheet did. Its recorded cross-station edge is `a1 -> b1`.
-The send remains a separate action in the ledger. The later clock lessons
-give sends their own event IDs.
+For this lesson, the lab records sending as an action without giving it a
+separate event name. It shows `a1 -> b1` because A recorded `a1`, then sent
+the message that B received. This is the same simplification used in
+Local history. Sending is still an event in the full happens-before model.
 
-An edge permits causal influence; it does not prove that an application
-used every available value. If B receives A's report and then calculates an
-unrelated checksum, the local event still follows the receive in this model.
-Happens-before records possible dependence through execution and communication.
+A path shows that information could have passed between events. It does not
+prove that an application used that information. For example, B might receive
+A's report and then perform an unrelated calculation. The receive still
+happens before that later local event.
 
 ## Compare the connected and disconnected pairs
 
-Use **Reset lab**, then the numbered reference controls.
+Use the **Guided run** and its **Next:** button for all five steps. Choose
+**Reset lab** first if you have already used other controls.
 
-1. **Reference step 1: local-event** records `a1` at A.
-2. **Reference step 2: send** queues `m1` from A to B.
-3. **Reference step 3: local-event** records `c1` at C. C sends no message.
-4. **Reference step 4: deliver** records the receive `b1` at B.
-5. **Reference step 5: compare-events** compares `a1 / b1`, `b1 / c1`,
-   and `c1 / c1`.
+1. Record `a1` at A.
+2. Send `m1` from A to B. B has not received anything yet.
+3. Record `c1` at C. C sends no message.
+4. Deliver `m1`. B records the receive as `b1` and learns about `a1`.
+5. Compare `a1 / b1`, `b1 / c1`, and `c1 / c1`.
 
-The final control adds comparison results, not events or messages. Read its
-three notices in **Lesson controls**; the comparison strip displays only
-the last selected pair.
+Before the fifth step, predict the results. Which pair has a path? Which
+pair has none? Which pair names the same event twice?
 
-Before pressing step 5, predict each result using the figure. You need no
-timestamps. Inspect **Predecessors** if you lose track of an edge.
-The initial no-JavaScript view below contains three empty histories. The
-table after it supplies the reference results.
+The last step adds comparison results without creating an event or sending
+a message. Read all three results in **Lesson controls**. The **Event
+comparison** panel shows only the last pair, `c1 / c1`.
+
+Without JavaScript, the lab shows three empty starting histories. The figure
+above and the results below describe the complete example without controls.
 
 </div>
 
@@ -110,14 +125,21 @@ table after it supplies the reference results.
 
 ## A missing path is a result
 
-After step 2, B still has no observed events. A queued message is not a
-receive. Step 3 changes only C. Step 4 gives B information about `a1`, so
-the graph can establish that `a1` precedes `b1`.
+After delivery, the message provides a path from `a1` to `b1`.
+Nothing in that message mentions `c1`, and C has received nothing from B.
+There is no path between `b1` and `c1` in either direction.
 
-Nothing in that delivery mentions `c1`. No path runs from B to C either.
-The two distinct events `b1` and `c1` are **concurrent**. This is a relation
-between events, not a claim about whether the stations' CPUs ran at the
-same instant.
+These two distinct events are
+<dfn><a href="/glossary/#concurrency">concurrent</a></dfn>. Here, concurrency
+means that neither event happens before the other. It does not mean that
+they occurred at the same instant. You clicked C's event first, but no
+message connected it to B's receive.
+
+<TermCallout
+  term="concurrency"
+  definition="The relation between distinct events with no happens-before path in either direction."
+  inlineOnly
+/>
 
 <figure aria-label="Partial-order comparison results">
   <table>
@@ -132,40 +154,42 @@ same instant.
   strict happens-before never relates an event to itself.</figcaption>
 </figure>
 
-The comparison interface has four results: before, after, equal, and
-concurrent. The strict happens-before relation itself consists only of the
-before pairs. Adding equality gives the corresponding non-strict partial
-order. This distinction keeps "equal" from becoming another word for
-"unrelated."
+The interface distinguishes **equal** from **concurrent**. Equal means
+the same event, not two events with the same value or time. Concurrent means
+two different events with no path between them.
 
-You can extend the experiment after the reference run. Choose **Send from B
-to C** and deliver the new message. The receive at C follows `b1`, which
-follows `a1`. The new receive therefore follows `a1` through transitivity,
-even though A sent no message directly to C.
+Happens-before is a **strict** partial order: an event never happens before
+itself. If you also include equality, you get the corresponding non-strict
+partial order. The interface reports equality separately so you can tell
+event identity from event order.
 
-C's old event `c1` remains concurrent with `b1`. Learning something later
-does not rewrite what an earlier event could have observed. Use **Back**
-to inspect the frame before the new delivery, then **Forward** to return.
-The graph can gain a new event without changing the relation between its
-existing events.
+To try transitivity, choose **Send from B to C** after the guided run and
+deliver the new message. B's message includes what B learned about `a1`.
+The new receive at C follows `b1`, which follows `a1`. It therefore follows
+`a1` even though A sent no message directly to C.
+
+C's earlier event `c1` remains concurrent with `b1`. Receiving information
+later does not change what was available to an earlier event.
 
 <section class="sheet-break" aria-labelledby="break-it-sort-the-buttons">
 
 ## Break it: sort the buttons
 
-The control sequence records `c1` before `b1`. If you turn that sequence into
-a causal edge, you invent a dependency from C to B. B received only A's
-message; there is no evidence for the new edge.
+Suppose you add an arrow from `c1` to `b1` because you clicked C's control
+first. That arrow would claim a path that the execution does not contain.
+B received only A's message.
 
-A total sequence can still be useful for display. Both `a1, c1, b1` and
-`c1, a1, b1` respect the required edge `a1 -> b1`. So does `a1, b1, c1`.
-The partial order permits these sequences because it does not constrain C
-relative to the other events.
+You can still choose a single sequence for display. A **total order** places
+every pair of distinct events in an order. All three sequences below
+respect the one required connection, `a1 -> b1`:
 
-A sorting rule produces one permitted sequence. It cannot promote that
-choice into evidence that an event observed another. To check your model,
-look for the concrete local or message edge behind each claimed dependency.
-If the only reason is "its row appeared first," keep the pair concurrent.
+- `a1, c1, b1`
+- `c1, a1, b1`
+- `a1, b1, c1`
+
+Choosing one sequence does not change the partial order. Before claiming
+that one event happens before another, find a path through local event
+order and message delivery. A display position alone is not evidence.
 
 </section>
 
@@ -173,26 +197,18 @@ If the only reason is "its row appeared first," keep the pair concurrent.
 
 ## What a path check assumes
 
-The lab stores an event graph and retains earlier frames. An explicit graph
-needs storage for events and edges; a direct reachability search can visit
-many of them for one comparison. The reference engine keeps an ancestor
-index to reuse reachability information, which trades additional memory for
-less repeated traversal.
+The lab keeps an event graph: the events and arrows connecting them.
+Keeping more events requires more storage. Following long paths can also
+take more work than checking a direct connection.
 
-The concurrency claim assumes the graph includes the relevant local events
-and communication. Two production logs with no visible connecting message
-may only show incomplete instrumentation. Absence of a path in incomplete
-logs is not proof that no path existed in the execution.
+The lab records every event and message in this simulated run. Real logs
+may be incomplete. A missing message record does not prove that no message
+was sent. Only call events concurrent when you have enough information to
+rule out a path in either direction.
 
-This experiment controls the whole simulated event graph, but its replicas
-still have local observations. The tool's ability to compare records from
-three stations must not become an algorithm in which each station can inspect
-everyone else's memory.
-
-A partition prevents delivery on a link; it does not stop local events or
-prove all events across that link are concurrent. A later event can still
-follow information received before the partition. Check ancestry rather than
-using connection status as a substitute.
+You can inspect all three stations, but each station still has only its
+own observations. The full view is a teaching tool, not information that
+every station automatically shares.
 
 </section>
 
@@ -200,42 +216,29 @@ using connection status as a substitute.
 
 ## Field notes
 
-For a finite acyclic graph, a simple comparison uses reachability.
-`reachable(x, y)` searches forward along local and message edges. An event's
-identity check comes first.
+Use these rules when comparing two events:
 
 ```text
-compare(x, y):
-  if x.id == y.id:
-    return equal
-  if reachable(x, y):
-    return before
-  if reachable(y, x):
-    return after
-  return concurrent
-
-reachable(x, y):
-  pending = [x]
-  visited = {}
-  while pending is not empty:
-    event = pending.pop()
-    if event == y: return true
-    if event not in visited:
-      visited.add(event)
-      pending.extend(successors(event))
-  return false
+Same event?                  equal
+Path from first to second?   before
+Path from second to first?   after
+Different events, no path?   concurrent
 ```
+
+Check identity first. Follow arrows only in their direction. Two events
+that share an earlier event are not necessarily ordered relative to each
+other: both may follow that event without a path between them.
 
 Lamport's
 [Time, Clocks, and the Ordering of Events in a Distributed System](/bibliography/#lamport-time-clocks)
-defines happens-before and shows how to extend it to a total order. The
-paper distinguishes causal order from a chosen ordering of concurrent events.
-The lab makes that distinction inspectable before adding a clock.
+defines happens-before and shows how to extend it to a total order.
+The distinction in this lesson is the same: an order chosen for display
+does not create communication between events.
 
 Read [Local history](/atlas/local-history/) if the difference between execution
 and observation is unclear. Read [Lamport clocks](/atlas/lamport-clocks/)
-to assign compact scalar timestamps while retaining the limits of what those
-timestamps can establish.
+to see how a station can assign a number to each event while preserving
+happens-before order.
 
 </section>
 </div>

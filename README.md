@@ -73,6 +73,10 @@ articles. Planned articles appear in a separate disclosure without page links.
 Systems retains its distinct implementation-note treatment. These controls work
 without JavaScript.
 
+Tracing distributed systems and Network partitions have published placeholder
+pages with scope outlines, not completed lessons. Their frontmatter sets
+`showIllustration: false` to omit header artwork; other sheets show it by default.
+
 The glossary groups definitions by their first letter. Its jump index lists
 only letters with entries and works without JavaScript. Existing term anchors
 remain available for direct links from lessons and sheets.
