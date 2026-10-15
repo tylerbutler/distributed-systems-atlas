@@ -122,7 +122,7 @@ release/completion, task promotion, and pact signoff/roster lifecycles.
 
 ## Task 4: Ship Counters as the Entry Lesson
 
-**Status: Shipped with changes; broken-map comparison remains absent.**
+**Status: Shipped with changes.**
 
 The counter overview links to dedicated G-counter, PN-counter, and
 SharedCounter lessons. G-counter has per-client +1, +3, and +7 controls,
@@ -132,8 +132,9 @@ PN-counter starts at 10 and races +3 against -1, converging on 12.
 SharedCounter teaches numbered signed operations with the same +3/-1 race.
 
 These separate pages replace the proposed combined counter demo and its
-initial +2/+3 example. The broken counter-in-an-LWW-map experiment has not
-been added.
+initial +2/+3 example. The G-counter lesson also runs the same +7/+3 inputs
+through an LWW map of whole totals and a real G-counter. The map keeps 3 while
+the counter keeps 10; repeating Bob's cumulative note leaves 10 unchanged.
 
 **Evidence:** `src/pages/structures/counters.astro`,
 `src/lib/structure-demo/g-counter.ts`, `src/lib/structure-demo/pn-counter.ts`,
@@ -152,8 +153,9 @@ caught-up write.
 
 MvRegister resolution is explained in the article and is available through
 ordinary writes after delivery and the linked causal reference lab. There is
-no dedicated Resolve button or combined LWW/MV comparison panel. The original
-five-button layout was not adopted.
+no dedicated Resolve button. The LWWRegister lesson adds a paired experiment
+using the same trail reports: one LWW winner versus two native MV siblings.
+The original five-button layout was not adopted.
 
 **Evidence:** `src/components/RegisterStructureDemo.astro`,
 `src/lib/structure-demo/register-demo.ts`,
@@ -168,9 +170,11 @@ GSet, TwoPSet, and observed-remove set each have a lesson and three-client
 demo. The progression covers union, irreversible removal, and a concurrent
 addition surviving an observed removal.
 
-The deeper OR-set lab and toolkit tests cover retained context and stale
-replay. Stale replay is not a separate focused experiment on the family
-overview. Addition IDs and removal evidence are visible in notebook views,
+The TwoPSet lesson compares a fresh add after an observed removal with the
+OR-set policy. The OR-set lesson replays the exact original addition against
+a native OR-set and a labeled membership-only toy that discards removal
+evidence. The toy resurrects the old beacon; the kernel does not.
+Addition IDs and removal evidence are visible in notebook views,
 not restricted to an optional metadata disclosure.
 
 **Evidence:** `src/pages/structures/sets.astro`,
@@ -303,11 +307,11 @@ lost alternatives, irreversible removal, and retained causal context.
 The complete broken/correct comparison set and dedicated failure-mode
 articles have not shipped:
 
-- [ ] Counter in an LWW map loses an increment.
-- [ ] LWW selection versus retaining concurrent register alternatives, with
+- [x] Counter in an LWW map loses an increment.
+- [x] LWW selection versus retaining concurrent register alternatives, with
   matched visible input.
-- [ ] TwoPSet re-add restriction versus a structure that permits re-add.
-- [ ] OR-set without retained context versus correct stale-replay handling.
+- [x] TwoPSet re-add restriction versus a structure that permits re-add.
+- [x] OR-set without retained context versus correct stale-replay handling.
 - [ ] Index-based sequence targeting versus identity-based targeting. The
   shipped text-offset divergence example covers part of this goal, not the
   planned moved-item case.
@@ -316,6 +320,9 @@ articles have not shipped:
 Do not count article explanations alone as completed paired experiments.
 
 **Evidence:** `src/components/NaiveTextMergeDemo.astro`,
+`src/components/PolicyComparison.astro`,
+`src/lib/structure-demo/policy-comparisons.test.ts`,
+`tests/policy-comparisons.spec.ts`,
 `src/pages/structures/[structure].astro`,
 `tests/remaining-structure-demos.spec.ts`, `src/content/sheets/`.
 

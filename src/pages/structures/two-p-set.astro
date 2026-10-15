@@ -2,6 +2,7 @@
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
+import PolicyComparison from "../../components/PolicyComparison.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import { twoPSetTerm } from "../../lib/atlas/standalone-terms";
 import "../../styles/set-lesson.css";
@@ -181,6 +182,8 @@ const tombstoneTerm = {
         beacon while Bob's replacement survives.
       </p>
     </section>
+
+    <PolicyComparison kind="readd" />
 
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>

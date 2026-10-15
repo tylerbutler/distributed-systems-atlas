@@ -1,0 +1,74 @@
+---
+import { policyExamples, policyFrame, type PolicyKind } from "../lib/structure-demo/policy-comparisons";
+import { demoReplicaName, REPLICA_IDS } from "../lib/structure-demo/replicas";
+import StationMark from "./StationMark.astro";
+import "../styles/structure-demo-shell.css";
+
+interface Props { kind: PolicyKind }
+const { kind } = Astro.props;
+const example = policyExamples[kind];
+const initial = policyFrame(kind, 0);
+---
+
+<policy-comparison class="structure-demo-root" data-kind={kind} data-phase="0" data-testid={`${kind}-policy-comparison`}>
+  <section class="policy-instrument structure-demo-instrument" aria-labelledby={`${kind}-policy-title`}>
+    <h2 id={`${kind}-policy-title`}>{example.title}</h2>
+    <p>{example.input}</p>
+    <p class="policy-lesson">{example.lesson}</p>
+    <div class="policy-table-scroll" role="region" aria-label={`${example.title} replica comparison`} tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Notebook</th><th scope="col">{example.left}</th><th scope="col">{example.right}</th></tr></thead>
+        <tbody>
+          {REPLICA_IDS.map((id, index) => (
+            <tr data-client={id}>
+              <th scope="row"><span class="policy-client"><StationMark station={id} size="sm" />{demoReplicaName(id)}</span></th>
+              <td><output data-policy-left={id}>{initial.left[index]?.join(" | ") || "empty"}</output></td>
+              <td><output data-policy-right={id}>{initial.right[index]?.join(" | ") || "empty"}</output></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div class="policy-controls">
+      <button type="button" data-policy-advance disabled>{example.actions[0]}</button>
+      <button type="button" data-policy-reset disabled>Reset comparison</button>
+    </div>
+    <p role="status" aria-live="polite" aria-atomic="true" data-policy-status>Ready: both paths have the same starting input.</p>
+    <p role="alert" data-policy-error hidden></p>
+    <details>
+      <summary>Inspect the decision evidence</summary>
+      <h3>{example.left}</h3><p data-policy-left-evidence>{initial.leftEvidence}</p>
+      <h3>{example.right}</h3><p data-policy-right-evidence>{initial.rightEvidence}</p>
+    </details>
+    <p data-policy-enhancement>Enable JavaScript to run the comparison. The starting state and expected lesson remain above.</p>
+  </section>
+</policy-comparison>
+
+<script>
+  import "../lib/structure-demo/policy-comparison-element";
+</script>
+
+<style>
+  .policy-instrument h2 { margin-top: 0; }
+  .policy-instrument > p { max-width: var(--measure-reading); }
+  .policy-lesson {
+    padding-block: var(--space-3);
+    border-block: var(--rule-width) solid var(--signal);
+  }
+  .policy-table-scroll { overflow-x: auto; margin-block: var(--space-5); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th, td { padding: var(--space-3); text-align: left; vertical-align: top; border-bottom: var(--rule-width) solid currentColor; overflow-wrap: anywhere; }
+  thead th { font-family: var(--font-ui); }
+  .policy-client { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  output { font-family: var(--font-data); }
+  .policy-controls { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+  button, summary { min-height: 44px; }
+  summary { padding-block: var(--space-3); cursor: pointer; font-family: var(--font-ui); }
+  details p { overflow-wrap: anywhere; }
+  [data-policy-error] { border-block: var(--rule-width) solid var(--interference); padding-block: var(--space-3); }
+  @media (width < 40rem) {
+    table { table-layout: auto; }
+    th, td { padding: var(--space-2); }
+    .policy-client { flex-direction: column; align-items: start; }
+  }
+</style>

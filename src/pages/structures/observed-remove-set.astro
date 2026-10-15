@@ -3,6 +3,7 @@ import { pairedSheets } from "../../lib/atlas/trail";
 import StructureFacts from "../../components/StructureFacts.astro";
 import StructureLessonLayout from "../../components/StructureLessonLayout.astro";
 import SetStructureDemo from "../../components/SetStructureDemo.astro";
+import PolicyComparison from "../../components/PolicyComparison.astro";
 import TermCallout from "../../components/TermCallout.astro";
 import "../../styles/set-lesson.css";
 
@@ -271,6 +272,8 @@ const notebookCheckpoints: Array<{
         <a href={`/atlas/${pairedSheets["observed-remove-set"].sheet}/`}>Open the in-depth observed-remove set sheet and lab</a>
       </p>
     </section>
+
+    <PolicyComparison kind="replay" />
 
     <section aria-labelledby="notes-title">
       <h2 id="notes-title">Sources and implementation</h2>
