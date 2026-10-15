@@ -2,7 +2,8 @@
 
 ## Status
 
-Reconciled against shipped code on 2026-10-15, at commit `3e1b4ce`.
+Initially reconciled against shipped code on 2026-10-15, at commit `3e1b4ce`;
+updated below as the documentation, validation, and teaching work shipped.
 This document replaces the original unchecked implementation checklist.
 It records shipped behavior, changes to the proposed design, and remaining
 work. It does not certify technical correctness or a new release check.
@@ -87,8 +88,10 @@ controls directly. It does not put all metadata behind an "Explain why"
 disclosure. The global six-control cap is retired: preserve useful per-client
 sandbox controls. Primary guided examples must reach their stated result in
 at most three user actions from fresh/reset default state. Waiting, Reset
-itself, live-room setup, and optional exploration do not count. Site-wide
-measurement of that contract remains part of Task 15.
+itself, live-room setup, and optional exploration do not count.
+`tests/structure-demo-contract.spec.ts` derives its catalogue from the shipped
+navigation and measures the primary flow on every individual lesson.
+The comparison specs measure their shared guided flows.
 
 **Evidence:** `src/components/GCounterDemo.astro`,
 `src/components/RemainingStructureDemo.astro`,
@@ -113,6 +116,8 @@ paths described above.
 later-family kinds through the public package entry. It checks concrete
 three-client initial/final states and sequence numbers, including queue
 release/completion, task promotion, and pact signoff/roster lifecycles.
+It also exercises the new move/edit and matched-text facades in both
+eligible delivery orders.
 
 **Evidence:** `toolkit/index.ts`, `toolkit/remaining-structures.js`,
 `toolkit/remaining-structures.d.ts`,
@@ -232,19 +237,25 @@ links.
 
 ## Task 10: Publish Sequences
 
-**Status: Partial.**
+**Status: Shipped with changes.**
 
 SequenceCrdt and TextCrdt lessons use real kernels, stable identities, direct
 editing controls, and deterministic concurrent-insertion examples. The
 SequenceCrdt race ends with five items. The sequence family also contains
 RichTextOt.
 
-The planned move-versus-edit experiment is not implemented. The list sandbox
-supports insertion, not a demonstration of moving an item while another
-replica edits it. Item IDs are visible rather than hidden behind a disclosure.
+The move/edit experiment composes SequenceCrdt application record IDs with
+native LWW-map fields. Alice moves Weir while Bob marks that ID blocked from
+the original view. Both delivery orders retain the field target in all three
+native copies. A labeled stale-index toy blocks Bridge instead at Alice.
+Native move preserves item identity; replacement is not used to simulate a
+field edit. The existing insertion sandbox remains intact.
 
 **Evidence:** `src/pages/structures/sequences.astro`,
 `src/components/RemainingStructureDemo.astro`,
+`src/components/SequenceMoveComparison.astro`,
+`toolkit/src/atlas_teaching_comparisons.gleam`,
+`tests/teaching-comparisons.spec.ts`,
 `toolkit/src/atlas_remaining_structures.gleam`,
 `tests/remaining-structure-demos.spec.ts`.
 
@@ -265,20 +276,28 @@ operations from CRDT merge.
 
 ## Task 12: Publish Transforms and Collaborative Text
 
-**Status: Shipped with changes; matched OT/CRDT comparison remains absent.**
+**Status: Shipped with changes.**
 
 JsonOt demonstrates concurrent same-index list insertions and a nested
 numeric update. RichTextOt demonstrates concurrent formatting and insertion.
 Both run public Watershed kernels.
 
 OT is grouped by data shape: JsonOt under Maps and RichTextOt under Sequences.
-There is no `/structures/transforms/` route. `/structures/models/` compares
-CRDT, DDS, and OT mechanisms, but does not run OT and sequence CRDT side by
-side with the same editing task.
+The former `/structures/transforms/` address redirects to the structure
+catalogue; it has no family overview. `/structures/models/` compares
+CRDT, DDS, and OT mechanisms. The TextCrdt lesson runs the same initial
+sentence and concurrent inserts through TextCrdt and RichTextOt. It shows real
+grapheme identities, OT references and transformed operations. Each path
+converges in either delivery order; matching cross-model word order is not
+required. The existing formatting race and raw-offset counterexample remain.
 
 **Evidence:** `src/components/JsonOtDemo.astro`,
 `src/pages/structures/[structure].astro`,
 `src/pages/structures/models.astro`,
+`src/components/TextMechanismComparison.astro`,
+`toolkit/src/atlas_teaching_comparisons.gleam`,
+`toolkit/teaching-comparisons.test.ts`,
+`tests/teaching-comparisons.spec.ts`,
 `toolkit/src/atlas_remaining_structures.gleam`,
 `tests/remaining-structure-demos.spec.ts`.
 
@@ -304,23 +323,23 @@ identity-based kernel demo. Browser coverage checks divergence and the effect
 of reversing arrival order. Existing reference labs and lessons also explain
 lost alternatives, irreversible removal, and retained causal context.
 
-The complete broken/correct comparison set and dedicated failure-mode
-articles have not shipped:
+Comparisons live inside existing lessons rather than in new failure-mode
+articles. The remaining comparison depends on the unbuilt Presence lesson:
 
 - [x] Counter in an LWW map loses an increment.
 - [x] LWW selection versus retaining concurrent register alternatives, with
   matched visible input.
 - [x] TwoPSet re-add restriction versus a structure that permits re-add.
 - [x] OR-set without retained context versus correct stale-replay handling.
-- [ ] Index-based sequence targeting versus identity-based targeting. The
-  shipped text-offset divergence example covers part of this goal, not the
-  planned moved-item case.
+- [x] Index-based sequence targeting versus stable-ID targeting for a moved
+  record and a concurrent field edit.
 - [ ] Durable presence shows stale users versus expiring presence.
 
 Do not count article explanations alone as completed paired experiments.
 
 **Evidence:** `src/components/NaiveTextMergeDemo.astro`,
 `src/components/PolicyComparison.astro`,
+`src/components/SequenceMoveComparison.astro`,
 `src/lib/structure-demo/policy-comparisons.test.ts`,
 `tests/policy-comparisons.spec.ts`,
 `src/pages/structures/[structure].astro`,
@@ -336,23 +355,32 @@ site. Browser suites cover no-JavaScript content, keyboard use, focus,
 visible errors, reduced motion, responsive layout, and overflow.
 
 Test presence is not proof that every original acceptance requirement is met.
-This reconciliation did not run a fresh release verification.
+The catalogue audit compares semantic replica values, initial metadata, and
+reset state with JavaScript disabled and after enhancement. It caught and
+fixed RegisterMap empty-state copy, FIFO numbering and empty-work state, and
+TextCrdt's pending-edit label. Each lesson's authored result is checked from
+default state; the six paired experiments have their own guided contracts.
+`pnpm verify` completed after these changes, including the native and
+TypeScript checks, unit and browser suites, and the static build. This does
+not replace the technical correctness review below.
 
 - [ ] Complete technical correctness review. Reference articles and labs
   still carry the default "Not yet reviewed for correctness" warning.
   `showCorrectnessWarning: false` controls visibility, not review status.
 - [x] Replace the global six-control cap with the approved guided-example
   contract above.
-- [ ] Measure each primary guided example against the three-action contract.
-- [ ] Audit per-demo static/live initial-state agreement and the remaining
-  release acceptance requirements; add missing coverage where needed.
+- [x] Measure each primary guided example against the three-action contract.
+- [x] Audit static/live/reset initial-state agreement across all 21 lessons
+  and the six new comparisons, including relevant metadata.
 - [x] Update stale publication descriptions in `README.md` and `PRODUCT.md`,
   including family counts, retired Transforms routes, actual live-room
   behavior, and public-kernel provenance for later-family demos.
-- [ ] Run `pnpm verify` for the next release after its changes are complete.
+- [x] Run `pnpm verify` after the selected changes are complete.
 
 **Evidence:** `package.json`, `tests/accessibility.spec.ts`,
 `tests/responsive.spec.ts`, the family browser suites,
+`tests/structure-demo-contract.spec.ts`, `tests/policy-comparisons.spec.ts`,
+`tests/teaching-comparisons.spec.ts`,
 `tests/correctness-warning.spec.ts`, `src/components/CorrectnessWarning.astro`.
 
 ## Work Shipped Beyond the Original Plan
@@ -378,8 +406,8 @@ This reconciliation did not run a fresh release verification.
 The original plan is not a queue of 15 unfinished tasks. The structure
 catalogue and most teaching demos have shipped.
 
-The remaining planned scope is Presence, the full failure-comparison set,
-move-versus-edit, matched OT/CRDT editing, authored-frame deep links,
-transport consistency, and release review.
-The revised guided-example contract still needs measurement. These gaps have
-no new priority order or deadline assigned by this reconciliation.
+The remaining planned scope is Presence and its stale-user comparison,
+authored-frame deep links, transport consistency, and technical correctness
+review. The documentation, non-Presence comparisons, package smoke expansion,
+initial-state audit, and guided-action measurements are implemented.
+These remaining gaps have no new priority order or deadline assigned.

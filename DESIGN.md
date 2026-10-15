@@ -341,6 +341,13 @@ Secondary experiments follow the main lesson or use a native disclosure.
 Per-user counts, dots, timestamps, or other bookkeeping stay in an
 `Explain why` disclosure unless item identity is the lesson's merge rule.
 
+Paired experiments stay inside the relevant structure lesson. Shared controls
+apply matched authored inputs to both paths, with three visible clients per
+path and explicit labels for intentionally broken toy models. Values and
+identity evidence come from the native kernels on real paths. Narrow layouts
+stack the labeled results; native disclosures hold detailed operation evidence.
+Reset restores the initial values and clears pending comparison work.
+
 SequenceCrdt adds a lesson map, Quick facts, and a worked three-notebook
 comparison before its sandbox. It highlights local additions before sharing
 and newly received trail stops after sharing. Yellow identifies Alice's Falls and

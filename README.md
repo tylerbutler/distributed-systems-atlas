@@ -35,6 +35,27 @@ without an embedded lab.
 The reference pages and browser labs display a prominent "Not yet reviewed for
 correctness" warning by default. These warnings are also visible without JavaScript.
 
+## Matched teaching comparisons
+
+Six paired experiments extend existing lessons: whole totals in an LWW map
+versus a G-counter, LWW versus multi-value register reports, TwoPSet versus
+OR-set re-add, stale addition replay with and without retained removal
+evidence, stale list indexes versus stable record IDs, and matched
+TextCrdt/RichTextOt inserts. Each path shows three clients. Deliberately broken
+toy models are labeled; the real paths use pinned Watershed kernels.
+
+The move/edit example composes SequenceCrdt application record IDs with
+ID-keyed LWW-map fields. It uses native move, not replacement disguised as an
+in-place edit. The text comparison starts both models from the same sentence
+and insert positions. Each model converges in both delivery orders, although
+their final word order can differ.
+
+Primary guided examples reach their result in at most three actions from
+fresh/reset default state. Waiting, Reset, live-room setup, and optional
+exploration do not count. Browser contracts cover all 21 lessons and the six
+comparisons, including semantic static/hydrated/reset agreement. Sandbox
+controls remain available.
+
 ## Navigation
 
 Structure lessons end with a separate **Related reference sheets** section.
@@ -65,12 +86,13 @@ points**, separate from the complete family catalogue.
 ## Lesson illustrations
 
 [`art/lesson-illustrations.json`](art/lesson-illustrations.json) contains the
-pen-and-ink art direction and 35 scene prompts: one for each individual
-structure lesson, family overview, and published reference sheet.
+pen-and-ink art direction and 36 scene prompts: 21 individual structure
+lessons, six current family overviews, eight published reference articles,
+and the historical Transforms overview.
 
-The catalog contains 35 authored SVG scenes, including the historical
+The catalog contains 36 authored SVG scenes, including the historical
 Transforms overview. Current illustrated lessons, family overviews, and the
-seven reference-lab articles use these assets in their introductions. Open
+eight reference articles use these assets in their introductions. Open
 [`art/counters-and-sets.html`](art/counters-and-sets.html) for the first eight,
 or [`art/remaining-lessons.html`](art/remaining-lessons.html) for registers,
 maps, sequences, coordination, OT, and the seven reference-lab articles.

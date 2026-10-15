@@ -87,6 +87,17 @@ that runs through Watershed's public channel API.
 The Sequences overview follows the ordered inspection route into SequenceCrdt,
 TextCrdt, and RichTextOt. Stable item and grapheme identities explain why concurrent
 inserts can both survive even when local indexes change.
+The SequenceCrdt lesson also composes native sequence IDs with ID-keyed map
+fields: a concurrent field edit stays attached to the moved record. A labeled
+stale-index toy edits the wrong record. The TextCrdt lesson runs identical
+initial text and inserts through native CRDT and OT paths. Both converge
+within their own model; they need not choose the same final word order.
+
+Paired counter, register, and set experiments use matched inputs to show a
+lost increment when storing whole totals in an LWW map, one selected register
+report versus concurrent alternatives, irreversible removal versus fresh
+re-add, and stale replay with retained removal evidence. Deliberate failure
+models are labeled as toys; the real paths use the native kernels.
 
 The Coordination overview covers Claims, FifoWorkQueue, TaskManager, and
 PactMap. These structures do not merge several valid answers. They use the
@@ -185,13 +196,14 @@ do not belong to this publication.
 
 ## Evidence on Hand
 
-- `src/content/sheets/`: the seven published trail articles and their primary
-  references, including the original Dots proof article.
+- `src/content/sheets/`: eight published reference articles and their primary
+  references, including seven lab articles and the multiplayer architecture note.
 - `src/lib/lab/`: the reference engine, scenarios, trace contract, presentation,
   and their unit tests.
 - `tests/`: browser checks for static content, focused structure-demo and lab
   behavior, accessibility, responsive layouts, generated reference links, and
-  article/lab agreement.
+  article/lab agreement. Catalogue-derived contracts compare static,
+  hydrated, and reset values across all 21 lessons and measure guided actions.
 - `toolkit/`: focused Gleam tests, facade tests, a generated-declaration check,
   and a Node package smoke test. The release procedure also builds from empty
   Gleam and pnpm caches against the locked Watershed commit.
