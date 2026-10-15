@@ -154,7 +154,8 @@ test("a rejected native action shows an alert without replacing the last valid v
 });
 
 test("desktop and mobile comparison instruments stay within the viewport", async ({ page }) => {
-  for (const width of [1440, 390]) {
+  for (const [width, reducedMotion] of [[1440, "no-preference"], [390, "reduce"]] as const) {
+    await page.emulateMedia({ reducedMotion });
     await page.setViewportSize({ width, height: 900 });
     for (const [route, id] of [["sequence-crdt", "sequence-move-comparison"], ["text-crdt", "text-mechanism-comparison"]]) {
       await page.goto(`/structures/${route}/`);

@@ -939,6 +939,7 @@ title: Scenario reference
 summary: A scenario reference without a rendered lab.
 territory: mechanisms
 status: published
+complexity: introductory
 scenarios: [dots-concurrent-add-remove, missing-final-review-scenario]
 ---
 `;
@@ -958,34 +959,41 @@ scenarios: [dots-concurrent-add-remove, missing-final-review-scenario]
 
   test("atlas rejects every missing graph reference in one build error", async () => {
     test.setTimeout(90_000);
-    await writeFile(path.join(root, "src/content/sheets/broken.md"), `---
+    const fixture = path.join(root, "src/content/sheets/broken.md");
+    try {
+      await writeFile(fixture, `---
 title: Broken graph
 summary: A deliberately invalid test fixture.
 territory: mechanisms
 status: planned
+complexity: introductory
 requires: [missing-prerequisite]
 related: [missing-related]
 scenarios: [missing-scenario]
 ---
 `);
-    const result = await buildFixture(root);
-    expect(result.code).not.toBe(0);
-    expect(result.output).toContain("Invalid atlas content graph:");
-    expect(result.output).toContain("broken.requires: missing sheet missing-prerequisite");
-    expect(result.output).toContain("broken.related: missing sheet missing-related");
-    expect(result.output).toContain("broken.scenarios: missing scenario missing-scenario");
+      const result = await buildFixture(root);
+      expect(result.code).not.toBe(0);
+      expect(result.output).toContain("Invalid atlas content graph:");
+      expect(result.output).toContain("broken.requires: missing sheet missing-prerequisite");
+      expect(result.output).toContain("broken.related: missing sheet missing-related");
+      expect(result.output).toContain("broken.scenarios: missing scenario missing-scenario");
+    } finally {
+      await rm(fixture, { force: true });
+    }
   });
 
   test("content loading rejects files with colliding generated sheet IDs", async () => {
     test.setTimeout(90_000);
     const upper = path.join(root, "src/content/sheets/Collision.md");
-    const lower = path.join(root, "src/content/sheets/collision.md");
+    const lower = path.join(root, "src/content/sheets/collision.mdx");
     const content = `---
 slug: collision
 title: Collision
 summary: A generated ID collision fixture.
 territory: mechanisms
 status: planned
+complexity: introductory
 ---
 `;
     try {
@@ -997,7 +1005,7 @@ status: planned
       expect(result.code).not.toBe(0);
       expect(result.output).toContain('Duplicate sheet ID "collision"');
       expect(result.output).toContain("Collision.md");
-      expect(result.output).toContain("collision.md");
+      expect(result.output).toContain("collision.mdx");
     } finally {
       await Promise.all([
         rm(upper, { force: true }),

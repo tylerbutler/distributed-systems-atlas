@@ -3,6 +3,13 @@ import { readdirSync } from "node:fs";
 import catalog from "../art/lesson-illustrations.json" with { type: "json" };
 
 const { illustrations } = catalog;
+const publishedIllustrations = illustrations.filter(({ id }) => id !== "structures-transforms");
+
+test("the historical Transforms address redirects to the structure catalogue", async ({ request }) => {
+  const response = await request.get("/structures/transforms/");
+  expect(response.ok()).toBe(true);
+  expect(new URL(response.url()).pathname).toBe("/structures/");
+});
 
 test("the complete catalog has accessible, self-contained SVG masters", async ({ page, request }) => {
   expect(illustrations).toHaveLength(36);
@@ -79,7 +86,7 @@ for (const width of [1440, 360]) {
   test.describe(`lesson illustrations at ${width}px`, () => {
     test.use({ javaScriptEnabled: false, viewport: { width, height: 900 } });
 
-    for (const { id, route, asset, alt, kind } of illustrations) {
+    for (const { id, route, asset, alt, kind } of publishedIllustrations) {
       test(`${id} loads its artwork without JavaScript`, async ({ page }) => {
         await page.goto(route);
         const header = page.locator(kind === "reference" ? ".sheet-header" : ".page-intro");

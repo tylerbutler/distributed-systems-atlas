@@ -16,14 +16,14 @@ const initial = policyFrame(kind, 0);
     <p>{example.input}</p>
     <p class="policy-lesson">{example.lesson}</p>
     <div class="policy-table-scroll" role="region" aria-label={`${example.title} replica comparison`} tabindex="0">
-      <table>
-        <thead><tr><th scope="col">Notebook</th><th scope="col">{example.left}</th><th scope="col">{example.right}</th></tr></thead>
-        <tbody>
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Notebook</th><th role="columnheader" scope="col">{example.left}</th><th role="columnheader" scope="col">{example.right}</th></tr></thead>
+        <tbody role="rowgroup">
           {REPLICA_IDS.map((id, index) => (
-            <tr data-client={id}>
-              <th scope="row"><span class="policy-client"><StationMark station={id} size="sm" />{demoReplicaName(id)}</span></th>
-              <td><output data-policy-left={id}>{initial.left[index]?.join(" | ") || "empty"}</output></td>
-              <td><output data-policy-right={id}>{initial.right[index]?.join(" | ") || "empty"}</output></td>
+            <tr role="row" data-client={id}>
+              <th role="rowheader" scope="row"><span class="policy-client"><StationMark station={id} size="sm" />{demoReplicaName(id)}</span></th>
+              <td role="cell"><span class="policy-mobile-label" aria-hidden="true">{example.left}</span><output data-policy-left={id}>{initial.left[index]?.join(" | ") || "empty"}</output></td>
+              <td role="cell"><span class="policy-mobile-label" aria-hidden="true">{example.right}</span><output data-policy-right={id}>{initial.right[index]?.join(" | ") || "empty"}</output></td>
             </tr>
           ))}
         </tbody>
@@ -61,14 +61,20 @@ const initial = policyFrame(kind, 0);
   thead th { font-family: var(--font-ui); }
   .policy-client { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
   output { font-family: var(--font-data); }
+  .policy-mobile-label { display: none; font-family: var(--font-ui); }
   .policy-controls { display: flex; flex-wrap: wrap; gap: var(--space-3); }
   button, summary { min-height: 44px; }
+  button { padding: var(--space-2) var(--space-3); border: var(--rule-width) solid var(--clear); color: var(--clear); background: var(--instrument-deep); font: 1rem/1.4 var(--font-ui); cursor: pointer; }
+  button:hover:not(:disabled) { background: var(--signal); color: var(--instrument-deep); }
+  button:disabled { opacity: 0.55; cursor: default; }
   summary { padding-block: var(--space-3); cursor: pointer; font-family: var(--font-ui); }
   details p { overflow-wrap: anywhere; }
   [data-policy-error] { border-block: var(--rule-width) solid var(--interference); padding-block: var(--space-3); }
   @media (width < 40rem) {
-    table { table-layout: auto; }
+    table, tbody { display: block; }
+    thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    tbody tr { display: grid; grid-template-columns: 1fr; margin-bottom: var(--space-4); }
     th, td { padding: var(--space-2); }
-    .policy-client { flex-direction: column; align-items: start; }
+    .policy-mobile-label { display: block; margin-bottom: var(--space-2); }
   }
 </style>

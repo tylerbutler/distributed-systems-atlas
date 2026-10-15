@@ -291,7 +291,12 @@ test("JsonOt explains why sequence order also needs path transformation", async 
     .toContainText('insert "Dot" at .crew[1]');
   await expect(lesson).toContainText("The order comes from the sequencer; the valid array positions come from OT.");
   await expect(page.getByRole("heading", { name: "One operation travels while later edits wait" })).toBeVisible();
-  await expect(lesson).toContainText("single-operation-in-flight rule avoids a context gap");
+  await expect(lesson).toContainText("single-operation-in-flight rule avoids the");
+  await expect(lesson.getByRole("complementary", { name: "dOPT problem definition" })
+    .getByRole("link", { name: "dOPT problem" })).toHaveAttribute(
+    "href",
+    "/glossary/#dopt-problem",
+  );
   await expect(lesson.getByRole("link", { name: "reference sequence number" })).toHaveAttribute(
     "href",
     "/glossary/#reference-sequence-number",
@@ -469,9 +474,9 @@ test("remaining lessons retain content without JavaScript", async ({ browser }) 
     const queueDemo = page.getByTestId("fifo-work-queue-demo");
     await expect(queueDemo.locator("[data-worker]")).toHaveCount(3);
     await expect(queueDemo.locator("[data-queue] li")).toHaveText([
-      "inspect bridge",
-      "clear fallen branch",
-      "restock first-aid cache",
+      "1. inspect bridge",
+      "2. clear fallen branch",
+      "3. restock first-aid cache",
     ]);
     await expect(queueDemo.getByRole("button").first()).toBeDisabled();
     await expect(queueDemo).toContainText("Enable JavaScript to run the queue");

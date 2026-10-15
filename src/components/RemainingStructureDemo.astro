@@ -132,7 +132,7 @@ const hasSequencer = isTextCrdt || isCoordination;
                 </p>
                 {hasSequencer && <output data-sequence-number>SN 0</output>}
                 <output data-pending>
-                  {isCoordination ? "0 operations waiting" : "0 notes waiting"}
+                  {isCoordination ? "0 operations waiting" : isTextCrdt ? "0 edits waiting" : "0 notes waiting"}
                 </output>
               </div>
               <ol data-note-log aria-label={`${isTextCrdt ? "Text edit" : isCoordination ? "Sequenced operation" : "Insertion note"} log, newest first`} aria-live="polite" reversed>

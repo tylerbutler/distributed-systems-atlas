@@ -18,16 +18,21 @@ for (const example of examples) {
     await expect(demo).toContainText(policyExamples[example.kind].input);
     const next = demo.locator("[data-policy-advance]");
     await next.focus();
+    let actions = 0;
     await page.keyboard.press("Enter");
+    actions += 1;
     await expect(next).toBeFocused();
     await page.keyboard.press("Enter");
+    actions += 1;
     await expect(demo).toHaveAttribute("data-phase", "2");
     await expect(demo.locator("[data-policy-left]")).toHaveText(Array(3).fill(example.left));
     await expect(demo.locator("[data-policy-right]")).toHaveText(Array(3).fill(example.right));
     if (example.kind === "counter") {
       await next.click();
+      actions += 1;
       await expect(demo.locator("[data-policy-right]")).toHaveText(["10", "10", "10"]);
     }
+    expect(actions).toBeLessThanOrEqual(3);
     const reset = demo.locator("[data-policy-reset]");
     await expect(reset).toBeFocused();
     await reset.click();
@@ -88,6 +93,9 @@ test("comparisons preserve their outcomes across motion preferences and screen w
         await demo.locator("[data-policy-advance]").click();
         await expect(demo.locator("[data-policy-right]")).toHaveText(Array(3).fill(example.right));
         expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+        if (reducedMotion === "no-preference") {
+          await demo.screenshot({ path: `test-results/${example.kind}-policy-${width}.png` });
+        }
       }
     }
   }

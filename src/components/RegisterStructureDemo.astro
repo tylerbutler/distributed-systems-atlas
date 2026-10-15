@@ -84,7 +84,7 @@ function raceNote(replica: ReplicaId): { body: string; evidence: string } {
             </div>
           </header>
           <div class="register-values" data-register-values={replica.id}>
-            <em>No status</em>
+            <em>{kind === "register-map" ? "No fields" : "No status"}</em>
           </div>
           <p class="paper-note">
             <span>Field note</span>
