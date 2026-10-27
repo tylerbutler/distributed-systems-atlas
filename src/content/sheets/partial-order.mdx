@@ -26,37 +26,34 @@ import TermCallout from "../../components/TermCallout.astro";
 
 <div class="sheet-opening">
 
-## Three stations do not make one log
+## An earlier click does not send information
 
-An operator at station A records a signal report. A sends a copy to station B.
-An operator at C records a separate report without exchanging messages with
-A or B. B then receives A's message.
+An operator at station A writes a signal report and sends a copy to station B.
+While the message waits, an operator at C writes a separate report.
+C sends no message to A or B. Then B receives A's message.
 
-B can learn about A's report from that delivery. It cannot learn about C's
-report. Yet if you list events in the order you clicked the lab controls,
-C's report appears before B's receive. Does that mean B could use it?
+B learns about A's report. It has no news of C's report, even though
+you clicked C's control before delivering the message to B.
 
-No. Button order records your actions, not what each station knows.
-As in [Local history](/atlas/local-history/), each station represents a
-computer with its own record. The stations learn about other stations'
-events through messages.
+As in [Local history](/atlas/local-history/), each station stands for a
+computer with its own record. Stations learn about events at other stations
+through messages. Your clicks do not give them a shared record.
 
-A **partial order** records which events must come before others while
-leaving some pairs unordered. Here, A's report must come before B receives
-it. The exchange gives no order between C's report and B's receive.
-Leaving that pair unordered preserves the difference between an earlier
-button click and information available at a station.
+## Follow the arrows
 
-## Read edges as dependencies
+The lab uses short names for these events:
 
-The lab gives the events short names: `a1` is A's report, `b1` is B's
-receive, and `c1` is C's report. It also records arrows between events.
-An arrow, or **edge**, points from an earlier event to one that follows it.
-A **path** is one or more arrows followed in their direction.
+- `a1`: A writes its report.
+- `b1`: B receives A's message.
+- `c1`: C writes its report.
 
-Two kinds of connection matter: the order of events at one station, and
-the connection from sending a message to receiving it. Together, these
-connections describe how information could pass between events.
+An arrow connects an event to one that follows it. A's report comes before
+B receives the copy, so the lab shows `a1 -> b1`. No arrow connects `c1`
+to either event.
+
+The lab calls an arrow an **edge**. A **path** is one or more arrows
+that you follow in their direction. A path shows how information could
+pass between events.
 
 <figure aria-label="One causal path and an independent event">
   <dl class="sheet-data">
@@ -67,18 +64,22 @@ connections describe how information could pass between events.
     <dt><StationMark station="C" /> Station C</dt>
     <dd><code>c1</code> has no edge to or from either event.</dd>
   </dl>
-  <figcaption>Row order and spacing do not add edges. C's isolation means
-  neither A nor B has observed c1 in this trace.</figcaption>
+  <figcaption>The order of these rows adds no arrows. Neither A nor B
+  has learned about c1 in this run.</figcaption>
 </figure>
 
-The <dfn><a href="/glossary/#happens-before">happens-before</a></dfn>
-relation describes this order. It follows three rules:
+A **partial order** records which events must come before others.
+Some pairs have no order between them. Here, `a1` must come before `b1`,
+but there is no path between `c1` and `b1` in either direction.
+
+We call this ordering rule
+<dfn><a href="/glossary/#happens-before">happens-before</a></dfn>:
 
 1. At one station, an earlier event happens before a later event.
 2. Sending a message happens before receiving that message.
-3. If `x` happens before `y`, and `y` happens before `z`, then `x` happens
-   before `z`. This rule is called **transitivity**: you can follow a path
-   through intermediate events.
+3. You can follow a chain of these connections. If one event comes before
+   a second, and the second comes before a third, the first comes before
+   the third. The name for this rule is **transitivity**.
 
 <TermCallout
   term="happens-before"
@@ -86,20 +87,19 @@ relation describes this order. It follows three rules:
   inlineOnly
 />
 
-For this lesson, the lab records sending as an action without giving it a
-separate event name. It shows `a1 -> b1` because A recorded `a1`, then sent
-the message that B received. This is the same simplification used in
-Local history. Sending is still an event in the full happens-before model.
+As in Local history, the lab records the send action without a separate
+event name. The arrow `a1 -> b1` includes A writing the report, sending it,
+and B receiving it. Sending counts as an event in the full happens-before
+model.
 
-A path shows that information could have passed between events. It does not
-prove that an application used that information. For example, B might receive
-A's report and then perform an unrelated calculation. The receive still
-happens before that later local event.
+A path shows that information could pass between events. The application
+need not use that information. B might receive A's report and then do an
+unrelated calculation. The receive still happens before that calculation.
 
-## Compare the connected and disconnected pairs
+## Compare three pairs of events
 
-Use the **Guided run** and its **Next:** button for all five steps. Choose
-**Reset lab** first if you have already used other controls.
+Use **Guided run** and its **Next:** button for these five steps.
+Choose **Reset lab** first if you have used other controls.
 
 1. Record `a1` at A.
 2. Send `m1` from A to B. B has not received anything yet.
@@ -107,15 +107,16 @@ Use the **Guided run** and its **Next:** button for all five steps. Choose
 4. Deliver `m1`. B records the receive as `b1` and learns about `a1`.
 5. Compare `a1 / b1`, `b1 / c1`, and `c1 / c1`.
 
-Before the fifth step, predict the results. Which pair has a path? Which
-pair has none? Which pair names the same event twice?
+Before step 5, look for a path in each pair. Also check whether both
+names refer to the same event.
 
-The last step adds comparison results without creating an event or sending
-a message. Read all three results in **Lesson controls**. The **Event
-comparison** panel shows only the last pair, `c1 / c1`.
+Step 5 adds results without creating an event or sending a message.
+Read all three results in **Lesson controls**. The **Event comparison**
+panel shows only the last pair, `c1 / c1`.
 
-Without JavaScript, the lab shows three empty starting histories. The figure
-above and the results below describe the complete example without controls.
+Without JavaScript, the lab shows three empty starting histories.
+You can follow the example in the figure above and the results below
+without using the controls.
 
 </div>
 
@@ -123,17 +124,17 @@ above and the results below describe the complete example without controls.
 
 <div class="sheet-continuation">
 
-## A missing path is a result
+## No path means neither event comes before the other
 
-After delivery, the message provides a path from `a1` to `b1`.
-Nothing in that message mentions `c1`, and C has received nothing from B.
-There is no path between `b1` and `c1` in either direction.
+After delivery, you can follow the arrow from `a1` to `b1`.
+The message has no record of `c1`, and C has received nothing from B.
+You cannot follow a path from `b1` to `c1` or from `c1` to `b1`.
 
-These two distinct events are
-<dfn><a href="/glossary/#concurrency">concurrent</a></dfn>. Here, concurrency
-means that neither event happens before the other. It does not mean that
-they occurred at the same instant. You clicked C's event first, but no
-message connected it to B's receive.
+We call these two different events
+<dfn><a href="/glossary/#concurrency">concurrent</a></dfn>.
+Neither happens before the other. Concurrent events do not have to occur
+at the same instant. You clicked C's control first, but no message
+connected its report to B's receive.
 
 <TermCallout
   term="concurrency"
@@ -150,46 +151,51 @@ message connected it to B's receive.
       <tr><th scope="row"><code>c1 / c1</code></th><td>equal</td><td>Both names identify the same event.</td></tr>
     </tbody>
   </table>
-  <figcaption>Reversing a1 / b1 gives after. Equality is an identity check;
-  strict happens-before never relates an event to itself.</figcaption>
+  <figcaption>Compare b1 / a1 in the reverse direction to get after.
+  Comparing an event with itself gives equal.</figcaption>
 </figure>
 
-The interface distinguishes **equal** from **concurrent**. Equal means
-the same event, not two events with the same value or time. Concurrent means
-two different events with no path between them.
+**Equal** means the same event. Two events with the same value or time
+are still different events. **Concurrent** means two different events
+with no path between them.
 
-Happens-before is a **strict** partial order: an event never happens before
-itself. If you also include equality, you get the corresponding non-strict
-partial order. The interface reports equality separately so you can tell
-event identity from event order.
+<details>
+  <summary>Formal note: strict and non-strict partial orders</summary>
 
-To try transitivity, choose **Send from B to C** after the guided run and
-deliver the new message. B's message includes what B learned about `a1`.
-The new receive at C follows `b1`, which follows `a1`. It therefore follows
-`a1` even though A sent no message directly to C.
+Happens-before is a **strict** partial order: an event cannot happen before
+itself. If you include equality, you get a **non-strict** partial order.
+The lab reports equality as a separate result so you can tell "same event"
+from "comes before."
 
-C's earlier event `c1` remains concurrent with `b1`. Receiving information
-later does not change what was available to an earlier event.
+</details>
+
+To follow a longer path, choose **Send from B to C** after the guided run.
+Deliver the new message. It includes what B learned about `a1`.
+C's new receive follows `b1`, which follows `a1`. A's report reaches C
+through B, without a direct message from A.
+
+C's earlier event `c1` stays concurrent with `b1`. A later receive
+does not change what C knew at that earlier event.
 
 <section class="sheet-break" aria-labelledby="break-it-sort-the-buttons">
 
 ## Break it: sort the buttons
 
 Suppose you add an arrow from `c1` to `b1` because you clicked C's control
-first. That arrow would claim a path that the execution does not contain.
+first. You would claim a connection that did not happen.
 B received only A's message.
 
-You can still choose a single sequence for display. A **total order** places
-every pair of distinct events in an order. All three sequences below
-respect the one required connection, `a1 -> b1`:
+You can list the events in a single sequence for display.
+This is a **total order**: each pair of different events has an order.
+Each list below puts `a1` before `b1`, as required:
 
 - `a1, c1, b1`
 - `c1, a1, b1`
 - `a1, b1, c1`
 
-Choosing one sequence does not change the partial order. Before claiming
-that one event happens before another, find a path through local event
-order and message delivery. A display position alone is not evidence.
+Choosing a list does not add a path between events.
+To check happens-before, follow the order at each station and the messages
+between stations. An event's position in a list is not enough.
 
 </section>
 
@@ -197,18 +203,18 @@ order and message delivery. A display position alone is not evidence.
 
 ## What a path check assumes
 
-The lab keeps an event graph: the events and arrows connecting them.
-Keeping more events requires more storage. Following long paths can also
-take more work than checking a direct connection.
+The lab stores the events and their arrows in an **event graph**.
+More events need more storage. Following a long path can take more work
+than checking one arrow.
 
-The lab records every event and message in this simulated run. Real logs
-may be incomplete. A missing message record does not prove that no message
-was sent. Only call events concurrent when you have enough information to
-rule out a path in either direction.
+In this lab, you can inspect the complete record of events and messages.
+Real logs may have gaps. If a log has no record of a message, someone
+may still have sent it. Before calling two events concurrent, you need
+enough information to rule out a path in both directions.
 
-You can inspect all three stations, but each station still has only its
-own observations. The full view is a teaching tool, not information that
-every station automatically shares.
+You can see all three stations to study the example.
+Each station has only the information from its own events and the
+messages it receives.
 
 </section>
 
@@ -225,20 +231,19 @@ Path from second to first?   after
 Different events, no path?   concurrent
 ```
 
-Check identity first. Follow arrows only in their direction. Two events
-that share an earlier event are not necessarily ordered relative to each
-other: both may follow that event without a path between them.
+Check for the same event first. Follow arrows in their direction.
+Two events can both follow an earlier event without a path between them.
+Sharing that earlier event does not put them in order.
 
 Lamport's
 [Time, Clocks, and the Ordering of Events in a Distributed System](/bibliography/#lamport-time-clocks)
 defines happens-before and shows how to extend it to a total order.
-The distinction in this lesson is the same: an order chosen for display
-does not create communication between events.
+Choosing an order for display does not create communication between events.
 
-Read [Local history](/atlas/local-history/) if the difference between execution
-and observation is unclear. Read [Lamport clocks](/atlas/lamport-clocks/)
-to see how a station can assign a number to each event while preserving
-happens-before order.
+Read [Local history](/atlas/local-history/) for the difference between
+what happened at a station and what it knows.
+[Lamport clocks](/atlas/lamport-clocks/) shows how a station can number
+events while keeping happens-before order.
 
 </section>
 </div>

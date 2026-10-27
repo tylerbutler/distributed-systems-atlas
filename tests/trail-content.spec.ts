@@ -16,8 +16,8 @@ const lessons = [
   {
     id: "partial-order", title: "Partial order", scenario: "partial-order-comparison",
     outcome: "Paths define the partial order",
-    headings: ["Three stations do not make one log", "Read edges as dependencies",
-      "Compare the connected and disconnected pairs", "A missing path is a result",
+    headings: ["An earlier click does not send information", "Follow the arrows",
+      "Compare three pairs of events", "No path means neither event comes before the other",
       "Break it: sort the buttons", "What a path check assumes", "Field notes"],
     figure: "Partial-order comparison results", evidence: ["before", "concurrent", "equal"],
     initial: ["No local events", "No events observed"], replicas: ["A", "B", "C"],
