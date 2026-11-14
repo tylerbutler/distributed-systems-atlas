@@ -25,7 +25,7 @@
     "@fontsource-variable/azeret-mono": "^5.3.0",
     "@fontsource-variable/encode-sans": "^5.3.0",
     "@fontsource-variable/roboto-serif": "^5.3.0",
-    "astro": "^7.3.2",
+    "astro": "^7.4.7",
     "astro-tinylytics": "^0.1.0",
     "phoenix": "^1.8.14",
     "rough-notation": "^0.5.1",
